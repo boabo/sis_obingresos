@@ -16,27 +16,17 @@ DECLARE
   v_id_moneda			integer;
   v_consulta			varchar;
 BEGIN
-	select id_agencia into v_id_agencia
-    from obingresos.tagencia a
-    where trim(BOTH ' ' from a.codigo) = trim(BOTH ' ' from NEW.agt) and trim(BOTH ' ' from a.codigo_int) = trim(BOTH ' ' from NEW.agtnoiata);
-    
+	v_id_agencia = NEW.id_agencia;
     if (v_id_agencia is null) then
     	raise exception 'No existe la agencia para el deposito:%',NEW.nro_deposito;
     end if;
     
-    select id_moneda into v_id_moneda
-    from param.tmoneda m
-    where trim(BOTH ' ' from m.codigo_internacional) = trim(BOTH ' ' from NEW.moneda);
+    v_id_moneda = NEW.id_moneda;
     
     if (v_id_moneda is null) then
     	raise exception 'No hay moneda para el deposito:%',NEW.nro_deposito;
     end if;
-    
-    update obingresos.tdeposito
-    set id_agencia = v_id_agencia,
-    id_moneda_deposito = v_id_moneda
-    where id_deposito = NEW.id_deposito;
-    
+   
 	--obtener los datos generales de la agencia
 	select * into v_agencia
     from obingresos.tagencia
@@ -53,7 +43,7 @@ BEGIN
                         where bol.liquido > monto_pagado_moneda_boleto
                         ' || v_filtro ||
                         'order by id_boleto asc';
-   --raise exception 'llega%',v_consulta;
+   
     --se recorren todos los boletos que no estan completamente pagados
     for v_boletos in execute(v_consulta) loop
     	  
@@ -64,7 +54,7 @@ BEGIN
             v_fecha_conversion = NEW.fecha;
         end if;
         --obtener el tipo de cambio de la moneda de deposito a la moneda del boleto
-        v_tc = param.f_get_tipo_cambio_v2(v_id_moneda,v_boletos.id_moneda_boleto,
+        v_tc = param.f_get_tipo_cambio_v2(v_boletos.id_moneda_boleto,v_id_moneda,
         	v_fecha_conversion,'O');
             
         --el monto que se pagara es el liquido menos el monto ya pagado

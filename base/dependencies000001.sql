@@ -32,11 +32,7 @@ CREATE TRIGGER tdeposito_tr
   AFTER INSERT 
   ON obingresos.tdeposito FOR EACH ROW 
   EXECUTE PROCEDURE obingresos.f_tr_deposito();
-  
-CREATE TRIGGER tboleto_tr
-  AFTER INSERT 
-  ON obingresos.tboleto FOR EACH ROW 
-  EXECUTE PROCEDURE obingresos.f_tr_boleto();
+
     
 
 /********************************************F-DEP-JRR-OBINGRESOS-0-10/12/2015********************************************/
@@ -51,6 +47,18 @@ ALTER TABLE ONLY obingresos.tperiodo_venta
 ALTER TABLE ONLY obingresos.tperiodo_venta
     ADD CONSTRAINT fk_tperiodo_venta__id_gestion
     FOREIGN KEY (id_gestion) REFERENCES param.tgestion(id_gestion);
+    
+ALTER TABLE ONLY obingresos.tagencia
+    ADD CONSTRAINT fk_tagencia__id_lugar
+    FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
 
+ALTER TABLE ONLY obingresos.tforma_pago
+    ADD CONSTRAINT fk_tforma_pago__id_lugar
+    FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
+
+CREATE TRIGGER trig_partition_boleto
+  BEFORE INSERT 
+  ON obingresos.tboleto FOR EACH ROW 
+  EXECUTE PROCEDURE obingresos.ftrig_partition_boleto();
 
 /********************************************F-DEP-JRR-OBINGRESOS-0-08/04/2016********************************************/

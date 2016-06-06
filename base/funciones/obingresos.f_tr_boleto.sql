@@ -15,28 +15,18 @@ DECLARE
   v_id_agencia			integer;
   v_id_moneda			integer;
 BEGIN
-	select id_agencia into v_id_agencia
-    from obingresos.tagencia a
-    where trim(BOTH ' ' from a.codigo) = trim(BOTH ' ' from NEW.agt) and trim(BOTH ' ' from a.codigo_int) = trim(BOTH ' ' from NEW.agtnoiata);
-    
+	--verificar que la agencia existe
+    v_id_agencia = NEW.id_agencia;
     if (v_id_agencia is null) then
     	raise exception 'No existe la agencia para el boleto:%',NEW.nro_boleto;
     end if;
-    
-    select id_moneda into v_id_moneda
-    from param.tmoneda m
-    where trim(BOTH ' ' from m.codigo_internacional) = trim(BOTH ' ' from NEW.moneda);
-    
+    --verificar q la moneda existe
+    v_id_moneda = NEW.id_moneda_boleto;
     if (v_id_moneda is null) then
     	raise exception 'No hay moneda para el boleto:%',NEW.nro_boleto;
     end if;
     
-    update obingresos.tboleto
-    set id_agencia = v_id_agencia,
-    id_moneda_boleto = v_id_moneda,
-    liquido = total - comision
-    where id_boleto = NEW.id_boleto;
-    
+       
 	--obtener los datos generales de la agencia
 	select * into v_agencia
     from obingresos.tagencia
@@ -64,7 +54,7 @@ BEGIN
         else
             v_fecha_conversion = v_depositos.fecha; 
         end if;
-        --raise exception '%,%,%',NEW.id_moneda_boleto,v_depositos.id_moneda_deposito,v_fecha_conversion;
+       
          --obtener el tipo de cambio de la moneda del boleto a la moneda del deposito
         v_tc = param.f_get_tipo_cambio_v2(v_id_moneda,v_depositos.id_moneda_deposito,
         	v_fecha_conversion,'O');
