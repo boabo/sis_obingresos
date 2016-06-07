@@ -127,6 +127,21 @@ ALTER TABLE obingresos.tboleto
   
 ALTER TABLE obingresos.tboleto
   ADD COLUMN tipdoc VARCHAR(5) NOT NULL;
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN ruta VARCHAR(2);
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN cupones INTEGER NOT NULL;
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN origen VARCHAR(10);
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN destino varchar(10);
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN tipopax varchar(5);
 
 ALTER TABLE obingresos.tboleto
   ADD COLUMN retbsp VARCHAR(5) NOT NULL;

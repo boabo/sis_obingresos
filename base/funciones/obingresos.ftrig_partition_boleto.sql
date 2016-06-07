@@ -81,7 +81,12 @@ BEGIN
       gds,
       tipdoc,
       retbsp,
-      monto_pagado_moneda_boleto
+      monto_pagado_moneda_boleto,
+      ruta,
+      cupones,
+      origen,
+      destino,
+      tipopax
       ';      
   
   valores:=NEW.id_usuario_reg ||','''|| 
@@ -103,7 +108,12 @@ BEGIN
   coalesce ('''' || NEW.gds || '''','NULL')||','''||  
   NEW.tipdoc||''','''||
   NEW.retbsp ||''',
-  0';
+  0,'||
+  coalesce ('''' || NEW.ruta || '''','NULL')||','||
+  NEW.cupones || ','||
+  coalesce ('''' || NEW.origen || '''','NULL')||','||
+  coalesce ('''' || NEW.destino || '''','NULL')||','||
+  coalesce ('''' || NEW.tipopax || '''','NULL');
  	raise notice '%',valores;
     consulta='INSERT INTO obingresos.'||nombre_tabla||' (' || campos || ') VALUES ('||valores||');';
     
