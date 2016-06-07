@@ -42,7 +42,7 @@ CREATE TABLE obingresos.tcomprobante_det (
 CREATE TABLE obingresos.tagencia (
   id_agencia SERIAL NOT NULL,
   codigo VARCHAR(20) NOT NULL,
-  codigo_noiata VARCHAR(20) NOT NULL,
+  codigo_noiata VARCHAR(20),
   codigo_int VARCHAR(20),
   nombre VARCHAR(255) NOT NULL,
   tipo_agencia VARCHAR(25) NOT NULL,
