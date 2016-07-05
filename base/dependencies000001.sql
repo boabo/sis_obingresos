@@ -60,5 +60,9 @@ CREATE TRIGGER trig_partition_boleto
   BEFORE INSERT 
   ON obingresos.tboleto FOR EACH ROW 
   EXECUTE PROCEDURE obingresos.ftrig_partition_boleto();
+  
+ALTER TABLE ONLY obingresos.taeropuerto
+    ADD CONSTRAINT fk_taeropuerto__id_lugar
+    FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
 
 /********************************************F-DEP-JRR-OBINGRESOS-0-08/04/2016********************************************/

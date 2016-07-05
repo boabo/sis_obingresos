@@ -49,7 +49,8 @@ BEGIN
   				  CONSTRAINT "'||nombre_tabla||'_id_boleto_key" UNIQUE("id_boleto")
   				) INHERITS ("obingresos"."tboleto");
                 CREATE UNIQUE INDEX "'||nombre_tabla||'_nro_idx" ON "obingresos"."'||nombre_tabla||'"
-  				USING btree ("nro_boleto");
+  				USING btree ("nro_boleto")
+                WHERE estado_reg = ''activo'';               
                 CREATE INDEX "'||nombre_tabla||'_fecha_idx" ON "obingresos"."'||nombre_tabla||'"
   				USING btree ("fecha_emision");
                 CREATE TRIGGER '||nombre_tabla||'_tr
@@ -86,7 +87,14 @@ BEGIN
       cupones,
       origen,
       destino,
+      endoso,
+      moneda_sucursal,
+      tc,
+      id_punto_venta,
+      ruta_completa,
       tipopax
+      
+      
       ';      
   
   valores:=NEW.id_usuario_reg ||','''|| 
@@ -113,6 +121,11 @@ BEGIN
   NEW.cupones || ','||
   coalesce ('''' || NEW.origen || '''','NULL')||','||
   coalesce ('''' || NEW.destino || '''','NULL')||','||
+  coalesce ('''' || NEW.endoso || '''','NULL')||','||
+  coalesce ('''' || NEW.moneda_sucursal || '''','NULL')||','||
+  coalesce ( NEW.tc::text,'NULL')||','||
+  coalesce ( NEW.id_punto_venta::text,'NULL')||','||
+  coalesce ('''' || NEW.ruta_completa || '''','NULL')||','||
   coalesce ('''' || NEW.tipopax || '''','NULL');
  	raise notice '%',valores;
     consulta='INSERT INTO obingresos.'||nombre_tabla||' (' || campos || ') VALUES ('||valores||');';

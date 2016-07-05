@@ -149,6 +149,9 @@ ALTER TABLE obingresos.tboleto
 ALTER TABLE obingresos.tboleto
   ADD COLUMN estado VARCHAR(20);
   
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN endoso VARCHAR(255);
+  
 CREATE TABLE obingresos.testacion (
   id_estacion SERIAL NOT NULL,
   codigo VARCHAR(20) NOT NULL,
@@ -249,4 +252,29 @@ ALTER TABLE obingresos.tagencia
 
 ALTER TABLE obingresos.tagencia
   ADD COLUMN boaagt VARCHAR(2);
+  
+CREATE TABLE obingresos.taeropuerto (
+  id_aeropuerto SERIAL NOT NULL,
+  codigo VARCHAR(5) NOT NULL,
+  id_lugar INTEGER NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  tipo_nalint VARCHAR(1) NOT NULL,
+  PRIMARY KEY(id_aeropuerto)
+) INHERITS (pxp.tbase)
+;
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN tc NUMERIC(18,7);
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN moneda_sucursal VARCHAR(3);
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN id_usuario_cajero INTEGER;
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN id_punto_venta INTEGER;
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN ruta_completa VARCHAR(255);
 /********************************************F-SCP-JRR-OBINGRESOS-0-08/04/2016********************************************/
