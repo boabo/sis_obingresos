@@ -40,6 +40,7 @@ class MODBoletoFormaPago extends MODbase{
 		$this->captura('forma_pago','varchar');
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('moneda','varchar');
+        $this->captura('codigo_tarjeta','varchar');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -64,6 +65,7 @@ class MODBoletoFormaPago extends MODbase{
 		$this->setParametro('ctacte','ctacte','varchar');
 		$this->setParametro('importe','importe','numeric');
 		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+        $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -89,6 +91,7 @@ class MODBoletoFormaPago extends MODbase{
 		$this->setParametro('ctacte','ctacte','varchar');
 		$this->setParametro('importe','importe','numeric');
 		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+        $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

@@ -66,3 +66,31 @@ ALTER TABLE ONLY obingresos.taeropuerto
     FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
 
 /********************************************F-DEP-JRR-OBINGRESOS-0-08/04/2016********************************************/
+
+
+/********************************************I-DEP-JRR-OBINGRESOS-0-19/07/2016********************************************/
+ALTER TABLE ONLY obingresos.tboleto_vuelo
+    ADD CONSTRAINT fk_tboleto_vuelo__id_aeropuerto_origen
+    FOREIGN KEY (id_aeropuerto_origen) REFERENCES obingresos.taeropuerto(id_aeropuerto);
+    
+ALTER TABLE ONLY obingresos.tboleto_vuelo
+    ADD CONSTRAINT fk_tboleto_vuelo__id_aeropuerto_destino
+    FOREIGN KEY (id_aeropuerto_destino) REFERENCES obingresos.taeropuerto(id_aeropuerto);
+
+/********************************************F-DEP-JRR-OBINGRESOS-0-19/07/2016********************************************/
+
+/********************************************I-DEP-JRR-OBINGRESOS-0-07/11/2016********************************************/
+
+ALTER TABLE vef.tventa_detalle
+ADD COLUMN id_boleto INTEGER;
+
+/********************************************F-DEP-JRR-OBINGRESOS-0-07/11/2016********************************************/
+
+/************************************I-DEP-JRR-OBINGRESOS-0-16/06/2016*************************************************/
+
+CREATE TRIGGER tforma_pago_tr
+AFTER INSERT OR UPDATE
+ON obingresos.tforma_pago FOR EACH ROW
+EXECUTE PROCEDURE obingresos.f_tr_forma_pago();
+
+/************************************F-DEP-JRR-OBINGRESOS-0-16/06/2016*************************************************/

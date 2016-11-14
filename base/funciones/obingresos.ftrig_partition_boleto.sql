@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION obingresos.ftrig_partition_boleto (
 )
-RETURNS trigger AS
-$body$
+  RETURNS trigger AS
+  $body$
 DECLARE
 	nombre_tabla   varchar;
     consulta	   varchar;
@@ -92,9 +92,9 @@ BEGIN
       tc,
       id_punto_venta,
       ruta_completa,
-      tipopax
-      
-      
+      localizador,
+      identificacion,
+      tipopax     
       ';      
   
   valores:=NEW.id_usuario_reg ||','''|| 
@@ -126,11 +126,26 @@ BEGIN
   coalesce ( NEW.tc::text,'NULL')||','||
   coalesce ( NEW.id_punto_venta::text,'NULL')||','||
   coalesce ('''' || NEW.ruta_completa || '''','NULL')||','||
+  coalesce ('''' || NEW.localizador || '''','NULL')||','||
+  coalesce ('''' || NEW.identificacion || '''','NULL')||','||
   coalesce ('''' || NEW.tipopax || '''','NULL');
  	raise notice '%',valores;
     consulta='INSERT INTO obingresos.'||nombre_tabla||' (' || campos || ') VALUES ('||valores||');';
     
     EXECUTE(consulta);
+    if ( exists (
+              select 1 
+              from segu.tsubsistema s 
+              where s.codigo like 'VEF')) then
+                    
+         
+          update vef.tventa_detalle
+          set id_boleto = v_id_boleto
+          where   descripcion is not null and descripcion != '' and 
+                id_boleto is null and descripcion = NEW.nro_boleto;
+          	
+      end if;
+    
 
 END;
 end if;

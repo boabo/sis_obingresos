@@ -64,7 +64,8 @@ BEGIN
 						usu2.cuenta as usr_mod,
                         (fp.nombre || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
                         fp.codigo as codigo_forma_pago,
-                        mon.codigo_internacional as moneda	
+                        mon.codigo_internacional as moneda,
+                        bfp.codigo_tarjeta	
 						from obingresos.tboleto_forma_pago bfp
 						inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod

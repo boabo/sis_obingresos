@@ -20,6 +20,10 @@ class ACTFormaPago extends ACTbase{
 														inner join vef.tsucursal s on s.id_sucursal = pv.id_sucursal
 														and id_punto_venta = ". $this->objParam->getParametro('id_punto_venta').")");
 		}
+
+        if ($this->objParam->getParametro('fp_ventas') == 'si') {
+            $this->objParam->addFiltro("(fop.codigo not in (''CM'',''CHQV'') and fop.codigo not like ''RF%'' or fop.codigo not like ''TC%'')");
+        }
 		
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);

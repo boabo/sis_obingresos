@@ -278,3 +278,109 @@ ALTER TABLE obingresos.tboleto
 ALTER TABLE obingresos.tboleto
   ADD COLUMN ruta_completa VARCHAR(255);
 /********************************************F-SCP-JRR-OBINGRESOS-0-08/04/2016********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-19/07/2016********************************************/
+CREATE TABLE obingresos.tboleto_vuelo (
+  id_boleto_vuelo SERIAL NOT NULL,
+  id_boleto INTEGER NOT NULL,
+  fecha DATE NOT NULL,
+  hora_origen TIME(0) WITHOUT TIME ZONE NOT NULL,
+  hora_destino TIME(0) WITHOUT TIME ZONE,
+  vuelo VARCHAR(7) NOT NULL,
+  id_aeropuerto_origen INTEGER NOT NULL,
+  id_aeropuerto_destino INTEGER NOT NULL,
+  tarifa VARCHAR(7) NOT NULL,
+  equipaje VARCHAR(7) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  id_boleto_conjuncion INTEGER,
+  CONSTRAINT tboleto_vuelo_pkey PRIMARY KEY(id_boleto_vuelo)
+) INHERITS (pxp.tbase);
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN tiene_conjuncion VARCHAR(2);
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN id_boleto_conjuncion INTEGER;
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN localizador VARCHAR(10);
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN identificacion VARCHAR(30);
+
+ ALTER TABLE obingresos.tboleto
+  ADD COLUMN xt NUMERIC(18,2) DEFAULT 0 NOT NULL;
+  
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN mensaje_error TEXT;
+
+ALTER TABLE obingresos.tboleto_impuesto
+  ADD COLUMN calculo_tarifa VARCHAR(2) DEFAULT 'no' NOT NULL;
+  
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-19/07/2016********************************************/
+/********************************************I-SCP-JRR-OBINGRESOS-0-30/09/2016********************************************/
+
+ALTER TABLE obingresos.tboleto_forma_pago
+  ADD COLUMN codigo_tarjeta VARCHAR(20);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-30/09/2016********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-09/11/2016********************************************/
+
+CREATE INDEX tboleto_forma_pago__id_boleto_idx ON obingresos.tboleto_forma_pago
+USING btree (id_boleto);
+
+CREATE INDEX tboleto_impuesto__id_boleto_idx ON obingresos.tboleto_impuesto
+USING btree (id_boleto);
+
+CREATE INDEX tboleto_vuelo__id_boleto_idx ON obingresos.tboleto_vuelo
+USING btree (id_boleto);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-09/11/2016********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-14/11/2016********************************************/
+
+CREATE TABLE obingresos.tdetalle_boletos_web (
+  billete VARCHAR(15) NOT NULL,
+  conjuncion VARCHAR(255),
+  medio_pago VARCHAR(50) NOT NULL,
+  entidad_pago VARCHAR(50) NOT NULL,
+  moneda VARCHAR(3) NOT NULL,
+  importe NUMERIC(18,2) NOT NULL,
+  endoso VARCHAR(500),
+  procesado VARCHAR(2) DEFAULT 'no'::character varying NOT NULL,
+  origen VARCHAR(20) DEFAULT 'servicio'::character varying,
+  id_detalle_boletos_web SERIAL,
+  fecha DATE NOT NULL,
+  nit VARCHAR(30),
+  razon_social VARCHAR(300),
+  void VARCHAR(2) DEFAULT 'no'::character varying,
+  CONSTRAINT tdetalle_boletos_web_billete_key UNIQUE(billete),
+  CONSTRAINT tdetalle_boletos_web_pkey PRIMARY KEY(id_detalle_boletos_web)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+ALTER COLUMN origen SET STATISTICS 0;
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+ALTER COLUMN id_detalle_boletos_web SET STATISTICS 0;
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+ALTER COLUMN fecha SET STATISTICS 0;
+
+CREATE TYPE obingresos.detalle_boletos AS (
+  "Billete" VARCHAR(15),
+  "CNJ" VARCHAR(255),
+  "MedioDePago" VARCHAR(50),
+  "Entidad" VARCHAR(50),
+  "Moneda" VARCHAR(3),
+  "ImportePasaje" NUMERIC(18,2),
+  "ImporteTarifa" NUMERIC(18,2),
+  "OrigenDestino" VARCHAR(255),
+  endoso VARCHAR(500)
+);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-14/11/2016********************************************/

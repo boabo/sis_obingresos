@@ -60,7 +60,7 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
                 allowBlank: false,
                 emptyText: 'Forma de Pago...',
                 store: new Ext.data.JsonStore({
-                    url: '../../sis_obingresos/control/FormaPago/listarFormaPago',
+                    url: '../../sis_ventas_facturacion/control/FormaPago/listarFormaPago',
                     id: 'id_forma_pago',
                     root: 'datos',
                     sortInfo: {
@@ -68,15 +68,15 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
                         direction: 'ASC'
                     },
                     totalProperty: 'total',
-                    fields: ['id_forma_pago', 'nombre', 'moneda','pais','codigo','forma_pago'],
+                    fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                     remoteSort: true,
-                    baseParams: {par_filtro: 'fop.nombre#mon.codigo_internacional'}
+                    baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',fp_ventas:'si'}
                 }),
                 valueField: 'id_forma_pago',
-                displayField: 'forma_pago',
+                displayField: 'nombre',
                 gdisplayField: 'forma_pago',
                 hiddenName: 'id_forma_pago',
-                tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Moneda:{moneda}</p> </div></tpl>',
+                tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
                 forceSelection: true,
                 typeAhead: false,
                 triggerAction: 'all',
@@ -85,6 +85,8 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
                 pageSize: 15,
                 queryDelay: 1000,               
                 gwidth: 200,
+                listWidth:450,
+                resizable:true,
                 minChars: 2,
                 disabled:false,
                 renderer : function(value, p, record) {
@@ -128,6 +130,20 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:true
 		},
+        {
+            config:{
+                name: 'codigo_tarjeta',
+                fieldLabel: 'Codigo de Autorización',
+                allowBlank: true,
+                anchor: '80%',
+                maxLength:20
+
+            },
+            type:'TextField',
+            id_grupo:1,
+            grid:true,
+            form:true
+        },
 		{
 			config:{
 				name: 'ctacte',
@@ -256,6 +272,7 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 		{name:'ctacte', type: 'string'},
 		{name:'importe', type: 'numeric'},
 		{name:'numero_tarjeta', type: 'string'},
+        {name:'codigo_tarjeta', type: 'string'},
 		{name:'forma_pago', type: 'string'},
 		{name:'codigo_forma_pago', type: 'string'},
 		{name:'id_usuario_ai', type: 'numeric'},
@@ -278,39 +295,64 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 	bedit:false,
 	iniciarEventos : function () {
 		this.Cmp.id_forma_pago.on('select', function (combo,record,index){
-			if (record.data['codigo'].startsWith("CC") || 
-				record.data['codigo'].startsWith("SF")) {
-				this.ocultarComponente(this.Cmp.ctacte);
-				this.Cmp.ctacte.reset();
-				this.mostrarComponente(this.Cmp.numero_tarjeta);
-				//tarjeta de credito		
-			} else if (record.data['codigo'].startsWith("CT")) {
-				//cuenta corriente
-				this.ocultarComponente(this.Cmp.numero_tarjeta);
-				this.Cmp.numero_tarjeta.reset();
-				this.mostrarComponente(this.Cmp.ctacte);
-			} else {
-				this.ocultarComponente(this.Cmp.numero_tarjeta);
-				this.ocultarComponente(this.Cmp.ctacte);
-			}			
-			
-			if (this.maestro.moneda == record.data.moneda){				
+
+			this.manejoComponentesFP(record.data.codigo);
+			if (this.maestro.moneda == record.data.desc_moneda){
 				this.Cmp.importe.setValue(this.monto_fp);
+
 			}
 			//Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
-			else if (this.maestro.moneda == 'USD' && record.data.moneda == this.maestro.moneda_sucursal) {
+			else if (this.maestro.moneda == 'USD' && record.data.desc_moneda == this.maestro.moneda_sucursal) {
 				//convertir de  dolares a moneda sucursal(multiplicar)				
 				this.Cmp.importe.setValue(this.round((this.monto_fp*this.maestro.tc),2));
+
 			//Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
-			} else if (this.maestro.moneda == this.maestro.moneda_sucursal && record.data.moneda == 'USD') {
+			} else if (this.maestro.moneda == this.maestro.moneda_sucursal && record.data.desc_moneda == 'USD') {
 				//convertir de  moneda sucursal a dolares(dividir)				
 				this.Cmp.importe.setValue(this.round((this.monto_fp/this.maestro.tc),2));
+
 			} else {
 				this.Cmp.importe.setValue(0);
+
 			}
 			
 		},this)
 	},
+    manejoComponentesFP : function(codigoFp) {
+        if (codigoFp.startsWith("CC") ||
+            codigoFp.startsWith("SF")) {
+
+            this.ocultarComponente(this.Cmp.ctacte);
+            this.Cmp.ctacte.reset();
+            this.mostrarComponente(this.Cmp.numero_tarjeta);
+            this.mostrarComponente(this.Cmp.codigo_tarjeta);
+            this.Cmp.numero_tarjeta.allowBlank = false;
+            this.Cmp.codigo_tarjeta.allowBlank = false;
+            this.Cmp.ctacte.allowBlank = true;
+            //tarjeta de credito
+        } else if (codigoFp.startsWith("CT")) {
+            //cuenta corriente
+            this.ocultarComponente(this.Cmp.numero_tarjeta);
+            this.ocultarComponente(this.Cmp.codigo_tarjeta);
+            this.Cmp.numero_tarjeta.reset();
+            this.Cmp.codigo_tarjeta.reset();
+            this.mostrarComponente(this.Cmp.ctacte);
+            this.Cmp.numero_tarjeta.allowBlank = true;
+            this.Cmp.codigo_tarjeta.allowBlank = true;
+            this.Cmp.ctacte.allowBlank = false;
+        } else {
+            this.ocultarComponente(this.Cmp.numero_tarjeta);
+            this.ocultarComponente(this.Cmp.codigo_tarjeta);
+            this.ocultarComponente(this.Cmp.ctacte);
+            this.Cmp.numero_tarjeta.reset();
+            this.Cmp.codigo_tarjeta.reset();
+            this.Cmp.ctacte.reset();
+            this.Cmp.numero_tarjeta.allowBlank = true;
+            this.Cmp.codigo_tarjeta.allowBlank = true;
+            this.Cmp.ctacte.allowBlank = true;
+
+        }
+    },
 	loadValoresIniciales:function(){
 		Phx.vista.BoletoFormaPago.superclass.loadValoresIniciales.call(this);
 	    this.Cmp.id_boleto.setValue(this.maestro.id_boleto);
@@ -320,7 +362,7 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 		this.Cmp.id_forma_pago.store.baseParams.id_punto_venta = Phx.CP.getPagina(this.idContenedorPadre).id_punto_venta;
 		this.maestro=m;
 		this.store.baseParams.id_boleto = this.maestro.id_boleto;		
-		this.load({params:{start:0, limit:50}})
+		this.load({params:{start:0, limit:50}});
 		
 	},
 	reload:function(p){
@@ -330,10 +372,10 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 		Phx.vista.BoletoFormaPago.superclass.onButtonNew.call(this);		
 		//Si no hay ningun registro el monto_fp es el total del boleto
 		if (this.store.getTotalCount() == 0) {
-			this.monto_fp = this.maestro.total;
+			this.monto_fp = this.maestro.total - this.maestro.comision;
 		} else {
 			//Si hay mas de un registro el monto_fp es el saldo a pagar del padre
-			this.monto_fp = this.maestro.saldo_pagar_moneda_boleto;			
+			this.monto_fp =  (this.maestro.total - this.maestro.comision) - this.maestro.monto_total_fp;
 		}		
 		
 	},

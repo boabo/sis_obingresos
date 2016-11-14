@@ -18,7 +18,9 @@ Phx.vista.BoletoVendido = {
     nombreVista: 'BoletoVendido',
     bnew:false,        
     successGetVariables : function (response,request) {
-		Phx.vista.BoletoVendido.superclass.successGetVariables.call(this,response,request);  
+        this.tipo_usuario = 'todos';
+		Phx.vista.BoletoVendido.superclass.successGetVariables.call(this,response,request);
+
 		this.store.baseParams.estado = 'pagado';				
 	},
 	preparaMenu:function() { 

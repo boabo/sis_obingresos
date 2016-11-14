@@ -57,6 +57,13 @@ DECLARE
     v_valor					numeric;	
     v_saldo_fp2				numeric;
     v_ids					INTEGER[];
+    v_boleto				record;
+    v_suma_impuestos		numeric;
+    v_vuelo					varchar;
+    v_vuelos				varchar[];
+    v_vuelo_fields			varchar[];
+    v_mensaje				varchar;
+    v_suma_tasas			numeric;
 			    
 BEGIN
 
@@ -135,16 +142,24 @@ BEGIN
         	select fp.codigo into v_codigo_fp
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
-           
+            
+            select * into v_boleto
+            from obingresos.tboleto
+            where id_boleto = v_parametros.id_boleto;
+            v_mensaje = '';
             if (v_parametros.estado is null or v_parametros.estado = '') then          
-                update obingresos.tboleto set estado = 'borrador'
-                where id_boleto = v_parametros.id_boleto and estado is null;
-                
-                if (exists (select 1 
+            	if (exists (select 1 
                 	from obingresos.tboleto
                 	where id_boleto = v_parametros.id_boleto and estado is not null)) then
                 	raise exception 'El boleto ya fue registrado';
-                end if;
+                end if;  
+                
+                v_mensaje = v_boleto.mensaje_error;  
+            
+                update obingresos.tboleto set estado = 'borrador'
+                where id_boleto = v_parametros.id_boleto and estado is null;
+                
+                
             end if;
             
             update obingresos.tboleto set comision = v_parametros.comision
@@ -177,6 +192,7 @@ BEGIN
                   id_boleto,
                   ctacte,
                   numero_tarjeta,
+                  codigo_tarjeta,
                   tarjeta
                 )
                 VALUES (
@@ -186,6 +202,7 @@ BEGIN
                   v_parametros.id_boleto,
                   v_parametros.ctacte,
                   v_parametros.numero_tarjeta,
+                  v_parametros.codigo_tarjeta,
                   v_codigo_tarjeta
                 );    
                 
@@ -211,6 +228,7 @@ BEGIN
                       id_boleto,
                       ctacte,
                       numero_tarjeta,
+                      codigo_tarjeta,
                       tarjeta
                     )
                     VALUES (
@@ -220,6 +238,7 @@ BEGIN
                       v_parametros.id_boleto,
                       v_parametros.ctacte2,
                       v_parametros.numero_tarjeta2,
+                      v_parametros.codigo_tarjeta2,
                       v_codigo_tarjeta
                     );  
                 end if; 
@@ -228,7 +247,9 @@ BEGIN
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')'); 
             v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
-
+			if (v_mensaje != '') then
+            	v_resp = pxp.f_agrega_clave(v_resp,'alertas',v_mensaje::varchar);
+            end if;
             --Devuelve la respuesta
             return v_resp;
 
@@ -342,16 +363,29 @@ BEGIN
                estado = 'pagado'
                where id_boleto=v_id_boleto;
                     
-               --Si el usuario que cambia el estado del boleto a estado pagado no es cajero
-                --lanzamos excepcion
-                if (not exists(	select 1
-                                from obingresos.tboleto b
-                                inner join vef.tpunto_venta pv on pv.id_punto_venta = b.id_punto_venta
-                                inner join vef.tsucursal_usuario su on su.id_punto_venta = pv.id_punto_venta
-                                where su.id_usuario = p_id_usuario and su.estado_reg = 'activo'
-                                    and su.tipo_usuario = 'cajero' and b.id_boleto = v_id_boleto)) then
-                    raise exception 'El usuario debe ser cajero del punto de venta para finalizar el boleto';
-                end if;
+               select * into v_boleto
+               from obingresos.tboleto
+               where id_boleto = v_id_boleto;
+               
+                --Si el usuario que cambia el estado del boleto a estado pagado no es cajero
+                  --lanzamos excepcion
+                  if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and 
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and 
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and 
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
+                  end if;
+                  
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and 
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and 
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and 
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'Antes de emitir un boleto debe realizar una apertura de caja';
+                  end if;
                 
             END LOOP;
         	
@@ -378,6 +412,7 @@ BEGIN
 	elsif(p_transaccion='OBING_BOLSERV_INS')then
 					
         begin
+        	
         	
         	select ag.id_agencia,ag.codigo,sm.id_moneda,suc.id_lugar,mon.codigo_internacional 
             	into v_id_agencia,v_agt,v_id_moneda_sucursal,v_id_lugar_sucursal,v_cod_moneda_sucursal
@@ -421,10 +456,19 @@ BEGIN
             
             v_rutas = string_to_array(v_parametros.rutas,'#');
             v_tipdoc = 'ETN';
+            
+            if (pxp.f_existe_parametro(p_tabla,'id_boleto') = TRUE) then
+            	if (	(select tipdoc 
+                		from obingresos.tboleto 
+                        where id_boleto = v_parametros.id_boleto) = 'ETI') then
+            		v_tipdoc = 'ETI';
+            	end if;
+            end if;
             if (exists (select 1
             			from obingresos.taeropuerto a
                         where a.codigo = ANY(v_rutas) and a.estado_reg = 'activo' and a.tipo_nalint ='I')) then
-            	v_tipdoc = 'ETI';
+            	
+                v_tipdoc = 'ETI';
             end if;
            select nextval('obingresos.tboleto_id_boleto_seq'::regclass) into v_id_boleto;        
         	
@@ -458,7 +502,10 @@ BEGIN
             retbsp,
             tc,
             moneda_sucursal,
-            id_punto_venta
+            id_punto_venta,
+            ruta_completa,
+            localizador,
+            identificacion
           	) values(
             v_id_boleto,
 			v_id_agencia,
@@ -488,12 +535,21 @@ BEGIN
             'RET',
             v_tc,
             v_cod_moneda_sucursal,
-            v_parametros.id_punto_venta
+            v_parametros.id_punto_venta,
+            v_parametros.ruta_completa,
+            v_parametros.localizador,
+            v_parametros.identificacion
 			);
-           
+            
+            v_mensaje = '';
+            v_suma_impuestos = 0;
             for v_registros in (select out_impuesto,out_valor 
             					from obingresos.f_get_impuestos_from_cadena(v_parametros.impuestos))LOOP
             	
+                if (v_registros.out_impuesto = 'ERROR') THEN
+                	v_mensaje = v_mensaje  || 'Error en la definicion del calculo tarifario XT <br>';
+                end if;
+                
                 v_id_impuesto = NULL;
                 select id_impuesto into v_id_impuesto
                 from obingresos.timpuesto i
@@ -501,7 +557,7 @@ BEGIN
                 and i.tipodoc = v_tipdoc;
                 
                 if (v_id_impuesto is null) THEN
-                	raise exception 'No se encontro un impuesto parametrizado para : % ,pais:% , tipdoc,%',v_registros.out_impuesto,v_id_lugar_pais,v_tipdoc;
+                	v_mensaje = v_mensaje  || 'No se encontro un impuesto parametrizado para : ' || v_registros.out_impuesto || ' ,pais:' || v_id_lugar_pais || ' , tipdoc,' || v_tipdoc || '<br>';
                 end if;
                 
                 INSERT INTO 
@@ -510,16 +566,64 @@ BEGIN
                   id_usuario_reg,                  
                   importe,
                   id_impuesto,
-                  id_boleto
+                  id_boleto,
+                  calculo_tarifa
                 )
                 VALUES (
                   p_id_usuario,                  
                   v_registros.out_valor,
                   v_id_impuesto,
-                  v_id_boleto
+                  v_id_boleto,
+                  'si'
                 );
+                v_suma_impuestos = v_suma_impuestos + v_registros.out_valor;
                 
             end loop;
+            
+             v_suma_tasas = 0;
+            for v_registros in (select out_impuesto,out_valor 
+            					from obingresos.f_get_impuestos_from_cadena(v_parametros.tasas))LOOP
+            	
+                v_id_impuesto = NULL;
+                select id_impuesto into v_id_impuesto
+                from obingresos.timpuesto i
+                where i.codigo = v_registros.out_impuesto and i.id_lugar = v_id_lugar_pais
+                and i.tipodoc = v_tipdoc;
+                
+                if (v_id_impuesto is null and v_registros.out_impuesto != 'XT') THEN
+                	raise exception 'No se encontro un impuesto parametrizado para : % ,pais:% , tipdoc,%',v_registros.out_impuesto,v_id_lugar_pais,v_tipdoc;
+                end if;
+                if (v_registros.out_impuesto != 'XT') then
+                    INSERT INTO 
+                      obingresos.tboleto_impuesto
+                    (
+                      id_usuario_reg,                  
+                      importe,
+                      id_impuesto,
+                      id_boleto
+                    )
+                    VALUES (
+                      p_id_usuario,                  
+                      v_registros.out_valor,
+                      v_id_impuesto,
+                      v_id_boleto
+                    );
+                else
+                	update obingresos.tboleto 
+                    set xt = v_registros.out_valor
+                    where id_boleto = v_id_boleto;
+                    
+                    if (v_suma_impuestos != v_registros.out_valor) THEN
+                		v_mensaje = v_mensaje  || 'La suma de las tasas/impuestos definidos en el calculo tarifario XT : ' || v_suma_impuestos || ' ,no es igual al valor de la tasa XT :' || v_registros.out_valor || '<br>';
+                	end if;
+                end if;
+                v_suma_tasas = v_suma_tasas + v_registros.out_valor;
+                
+            end loop;
+            
+            if (v_suma_tasas + v_parametros.neto != v_parametros.total) then
+            	raise exception 'El importe total del boleto no es igual a la suma del neto y las tasas/impuestos%',v_suma_tasas;
+            end if;
             
             v_fp = string_to_array(substring(v_parametros.fp from 2),'#');
             v_moneda_fp = string_to_array(substring(v_parametros.moneda_fp from 2),'#');
@@ -554,12 +658,79 @@ BEGIN
                     v_id_boleto
                   );                  
                   v_posicion = v_posicion + 1;
-            END LOOP;         
+            END LOOP;    
             
+            v_vuelos = string_to_array(v_parametros.vuelos,'$$$'); 
+            
+            FOREACH v_vuelo IN ARRAY v_vuelos
+            LOOP
+            	 v_vuelo_fields = string_to_array(v_vuelo,'|');
+                 
+                                    
+            	 INSERT INTO 
+                    obingresos.tboleto_vuelo
+                  (
+                    id_usuario_reg,  
+                    id_boleto,
+                    fecha,
+                    vuelo,
+                    hora_origen,
+                    id_aeropuerto_origen,
+                    id_aeropuerto_destino,
+                    tarifa,
+                    equipaje,
+                    status
+                  )
+                  VALUES (
+                    p_id_usuario,    
+                    v_id_boleto,
+                    to_date(v_vuelo_fields[1] || to_char(now(),'YY') , 'DDMONYY'),
+                    v_vuelo_fields[2],
+                    to_timestamp(v_vuelo_fields[3],'HH24MI')::time,
+                    (select id_aeropuerto from obingresos.taeropuerto a where a.codigo = v_vuelo_fields[4]),
+                    (select id_aeropuerto from obingresos.taeropuerto a where a.codigo = v_vuelo_fields[5]),
+                    v_vuelo_fields[6],
+                    v_vuelo_fields[7],
+                    v_vuelo_fields[8]
+                  );  
+                  
+            END LOOP; 
+            
+            --Boleto en conjuncion
+            if (pxp.f_existe_parametro(p_tabla,'id_boleto') = TRUE) then
+            	if (v_parametros.id_boleto is not null) then
+                	if not EXISTS(	select 1 
+                    				from obingresos.tboleto b
+                                    where id_boleto = v_parametros.id_boleto and 
+                                    	b.total = v_parametros.total and b.pasajero = v_parametros.pasajero) then
+                    	raise exception 'No se encontro un boleto en conjuncion para este billete';	
+                    else
+                    	update obingresos.tboleto set tiene_conjuncion = 'si',
+                        destino = v_parametros.destino,
+                        ruta_completa = ruta_completa || '-' || substr (v_parametros.ruta_completa,5)
+                        where id_boleto = v_parametros.id_boleto;
+                        
+                        update obingresos.tboleto_vuelo 
+                        	set id_boleto_conjuncion = v_parametros.id_boleto
+                        where id_boleto = v_id_boleto;
+                        
+                        update obingresos.tboleto
+                        	set id_boleto_conjuncion = v_parametros.id_boleto                            
+                        where id_boleto = v_id_boleto;
+                    end if;
+                end if;
+            end if;    
+            
+            if (v_mensaje != '') then
+            	update obingresos.tboleto
+                    set mensaje_error = v_mensaje                            
+                where id_boleto = v_id_boleto;
+            end if;
 			
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')'); 
             v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
+            
 
             --Devuelve la respuesta
             return v_resp;
@@ -634,6 +805,9 @@ BEGIN
 	elsif(p_transaccion='OBING_BOLEST_MOD')then
 
 		begin
+        	select * into v_boleto
+            from obingresos.tboleto
+            where id_boleto = v_parametros.id_boleto;
 			
         	select obingresos.f_valida_boleto_fp(v_parametros.id_boleto) into v_res; 
         	
@@ -648,17 +822,26 @@ BEGIN
                 
                  --Si el usuario que cambia el estado del boleto a estado pagado no es cajero
                   --lanzamos excepcion
-                  if (not exists(	select 1
-                                  from obingresos.tboleto b
-                                  inner join vef.tpunto_venta pv on pv.id_punto_venta = b.id_punto_venta
-                                  inner join vef.tsucursal_usuario su on su.id_punto_venta = pv.id_punto_venta
-                                  where su.id_usuario = p_id_usuario and su.estado_reg = 'activo'
-                                      and su.tipo_usuario = 'cajero' and b.id_boleto = v_parametros.id_boleto)) then
-                      raise exception 'El usuario debe ser cajero del punto de venta para finalizar el boleto';
+                  
+                  if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and 
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and 
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and 
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
                   end if;
-            end if;
-           
-            
+                  
+                  
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and 
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and 
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and 
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'Antes de emitir un boleto debe realizar una apertura de caja';
+                  end if;
+            end if;            
               
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos Cambiado de estadocon exito'); 

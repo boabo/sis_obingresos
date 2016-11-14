@@ -18,7 +18,9 @@ Phx.vista.BoletoCaja = {
     nombreVista: 'BoletoCaja',
     bnew:false,        
     successGetVariables : function (response,request) {
-		Phx.vista.BoletoCaja.superclass.successGetVariables.call(this,response,request);  
+        this.tipo_usuario = 'cajero';
+		Phx.vista.BoletoCaja.superclass.successGetVariables.call(this,response,request);
+
 		this.store.baseParams.estado = 'caja';
 		this.addButton('btnPagarGrupo',
             {
@@ -32,16 +34,15 @@ Phx.vista.BoletoCaja = {
 				
 	},
 	preparaMenu:function()
-    {	var rec = this.sm.getSelected();
-          
-        Phx.vista.Boleto.superclass.preparaMenu.call(this);         
+    {	var rec = this.sm.getSelected();          
+        Phx.vista.BoletoCaja.superclass.preparaMenu.call(this);         
         this.getBoton('btnPagarGrupo').enable(); 	        
         
     },
     liberaMenu:function()
     {	
                 
-        Phx.vista.Boleto.superclass.liberaMenu.call(this);        
+        Phx.vista.BoletoCaja.superclass.liberaMenu.call(this);        
         this.getBoton('btnPagarGrupo').disable(); 
     },    
     
