@@ -14,3 +14,8 @@ select pxp.f_insert_testructura_gui ('OBINGRESOS', 'SISTEMA');
 select pxp.f_insert_testructura_gui ('AGEING', 'OBINGRESOS');
 select pxp.f_insert_testructura_gui ('PERVEN', 'OBINGRESOS');
 /***********************************F-DAT-JRR-OBINGRESOS-0-26/01/2016*****************************************/
+
+/***********************************I-DAT-MAM-OBINGRESOS-0-16/11/2016*****************************************/
+select pxp.f_insert_tgui ('Reporte Nit y Razon', 'reporte nit y razon', 'RNR', 'si', 4, '/sis_obingresos/vista/reporte_nit_razon/ReporteNitRazon.php', 2, '', 'ReporteNitRazon', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('RNR', 'OBINGRESOS');
+/***********************************F-DAT-MAM-OBINGRESOS-0-16/11/2016*****************************************/
