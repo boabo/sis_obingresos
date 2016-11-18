@@ -445,7 +445,17 @@ class ACTBoleto extends ACTbase{
         exit;
 
     }
-			
+
+    function procesarDetalleBoletos(){
+
+                $this->objFunc=$this->create('MODBoleto');
+                $this->res=$this->objFunc->procesarDetalleBoletos($this->objParam);
+                $this->res->imprimirRespuesta($this->res->generarJson());
+               exit;
+
+    }
+
+
 }
 
 ?>
