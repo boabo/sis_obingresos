@@ -397,6 +397,23 @@ class MODBoleto extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
-			
+
+    function procesarDetalleBoletos(){
+                //Definicion de variables para ejecucion del procedimiento
+                $this->procedimiento='obingresos.ft_detalle_boletos_web_ime';
+                $this->transaccion='OBING_BOWEBPROC_MOD';
+                $this->tipo_procedimiento='IME';
+
+
+
+                //Ejecuta la instruccion
+                $this->armarConsulta();
+                $this->ejecutarConsulta();
+        
+                //Devuelve la respuesta
+                return $this->respuesta;
+    }
+
+
 }
 ?>
