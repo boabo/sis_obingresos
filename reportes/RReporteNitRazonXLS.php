@@ -106,9 +106,9 @@ class RReporteNitRazonXLS
 
         $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(40);
-        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
         $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(25);
 
@@ -152,8 +152,8 @@ class RReporteNitRazonXLS
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['entidad_pago']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['nit']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['razon_social']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['nit']." ".$value['importe']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['razon_social']." ".$value['importe']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['nit_ingresos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['razon_ingresos']);
 
                 $fila++;
                 $this->numero++;

@@ -19,11 +19,13 @@ function listarReporteNitRazon(){
         $this->captura('nit', 'varchar');
         $this->captura('razon_social', 'varchar');
         $this->captura('importe', 'numeric');
+        $this->captura('nit_ingresos', 'varchar');
+        $this->captura('razon_ingresos', 'varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
-        //var_dump($this->respuesta);exit;
+        var_dump($this->respuesta);exit;
         //Devuelve la respuesta
         return $this->respuesta;
 }

@@ -1,3 +1,11 @@
+CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_sel (
+  p_administrador integer,
+  p_id_usuario integer,
+  p_tabla varchar,
+  p_transaccion varchar
+)
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_detalle_boletos_web_sel
@@ -37,18 +45,17 @@ BEGIN
     	begin
     		--Sentencia de la consulta
 			v_consulta:='SELECT
-            				b.fecha_emision,
-							d.billete,
-        					d.entidad_pago,
-       					 	d.nit,
-        					d.razon_social,
-                            d.importe
-        					FROM obingresos.tboleto b
-    						INNER JOIN  obingresos.tdetalle_boletos_web d on d.billete = b.nro_boleto
-                            where b.fecha_emision >= '''||v_parametros.fecha_ini||'''and b.fecha_emision <= '''||v_parametros.fecha_fin||''' ';
-			--Definicion de la respuesta
-			--v_consulta:=v_consulta||v_parametros.filtro;
-			--v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+                                b.fecha_emision,
+                                d.billete,
+                                d.entidad_pago,
+                                d.nit,
+                                d.razon_social,
+                                d.importe,
+                                d.nit_ingresos,
+                                d.razon_ingresos
+                                FROM obingresos.tboleto b
+                                INNER JOIN  obingresos.tdetalle_boletos_web d on d.billete = b.nro_boleto
+                                where b.fecha_emision >= '''||v_parametros.fecha_ini||'''and b.fecha_emision <= '''||v_parametros.fecha_fin||''' ';
 
 			--Devuelve la respuesta
 			return v_consulta;
@@ -69,3 +76,9 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
+COST 100;
