@@ -56,7 +56,7 @@ BEGIN
                                 FROM obingresos.tboleto b
                                 INNER JOIN  obingresos.tdetalle_boletos_web d on d.billete = b.nro_boleto
                                 where b.fecha_emision >= '''||v_parametros.fecha_ini||'''and b.fecha_emision <= '''||v_parametros.fecha_fin||''' ';
-
+            v_consulta:=v_consulta||'ORDER BY fecha_emision,b.fecha_emision ASC';
 			--Devuelve la respuesta
 			return v_consulta;
 
