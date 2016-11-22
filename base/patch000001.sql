@@ -383,4 +383,11 @@ CREATE TYPE obingresos.detalle_boletos AS (
   endoso VARCHAR(500)
 );
 
+ALTER TABLE obingresos.tboleto
+ADD COLUMN nit_ingresos VARCHAR(20);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN razon_ingresos VARCHAR(300);
+
+
 /********************************************F-SCP-JRR-OBINGRESOS-0-14/11/2016********************************************/
