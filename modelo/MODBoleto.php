@@ -430,6 +430,27 @@ class MODBoleto extends MODbase{
 
     }
 
+    function getBoletoServicio(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_sel';
+        $this->transaccion='OBING_BOLSERV_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+
+        $this->setParametro('nro_boleto','nro_boleto','varchar');//ok
+
+        //Definicion de la lista del resultado del query
+        $this->captura('boleto','json');
+        $this->captura('detalle','json');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 
 }
 ?>

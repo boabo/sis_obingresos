@@ -4,47 +4,47 @@ CREATE OR REPLACE FUNCTION obingresos.ft_boleto_sel (
   p_tabla varchar,
   p_transaccion varchar
 )
-RETURNS varchar AS
-$body$
-/**************************************************************************
- SISTEMA:		Ingresos
- FUNCION: 		obingresos.ft_boleto_sel
- DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tboleto'
- AUTOR: 		 (jrivera)
- FECHA:	        06-01-2016 22:42:25
- COMENTARIOS:	
-***************************************************************************
- HISTORIAL DE MODIFICACIONES:
+  RETURNS varchar AS
+  $body$
+  /**************************************************************************
+   SISTEMA:		Ingresos
+   FUNCION: 		obingresos.ft_boleto_sel
+   DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tboleto'
+   AUTOR: 		 (jrivera)
+   FECHA:	        06-01-2016 22:42:25
+   COMENTARIOS:
+  ***************************************************************************
+   HISTORIAL DE MODIFICACIONES:
 
- DESCRIPCION:	
- AUTOR:			
- FECHA:		
-***************************************************************************/
+   DESCRIPCION:
+   AUTOR:
+   FECHA:
+  ***************************************************************************/
 
-DECLARE
+  DECLARE
 
-	v_consulta    		varchar;
-	v_parametros  		record;
-	v_nombre_funcion   	text;
-	v_resp				varchar;
-			    
-BEGIN
+    v_consulta    		varchar;
+    v_parametros  		record;
+    v_nombre_funcion   	text;
+    v_resp				varchar;
 
-	v_nombre_funcion = 'obingresos.ft_boleto_sel';
+  BEGIN
+
+    v_nombre_funcion = 'obingresos.ft_boleto_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
-	/*********************************    
- 	#TRANSACCION:  'OBING_BOL_SEL'
- 	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		jrivera	
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+    /*********************************
+     #TRANSACCION:  'OBING_BOL_SEL'
+     #DESCRIPCION:	Consulta de datos
+     #AUTOR:		jrivera
+     #FECHA:		06-01-2016 22:42:25
+    ***********************************/
 
-	if(p_transaccion='OBING_BOL_SEL')then
-     				
-    	begin
-    		--Sentencia de la consulta
-			v_consulta:='with forma_pago_temporal as(
+    if(p_transaccion='OBING_BOL_SEL')then
+
+      begin
+        --Sentencia de la consulta
+        v_consulta:='with forma_pago_temporal as(
 					    	select count(*)as cantidad_forma_pago,bfp.id_boleto,
 					        	array_agg(fp.id_forma_pago) as id_forma_pago, array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
                                 array_agg(bfp.importe) as monto_forma_pago,array_agg(fp.codigo) as codigo_forma_pago,
@@ -147,43 +147,43 @@ BEGIN
 						inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
 				        where bol.estado_reg = ''activo'' and ';
-			
-			--Definicion de la respuesta
-			v_consulta:=v_consulta||v_parametros.filtro;
-			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-			--raise exception '%', v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
-						
-		end;
 
-	/*********************************    
- 	#TRANSACCION:  'OBING_BOL_CONT'
- 	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		jrivera	
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+        --Definicion de la respuesta
+        v_consulta:=v_consulta||v_parametros.filtro;
+        v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+        --raise exception '%', v_consulta;
+        --Devuelve la respuesta
+        return v_consulta;
 
-	elsif(p_transaccion='OBING_BOL_CONT')then
+      end;
 
-		begin
-			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_boleto)
+    /*********************************
+     #TRANSACCION:  'OBING_BOL_CONT'
+     #DESCRIPCION:	Conteo de registros
+     #AUTOR:		jrivera
+     #FECHA:		06-01-2016 22:42:25
+    ***********************************/
+
+    elsif(p_transaccion='OBING_BOL_CONT')then
+
+      begin
+        --Sentencia de la consulta de conteo de registros
+        v_consulta:='select count(id_boleto)
 					    from obingresos.tboleto bol
                         inner join obingresos.tagencia age on age.id_agencia = bol.id_agencia
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
 					    inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
 					    where  bol.estado_reg = ''activo'' and ';
-			
-			--Definicion de la respuesta		    
-			v_consulta:=v_consulta||v_parametros.filtro;
 
-			--Devuelve la respuesta
-			return v_consulta;
+        --Definicion de la respuesta
+        v_consulta:=v_consulta||v_parametros.filtro;
 
-		end;
-        
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+
     /*********************************    
  	#TRANSACCION:  'OBING_BOLFAC_SEL'
  	#DESCRIPCION:	Reporte de Boleto
@@ -191,11 +191,11 @@ BEGIN
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
 
-	elsif(p_transaccion='OBING_BOLFAC_SEL')then
+    elsif(p_transaccion='OBING_BOLFAC_SEL')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
-			v_consulta:='
+      begin
+        --Sentencia de la consulta de conteo de registros
+        v_consulta:='
     with 
     origen as (select bv.id_boleto, l.codigo as pais
 				from obingresos.tboleto_vuelo bv
@@ -264,25 +264,25 @@ BEGIN
                         left join forma_pago fp on fp.id_boleto = b.id_boleto 
                         left join origen ori on ori.id_boleto = b.id_boleto                       
                         where b.id_boleto =  ' || v_parametros.id_boleto;
-			
-			raise notice '%',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
 
-		end;
-     
-     /*********************************    
- 	#TRANSACCION:  'OBING_BOLFACDET_SEL'
- 	#DESCRIPCION:	Detalle de vuelos por boleto
- 	#AUTOR:		jrivera	
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+        raise notice '%',v_consulta;
+        --Devuelve la respuesta
+        return v_consulta;
 
-	elsif(p_transaccion='OBING_BOLFACDET_SEL')then
+      end;
 
-		begin
-			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select to_char(bv.fecha,''DD MON YYYY'')::varchar as fecha,
+    /*********************************
+  #TRANSACCION:  'OBING_BOLFACDET_SEL'
+  #DESCRIPCION:	Detalle de vuelos por boleto
+  #AUTOR:		jrivera
+  #FECHA:		06-01-2016 22:42:25
+ ***********************************/
+
+    elsif(p_transaccion='OBING_BOLFACDET_SEL')then
+
+      begin
+        --Sentencia de la consulta de conteo de registros
+        v_consulta:='select to_char(bv.fecha,''DD MON YYYY'')::varchar as fecha,
                           bv.vuelo,(lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde, (ld.nombre || '' ('' || ad.codigo || '')'')::varchar as hacia,
                           to_char(bv.hora_origen,''HH:MI'')::varchar as hora_origen,to_char(bv.hora_destino,''HH:MI'')::varchar as hora_destino,
                           bv.tarifa, bv.equipaje
@@ -292,30 +292,69 @@ BEGIN
                           inner join param.tlugar lo on lo.id_lugar = ao.id_lugar
                           inner join param.tlugar ld on ld.id_lugar = ad.id_lugar
                           where bv.id_boleto = ' || v_parametros.id_boleto|| ' or bv.id_boleto_conjuncion = ' || v_parametros.id_boleto|| ' 
-                          order by bv.id_boleto_vuelo ASC';			
-			
+                          order by bv.id_boleto_vuelo ASC';
 
-			--Devuelve la respuesta
-			return v_consulta;
 
-		end;
-					
-	else
-					     
-		raise exception 'Transaccion inexistente';
-					         
-	end if;
-					
-EXCEPTION
-					
-	WHEN OTHERS THEN
-			v_resp='';
-			v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
-			v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
-			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
-			raise exception '%',v_resp;
-END;
-$body$
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+    /*********************************
+  #TRANSACCION:  'OBING_BOLSERV_SEL'
+  #DESCRIPCION:	DDevuelve un boleto en base al parametro enviado (para servicio)
+  #AUTOR:		jrivera
+  #FECHA:		06-01-2016 22:42:25
+ ***********************************/
+
+    elsif(p_transaccion='OBING_BOLSERV_SEL')then
+
+      begin
+
+        if (exists (select 1 from obingresos.tboleto
+        where nro_boleto = v_parametros.nro_boleto and voided = 'si')) then
+          raise exception 'El boleto ha sido anulado';
+        end if;
+        --Sentencia de la consulta de conteo de registros
+        v_consulta:='	with boleto as (
+            				select b.id_boleto,b.nro_boleto,b.pasajero,to_char(b.fecha_emision,''DD/MM/YYYY''),b.moneda,b.total,b.neto,b.nit,b.razon,b.localizador
+            				from obingresos.tboleto b
+                            where b.estado_reg = ''activo'' and b.nro_boleto = ''' || v_parametros.nro_boleto || '''
+                            ),
+                            boleto_vuelo as (
+                            select b.id_boleto,array_to_json(array_agg(bv.*)) as detalle
+                            from obingresos.tboleto_vuelo bv
+                            inner join obingresos.tboleto b on b.id_boleto = bv.id_boleto
+                            where b.estado_reg = ''activo'' and b.nro_boleto = ''' || v_parametros.nro_boleto || '''
+                            group by b.id_boleto) 
+                            select row_to_json(b.*) as boleto,bv.detalle
+                            from boleto b 
+                            inner join boleto_vuelo bv on bv.id_boleto = b.id_boleto
+                            ';
+
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+
+
+
+    else
+
+      raise exception 'Transaccion inexistente';
+
+    end if;
+
+    EXCEPTION
+
+    WHEN OTHERS THEN
+      v_resp='';
+      v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
+      v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
+      v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
+      raise exception '%',v_resp;
+  END;
+  $body$
 LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT
