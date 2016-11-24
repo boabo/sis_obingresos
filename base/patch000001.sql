@@ -391,3 +391,51 @@ ADD COLUMN razon_ingresos VARCHAR(300);
 
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-14/11/2016********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-23/11/2016********************************************/
+
+CREATE UNIQUE INDEX tforma_pago_idx ON obingresos.tforma_pago
+USING btree (codigo COLLATE pg_catalog."default", id_lugar, id_moneda);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN voided VARCHAR(2) DEFAULT 'no'::character varying NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN nit BIGINT;
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN razon VARCHAR(200);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN medio_pago VARCHAR(20);
+
+ALTER TABLE obingresos.tboleto_vuelo
+ADD COLUMN cupon SMALLINT NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ALTER COLUMN id_moneda_boleto DROP NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ALTER COLUMN pasajero DROP NOT NULL;
+
+ALTER TABLE obingresos.tboleto_vuelo
+ADD COLUMN linea VARCHAR(5);
+
+ALTER TABLE obingresos.tboleto_vuelo
+ADD COLUMN aeropuerto_origen VARCHAR(10);
+
+ALTER TABLE obingresos.tboleto_vuelo
+ADD COLUMN aeropuerto_destino VARCHAR(10);
+
+ALTER TABLE obingresos.tboleto_vuelo
+ALTER COLUMN tarifa TYPE VARCHAR(15) COLLATE pg_catalog."default";
+
+ALTER TABLE obingresos.tboleto_vuelo
+ALTER COLUMN hora_origen DROP NOT NULL;
+
+ALTER TABLE obingresos.tboleto_vuelo
+ALTER COLUMN fecha DROP NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ALTER COLUMN localizador TYPE VARCHAR(13) COLLATE pg_catalog."default";
+/********************************************F-SCP-JRR-OBINGRESOS-0-23/11/2016********************************************/

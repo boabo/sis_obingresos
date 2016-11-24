@@ -51,6 +51,25 @@ class ACTBoleto extends ACTbase{
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
+
+    function getBoleto(){
+
+
+
+
+        $this->objFunc=$this->create('MODBoleto');
+
+        $this->res=$this->objFunc->getBoletoServicio($this->objParam);
+
+        $boleto = $this->res->datos[0]['boleto'];
+
+        $detalle = $this->res->datos[0]['detalle'];
+        $this->res->datos = json_decode($boleto,true);
+        $this->res->datos['vuelos'] = json_decode($detalle,true);
+
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 				
 	function insertarBoleto(){
 		$this->objFunc=$this->create('MODBoleto');	
