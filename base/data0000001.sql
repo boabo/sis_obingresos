@@ -19,3 +19,10 @@ select pxp.f_insert_testructura_gui ('PERVEN', 'OBINGRESOS');
 select pxp.f_insert_tgui ('Reporte Nit y Razon', 'reporte nit y razon', 'RNR', 'si', 4, '/sis_obingresos/vista/reporte_nit_razon/ReporteNitRazon.php', 2, '', 'ReporteNitRazon', 'OBINGRESOS');
 select pxp.f_insert_testructura_gui ('RNR', 'OBINGRESOS');
 /***********************************F-DAT-MAM-OBINGRESOS-0-16/11/2016*****************************************/
+
+/***********************************I-DAT-MAM-OBINGRESOS-0-25/11/2016*****************************************/
+select pxp.f_insert_tgui ('Subir Deposito', 'Subir deposito', 'SUDE', 'si', 3, '/sis_obingresos/vista/deposito/SubirDeposito.php', 2, '', 'SubirDeposito', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('SUDE', 'OBINGRESOS');
+select pxp.f_insert_tgui ('Reporte Deposito', 'Reporte Deposito', 'REDE', 'si', 5, '/sis_obingresos/vista/deposito/ReporteDeposito.php', 2, '', 'ReporteDeposito', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('REDE', 'OBINGRESOS');
+/***********************************F-DAT-MAM-OBINGRESOS-0-25/11/2016*****************************************/
