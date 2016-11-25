@@ -1,15 +1,15 @@
 <?Php
 /**
- *@package pXP
- *@file   PagosSinFacturasAsociadas.php
+ *@package PXP
+ *@file   ReporteDeposito.php
  *@author  MAM
  *@date    09-11-2016
- *@description Archivo con la interfaz para generaci�n de reporte
+ *@description Reportes de deposito
  */
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 <script>
-    Phx.vista.ReporteNitRazon = Ext.extend(Phx.frmInterfaz, {
+    Phx.vista.ReporteDeposito = Ext.extend(Phx.frmInterfaz, {
         Atributos : [
             {
                 config:{
@@ -44,16 +44,16 @@ header("content-type: text/javascript; charset=UTF-8");
                 form:true
             }],
 
-        title : 'Reporte Nit Razon',
-        ActSave : '../../sis_obingresos/control/DetalleBoletosWeb/ReporteNitRazon',
+        title : 'Reporte Deposito',
+        ActSave : '../../sis_obingresos/control/Deposito/reporteDeposito',
 
         topBar : true,
         botones : false,
         labelSubmit : 'Imprimir',
-        tooltipSubmit : '<b>Reporte Nit Razon</b>',
+        tooltipSubmit : '<b>Reporte Deposito</b>',
 
         constructor : function(config) {
-            Phx.vista.ReporteNitRazon.superclass.constructor.call(this, config);
+            Phx.vista.ReporteDeposito.superclass.constructor.call(this, config);
             this.init();
             this.iniciarEventos();
         },

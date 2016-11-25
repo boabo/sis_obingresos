@@ -6,7 +6,7 @@
 *@date 06-01-2016 22:42:28
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
-
+//require_once(dirname(__FILE__).'/../reportes/');
 class ACTDeposito extends ACTbase{    
 			
 	function listarDeposito(){
@@ -75,20 +75,25 @@ class ACTDeposito extends ACTbase{
             $lines = file($file_path);
                 foreach ($lines as $line_num => $line){
                     $arr_temp = explode('|',$line);
-                    if(count($arr_temp)!=2){
-                        $error = 'error';
-                        $mensaje_completo .= "No se proceso la linea: $line_num, por un error en el formato \n";
-                    }else{
-                        $arr_temp[1] = str_replace(',', '.', $arr_temp[1]);
-                        $this->objFunc=$this->create('MODDeposito');
-                        $this->res=$this->objFunc->insertarDeposito($this->objParam); // cambiar
-                        if ($this->res->getTipo() == 'ERROR') {
+
+                    $this->objParam->addParametro('nro_deposito',$arr_temp[0]);
+                    $this->objParam->addParametro('pnr',$arr_temp[1]);
+                    $this->objParam->addParametro('descripcion',$arr_temp[2]);
+                    $arr_temp[3] = str_replace(',', '.', $arr_temp[3]);
+                    $this->objParam->addParametro('saldo',$arr_temp[3]);
+                    $this->objParam->addParametro('moneda',$arr_temp[4]);
+                    $this->objFunc=$this->create('MODDeposito');
+                    $this->res=$this->objFunc->subirDatos($this->objParam); // cambiar
+
+                    //var_dump($this->res);
+                    //exit;
+                    if ($this->res->getTipo() == 'ERROR') {
                             $error = 'error';
                             $mensaje_completo .= $this->res->getMensaje() . " \n";
-                        }
-
                     }
+
                 }
+               
             }
         //armar respuesta en caso de exito o error en algunas tuplas
         if ($error == 'error') {
@@ -103,6 +108,31 @@ class ACTDeposito extends ACTbase{
 
         //devolver respuesta
         $this->mensajeRes->imprimirRespuesta($this->mensajeRes->generarJson());
+    }
+
+    function reporteDeposito(){
+
+        $this->objFunc = $this->create('MODDeposito');
+        $this->res = $this->objFunc->listarDepositoReporte($this->objParam);
+        //var_dump( $this->res);exit;
+        //obtener titulo de reporte
+        $titulo = 'Reporte Depositos';
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo = uniqid(md5(session_id()) . $titulo);
+
+        $nombreArchivo .= '.xls';
+        $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
+        $this->objParam->addParametro('datos', $this->res->datos);
+        //Instancia la clase de excel
+        //this->objReporteFormato = new RReporteNitRazonXLS($this->objParam);
+        //$this->objReporteFormato->generarDatos();
+        //$this->objReporteFormato->generarReporte();
+
+        $this->mensajeExito = new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
     }
 }
 
