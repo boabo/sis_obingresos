@@ -439,3 +439,12 @@ ALTER COLUMN fecha DROP NOT NULL;
 ALTER TABLE obingresos.tboleto
 ALTER COLUMN localizador TYPE VARCHAR(13) COLLATE pg_catalog."default";
 /********************************************F-SCP-JRR-OBINGRESOS-0-23/11/2016********************************************/
+
+/********************************************I-SCP-MAM-OBINGRESOS-0-25/11/2016********************************************/
+ALTER TABLE obingresos.tdeposito
+  ALTER COLUMN descripcion TYPE VARCHAR(100) COLLATE pg_catalog."default";
+
+  ALTER TABLE obingresos.tdeposito
+  ALTER COLUMN pnr TYPE VARCHAR(20) COLLATE pg_catalog."default";
+
+/********************************************F-SCP-MAM-OBINGRESOS-0-25/11/2016********************************************/

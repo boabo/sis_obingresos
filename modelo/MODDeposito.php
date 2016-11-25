@@ -51,7 +51,8 @@ class MODDeposito extends MODbase{
 		$this->procedimiento='obingresos.ft_deposito_ime';
 		$this->transaccion='OBING_DEP_INS';
 		$this->tipo_procedimiento='IME';
-				
+
+		
 		//Define los parametros para la funcion
 		$this->setParametro('estado_reg','estado_reg','varchar');
 		$this->setParametro('nro_deposito','nro_deposito','varchar');
@@ -60,6 +61,10 @@ class MODDeposito extends MODbase{
 		$this->setParametro('id_agencia','id_agencia','int4');
 		$this->setParametro('fecha','fecha','date');
 		$this->setParametro('saldo','saldo','numeric');
+        $this->setParametro('descripcion','descripcion','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('moneda','moneda','varchar');
+
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -109,6 +114,53 @@ class MODDeposito extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
-			
+    function subirDatos(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEP_SUB';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('nro_deposito','nro_deposito','varchar');
+        //$this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('saldo','saldo','numeric');
+        $this->setParametro('moneda','moneda','varchar');
+        $this->setParametro('descripcion','descripcion','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    function  listarDepositoReporte()
+    {
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_deposito_sel';
+        $this->transaccion='OBING_DEREP_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+
+        $this->setParametro('fecha_ini','fecha_ini','date');
+        $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setCount(false);
+
+
+        $this->captura('nro_deposito','varchar');
+        $this->captura('saldo','numeric');
+        $this->captura('moneda','varchar');
+        $this->captura('total','numeric');
+        $this->captura('moneda_boleto','varchar');
+        $this->captura('fecha_emision','date');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        var_dump($this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 }
 ?>
