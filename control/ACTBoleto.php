@@ -64,8 +64,10 @@ class ACTBoleto extends ACTbase{
         $boleto = $this->res->datos[0]['boleto'];
 
         $detalle = $this->res->datos[0]['detalle'];
+        $pagos = $this->res->datos[0]['pagos'];
         $this->res->datos = json_decode($boleto,true);
         $this->res->datos['vuelos'] = json_decode($detalle,true);
+        $this->res->datos['formas_pago'] = json_decode($pagos,true);
 
 
         $this->res->imprimirRespuesta($this->res->generarJson());

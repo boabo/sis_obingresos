@@ -426,6 +426,7 @@ class MODBoleto extends MODbase{
         //Definicion de la lista del resultado del query
         $this->captura('boleto','json');
         $this->captura('detalle','json');
+        $this->captura('pagos','json');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
