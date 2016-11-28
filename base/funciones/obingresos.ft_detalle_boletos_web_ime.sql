@@ -149,7 +149,6 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
 
 
         end loop;
-        v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Actualizacion exitosa desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario','Se han actualizado los datos exitosamente','jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma Pago almacenado(a) con exito (id_forma_pago'||v_id_forma_pago||')');
         v_resp = pxp.f_agrega_clave(v_resp,'id_forma_pago',v_id_forma_pago::varchar);
@@ -211,7 +210,7 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
           execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
         end loop;
 
-        v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Actualizacion correcta de datos de boletos','Se han actualizado los datos de los boletos correctamente desde las ventas por banca electronica','jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
+
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Cambios procesados');
 
@@ -238,7 +237,7 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
       raise exception '%',v_resp;
 
   END;
-  $body$
+$body$
 LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT

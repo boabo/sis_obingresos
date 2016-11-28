@@ -13,6 +13,21 @@ header("content-type: text/javascript; charset=UTF-8");
         Atributos : [
             {
                 config:{
+                    name: 'por',
+                    fieldLabel: 'Obtener diferencias por',
+                    allowBlank:false,
+                    emptyText:'Por...',
+                    triggerAction: 'all',
+                    lazyRender:true,
+                    mode: 'local',
+                    store:['boleto','deposito']
+                },
+                type:'ComboBox',
+                id_grupo:1,
+                form:true
+            },
+            {
+                config:{
                     name: 'fecha_ini',
                     fieldLabel: 'Fecha Inicio',
                     allowBlank: true,

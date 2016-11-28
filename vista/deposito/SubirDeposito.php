@@ -20,7 +20,7 @@ Phx.vista.SubirDeposito = Ext.extend(Phx.frmInterfaz,{
                 triggerAction: 'all',
                 lazyRender:true,
                 mode: 'local',
-                store:['Ogome']
+                store:['ogone']
             },
             type:'ComboBox',
             id_grupo:0,

@@ -6,7 +6,7 @@
 *@date 06-01-2016 22:42:28
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
-//require_once(dirname(__FILE__).'/../reportes/');
+require_once(dirname(__FILE__).'/../reportes/RReporteDepositoOgone.php');
 class ACTDeposito extends ACTbase{    
 			
 	function listarDeposito(){
@@ -78,15 +78,16 @@ class ACTDeposito extends ACTbase{
 
                     $this->objParam->addParametro('nro_deposito',$arr_temp[0]);
                     $this->objParam->addParametro('pnr',$arr_temp[1]);
-                    $this->objParam->addParametro('descripcion',$arr_temp[2]);
-                    $arr_temp[3] = str_replace(',', '.', $arr_temp[3]);
-                    $this->objParam->addParametro('saldo',$arr_temp[3]);
-                    $this->objParam->addParametro('moneda',$arr_temp[4]);
+                    $this->objParam->addParametro('descripcion',$arr_temp[23]);
+                    $arr_temp[12] = str_replace(',', '.', $arr_temp[12]);
+                    $this->objParam->addParametro('monto_deposito',$arr_temp[12]);
+                    $this->objParam->addParametro('moneda',$arr_temp[13]);
+                    $this->objParam->addParametro('estado',$arr_temp[4]);
+                    $this->objParam->addParametro('fecha',$arr_temp[2]);
                     $this->objFunc=$this->create('MODDeposito');
                     $this->res=$this->objFunc->subirDatos($this->objParam); // cambiar
 
-                    //var_dump($this->res);
-                    //exit;
+
                     if ($this->res->getTipo() == 'ERROR') {
                             $error = 'error';
                             $mensaje_completo .= $this->res->getMensaje() . " \n";
@@ -124,9 +125,13 @@ class ACTDeposito extends ACTbase{
         $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
         $this->objParam->addParametro('datos', $this->res->datos);
         //Instancia la clase de excel
-        //this->objReporteFormato = new RReporteNitRazonXLS($this->objParam);
-        //$this->objReporteFormato->generarDatos();
-        //$this->objReporteFormato->generarReporte();
+        $this->objReporteFormato = new RReporteDepositoOgone($this->objParam);
+        if ($this->objParam->getParametro('por') == 'boleto') {
+            $this->objReporteFormato->generarDatos();
+        } else {
+            $this->objReporteFormato->generarDatosDeposito();
+        }
+        $this->objReporteFormato->generarReporte();
 
         $this->mensajeExito = new Mensaje();
         $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');

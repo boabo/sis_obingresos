@@ -442,9 +442,21 @@ ALTER COLUMN localizador TYPE VARCHAR(13) COLLATE pg_catalog."default";
 
 /********************************************I-SCP-MAM-OBINGRESOS-0-25/11/2016********************************************/
 ALTER TABLE obingresos.tdeposito
-  ALTER COLUMN descripcion TYPE VARCHAR(100) COLLATE pg_catalog."default";
+ADD COLUMN descripcion TEXT;
 
-  ALTER TABLE obingresos.tdeposito
-  ALTER COLUMN pnr TYPE VARCHAR(20) COLLATE pg_catalog."default";
+ALTER TABLE obingresos.tdeposito
+ADD COLUMN pnr VARCHAR(20);
 
 /********************************************F-SCP-MAM-OBINGRESOS-0-25/11/2016********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-25/11/2016********************************************/
+CREATE UNIQUE INDEX tdeposito_idx ON obingresos.tdeposito
+USING btree (nro_deposito COLLATE pg_catalog."default", tipo COLLATE pg_catalog."default");
+
+CREATE INDEX tdeposito_idx1 ON obingresos.tdeposito
+USING btree (pnr);
+
+ALTER TABLE obingresos.tdeposito
+ADD COLUMN tipo VARCHAR(15) DEFAULT 'agencia' NOT NULL;
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-25/11/2016********************************************/

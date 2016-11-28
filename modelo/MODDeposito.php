@@ -123,10 +123,13 @@ class MODDeposito extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('nro_deposito','nro_deposito','varchar');
         //$this->setParametro('id_agencia','id_agencia','int4');
-        $this->setParametro('saldo','saldo','numeric');
+        $this->setParametro('monto_deposito','monto_deposito','numeric');
         $this->setParametro('moneda','moneda','varchar');
         $this->setParametro('descripcion','descripcion','varchar');
         $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('estado','estado','varchar');
+        $this->setParametro('fecha','fecha','varchar');
+        $this->setParametro('tipo','tipo','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -145,20 +148,25 @@ class MODDeposito extends MODbase{
 
         $this->setParametro('fecha_ini','fecha_ini','date');
         $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setParametro('por','por','varchar');
         $this->setCount(false);
 
 
         $this->captura('nro_deposito','varchar');
-        $this->captura('saldo','numeric');
+        $this->captura('fecha_deposito','varchar');
+        $this->captura('pnr','varchar');
+        $this->captura('monto_deposito','numeric');
         $this->captura('moneda','varchar');
-        $this->captura('total','numeric');
-        $this->captura('moneda_boleto','varchar');
-        $this->captura('fecha_emision','date');
+
+        $this->captura('total_boletos','numeric');
+        $this->captura('nro_boletos','text');
+        $this->captura('fecha_boletos','text');
+        $this->captura('detalle_boletos','text');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
-        var_dump($this->respuesta);exit;
+
         //Devuelve la respuesta
         return $this->respuesta;
     }
