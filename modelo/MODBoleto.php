@@ -452,6 +452,31 @@ class MODBoleto extends MODbase{
         return $this->respuesta;
     }
 
+	function  listarReporteResiberVentasWeb()
+	{
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_boleto_sel';
+		$this->transaccion='OBING_REPRESVEW_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
 
+		$this->setParametro('fecha_ini','fecha_ini','date');
+		$this->setParametro('fecha_fin','fecha_fin','date');
+		$this->setParametro('tipo','tipo','varchar');
+		$this->setCount(false);
+
+		$this->captura('boleto_resiber','varchar');
+		$this->captura('boleto_ventas_web','varchar');
+		$this->captura('numero_tarjeta','varchar');
+		$this->captura('fecha','date');
+		$this->captura('monto_resiber','numeric');
+		$this->captura('monto_ventas_web','numeric');
+		$this->captura('moneda','varchar');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
 }
 ?>
