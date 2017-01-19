@@ -130,6 +130,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('estado','estado','varchar');
         $this->setParametro('fecha','fecha','varchar');
         $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('observaciones','observaciones','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -149,6 +150,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('fecha_ini','fecha_ini','date');
         $this->setParametro('fecha_fin','fecha_fin','date');
         $this->setParametro('por','por','varchar');
+        $this->setParametro('tipo_deposito','tipo_deposito','varchar');
         $this->setCount(false);
 
 
@@ -157,18 +159,24 @@ class MODDeposito extends MODbase{
         $this->captura('pnr','varchar');
         $this->captura('monto_deposito','numeric');
         $this->captura('moneda','varchar');
+        $this->captura('numero_tarjeta_deposito','varchar');
 
         $this->captura('total_boletos','numeric');
         $this->captura('nro_boletos','text');
         $this->captura('fecha_boletos','text');
+        $this->captura('numero_tarjeta','text');
         $this->captura('detalle_boletos','text');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
+
+
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+
 }
 ?>

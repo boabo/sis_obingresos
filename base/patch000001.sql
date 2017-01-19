@@ -460,3 +460,49 @@ ALTER TABLE obingresos.tdeposito
 ADD COLUMN tipo VARCHAR(15) DEFAULT 'agencia' NOT NULL;
 
 /********************************************I-SCP-JRR-OBINGRESOS-0-25/11/2016********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-19/01/2017********************************************/
+CREATE TABLE obingresos.tventa_web_modificaciones (
+  nro_boleto VARCHAR(20) NOT NULL,
+  tipo VARCHAR(15),
+  nro_boleto_reemision VARCHAR(20),
+  used VARCHAR(2),
+  motivo TEXT NOT NULL,
+  id_venta_web_modificaciones SERIAL,
+  procesado VARCHAR(2) DEFAULT 'no'::character varying NOT NULL,
+  CONSTRAINT tventa_web_modificaciones_nro_boleto_key UNIQUE(nro_boleto),
+  CONSTRAINT tventa_web_modificaciones_pkey PRIMARY KEY(id_venta_web_modificaciones),
+  CONSTRAINT tventa_web_modificaciones_chk CHECK (((tipo)::text = 'tsu_anulado'::text) OR ((tipo)::text = 'anulado'::text) OR ((tipo)::text = 'reemision'::text))
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+CREATE UNIQUE INDEX tventa_web_modificaciones_idx ON obingresos.tventa_web_modificaciones
+USING btree (nro_boleto_reemision COLLATE pg_catalog."default")
+  WHERE ((nro_boleto_reemision IS NOT NULL) AND ((nro_boleto_reemision)::text <> ''::text));
+
+CREATE TABLE obingresos.tboleto_retweb (
+  id_boleto_retweb SERIAL,
+  nro_boleto VARCHAR(20) NOT NULL,
+  pasajero VARCHAR(100),
+  fecha_emision DATE NOT NULL,
+  total NUMERIC(18,2),
+  moneda VARCHAR(5),
+  tarjeta VARCHAR(5) NOT NULL,
+  numero_tarjeta VARCHAR(30),
+  estado VARCHAR(2) NOT NULL,
+  CONSTRAINT tboleto_retweb_pkey PRIMARY KEY(id_boleto_retweb)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tboleto_retweb
+ALTER COLUMN nro_boleto SET STATISTICS 0;
+
+CREATE INDEX tboleto_retweb_idx ON obingresos.tboleto_retweb
+USING btree (fecha_emision);
+
+CREATE UNIQUE INDEX tboleto_retweb_idx1 ON obingresos.tboleto_retweb
+USING btree (nro_boleto COLLATE pg_catalog."default");
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-19/01/2017********************************************/

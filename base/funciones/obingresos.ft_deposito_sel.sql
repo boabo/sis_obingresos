@@ -106,20 +106,23 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                     depositos as (SELECT pxp.list(d.nro_deposito) as nro_deposito,pxp.list(to_char(d.fecha,''DD/MM/YYYY'')) as fecha_deposito,
                                                     sum(d.monto_deposito) as monto_deposito,                                            
                                                     pxp.list(d.moneda) as moneda,
+                                                    pxp.list(d.observaciones) as numero_tarjeta_deposito,
                                                     d.pnr
                                         from obingresos.tdeposito  d
                                         where d.fecha >= (''' || v_parametros.fecha_ini || '''::date - interval ''5 days'') and
-                                            d.fecha <= (''' || v_parametros.fecha_fin || '''::date + interval ''5 days'')
+                                            d.fecha <= (''' || v_parametros.fecha_fin || '''::date + interval ''5 days'') and d.tipo = ''' || v_parametros.tipo_deposito || '''
                                         group by d.pnr)
                     SELECT d.nro_deposito::varchar,d.fecha_deposito::varchar,d.pnr::varchar,
                                                     d.monto_deposito,                                            
                                                     d.moneda::varchar,
+                                                    d.numero_tarjeta_deposito::varchar,
                                                     
                                                     sum(b.importe) as total_boletos,
                                                     pxp.list(b.nro_boleto) as nro_boletos,
                                                      pxp.list(to_char(b.fecha_emision,''DD/MM/YYYY'')) as fecha_boletos,
+                                                     pxp.list(b.numero_tarjeta) as numero_tarjeta,
                                                      pxp.list(b.nro_boleto || ''|'' || to_char(b.fecha_emision,''DD/MM/YYYY'') ||
-                                                        ''|'' || b.importe || ''|'' || b.moneda || ''|'' || b.agencia || ''|'' || b.localizador ORDER BY b.fecha_emision ASC) as detalle_boletos
+                                                        ''|'' || b.importe || ''|'' || b.moneda || ''|'' || b.agencia || ''|'' || b.localizador || ''|'' || b.numero_tarjeta ORDER BY b.fecha_emision ASC) as detalle_boletos
                                                      
 
                                             FROM boletos b
@@ -127,7 +130,8 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                                             group by d.nro_deposito,d.fecha_deposito,
                                                     d.monto_deposito,                                            
                                                     d.moneda,
-                                                    d.pnr
+                                                    d.pnr,
+                                                    d.numero_tarjeta_deposito
                                             having sum(b.importe) != d.monto_deposito or d.monto_deposito is null
                                             order by d.nro_deposito';
 
@@ -146,18 +150,20 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                     depositos as (SELECT pxp.list(d.nro_deposito) as nro_deposito,pxp.list(to_char(d.fecha,''DD/MM/YYYY'')) as fecha_deposito,
                                                     sum(d.monto_deposito) as monto_deposito,                                            
                                                     pxp.list(d.moneda) as moneda,
+                                                    pxp.list(d.observaciones) as numero_tarjeta_deposito,
                                                     d.pnr
                                         from obingresos.tdeposito  d
                                         where d.fecha >= ''' || v_parametros.fecha_ini || '''::date  and
-                                            d.fecha <= ''' || v_parametros.fecha_fin || '''::date 
+                                            d.fecha <= ''' || v_parametros.fecha_fin || '''::date and d.tipo = ''' || v_parametros.tipo_deposito || '''
                                         group by d.pnr)
                     SELECT d.nro_deposito::varchar,d.fecha_deposito::varchar,d.pnr::varchar,
                                                     d.monto_deposito,                                            
                                                     d.moneda::varchar,
-                                                    
+                                                     d.numero_tarjeta_deposito::varchar,
                                                     sum(b.importe) as total_boletos,
                                                     pxp.list(b.nro_boleto) as nro_boletos,
                                                      pxp.list(to_char(b.fecha_emision,''DD/MM/YYYY'')) as fecha_boletos,
+                                                     pxp.list(b.numero_tarjeta) as numero_tarjeta,
                                                      ''''::text
                                                      
 
@@ -166,18 +172,108 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                                             group by d.nro_deposito,d.fecha_deposito,
                                                     d.monto_deposito,                                            
                                                     d.moneda,
-                                                    d.pnr
+                                                    d.pnr,
+                                                    d.numero_tarjeta_deposito
                                             having sum(b.importe) != d.monto_deposito or sum(b.importe) is null
                                             order by d.nro_deposito';
 
         end if;
-
 
         raise notice '%',v_consulta;
 
         --Devuelve la respuesta
         return v_consulta;
 
+      end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_REPRESVEW_SEL'
+ 	#DESCRIPCION:	Reporte Deposito
+ 	#AUTOR:		Gonzalo Sarmiento 
+ 	#FECHA:		06-12-2016
+	***********************************/
+
+    ELSIF(p_transaccion= 'OBING_REPRESVEW_SEL')then
+      begin
+        if(v_parametros.tipo = 'sin_boletos_web')then
+          v_consulta = 'select b.nro_boleto as boleto_resiber,
+                              dbw.billete as boleto_ventas_web,
+                             bfp.numero_tarjeta,
+                             b.fecha_emision as fecha,
+                             b.total as monto_resiber,
+                             dbw.importe as monto_ventas_web,
+                             b.moneda
+                      from obingresos.tboleto b
+                           inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                           left join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
+                           left join obingresos.tventa_web_modificaciones ree on ree.nro_boleto_reemision = b.nro_boleto
+                           left join obingresos.tventa_web_modificaciones anu on anu.nro_boleto = b.nro_boleto
+                      where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
+                            b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
+                            bfp.numero_tarjeta like ''%000000005555''  and
+                            b.estado_reg = ''activo'' and
+                            bfp.tarjeta = ''VI'' and voided = ''no'' and (dbw.billete is null and ree.nro_boleto is null and anu.nro_boleto is null )
+                            group by b.nro_boleto, b.fecha_emision,
+                                     dbw.billete, bfp.numero_tarjeta,
+                                     dbw.importe, dbw.moneda,
+                                   b.total, b.moneda
+                            order by fecha';
+        elsif(v_parametros.tipo='sin_boletos_resiber')then
+          v_consulta = 'select b.nro_boleto as boleto_resiber,
+                                    dbw.billete as boleto_ventas_web,
+                                   bfp.numero_tarjeta,
+                                   dbw.fecha as fecha,
+                                   dbw.importe as monto_resiber,
+                                   b.total as monto_ventas_web,       
+                                   dbw.moneda
+                            from obingresos.tdetalle_boletos_web dbw 
+                                 left join obingresos.tboleto b on dbw.billete = b.nro_boleto     
+                                 left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                            where dbw.fecha >= '''||v_parametros.fecha_ini||'''::date and
+                                  dbw.fecha < '''||v_parametros.fecha_fin||'''::date and
+                                   b.nro_boleto is null and dbw.medio_pago != ''COMPLETAR-CC'' and 
+                                  b.estado_reg =''activo''
+                            group by b.nro_boleto, fecha, dbw.billete, bfp.numero_tarjeta,
+                            dbw.importe, dbw.moneda, b.total, b.moneda
+                            UNION ALL
+                            select b.nro_boleto as boleto_resiber,
+                                    dbw.billete as boleto_ventas_web,
+                                   bfp.numero_tarjeta,
+                                   b.fecha_emision as fecha,
+                                   b.total as monto_resiber,
+                                   dbw.importe as monto_ventas_web,
+                                   dbw.moneda
+                            from obingresos.tboleto b
+                                 inner join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
+                                 left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                                 left join obingresos.tventa_web_modificaciones vwm on vwm.nro_boleto = b.nro_boleto
+                            where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
+                                  b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
+                                  voided = ''si''  and  dbw.medio_pago != ''COMPLETAR-CC'' and 
+                                  b.estado_reg =''activo'' and vwm.nro_boleto is null
+                            order by fecha';
+        else
+          v_consulta='select b.nro_boleto as boleto_resiber,
+                            dbw.billete as boleto_ventas_web,
+                           bfp.numero_tarjeta,
+                           b.fecha_emision as fecha,
+                           b.total as monto_resiber,
+                           dbw.importe as monto_ventas_web,
+                           b.moneda
+                    from obingresos.tboleto b
+                         inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                         left join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
+                    where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
+                          b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
+                          bfp.numero_tarjeta like ''%000000005555'' and
+                          bfp.tarjeta = ''VI'' and
+                          voided = ''no'' and
+                          b.total!=dbw.importe and dbw.medio_pago != ''COMPLETAR-CC''
+                    group by b.nro_boleto, b.fecha_emision, dbw.billete, bfp.numero_tarjeta,
+                    dbw.importe, dbw.moneda, b.total, b.moneda
+                    order by fecha';
+        end if;
+        return v_consulta;
       end;
 
     /*********************************

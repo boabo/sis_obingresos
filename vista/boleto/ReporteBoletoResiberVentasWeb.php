@@ -1,17 +1,17 @@
 <?Php
 /**
  *@package PXP
- *@file   ReporteDeposito.php
- *@author  MAM
- *@date    09-11-2016
+ *@file   ReporteBoletoResiberVentasWeb.php
+ *@author  Gonzalo Sarmiento
+ *@date    07-12-2016
  *@description Reportes de deposito
  */
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 <script>
-    Phx.vista.ReporteDeposito = Ext.extend(Phx.frmInterfaz, {
+    Phx.vista.ReporteBoletoResiberVentasWeb = Ext.extend(Phx.frmInterfaz, {
         Atributos : [
-            {
+            /*{
                 config:{
                     name: 'por',
                     fieldLabel: 'Obtener diferencias por',
@@ -20,27 +20,12 @@ header("content-type: text/javascript; charset=UTF-8");
                     triggerAction: 'all',
                     lazyRender:true,
                     mode: 'local',
-                    store:['boleto','deposito']
+                    store:['boleto_monto']
                 },
                 type:'ComboBox',
                 id_grupo:1,
                 form:true
-            },
-            {
-                config:{
-                    name: 'tipo_deposito',
-                    fieldLabel: 'Tipo Deposito',
-                    allowBlank:false,
-                    emptyText:'Por...',
-                    triggerAction: 'all',
-                    lazyRender:true,
-                    mode: 'local',
-                    store:['ogone','BNB']
-                },
-                type:'ComboBox',
-                id_grupo:1,
-                form:true
-            },
+            },*/
             {
                 config:{
                     name: 'fecha_ini',
@@ -75,7 +60,7 @@ header("content-type: text/javascript; charset=UTF-8");
             }],
 
         title : 'Reporte Deposito',
-        ActSave : '../../sis_obingresos/control/Deposito/reporteDeposito',
+        ActSave : '../../sis_obingresos/control/Boleto/reporteBoletoResiberVentasWeb',
 
         topBar : true,
         botones : false,
@@ -83,7 +68,7 @@ header("content-type: text/javascript; charset=UTF-8");
         tooltipSubmit : '<b>Reporte Deposito</b>',
 
         constructor : function(config) {
-            Phx.vista.ReporteDeposito.superclass.constructor.call(this, config);
+            Phx.vista.ReporteBoletoResiberVentasWeb.superclass.constructor.call(this, config);
             this.init();
             this.iniciarEventos();
         },

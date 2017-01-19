@@ -99,25 +99,26 @@ class RReporteDepositoOgone
         //titulos
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'REPORTE OGONE' );
-        $this->docexcel->getActiveSheet()->getStyle('A2:H2')->applyFromArray($styleTitulos1);
-        $this->docexcel->getActiveSheet()->mergeCells('A2:H2');
+        $this->docexcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->mergeCells('A2:J2');
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,4,'Del: '.  $this->objParam->getParametro('fecha_ini').'   Al: '.  $this->objParam->getParametro('fecha_fin') );
-        $this->docexcel->getActiveSheet()->getStyle('A4:H4')->applyFromArray($styleTitulos3);
-        $this->docexcel->getActiveSheet()->mergeCells('A4:H4');
+        $this->docexcel->getActiveSheet()->getStyle('A4:J4')->applyFromArray($styleTitulos3);
+        $this->docexcel->getActiveSheet()->mergeCells('A4:J4');
         $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
         $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(35);
         $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(35);
         $this->docexcel->getActiveSheet()->getColumnDimension('I')->setWidth(35);
+        $this->docexcel->getActiveSheet()->getColumnDimension('J')->setWidth(35);
 
 
 
-        $this->docexcel->getActiveSheet()->getStyle('A5:I5')->getAlignment()->setWrapText(true);
-        $this->docexcel->getActiveSheet()->getStyle('A5:I5')->applyFromArray($styleTitulos2);
+        $this->docexcel->getActiveSheet()->getStyle('A5:J5')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->getStyle('A5:J5')->applyFromArray($styleTitulos2);
 
 
 
@@ -126,10 +127,12 @@ class RReporteDepositoOgone
         $this->docexcel->getActiveSheet()->setCellValue('B5','Fecha');
         $this->docexcel->getActiveSheet()->setCellValue('C5','PNR');
         $this->docexcel->getActiveSheet()->setCellValue('D5','Monto Deposito');
-        $this->docexcel->getActiveSheet()->setCellValue('E5','Moneda');
-        $this->docexcel->getActiveSheet()->setCellValue('F5','Monto Boletos');
-        $this->docexcel->getActiveSheet()->setCellValue('G5','Boletos');
-        $this->docexcel->getActiveSheet()->setCellValue('H5','Fecha Boletos');
+        $this->docexcel->getActiveSheet()->setCellValue('E5','Tarjeta Deposito');
+        $this->docexcel->getActiveSheet()->setCellValue('F5','Moneda');
+        $this->docexcel->getActiveSheet()->setCellValue('G5','Monto Boletos');
+        $this->docexcel->getActiveSheet()->setCellValue('H5','Boletos');
+        $this->docexcel->getActiveSheet()->setCellValue('I5','Tarjeta Boleto');
+        $this->docexcel->getActiveSheet()->setCellValue('J5','Fecha Boletos');
 
     }
     function generarDatos()
@@ -180,10 +183,12 @@ class RReporteDepositoOgone
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['fecha_deposito']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['pnr']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['monto_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['moneda']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['total_boletos']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['nro_boletos'] . ',');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['fecha_boletos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['numero_tarjeta_deposito']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['moneda']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['total_boletos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['nro_boletos'] . ',');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['numero_tarjeta'] . ',');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['fecha_boletos']);
 
                 $this->docexcel->getActiveSheet()
                     ->getStyle("A$fila:A$fila")
@@ -223,12 +228,13 @@ class RReporteDepositoOgone
             $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
             $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
             $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
+            $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
 
 
 
 
-            $this->docexcel->getActiveSheet()->getStyle('A5:F5')->getAlignment()->setWrapText(true);
-            $this->docexcel->getActiveSheet()->getStyle('A5:F5')->applyFromArray($styleTitulos2);
+            $this->docexcel->getActiveSheet()->getStyle('A5:G5')->getAlignment()->setWrapText(true);
+            $this->docexcel->getActiveSheet()->getStyle('A5:G5')->applyFromArray($styleTitulos2);
 
 
 
@@ -239,6 +245,7 @@ class RReporteDepositoOgone
             $this->docexcel->getActiveSheet()->setCellValue('D5','Moneda');
             $this->docexcel->getActiveSheet()->setCellValue('E5','Agencia');
             $this->docexcel->getActiveSheet()->setCellValue('F5','PNR');
+            $this->docexcel->getActiveSheet()->setCellValue('G5','Tarjeta Boleto');
             $fila = 6;
             for ($i = 0 ; $i <count($boletos) ;$i++) {
 
@@ -249,6 +256,7 @@ class RReporteDepositoOgone
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $detalle[3]);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $detalle[4]);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $detalle[5]);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $detalle[6]);
 
                 $this->docexcel->getActiveSheet()
                     ->getStyle("A$fila:A$fila")
@@ -323,10 +331,12 @@ class RReporteDepositoOgone
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['fecha_deposito']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['pnr']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['monto_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['moneda']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['total_boletos']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['nro_boletos'].' ,');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['fecha_boletos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['numero_tarjeta_deposito']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['moneda']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['total_boletos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['nro_boletos'] . ',');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['numero_tarjeta'] . ',');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['fecha_boletos']);
 
                 $this->docexcel->getActiveSheet()->getStyle("A$fila:I$fila")->applyFromArray($styleTitulos3);
                 $this->docexcel->getActiveSheet()->getStyle("A$fila:I$fila")->getAlignment()->setWrapText(true);
@@ -351,10 +361,12 @@ class RReporteDepositoOgone
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila2, $value['fecha_deposito']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila2, $value['pnr']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila2, $value['monto_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila2, $value['moneda']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila2, $value['total_boletos']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila2, $value['nro_boletos']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila2, $value['fecha_boletos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila2, $value['numero_tarjeta_deposito']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila2, $value['moneda']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila2, $value['total_boletos']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila2, $value['nro_boletos'] . ',');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila2, $value['numero_tarjeta'] . ',');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila2, $value['fecha_boletos']);
 
                 $this->docexcel->getActiveSheet()
                     ->getStyle("A$fila2:A$fila2")

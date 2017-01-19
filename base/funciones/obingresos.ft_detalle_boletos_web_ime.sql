@@ -39,6 +39,7 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
     v_error					varchar;
     v_id_alarma					integer;
     v_id_detalle_boletos_web	integer;
+    v_procesado					varchar;
 
 
   BEGIN
@@ -103,18 +104,20 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
             raise exception '%, Fecha : %',v_error,v_parametros.fecha;
           end if;
 
-          select d.id_detalle_boletos_web into  v_id_detalle_boletos_web
+          select d.id_detalle_boletos_web,d.procesado into  v_id_detalle_boletos_web,v_procesado
           from obingresos.tdetalle_boletos_web d
           where d.billete = v_registros."Billete"::varchar;
 
-          /*if (v_id_detalle_boletos_web is not null and v_registros."MedioDePago" = 'COMPLETAR-CC') then
-                      update obingresos.tdetalle_boletos_web
-                      set procesado = 'no',
-                      nit = v_nit,
-                      razon_social =  upper(v_razon_social)
-                      where  id_detalle_boletos_web = v_id_detalle_boletos_web;*/
-          if (v_id_detalle_boletos_web is null) then
-            --elsif (v_id_detalle_boletos_web is null) then
+          if ((v_id_detalle_boletos_web is not null and v_registros."MedioDePago" = 'COMPLETAR-CC') or v_procesado = 'no') then
+            update obingresos.tdetalle_boletos_web
+            set procesado = 'no',
+              endoso = v_registros."endoso",
+              nit = v_nit,
+              razon_social =  upper(v_razon_social),
+              fecha_mod = to_date(v_parametros.fecha,'MM/DD/YYYY')
+            where  id_detalle_boletos_web = v_id_detalle_boletos_web;
+          --if (v_id_detalle_boletos_web is null) then
+          elsif (v_id_detalle_boletos_web is null) then
             INSERT INTO
               obingresos.tdetalle_boletos_web
               (
@@ -179,7 +182,7 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
         end if;
         --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('05/10/2016'::date,
+        from generate_series('01/01/2017'::date,
                              now()::date - interval '1 day', '1 day'::interval) i;
 
 
@@ -202,12 +205,29 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
     elsif(p_transaccion='OBING_BOWEBPROC_MOD')then
 
       begin
+        for v_fecha in select i::date
+                       from generate_series('01/01/2017'::date,
+                                            now()::date - interval '1 day', '1 day'::interval) i loop
+
+          if (exists (select 1
+                      from obingresos.tboleto b
+                      where b.fecha_emision = v_fecha and b.estado_reg = 'activo')) then
+            for v_registros in
+            select  *
+            from obingresos.tdetalle_boletos_web d
+            where origen = 'web' and procesado = 'no' and fecha = v_fecha loop
+
+              execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
+            end loop;
+          end if;
+        end loop;
+
         for v_registros in
         select  *
-        from obingresos.tdetalle_boletos_web d
-        where origen = 'web' and procesado = 'no' and fecha < (now()::date -interval '1 day')::date loop
+        from obingresos.tventa_web_modificaciones vwm
+        where tipo = 'reemision' and procesado = 'no' loop
 
-          execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
+          execute ('select informix.f_modificar_datos_web_reemision(''' || v_registros.nro_boleto_reemision || ''',''' || v_registros.nro_boleto || ''')');
         end loop;
 
 
@@ -230,6 +250,9 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
     EXCEPTION
 
     WHEN OTHERS THEN
+      if(p_transaccion='OBING_DETBOWEB_INS')then
+        v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
+      end if;
       v_resp='';
       v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
       v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
@@ -237,7 +260,7 @@ CREATE OR REPLACE FUNCTION obingresos.ft_detalle_boletos_web_ime (
       raise exception '%',v_resp;
 
   END;
-$body$
+  $body$
 LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT

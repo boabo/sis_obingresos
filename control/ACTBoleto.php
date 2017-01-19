@@ -7,8 +7,9 @@
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
 include(dirname(__FILE__).'/../reportes/RBoleto.php');
-class ACTBoleto extends ACTbase{    
-	var $objParamAux;		
+include(dirname(__FILE__).'/../reportes/RReporteBoletoResiberVentasWeb.php');
+class ACTBoleto extends ACTbase{
+	var $objParamAux;
 	function listarBoleto(){
 		$this->objParam->defecto('ordenacion','id_boleto');
 
@@ -444,6 +445,7 @@ class ACTBoleto extends ACTbase{
                 throw new Exception("No se pudo conectar con Resiber");
             }
             curl_close($s);
+
             if (strpos($_out,'spAppConciliacionDiariaBoA_Result')) {
                 $_out = substr($_out, 109);
                 $_out = substr($_out, 0, -4);
@@ -453,12 +455,16 @@ class ACTBoleto extends ACTbase{
                 $this->objParam->addParametro('detalle_boletos', $_out);
 
                 $this->objFunc = $this->create('MODBoleto');
+
                 $this->res = $this->objFunc->detalleDiarioBoletosWeb($this->objParam);
+
+
+
                 if ($this->res->getTipo()=='ERROR') {
                     $this->res->imprimirRespuesta($this->res->generarJson());
-                    exit;
                 }
             }
+
 
 
         }
@@ -476,7 +482,45 @@ class ACTBoleto extends ACTbase{
 
     }
 
+	function reporteBoletoResiberVentasWeb(){
+		$this->objParam->addParametro('tipo', 'sin_boletos_web');
+		$this->objFunc = $this->create('MODBoleto');
+		$this->res = $this->objFunc->listarReporteResiberVentasWeb($this->objParam);
+		$this->objParam->addParametro('resiber', $this->res->datos);
 
+		$this->objParam->addParametro('tipo', 'sin_boletos_resiber');
+		$this->objFunc = $this->create('MODBoleto');
+		$this->res = $this->objFunc->listarReporteResiberVentasWeb($this->objParam);
+		$this->objParam->addParametro('ventas_web', $this->res->datos);
+
+		$this->objParam->addParametro('tipo', 'montos_diferentes');
+		$this->objFunc = $this->create('MODBoleto');
+		$this->res = $this->objFunc->listarReporteResiberVentasWeb($this->objParam);
+		$this->objParam->addParametro('montos_diferentes', $this->res->datos);
+
+		//obtener titulo de reporte
+		$titulo = 'Reporte Depositos';
+		//Genera el nombre del archivo (aleatorio + titulo)
+		$nombreArchivo = uniqid(md5(session_id()) . $titulo);
+
+		$nombreArchivo .= '.xls';
+		$this->objParam->addParametro('nombre_archivo', $nombreArchivo);
+		//$this->objParam->addParametro('datos', $this->res->datos);
+		//Instancia la clase de excel
+		$this->objReporteFormato = new RReporteBoletoResiberVentasWeb($this->objParam);
+		$this->objReporteFormato->generarBoletosSinVentasWeb();
+		$this->objReporteFormato->generarVentasWebSinBoletos();
+		$this->objReporteFormato->generarDiferenciaMonto();
+
+
+		$this->objReporteFormato->generarReporte();
+
+		$this->mensajeExito = new Mensaje();
+		$this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+		$this->mensajeExito->setArchivoGenerado($nombreArchivo);
+		$this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+	}
 }
 
 ?>

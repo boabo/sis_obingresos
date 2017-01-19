@@ -74,6 +74,7 @@ class ACTDeposito extends ACTbase{
         }else{
             $lines = file($file_path);
                 foreach ($lines as $line_num => $line){
+                    $line = str_replace("'","",$line);
                     $arr_temp = explode('|',$line);
 
                     $this->objParam->addParametro('nro_deposito',$arr_temp[0]);
@@ -84,6 +85,7 @@ class ACTDeposito extends ACTbase{
                     $this->objParam->addParametro('moneda',$arr_temp[13]);
                     $this->objParam->addParametro('estado',$arr_temp[4]);
                     $this->objParam->addParametro('fecha',$arr_temp[2]);
+                    $this->objParam->addParametro('observaciones',$arr_temp[16]);
                     $this->objFunc=$this->create('MODDeposito');
                     $this->res=$this->objFunc->subirDatos($this->objParam); // cambiar
 
