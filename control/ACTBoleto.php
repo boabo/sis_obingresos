@@ -8,8 +8,10 @@
 */
 include(dirname(__FILE__).'/../reportes/RBoleto.php');
 include(dirname(__FILE__).'/../reportes/RReporteBoletoResiberVentasWeb.php');
+
 class ACTBoleto extends ACTbase{
 	var $objParamAux;
+
 	function listarBoleto(){
 		$this->objParam->defecto('ordenacion','id_boleto');
 
@@ -511,7 +513,6 @@ class ACTBoleto extends ACTbase{
 		$this->objReporteFormato->generarBoletosSinVentasWeb();
 		$this->objReporteFormato->generarVentasWebSinBoletos();
 		$this->objReporteFormato->generarDiferenciaMonto();
-
 
 		$this->objReporteFormato->generarReporte();
 

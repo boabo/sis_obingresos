@@ -455,14 +455,12 @@ class MODBoleto extends MODbase{
         return $this->respuesta;
     }
 
-
 	function  listarReporteResiberVentasWeb()
 	{
 		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='obingresos.ft_deposito_sel';
+		$this->procedimiento='obingresos.ft_boleto_sel';
 		$this->transaccion='OBING_REPRESVEW_SEL';
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
-
 
 		$this->setParametro('fecha_ini','fecha_ini','date');
 		$this->setParametro('fecha_fin','fecha_fin','date');

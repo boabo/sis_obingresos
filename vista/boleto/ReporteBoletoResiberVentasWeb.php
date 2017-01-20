@@ -12,6 +12,7 @@ header("content-type: text/javascript; charset=UTF-8");
     Phx.vista.ReporteBoletoResiberVentasWeb = Ext.extend(Phx.frmInterfaz, {
         Atributos : [
             /*{
+
                 config:{
                     name: 'por',
                     fieldLabel: 'Obtener diferencias por',
@@ -26,6 +27,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo:1,
                 form:true
             },*/
+
             {
                 config:{
                     name: 'fecha_ini',
@@ -81,4 +83,6 @@ header("content-type: text/javascript; charset=UTF-8");
         clsSubmit : 'bprint'
 
     })
+
 </script>
+

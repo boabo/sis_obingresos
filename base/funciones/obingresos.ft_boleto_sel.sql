@@ -352,7 +352,89 @@ BEGIN
 
 		end;
         
-        
+    /*********************************
+    #TRANSACCION:  'OBING_REPRESVEW_SEL'
+    #DESCRIPCION:	Reporte Deposito
+    #AUTOR:		Gonzalo Sarmiento
+    #FECHA:		06-12-2016
+    ***********************************/
+
+    ELSIF(p_transaccion= 'OBING_REPRESVEW_SEL')then
+		begin
+            if(v_parametros.tipo = 'sin_boletos_web')then
+                v_consulta = 'select b.nro_boleto as boleto_resiber,
+                              dbw.billete as boleto_ventas_web,
+                             bfp.numero_tarjeta,
+                             b.fecha_emision as fecha,
+                             b.total as monto_resiber,
+                             dbw.importe as monto_ventas_web,
+                             b.moneda
+                      from obingresos.tboleto b
+                           inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                           left join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
+                      where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
+                            b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
+                            bfp.numero_tarjeta like ''%000000005555'' and
+                            bfp.tarjeta = ''VI'' and voided = ''no'' and dbw.billete is null
+                            group by b.nro_boleto, b.fecha_emision,
+                                     dbw.billete, bfp.numero_tarjeta,
+                                     dbw.importe, dbw.moneda,
+                                   b.total, b.moneda
+                            order by fecha';
+            elsif(v_parametros.tipo='sin_boletos_resiber')then
+                v_consulta = 'select b.nro_boleto as boleto_resiber,
+                                    dbw.billete as boleto_ventas_web,
+                                   bfp.numero_tarjeta,
+                                   dbw.fecha as fecha,
+                                   dbw.importe as monto_resiber,
+                                   b.total as monto_ventas_web,
+                                   dbw.moneda
+                            from obingresos.tdetalle_boletos_web dbw
+                                 left join obingresos.tboleto b on dbw.billete = b.nro_boleto
+                                 left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                            where dbw.fecha >= '''||v_parametros.fecha_ini||'''::date and
+                                  dbw.fecha < '''||v_parametros.fecha_fin||'''::date and
+                                   b.nro_boleto is null
+                            group by b.nro_boleto, fecha, dbw.billete, bfp.numero_tarjeta,
+                            dbw.importe, dbw.moneda, b.total, b.moneda
+                            UNION ALL
+                            select b.nro_boleto as boleto_resiber,
+                                    dbw.billete as boleto_ventas_web,
+                                   bfp.numero_tarjeta,
+                                   b.fecha_emision as fecha,
+                                   b.total as monto_resiber,
+                                   dbw.importe as monto_ventas_web,
+                                   dbw.moneda
+                            from obingresos.tboleto b
+                                 inner join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
+                                 left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                            where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
+                                  b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
+                                  voided = ''si''
+                            order by fecha';
+            else
+                v_consulta='select b.nro_boleto as boleto_resiber,
+                            dbw.billete as boleto_ventas_web,
+                           bfp.numero_tarjeta,
+                           b.fecha_emision as fecha,
+                           b.total as monto_resiber,
+                           dbw.importe as monto_ventas_web,
+                           b.moneda
+                    from obingresos.tboleto b
+                         inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
+                         left join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
+                    where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
+                          b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
+                          bfp.numero_tarjeta like ''%000000005555'' and
+                          bfp.tarjeta = ''VI'' and
+                          voided = ''no'' and
+                          b.total!=dbw.importe
+                    group by b.nro_boleto, b.fecha_emision, dbw.billete, bfp.numero_tarjeta,
+                    dbw.importe, dbw.moneda, b.total, b.moneda
+                    order by fecha';
+            end if;
+            return v_consulta;
+        end;
 					
 	else
 					     
