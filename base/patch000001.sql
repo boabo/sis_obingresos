@@ -37,7 +37,7 @@ CREATE TABLE obingresos.tcomprobante_det (
   fecha_ven_ini DATE,
   fecha_ven_fin DATE,
   CONSTRAINT tcomprobante_det_pkey PRIMARY KEY(id_comprobante_det)
-); 
+);
 
 CREATE TABLE obingresos.tagencia (
   id_agencia SERIAL NOT NULL,
@@ -53,19 +53,19 @@ CREATE TABLE obingresos.tagencia (
   id_moneda_control INTEGER NOT NULL,
   CONSTRAINT tagencia_pkey PRIMARY KEY(id_agencia)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE SEQUENCE obingresos.tboleto_id_boleto_seq
-  INCREMENT 1 MINVALUE 1
-  MAXVALUE 9223372036854775807 START 1
-  CACHE 1;
-  
+INCREMENT 1 MINVALUE 1
+MAXVALUE 9223372036854775807 START 1
+CACHE 1;
+
 CREATE TABLE obingresos.tboleto (
   id_boleto INTEGER DEFAULT nextval('obingresos.tboleto_id_boleto_seq'::regclass) NOT NULL,
   nro_boleto VARCHAR(50) NOT NULL,
   pasajero VARCHAR(100) NOT NULL,
   fecha_emision DATE NOT NULL,
-  total NUMERIC(18,2) NOT NULL,  
+  total NUMERIC(18,2) NOT NULL,
   comision NUMERIC(18,2),
   liquido NUMERIC(18,2) NOT NULL,
   id_moneda_boleto INTEGER NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE obingresos.tboleto (
   neto NUMERIC(18,2) NOT NULL,
   CONSTRAINT tboleto_pkey PRIMARY KEY(id_boleto)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 
 CREATE TABLE obingresos.tdeposito (
@@ -87,17 +87,17 @@ CREATE TABLE obingresos.tdeposito (
   id_moneda_deposito INTEGER,
   id_agencia INTEGER ,
   fecha DATE NOT NULL,
-  saldo NUMERIC(18,2) NOT NULL, 
+  saldo NUMERIC(18,2) NOT NULL,
   moneda VARCHAR(5),
   agt VARCHAR(20),
   agtnoiata VARCHAR(20),
   fecini DATE,
   fecfin DATE,
   observaciones TEXT,
-  id_cuenta_bancaria INTEGER, 
+  id_cuenta_bancaria INTEGER,
   CONSTRAINT tdeposito_pkey PRIMARY KEY(id_deposito)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 
 
@@ -111,7 +111,7 @@ CREATE TABLE obingresos.tdeposito_boleto (
   tc NUMERIC(12,6) NOT NULL,
   CONSTRAINT tdeposito_boleto_pkey PRIMARY KEY(id_deposito_boleto)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 
 
@@ -120,47 +120,47 @@ INHERITS (pxp.tbase) WITHOUT OIDS;
 /********************************************I-SCP-JRR-OBINGRESOS-0-02/02/2016********************************************/
 
 ALTER TABLE obingresos.tagencia
-  ADD COLUMN agencia_ato CHAR(1) DEFAULT 'N' NOT NULL;
+ADD COLUMN agencia_ato CHAR(1) DEFAULT 'N' NOT NULL;
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN gds VARCHAR(5);
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN tipdoc VARCHAR(5) NOT NULL;
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN ruta VARCHAR(2);
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN cupones INTEGER NOT NULL;
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN origen VARCHAR(10);
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN destino varchar(10);
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN tipopax varchar(5);
+ADD COLUMN gds VARCHAR(5);
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN retbsp VARCHAR(5) NOT NULL;
+ADD COLUMN tipdoc VARCHAR(5) NOT NULL;
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN estado VARCHAR(20);
-  
+ADD COLUMN ruta VARCHAR(2);
+
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN endoso VARCHAR(255);
-  
+ADD COLUMN cupones INTEGER NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN origen VARCHAR(10);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN destino varchar(10);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN tipopax varchar(5);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN retbsp VARCHAR(5) NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN estado VARCHAR(20);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN endoso VARCHAR(255);
+
 CREATE TABLE obingresos.testacion (
   id_estacion SERIAL NOT NULL,
   codigo VARCHAR(20) NOT NULL,
   nombre VARCHAR(100) NOT NULL,
   id_lugar INTEGER NOT NULL,
-  tipo_pais VARCHAR(5),  
+  tipo_pais VARCHAR(5),
   CONSTRAINT testacion_pkey PRIMARY KEY(id_estacion)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 
 CREATE TABLE obingresos.tcomision (
@@ -169,10 +169,10 @@ CREATE TABLE obingresos.tcomision (
   porcentaje NUMERIC(5,2) NOT NULL,
   tipodoc varchar(20) NOT NULL,
   codigo VARCHAR(50),
-  nombre VARCHAR(150),  
+  nombre VARCHAR(150),
   CONSTRAINT tcomision_pkey PRIMARY KEY(id_comision)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE TABLE obingresos.timpuesto (
   id_impuesto SERIAL NOT NULL,
@@ -180,54 +180,54 @@ CREATE TABLE obingresos.timpuesto (
   porcentaje NUMERIC(5,2) NOT NULL,
   tipodoc varchar(20) NOT NULL,
   codigo VARCHAR(50),
-  nombre VARCHAR(150), 
-  monto numeric(18,2), 
+  nombre VARCHAR(150),
+  monto numeric(18,2),
   tipo varchar(5),
   CONSTRAINT timpuesto_pkey PRIMARY KEY(id_impuesto)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE TABLE obingresos.tforma_pago (
   id_forma_pago SERIAL NOT NULL,
   codigo VARCHAR(20) NOT NULL,
   nombre VARCHAR(100) NOT NULL,
-  id_moneda INTEGER NOT NULL,  
-  id_lugar INTEGER NOT NULL, 
-  ctacte VARCHAR(2) NOT NULL,     
+  id_moneda INTEGER NOT NULL,
+  id_lugar INTEGER NOT NULL,
+  ctacte VARCHAR(2) NOT NULL,
   CONSTRAINT tforma_pago_pkey PRIMARY KEY(id_forma_pago)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE TABLE obingresos.tboleto_comision (
   id_boleto_comision SERIAL NOT NULL,
   importe NUMERIC(18,2) NOT NULL,
   id_comision INTEGER NOT NULL,
-  id_boleto INTEGER NOT NULL,  
+  id_boleto INTEGER NOT NULL,
   CONSTRAINT tboleto_comision_pkey PRIMARY KEY(id_boleto_comision)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE TABLE obingresos.tboleto_impuesto (
   id_boleto_impuesto SERIAL NOT NULL,
   importe NUMERIC(18,2) NOT NULL,
   id_impuesto INTEGER NOT NULL,
-  id_boleto INTEGER NOT NULL,  
+  id_boleto INTEGER NOT NULL,
   CONSTRAINT tboleto_impuesto_pkey PRIMARY KEY(id_boleto_impuesto)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 CREATE TABLE obingresos.tboleto_forma_pago (
   id_boleto_forma_pago SERIAL NOT NULL,
   importe NUMERIC(18,2) NOT NULL,
   id_forma_pago INTEGER NOT NULL,
-  id_boleto INTEGER NOT NULL,  
+  id_boleto INTEGER NOT NULL,
   tipo VARCHAR(20),
   tarjeta VARCHAR(6) ,
   numero_tarjeta VARCHAR(20),
   ctacte VARCHAR(20),
   CONSTRAINT tboleto_forma_pago_pkey PRIMARY KEY(id_boleto_forma_pago)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-02/02/2016********************************************/
 
@@ -238,21 +238,21 @@ CREATE TABLE obingresos.tperiodo_venta (
   mes VARCHAR(30) NOT NULL,
   nro_periodo_mes INTEGER NOT NULL,
   fecha_ini DATE NOT NULL,
-  fecha_fin DATE NOT NULL,  
+  fecha_fin DATE NOT NULL,
   tipo VARCHAR(20) NOT NULL,
   estado VARCHAR (15) NOT NULL,
   id_pais	INTEGER NOT NULL,
   id_gestion INTEGER NOT NULL,
   CONSTRAINT tperiodo_venta_pkey PRIMARY KEY(id_periodo_venta)
 )
-INHERITS (pxp.tbase) WITHOUT OIDS;
+  INHERITS (pxp.tbase) WITHOUT OIDS;
 
 ALTER TABLE obingresos.tagencia
-  ADD COLUMN id_lugar INTEGER NOT NULL;
+ADD COLUMN id_lugar INTEGER NOT NULL;
 
 ALTER TABLE obingresos.tagencia
-  ADD COLUMN boaagt VARCHAR(2);
-  
+ADD COLUMN boaagt VARCHAR(2);
+
 CREATE TABLE obingresos.taeropuerto (
   id_aeropuerto SERIAL NOT NULL,
   codigo VARCHAR(5) NOT NULL,
@@ -264,19 +264,19 @@ CREATE TABLE obingresos.taeropuerto (
 ;
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN tc NUMERIC(18,7);
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN moneda_sucursal VARCHAR(3);
+ADD COLUMN tc NUMERIC(18,7);
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN id_usuario_cajero INTEGER;
-  
+ADD COLUMN moneda_sucursal VARCHAR(3);
+
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN id_punto_venta INTEGER;
-  
+ADD COLUMN id_usuario_cajero INTEGER;
+
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN ruta_completa VARCHAR(255);
+ADD COLUMN id_punto_venta INTEGER;
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN ruta_completa VARCHAR(255);
 /********************************************F-SCP-JRR-OBINGRESOS-0-08/04/2016********************************************/
 
 /********************************************I-SCP-JRR-OBINGRESOS-0-19/07/2016********************************************/
@@ -297,32 +297,32 @@ CREATE TABLE obingresos.tboleto_vuelo (
 ) INHERITS (pxp.tbase);
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN tiene_conjuncion VARCHAR(2);
-  
-ALTER TABLE obingresos.tboleto
-  ADD COLUMN id_boleto_conjuncion INTEGER;
+ADD COLUMN tiene_conjuncion VARCHAR(2);
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN localizador VARCHAR(10);
+ADD COLUMN id_boleto_conjuncion INTEGER;
 
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN identificacion VARCHAR(30);
+ADD COLUMN localizador VARCHAR(10);
 
- ALTER TABLE obingresos.tboleto
-  ADD COLUMN xt NUMERIC(18,2) DEFAULT 0 NOT NULL;
-  
 ALTER TABLE obingresos.tboleto
-  ADD COLUMN mensaje_error TEXT;
+ADD COLUMN identificacion VARCHAR(30);
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN xt NUMERIC(18,2) DEFAULT 0 NOT NULL;
+
+ALTER TABLE obingresos.tboleto
+ADD COLUMN mensaje_error TEXT;
 
 ALTER TABLE obingresos.tboleto_impuesto
-  ADD COLUMN calculo_tarifa VARCHAR(2) DEFAULT 'no' NOT NULL;
-  
+ADD COLUMN calculo_tarifa VARCHAR(2) DEFAULT 'no' NOT NULL;
+
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-19/07/2016********************************************/
 /********************************************I-SCP-JRR-OBINGRESOS-0-30/09/2016********************************************/
 
 ALTER TABLE obingresos.tboleto_forma_pago
-  ADD COLUMN codigo_tarjeta VARCHAR(20);
+ADD COLUMN codigo_tarjeta VARCHAR(20);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-30/09/2016********************************************/
 
@@ -459,7 +459,7 @@ USING btree (pnr);
 ALTER TABLE obingresos.tdeposito
 ADD COLUMN tipo VARCHAR(15) DEFAULT 'agencia' NOT NULL;
 
-/********************************************I-SCP-JRR-OBINGRESOS-0-25/11/2016********************************************/
+/********************************************F-SCP-JRR-OBINGRESOS-0-25/11/2016********************************************/
 
 /********************************************I-SCP-JRR-OBINGRESOS-0-19/01/2017********************************************/
 CREATE TABLE obingresos.tventa_web_modificaciones (
