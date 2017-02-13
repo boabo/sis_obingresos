@@ -29,6 +29,7 @@ class MODAgencia extends MODbase{
 		$this->captura('tipo_cambio','varchar');
 		$this->captura('codigo_int','varchar');
 		$this->captura('codigo','varchar');
+		$this->captura('codigo_noiata','varchar');
 		$this->captura('tipo_agencia','varchar');
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
@@ -37,7 +38,7 @@ class MODAgencia extends MODbase{
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
-		
+
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
