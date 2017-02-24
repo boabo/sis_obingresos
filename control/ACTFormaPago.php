@@ -13,6 +13,10 @@ class ACTFormaPago extends ACTbase{
 		$this->objParam->defecto('ordenacion','id_forma_pago');
 
 		$this->objParam->defecto('dir_ordenacion','asc');
+
+		if ($this->objParam->getParametro('banca_electronica') == 'si') {
+			$this->objParam->addFiltro(" (fop.nombre LIKE ''%BANCA%'') ");
+		}
 		
 		if ($this->objParam->getParametro('id_punto_venta') != '') {
 			$this->objParam->addFiltro("fop.id_lugar = (select param.f_get_id_lugar_pais(id_lugar) 
@@ -24,6 +28,7 @@ class ACTFormaPago extends ACTbase{
         if ($this->objParam->getParametro('fp_ventas') == 'si') {
             $this->objParam->addFiltro("(fop.codigo not in (''CM'',''CHQV'') and fop.codigo not like ''RF%'' or fop.codigo not like ''TC%'')");
         }
+
 		
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);

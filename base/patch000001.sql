@@ -506,3 +506,64 @@ CREATE UNIQUE INDEX tboleto_retweb_idx1 ON obingresos.tboleto_retweb
 USING btree (nro_boleto COLLATE pg_catalog."default");
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-19/01/2017********************************************/
+
+
+/********************************************I-SCP-FFP-OBINGRESOS-0-15/02/2017********************************************/
+
+CREATE TABLE obingresos.tskybiz_archivo (
+  id_skybiz_archivo SERIAL,
+  nombre_archivo VARCHAR(255),
+  subido VARCHAR(255),
+  comentario VARCHAR(255),
+  fecha DATE,
+  PRIMARY KEY(id_skybiz_archivo)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+
+
+
+CREATE TYPE obingresos.json_ins_skybiz_archivo AS (
+  nombre_archivo VARCHAR(255),
+  subido VARCHAR(255),
+  comentario VARCHAR(255),
+  moneda VARCHAR(255)
+);
+
+ALTER TABLE obingresos.tskybiz_archivo ADD moneda VARCHAR(255) NULL;
+
+
+CREATE TABLE obingresos.tskybiz_archivo_detalle (
+  id_skybiz_archivo_detalle SERIAL,
+  id_skybiz_archivo INTEGER,
+  entity VARCHAR(255),
+  ip VARCHAR(255),
+  request_date_time VARCHAR(255),
+  issue_date_time VARCHAR(255),
+  pnr VARCHAR(255),
+  identifier_pnr VARCHAR(255),
+  authorization_ VARCHAR(255),
+  total_amount NUMERIC(10,2),
+  currency VARCHAR(255),
+  status VARCHAR(255),
+  PRIMARY KEY(id_skybiz_archivo_detalle)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+
+CREATE TYPE obingresos.json_ins_skybiz_archivo_detalle AS (
+  entity                    VARCHAR(255),
+  ip                        VARCHAR(255),
+  request_date_time         VARCHAR(255),
+  issue_date_time           VARCHAR(255),
+  pnr                       VARCHAR(255),
+  identifier_pnr            VARCHAR(255),
+  authorization_            VARCHAR(255),
+  total_amount              VARCHAR(255),
+  currency                  VARCHAR(255),
+  status                    VARCHAR(255),
+  nombre_archivo            VARCHAR(255)
+);
+
+
+/********************************************F-SCP-FFP-OBINGRESOS-0-15/02/2017********************************************/
