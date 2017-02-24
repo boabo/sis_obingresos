@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION obingresos.ftrig_partition_boleto (
 )
-  RETURNS trigger AS
-  $body$
+RETURNS trigger AS
+$body$
   DECLARE
     nombre_tabla   varchar;
     consulta	   varchar;
@@ -11,6 +11,7 @@ CREATE OR REPLACE FUNCTION obingresos.ftrig_partition_boleto (
     crear_tabla		text;
     v_rol 			varchar;
     campos			varchar;
+    v_id_boleto		integer;
 
 
   BEGIN

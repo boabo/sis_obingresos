@@ -4,51 +4,51 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
   p_tabla varchar,
   p_transaccion varchar
 )
-  RETURNS varchar AS
-  $body$
-  /**************************************************************************
-   SISTEMA:		Ingresos
-   FUNCION: 		obingresos.ft_deposito_sel
-   DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tdeposito'
-   AUTOR: 		 (jrivera)
-   FECHA:	        06-01-2016 22:42:28
-   COMENTARIOS:
-  ***************************************************************************
-   HISTORIAL DE MODIFICACIONES:
+RETURNS varchar AS
+$body$
+/**************************************************************************
+ SISTEMA:		Ingresos
+ FUNCION: 		obingresos.ft_deposito_sel
+ DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tdeposito'
+ AUTOR: 		 (jrivera)
+ FECHA:	        06-01-2016 22:42:28
+ COMENTARIOS:
+***************************************************************************
+ HISTORIAL DE MODIFICACIONES:
 
-   DESCRIPCION:
-   AUTOR:
-   FECHA:
-  ***************************************************************************/
+ DESCRIPCION:
+ AUTOR:
+ FECHA:
+***************************************************************************/
 
-  DECLARE
+DECLARE
 
-    v_consulta    		varchar;
-    v_parametros  		record;
-    v_nombre_funcion   	text;
-    v_resp				varchar;
+	v_consulta    		varchar;
+	v_parametros  		record;
+	v_nombre_funcion   	text;
+	v_resp				varchar;
     v_deposito			record;
-    v_fecha_in				date;
+	v_fecha_in				date;
     v_fecha_fi				date;
     v_id_deposito			integer;
 
-  BEGIN
+BEGIN
 
-    v_nombre_funcion = 'obingresos.ft_deposito_sel';
+	v_nombre_funcion = 'obingresos.ft_deposito_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
-    /*********************************
-     #TRANSACCION:  'OBING_DEP_SEL'
-     #DESCRIPCION:	Consulta de datos
-     #AUTOR:		jrivera
-     #FECHA:		06-01-2016 22:42:28
-    ***********************************/
+	/*********************************
+ 	#TRANSACCION:  'OBING_DEP_SEL'
+ 	#DESCRIPCION:	Consulta de datos
+ 	#AUTOR:		jrivera
+ 	#FECHA:		06-01-2016 22:42:28
+	***********************************/
 
-    if(p_transaccion='OBING_DEP_SEL')then
+	if(p_transaccion='OBING_DEP_SEL')then
 
-      begin
-        --Sentencia de la consulta
-        v_consulta:='select
+    	begin
+    		--Sentencia de la consulta
+			v_consulta:='select
 						dep.id_deposito,
 						dep.estado_reg,
 						dep.nro_deposito,
@@ -72,27 +72,27 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
 						inner join param.tmoneda mon on mon.id_moneda = dep.id_moneda_deposito
 				        where  ';
 
-        --Definicion de la respuesta
-        v_consulta:=v_consulta||v_parametros.filtro;
-        v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 
-        --Devuelve la respuesta
-        return v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
 
-      end;
+		end;
 
-    /*********************************
-   #TRANSACCION:  'OBING_DEREP_SEL'
-   #DESCRIPCION:	Reporte Deposito
-   #AUTOR:		mam
-   #FECHA:		23-11-2016 22:42:28
-  ***********************************/
+  	/*********************************
+ 	#TRANSACCION:  'OBING_DEREP_SEL'
+ 	#DESCRIPCION:	Reporte Deposito
+ 	#AUTOR:		mam
+ 	#FECHA:		23-11-2016 22:42:28
+	***********************************/
 
     ELSIF(p_transaccion= 'OBING_DEREP_SEL')then
-      begin
-
-        if (v_parametros.por = 'boleto') then
-          v_consulta = 'with boletos as (
+		begin
+        
+        	if (v_parametros.por = 'boleto') then
+            	v_consulta = 'with boletos as (
                     select b.id_boleto,b.fecha_emision,b.localizador,bfp.importe, m.codigo_internacional as moneda,b.nro_boleto,bfp.numero_tarjeta,a.codigo_int as agencia
                     
                     from obingresos.tboleto b
@@ -133,10 +133,10 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                                                     d.pnr,
                                                     d.numero_tarjeta_deposito
                                             having sum(b.importe) != d.monto_deposito or d.monto_deposito is null
-                                            order by d.nro_deposito';
-
-        else
-          v_consulta = 'with boletos as (
+                                            order by d.nro_deposito';            
+                    
+            else
+            	v_consulta = 'with boletos as (
                     select b.id_boleto,b.fecha_emision,b.localizador,bfp.importe, m.codigo_internacional as moneda,b.nro_boleto,bfp.numero_tarjeta,a.codigo_int as agencia
                     
                     from obingresos.tboleto b
@@ -176,16 +176,16 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                                                     d.numero_tarjeta_deposito
                                             having sum(b.importe) != d.monto_deposito or sum(b.importe) is null
                                             order by d.nro_deposito';
+            
+            end if;        
+        	
+            raise notice '%',v_consulta;
+ 
+		 --Devuelve la respuesta
+			return v_consulta;
 
-        end if;
-
-        raise notice '%',v_consulta;
-
-        --Devuelve la respuesta
-        return v_consulta;
-
-      end;
-
+    end;
+    
     /*********************************
  	#TRANSACCION:  'OBING_REPRESVEW_SEL'
  	#DESCRIPCION:	Reporte Deposito
@@ -194,9 +194,10 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
 	***********************************/
 
     ELSIF(p_transaccion= 'OBING_REPRESVEW_SEL')then
-      begin
-        if(v_parametros.tipo = 'sin_boletos_web')then
-          v_consulta = 'select b.nro_boleto as boleto_resiber,
+		begin
+        	raise exception 'llega';
+            if(v_parametros.tipo = 'sin_boletos_web')then
+                v_consulta = 'select b.nro_boleto as boleto_resiber,
                               dbw.billete as boleto_ventas_web,
                              bfp.numero_tarjeta,
                              b.fecha_emision as fecha,
@@ -218,8 +219,8 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                                      dbw.importe, dbw.moneda,
                                    b.total, b.moneda
                             order by fecha';
-        elsif(v_parametros.tipo='sin_boletos_resiber')then
-          v_consulta = 'select b.nro_boleto as boleto_resiber,
+            elsif(v_parametros.tipo='sin_boletos_resiber')then
+                v_consulta = 'select b.nro_boleto as boleto_resiber,
                                     dbw.billete as boleto_ventas_web,
                                    bfp.numero_tarjeta,
                                    dbw.fecha as fecha,
@@ -252,8 +253,8 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                                   voided = ''si''  and  dbw.medio_pago != ''COMPLETAR-CC'' and 
                                   b.estado_reg =''activo'' and vwm.nro_boleto is null
                             order by fecha';
-        else
-          v_consulta='select b.nro_boleto as boleto_resiber,
+            else
+                v_consulta='select b.nro_boleto as boleto_resiber,
                             dbw.billete as boleto_ventas_web,
                            bfp.numero_tarjeta,
                            b.fecha_emision as fecha,
@@ -272,51 +273,51 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_sel (
                     group by b.nro_boleto, b.fecha_emision, dbw.billete, bfp.numero_tarjeta,
                     dbw.importe, dbw.moneda, b.total, b.moneda
                     order by fecha';
-        end if;
-        return v_consulta;
-      end;
+            end if;
+            return v_consulta;
+        end;
 
-    /*********************************
-     #TRANSACCION:  'OBING_DEP_CONT'
-     #DESCRIPCION:	Conteo de registros
-     #AUTOR:		jrivera
-     #FECHA:		06-01-2016 22:42:28
-    ***********************************/
+	/*********************************
+ 	#TRANSACCION:  'OBING_DEP_CONT'
+ 	#DESCRIPCION:	Conteo de registros
+ 	#AUTOR:		jrivera
+ 	#FECHA:		06-01-2016 22:42:28
+	***********************************/
 
-    elsif(p_transaccion='OBING_DEP_CONT')then
+	elsif(p_transaccion='OBING_DEP_CONT')then
 
-      begin
-        --Sentencia de la consulta de conteo de registros
-        v_consulta:='select count(id_deposito)
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select count(id_deposito)
 					    from obingresos.tdeposito dep
 					    inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
 						inner join param.tmoneda mon on mon.id_moneda = dep.id_moneda_deposito
 					    where ';
 
-        --Definicion de la respuesta
-        v_consulta:=v_consulta||v_parametros.filtro;
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
 
-        --Devuelve la respuesta
-        return v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
 
-      end;
-    else
+		end;
+  	else
 
-      raise exception 'Transaccion inexistente';
+		raise exception 'Transaccion inexistente';
 
-    end if;
+	end if;
 
-    EXCEPTION
+EXCEPTION
 
-    WHEN OTHERS THEN
-      v_resp='';
-      v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
-      v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
-      v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
-      raise exception '%',v_resp;
-  END;
-  $body$
+	WHEN OTHERS THEN
+			v_resp='';
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
+			v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
+			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
+			raise exception '%',v_resp;
+END;
+$body$
 LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT

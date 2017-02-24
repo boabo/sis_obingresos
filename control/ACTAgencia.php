@@ -16,7 +16,7 @@ class ACTAgencia extends ACTbase{
 
 		if($this->objParam->getParametro('tipo_agencia') != ''){
 			$this->objParam->addFiltro(" age.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");
-			$this->objParam->addFiltro(" age.id_lugar in (select id_lugar from param.tlugar where codigo=''".$this->objParam->getParametro('lugar')."'')");
+			//$this->objParam->addFiltro(" age.id_lugar in (select id_lugar from param.tlugar where codigo=''".$this->objParam->getParametro('lugar')."'')");
 		}
 
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
