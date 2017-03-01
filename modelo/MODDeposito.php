@@ -37,6 +37,7 @@ class MODDeposito extends MODbase{
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
 		$this->captura('desc_moneda','varchar');
+        $this->captura('agt','varchar');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -56,6 +57,7 @@ class MODDeposito extends MODbase{
 		//Define los parametros para la funcion
 		$this->setParametro('estado_reg','estado_reg','varchar');
 		$this->setParametro('nro_deposito','nro_deposito','varchar');
+        $this->setParametro('agt','agt','varchar');
 		$this->setParametro('monto_deposito','monto_deposito','numeric');
 		$this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
 		$this->setParametro('id_agencia','id_agencia','int4');
@@ -64,6 +66,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('descripcion','descripcion','varchar');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('moneda','moneda','varchar');
+        $this->setParametro('tipo','tipo','varchar');
 
 
 		//Ejecuta la instruccion
@@ -84,11 +87,13 @@ class MODDeposito extends MODbase{
 		$this->setParametro('id_deposito','id_deposito','int4');
 		$this->setParametro('estado_reg','estado_reg','varchar');
 		$this->setParametro('nro_deposito','nro_deposito','varchar');
+        $this->setParametro('agt','agt','varchar');
 		$this->setParametro('monto_deposito','monto_deposito','numeric');
 		$this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
 		$this->setParametro('id_agencia','id_agencia','int4');
 		$this->setParametro('fecha','fecha','date');
 		$this->setParametro('saldo','saldo','numeric');
+        $this->setParametro('tipo','tipo','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

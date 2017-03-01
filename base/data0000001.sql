@@ -26,3 +26,8 @@ select pxp.f_insert_testructura_gui ('SUDE', 'OBINGRESOS');
 select pxp.f_insert_tgui ('Reporte Deposito', 'Reporte Deposito', 'REDE', 'si', 5, '/sis_obingresos/vista/deposito/ReporteDeposito.php', 2, '', 'ReporteDeposito', 'OBINGRESOS');
 select pxp.f_insert_testructura_gui ('REDE', 'OBINGRESOS');
 /***********************************F-DAT-MAM-OBINGRESOS-0-25/11/2016*****************************************/
+
+/***********************************I-DAT-JRR-OBINGRESOS-0-01/03/2017*****************************************/
+select pxp.f_insert_tgui ('Depositos Banca X Inter', 'Depositos Banca X Inter', 'DEPBANINT', 'si', 3, '/sis_obingresos/vista/deposito/DepositoVentaWeb.php', 2, '', 'DepositoVentaWeb', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('DEPBANINT', 'OBINGRESOS');
+/***********************************F-DAT-JRR-OBINGRESOS-0-01/03/2017*****************************************/
