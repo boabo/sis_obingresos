@@ -45,10 +45,11 @@ class RReporteDepositoBancaInternet
             76=>'BY',77=>'BZ');
 
     }
-    function imprimeCabecera($indice,$title) {
+    function imprimeCabecera() {
         $this->docexcel->createSheet();
-        $this->docexcel->setActiveSheetIndex($indice);
-        $this->docexcel->getActiveSheet()->setTitle($title);
+
+        $this->docexcel->setActiveSheetIndex(0);
+        $this->docexcel->getActiveSheet()->setTitle('Depositos Registrados');
 
         foreach($this->objParam->getParametro('datos_deposito') as $valor) {
             if (!in_array($valor['fecha'],$this->fechas)) {
@@ -71,6 +72,8 @@ class RReporteDepositoBancaInternet
             }
             $this->datos_archivo[$valor['fecha']][$valor['banco']] = $valor['monto'];
         }
+
+
 
 
         $styleTitulos1 = array(
@@ -148,17 +151,52 @@ class RReporteDepositoBancaInternet
         //*************************************Cabecera*****************************************
         $this->docexcel->getActiveSheet()->setCellValue('A5','Fecha');
         for ($i=0; $i < count($this->bancos) ; $i++) {
-            $this->docexcel->getActiveSheet()->setCellValue($this->equivalencias[$i] . '5',$this->bancos[$i]);
+            $this->docexcel->getActiveSheet()->setCellValue($this->equivalencias[$i+1] . '5',$this->bancos[$i]);
         }
         $this->docexcel->getActiveSheet()->getStyle('A2:'.$this->equivalencias[$i].'2')->applyFromArray($styleTitulos1);
         $this->docexcel->getActiveSheet()->mergeCells('A2:'.$this->equivalencias[$i].'2');
 
         $this->docexcel->getActiveSheet()->getStyle('A4:'.$this->equivalencias[$i].'4')->applyFromArray($styleTitulos3);
-        $this->docexcel->getActiveSheet()->mergeCells('A4:'.$this->equivalencias[$i].'2');
+        $this->docexcel->getActiveSheet()->mergeCells('A4:'.$this->equivalencias[$i].'4');
 
         $this->docexcel->getActiveSheet()->getStyle('A5:'.$this->equivalencias[$i].'5')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->getStyle('A5:'.$this->equivalencias[$i].'5')->applyFromArray($styleTitulos2);
 
+        $this->docexcel->setActiveSheetIndex(1);
+        $this->docexcel->getActiveSheet()->setTitle('Totales Archivos');
+
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'REPORTE DEPOSITOS ARCHIVOS FTP '. $this->objParam->getParametro('moneda') );
+
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,4,'Del: '.  $this->objParam->getParametro('fecha_ini').'   Al: '.  $this->objParam->getParametro('fecha_fin') );
+
+        $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('J')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('L')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('M')->setWidth(25);
+
+
+        //*************************************Cabecera*****************************************
+        $this->docexcel->getActiveSheet()->setCellValue('A5','Fecha');
+        for ($i=0; $i < count($this->bancos_archivo) ; $i++) {
+            $this->docexcel->getActiveSheet()->setCellValue($this->equivalencias[$i+1] . '5',$this->bancos_archivo[$i]);
+        }
+        $this->docexcel->getActiveSheet()->getStyle('A2:'.$this->equivalencias[$i].'2')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->mergeCells('A2:'.$this->equivalencias[$i].'2');
+
+        $this->docexcel->getActiveSheet()->getStyle('A4:'.$this->equivalencias[$i].'4')->applyFromArray($styleTitulos3);
+        $this->docexcel->getActiveSheet()->mergeCells('A4:'.$this->equivalencias[$i].'4');
+
+        $this->docexcel->getActiveSheet()->getStyle('A5:'.$this->equivalencias[$i].'5')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->getStyle('A5:'.$this->equivalencias[$i].'5')->applyFromArray($styleTitulos2);
     }
     function generarDatos()
     {
@@ -197,111 +235,41 @@ class RReporteDepositoBancaInternet
 
 
         $fila = 6;
-        $datos = $this->objParam->getParametro('datos');
-        $this->imprimeCabecera(0,'Diferencia en monto');
-        $boletos = array();
-        foreach ($datos as $value)
-        {
 
-            if ($value['nro_deposito'] != '') {
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $value['nro_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['fecha_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['pnr']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['monto_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['numero_tarjeta_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['moneda']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['total_boletos']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['nro_boletos'] . ',');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['numero_tarjeta'] . ',');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['fecha_boletos']);
+        $this->docexcel->setActiveSheetIndex(0);
 
-                $this->docexcel->getActiveSheet()
-                    ->getStyle("A$fila:A$fila")
-                    ->getNumberFormat()
-                    ->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_TEXT );
-
-                $this->docexcel->getActiveSheet()
-                    ->getStyle("G$fila:G$fila")
-                    ->getNumberFormat()
-                    ->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_TEXT );
-
-                $this->docexcel->getActiveSheet()->getStyle("A$fila:I$fila")->applyFromArray($styleTitulos3);
-                $this->docexcel->getActiveSheet()->getStyle("A$fila:I$fila")->getAlignment()->setWrapText(true);
-
-
-
-                $fila++;
-
-            } else {
-                $boletos = explode(',',$value['detalle_boletos']);
-
-
-
-
+        for ($i=0; $i<count($this->fechas);$i++) {
+            $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':A' . $fila)->applyFromArray($styleTitulos2);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,$fila,$this->fechas[$i]);
+            for ($j=0; $j<count($this->bancos);$j++) {
+                if (isset($this->datos[$this->fechas[$i]][$this->bancos[$j]])) {
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, $this->datos[$this->fechas[$i]][$this->bancos[$j]]);
+                } else {
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, 0);
+                }
             }
-        }
-
-        if (count($boletos) > 0) {
-            $this->docexcel->createSheet();
-            $this->docexcel->setActiveSheetIndex(1);
-            $this->docexcel->getActiveSheet()->setTitle('Boletos sin deposito');
-
-
-            $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
-            $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
-            $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
-            $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
-            $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-            $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
-            $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
-
-
-
-
-            $this->docexcel->getActiveSheet()->getStyle('A5:G5')->getAlignment()->setWrapText(true);
-            $this->docexcel->getActiveSheet()->getStyle('A5:G5')->applyFromArray($styleTitulos2);
-
-
-
-            //*************************************Cabecera*****************************************
-            $this->docexcel->getActiveSheet()->setCellValue('A5','Boleto');
-            $this->docexcel->getActiveSheet()->setCellValue('B5','Fecha');
-            $this->docexcel->getActiveSheet()->setCellValue('C5','Importe');
-            $this->docexcel->getActiveSheet()->setCellValue('D5','Moneda');
-            $this->docexcel->getActiveSheet()->setCellValue('E5','Agencia');
-            $this->docexcel->getActiveSheet()->setCellValue('F5','PNR');
-            $this->docexcel->getActiveSheet()->setCellValue('G5','Tarjeta Boleto');
-            $fila = 6;
-            for ($i = 0 ; $i <count($boletos) ;$i++) {
-
-                $detalle = explode('|',$boletos[$i]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $detalle[0]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $detalle[1]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $detalle[2]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $detalle[3]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $detalle[4]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $detalle[5]);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $detalle[6]);
-
-                $this->docexcel->getActiveSheet()
-                    ->getStyle("A$fila:A$fila")
-                    ->getNumberFormat()
-                    ->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_TEXT );
-
-
-
-                $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->applyFromArray($styleTitulos3);
-                $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->getAlignment()->setWrapText(true);
-
-
-                $fila++;
-
-
-            }
+            $fila++;
 
         }
+        $fila = 6;
 
+        $this->docexcel->setActiveSheetIndex(1);
 
+        for ($i=0; $i<count($this->fechas_archivo);$i++) {
+            $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':A' . $fila)->applyFromArray($styleTitulos2);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,$fila,$this->fechas_archivo[$i]);
+
+            for ($j=0; $j<count($this->bancos_archivo);$j++) {
+                if (isset($this->datos_archivo[$this->fechas_archivo[$i]][$this->bancos_archivo[$j]])) {
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, $this->datos_archivo[$this->fechas_archivo[$i]][$this->bancos_archivo[$j]]);
+                } else {
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, 0);
+                }
+            }
+            $fila++;
+
+        }
+        $this->docexcel->setActiveSheetIndex(0);
 
     }
     function generarReporte(){

@@ -213,6 +213,7 @@ class MODDeposito extends MODbase{
         $this->ejecutarConsulta();
 
 
+
         //Devuelve la respuesta
         return $this->respuesta;
     }
@@ -241,6 +242,7 @@ class MODDeposito extends MODbase{
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
+        
 
         //Devuelve la respuesta
         return $this->respuesta;

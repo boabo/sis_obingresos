@@ -224,12 +224,12 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select to_char(dep.fecha,''DD/MM/YYYY'')::varchar, dep.agt,dep.monto_deposito
+			v_consulta:='select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, dep.agt,dep.monto_deposito
 					    from obingresos.tdeposito dep                    
 					    
 					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
                         dep.fecha >= ''' || v_parametros.fecha_ini || ''' and dep.fecha <= ''' || v_parametros.fecha_fin || ''' and
-                        dep.id_moneda = '||v_parametros.id_moneda || '
+                        dep.id_moneda_deposito = '||v_parametros.id_moneda || '
                         order by 1,2';
 			
 
@@ -250,7 +250,7 @@ BEGIN
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select to_char(a.fecha,''DD/MM/YYYY'')::varchar, a.banco,sum(ad.total_amount)
 					    from obingresos.tskybiz_archivo_detalle ad
-                        inner join obingresos.tskybiz_archivo a on a.id_archivo = ad.id_archivo
+                        inner join obingresos.tskybiz_archivo a on a.id_skybiz_archivo = ad.id_skybiz_archivo
                         inner join param.tmoneda m on m.codigo_internacional = a.moneda             
 					    
 					    where  ad.estado_reg = ''activo'' and 

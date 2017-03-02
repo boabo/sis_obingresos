@@ -131,11 +131,12 @@ class ACTDeposito extends ACTbase{
         $nombreArchivo .= '.xls';
         $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
         $this->objParam->addParametro('datos_deposito', $this->res->datos);
+        $this->objFunc = $this->create('MODDeposito');
         $this->res = $this->objFunc->reporteDepositoBancaInternetArchivo($this->objParam);
         $this->objParam->addParametro('datos_archivo', $this->res->datos);
         //Instancia la clase de excel
         $this->objReporteFormato = new RReporteDepositoBancaInternet($this->objParam);
-
+        $this->objReporteFormato->imprimeCabecera();
         $this->objReporteFormato->generarDatos();
 
         $this->objReporteFormato->generarReporte();
