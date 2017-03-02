@@ -29,6 +29,9 @@ DECLARE
 	v_id_skybiz_archivo_detalle	integer;
 	v_registros_json	RECORD;
 	v_skybiz_archivo	RECORD;
+	v_banco VARCHAR[];
+	v_id_skybiz_archivo INTEGER;
+	v_fecha VARCHAR[];
 
 BEGIN
 
@@ -171,18 +174,61 @@ BEGIN
 		begin
 			--Sentencia de la eliminacion
 
-			SELECT * into v_skybiz_archivo FROM obingresos.tskybiz_archivo
-			where nombre_archivo = v_parametros.nombre_archivo;
+			--RAISE EXCEPTION '%',v_parametros.nombre_archivo;
 
 
-			DELETE FROM obingresos.tskybiz_archivo_detalle
-			where id_skybiz_archivo = v_id_skybiz_archivo;
+
+
+			v_banco = regexp_split_to_array(v_parametros.nombre_archivo, '.xlsx');
+
+			v_banco = regexp_split_to_array(v_banco[1], '_');
+
+			v_fecha = regexp_split_to_array(v_banco[1], E'\\s+'); --separamos por el espacio
+			v_banco = regexp_split_to_array(v_banco[2], ' ');
+
+
+
+			insert into obingresos.tskybiz_archivo(
+				fecha,
+				subido,
+				comentario,
+				estado_reg,
+				nombre_archivo,
+				id_usuario_ai,
+				usuario_ai,
+				fecha_reg,
+				id_usuario_reg,
+				id_usuario_mod,
+				fecha_mod,
+				moneda,
+				banco
+			) values(
+				v_fecha[1]::DATE,
+				'si',
+				'',
+				'activo',
+				v_parametros.nombre_archivo,
+				v_parametros._id_usuario_ai,
+				v_parametros._nombre_usuario_ai,
+				now(),
+				p_id_usuario,
+				null,
+				null,
+				v_banco[2],
+				v_banco[1]
+
+
+
+			)RETURNING id_skybiz_archivo into v_id_skybiz_archivo;
+
+
+
+
 
 
 			FOR v_registros_json IN (SELECT *
 															 FROM json_populate_recordset(NULL :: obingresos.json_ins_skybiz_archivo_detalle,
 																														v_parametros.arra_json :: JSON)) LOOP
-
 
 
 
@@ -218,7 +264,7 @@ BEGIN
 					'activo',
 					v_registros_json.issue_date_time,
 					v_registros_json.identifier_pnr,
-					v_skybiz_archivo.id_skybiz_archivo,
+					v_id_skybiz_archivo,
 					v_registros_json.pnr,
 					v_registros_json.authorization_,
 					v_parametros._id_usuario_ai,

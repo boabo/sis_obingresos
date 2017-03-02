@@ -567,3 +567,43 @@ CREATE TYPE obingresos.json_ins_skybiz_archivo_detalle AS (
 
 
 /********************************************F-SCP-FFP-OBINGRESOS-0-15/02/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-01/03/2017********************************************/
+DROP INDEX obingresos.tdeposito_idx;
+
+CREATE INDEX tdeposito_idx ON obingresos.tdeposito
+  USING btree (nro_deposito COLLATE pg_catalog."default", tipo COLLATE pg_catalog."default");
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-01/03/2017********************************************/
+
+/********************************************I-SCP-FFP-OBINGRESOS-0-01/03/2017********************************************/
+
+ALTER TABLE param.tcolumnas_archivo_excel ALTER COLUMN formato_fecha TYPE VARCHAR(20) USING formato_fecha::VARCHAR(20);
+
+DROP TYPE obingresos.json_ins_skybiz_archivo_detalle;
+CREATE TYPE obingresos.json_ins_skybiz_archivo_detalle AS (
+  entity                    VARCHAR(255),
+  ip                        VARCHAR(255),
+  request_date_time         TIMESTAMP,
+  issue_date_time           TIMESTAMP,
+  pnr                       VARCHAR(255),
+  identifier_pnr            VARCHAR(255),
+  authorization_            VARCHAR(255),
+  total_amount              VARCHAR(255),
+  currency                  VARCHAR(255),
+  status                    VARCHAR(255),
+  nombre_archivo            VARCHAR(255)
+);
+
+ALTER TABLE obingresos.tskybiz_archivo ADD banco VARCHAR(255) NULL;
+
+/********************************************F-SCP-FFP-OBINGRESOS-0-01/03/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-02/03/2017********************************************/
+ALTER TABLE obingresos.tdeposito
+ADD COLUMN fecha_venta DATE;
+
+ALTER TABLE obingresos.tdeposito
+ADD COLUMN monto_total NUMERIC(18,2);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-02/03/2017********************************************/

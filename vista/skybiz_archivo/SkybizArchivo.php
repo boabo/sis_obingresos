@@ -45,8 +45,76 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 				filters:{pfiltro:'skybiz.fecha',type:'date'},
 				id_grupo:1,
 				grid:true,
-				form:true
+				form:true,
+				bottom_filter : true
 		},
+		{
+			config:{
+				name: 'banco',
+				fieldLabel: 'Banco',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skybiz.banco',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+			bottom_filter : true
+		},
+		{
+			config:{
+				name: 'moneda',
+				fieldLabel: 'Moneda',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skybiz.moneda',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+			bottom_filter : true
+		},
+
+		{
+			config:{
+				name: 'total',
+				fieldLabel: 'total',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:655362
+			},
+			type:'NumberField',
+			//filters:{pfiltro:'skydet.total_amount',type:'numeric'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+		},
+
+
+		{
+			config:{
+				name: 'nombre_archivo',
+				fieldLabel: 'nombre_archivo',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skybiz.nombre_archivo',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+			bottom_filter : true
+		},
+
 		{
 			config:{
 				name: 'subido',
@@ -92,21 +160,7 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:false
 		},
-		{
-			config:{
-				name: 'nombre_archivo',
-				fieldLabel: 'nombre_archivo',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:255
-			},
-				type:'TextField',
-				filters:{pfiltro:'skybiz.nombre_archivo',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
+
 		{
 			config:{
 				name: 'id_usuario_ai',
@@ -221,14 +275,25 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 		{name:'fecha_mod', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
-		
+		{name:'banco', type: 'string'},
+		{name:'moneda', type: 'string'},
+		{name:'total', type: 'string'},
+
 	],
 	sortInfo:{
 		field: 'id_skybiz_archivo',
 		direction: 'ASC'
 	},
-	bdel:true,
-	bsave:true
+	bdel:false,
+	bsave:false,
+	bnew:false,
+	bedit:false,
+	south: {
+		url: '../../../sis_obingresos/vista/skybiz_archivo_detalle/SkybizArchivoDetalle.php',
+		title: 'SkybizArchivoDetalle',
+		height: '50%',
+		cls: 'SkybizArchivoDetalle'
+	},
 	}
 )
 </script>

@@ -34,7 +34,10 @@ class MODSkybizArchivo extends MODbase{
 		$this->captura('fecha_mod','timestamp');
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
-		
+		$this->captura('moneda','varchar');
+		$this->captura('banco','varchar');
+		$this->captura('total','numeric');
+
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();

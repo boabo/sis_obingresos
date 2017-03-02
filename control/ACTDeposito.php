@@ -7,6 +7,7 @@
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
 require_once(dirname(__FILE__).'/../reportes/RReporteDepositoOgone.php');
+require_once(dirname(__FILE__).'/../reportes/RReporteDepositoBancaInternet.php');
 class ACTDeposito extends ACTbase{    
 			
 	function listarDeposito(){
@@ -115,6 +116,35 @@ class ACTDeposito extends ACTbase{
 
         //devolver respuesta
         $this->mensajeRes->imprimirRespuesta($this->mensajeRes->generarJson());
+    }
+
+    function reporteDepositoBancaInternet(){
+
+        $this->objFunc = $this->create('MODDeposito');
+        $this->res = $this->objFunc->reporteDepositoBancaInternet($this->objParam);
+        //var_dump( $this->res);exit;
+        //obtener titulo de reporte
+        $titulo = 'Reporte Depositos';
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo = uniqid(md5(session_id()) . $titulo);
+
+        $nombreArchivo .= '.xls';
+        $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
+        $this->objParam->addParametro('datos_deposito', $this->res->datos);
+        $this->res = $this->objFunc->reporteDepositoBancaInternetArchivo($this->objParam);
+        $this->objParam->addParametro('datos_archivo', $this->res->datos);
+        //Instancia la clase de excel
+        $this->objReporteFormato = new RReporteDepositoBancaInternet($this->objParam);
+
+        $this->objReporteFormato->generarDatos();
+
+        $this->objReporteFormato->generarReporte();
+
+        $this->mensajeExito = new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
     }
 
     function reporteDeposito(){

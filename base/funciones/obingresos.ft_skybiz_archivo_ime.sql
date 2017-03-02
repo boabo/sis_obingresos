@@ -28,6 +28,7 @@ DECLARE
 	v_mensaje_error         text;
 	v_id_skybiz_archivo	integer;
 	v_registros_json RECORD;
+	v_banco VARCHAR[];
 			    
 BEGIN
 
@@ -150,43 +151,56 @@ BEGIN
 			--Sentencia de la eliminacion
 
 
-			DELETE FROM obingresos.tskybiz_archivo where fecha = v_parametros.fecha;
+			--DELETE FROM obingresos.tskybiz_archivo where fecha = v_parametros.fecha;
 
 			FOR v_registros_json IN (SELECT *
 															 FROM json_populate_recordset(NULL :: obingresos.json_ins_skybiz_archivo,
 																														v_parametros.arra_json :: JSON)) LOOP
 
+				IF v_registros_json.subido = 'si' THEN
 
-				insert into obingresos.tskybiz_archivo(
-					fecha,
-					subido,
-					comentario,
-					estado_reg,
-					nombre_archivo,
-					id_usuario_ai,
-					usuario_ai,
-					fecha_reg,
-					id_usuario_reg,
-					id_usuario_mod,
-					fecha_mod,
-					moneda
-				) values(
-					v_parametros.fecha,
-					v_registros_json.subido,
-					v_registros_json.comentario,
-					'activo',
-					v_registros_json.nombre_archivo,
-					v_parametros._id_usuario_ai,
-					v_parametros._nombre_usuario_ai,
-					now(),
-					p_id_usuario,
-					null,
-					null,
-					v_registros_json.moneda
+					v_banco = regexp_split_to_array(v_registros_json.nombre_archivo, '.xlsx');
+
+					v_banco = regexp_split_to_array(v_banco[1], '_');
+
+					v_banco = regexp_split_to_array(v_banco[2], ' ');
+
+					insert into obingresos.tskybiz_archivo(
+						fecha,
+						subido,
+						comentario,
+						estado_reg,
+						nombre_archivo,
+						id_usuario_ai,
+						usuario_ai,
+						fecha_reg,
+						id_usuario_reg,
+						id_usuario_mod,
+						fecha_mod,
+						moneda,
+						banco
+					) values(
+						now(),
+						v_registros_json.subido,
+						v_registros_json.comentario,
+						'activo',
+						v_registros_json.nombre_archivo,
+						v_parametros._id_usuario_ai,
+						v_parametros._nombre_usuario_ai,
+						now(),
+						p_id_usuario,
+						null,
+						null,
+						v_banco[2],
+						v_banco[1]
 
 
 
-				)RETURNING id_skybiz_archivo into v_id_skybiz_archivo;
+					)RETURNING id_skybiz_archivo into v_id_skybiz_archivo;
+
+				END IF;
+
+
 
 
 			END LOOP;

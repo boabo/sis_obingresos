@@ -17,7 +17,7 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
     	//llama al constructor de la clase padre
 		Phx.vista.SkybizArchivoDetalle.superclass.constructor.call(this,config);
 		this.init();
-		this.load({params:{start:0, limit:this.tam_pag}})
+		//this.load({params:{start:0, limit:this.tam_pag}})
 	},
 			
 	Atributos:[
@@ -30,6 +30,16 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
 			},
 			type:'Field',
 			form:true 
+		},
+		{
+			//configuracion del componente
+			config:{
+					labelSeparator:'',
+					inputType:'hidden',
+					name: 'id_skybiz_archivo'
+			},
+			type:'Field',
+			form:true
 		},
 		{
 			config:{
@@ -48,6 +58,22 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
 		},
 		{
 			config:{
+				name: 'ip',
+				fieldLabel: 'ip',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skydet.ip',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true
+		},
+
+		{
+			config:{
 				name: 'request_date_time',
 				fieldLabel: 'request_date_time',
 				allowBlank: true,
@@ -63,6 +89,87 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
 		},
 		{
 			config:{
+				name: 'issue_date_time',
+				fieldLabel: 'issue_date_time',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skydet.issue_date_time',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true
+		},
+		{
+			config:{
+				name: 'pnr',
+				fieldLabel: 'pnr',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skydet.pnr',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+			bottom_filter : true
+		},
+		{
+			config:{
+				name: 'identifier_pnr',
+				fieldLabel: 'identifier_pnr',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skydet.identifier_pnr',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+			bottom_filter : true
+		},
+
+
+		{
+			config:{
+				name: 'authorization_',
+				fieldLabel: 'authorization_',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:255
+			},
+			type:'TextField',
+			filters:{pfiltro:'skydet.authorization_',type:'string'},
+			id_grupo:1,
+			grid:true,
+			form:true
+		},
+		{
+			config:{
+				name: 'total_amount',
+				fieldLabel: 'total_amount',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:655362
+			},
+			type:'NumberField',
+			filters:{pfiltro:'skydet.total_amount',type:'numeric'},
+			id_grupo:1,
+			grid:true,
+			form:true,
+			bottom_filter : true
+		},
+
+		{
+			config:{
 				name: 'currency',
 				fieldLabel: 'currency',
 				allowBlank: true,
@@ -76,36 +183,8 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:true
 		},
-		{
-			config:{
-				name: 'total_amount',
-				fieldLabel: 'total_amount',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:655362
-			},
-				type:'NumberField',
-				filters:{pfiltro:'skydet.total_amount',type:'numeric'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
-		{
-			config:{
-				name: 'ip',
-				fieldLabel: 'ip',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:255
-			},
-				type:'TextField',
-				filters:{pfiltro:'skydet.ip',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
+
+
 		{
 			config:{
 				name: 'status',
@@ -136,109 +215,10 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:false
 		},
-		{
-			config:{
-				name: 'issue_date_time',
-				fieldLabel: 'issue_date_time',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:255
-			},
-				type:'TextField',
-				filters:{pfiltro:'skydet.issue_date_time',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
-		{
-			config:{
-				name: 'identifier_pnr',
-				fieldLabel: 'identifier_pnr',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:255
-			},
-				type:'TextField',
-				filters:{pfiltro:'skydet.identifier_pnr',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
-		{
-			config: {
-				name: 'id_skybiz_archivo',
-				fieldLabel: 'id_skybiz_archivo',
-				allowBlank: true,
-				emptyText: 'Elija una opción...',
-				store: new Ext.data.JsonStore({
-					url: '../../sis_/control/Clase/Metodo',
-					id: 'id_',
-					root: 'datos',
-					sortInfo: {
-						field: 'nombre',
-						direction: 'ASC'
-					},
-					totalProperty: 'total',
-					fields: ['id_', 'nombre', 'codigo'],
-					remoteSort: true,
-					baseParams: {par_filtro: 'movtip.nombre#movtip.codigo'}
-				}),
-				valueField: 'id_',
-				displayField: 'nombre',
-				gdisplayField: 'desc_',
-				hiddenName: 'id_skybiz_archivo',
-				forceSelection: true,
-				typeAhead: false,
-				triggerAction: 'all',
-				lazyRender: true,
-				mode: 'remote',
-				pageSize: 15,
-				queryDelay: 1000,
-				anchor: '100%',
-				gwidth: 150,
-				minChars: 2,
-				renderer : function(value, p, record) {
-					return String.format('{0}', record.data['desc_']);
-				}
-			},
-			type: 'ComboBox',
-			id_grupo: 0,
-			filters: {pfiltro: 'movtip.nombre',type: 'string'},
-			grid: true,
-			form: true
-		},
-		{
-			config:{
-				name: 'pnr',
-				fieldLabel: 'pnr',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:255
-			},
-				type:'TextField',
-				filters:{pfiltro:'skydet.pnr',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
-		{
-			config:{
-				name: 'authorization_',
-				fieldLabel: 'authorization_',
-				allowBlank: true,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:255
-			},
-				type:'TextField',
-				filters:{pfiltro:'skydet.authorization_',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
+
+
+
+
 		{
 			config:{
 				name: 'id_usuario_ai',
@@ -366,8 +346,23 @@ Phx.vista.SkybizArchivoDetalle=Ext.extend(Phx.gridInterfaz,{
 		field: 'id_skybiz_archivo_detalle',
 		direction: 'ASC'
 	},
-	bdel:true,
-	bsave:true
+	bdel:false,
+	bsave:false,
+	bnew:false,
+	bedit:false,
+	preparaMenu: function (tb) {
+		// llamada funcion clace padre
+		Phx.vista.SkybizArchivoDetalle.superclass.preparaMenu.call(this, tb)
+	},
+	onButtonNew: function () {
+		Phx.vista.SkybizArchivoDetalle.superclass.onButtonNew.call(this);
+		this.getComponente('id_skybiz_archivo').setValue(this.maestro.id_skybiz_archivo);
+	},
+	onReloadPage: function (m) {
+		this.maestro = m;
+		this.store.baseParams = {id_skybiz_archivo: this.maestro.id_skybiz_archivo};
+		this.load({params: {start: 0, limit: 50}})
+	},
 	}
 )
 </script>

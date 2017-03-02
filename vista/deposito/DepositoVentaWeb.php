@@ -102,6 +102,23 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 {
                     config:{
+                        name: 'fecha_venta',
+                        fieldLabel: 'Fecha Venta (Arc. Excel)',
+                        allowBlank: false,
+                        anchor: '80%',
+                        gwidth: 120,
+                        format: 'd/m/Y',
+                        renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+                    },
+                    type:'DateField',
+                    filters:{pfiltro:'dep.fecha',type:'date'},
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+
+                {
+                    config:{
                         name:'id_moneda_deposito',
                         origen:'MONEDA',
                         allowBlank:false,
@@ -123,7 +140,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'monto_deposito',
-                        fieldLabel: 'Monto',
+                        fieldLabel: 'Monto Venta',
                         allowBlank: false,
                         anchor: '80%',
                         gwidth: 150,
@@ -131,6 +148,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     type:'NumberField',
                     filters:{pfiltro:'dep.monto_deposito',type:'numeric'},
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+
+                {
+                    config:{
+                        name: 'monto_total',
+                        fieldLabel: 'Monto Total Deposito',
+                        allowBlank: false,
+                        anchor: '80%',
+                        gwidth: 150,
+                        maxLength:1179650
+                    },
+                    type:'NumberField',
+                    filters:{pfiltro:'dep.monto_total',type:'numeric'},
                     id_grupo:1,
                     grid:true,
                     form:true
@@ -284,6 +317,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'agt', type: 'varchar'},
 
                 {name:'fecha', type: 'date',dateFormat:'Y-m-d'},
+                {name:'fecha_venta', type: 'date',dateFormat:'Y-m-d'},
+                {name:'monto_total', type: 'numeric'},
                 {name:'saldo', type: 'numeric'},
                 {name:'id_usuario_reg', type: 'numeric'},
                 {name:'fecha_reg', type: 'date',dateFormat:'Y-m-d H:i:s.u'},

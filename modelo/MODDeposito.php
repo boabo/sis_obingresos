@@ -38,6 +38,8 @@ class MODDeposito extends MODbase{
 		$this->captura('usr_mod','varchar');
 		$this->captura('desc_moneda','varchar');
         $this->captura('agt','varchar');
+        $this->captura('fecha_venta','date');
+        $this->captura('monto_total','numeric');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -67,6 +69,8 @@ class MODDeposito extends MODbase{
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('moneda','moneda','varchar');
         $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('fecha_venta','fecha_venta','date');
+        $this->setParametro('monto_total','monto_total','numeric');
 
 
 		//Ejecuta la instruccion
@@ -94,6 +98,8 @@ class MODDeposito extends MODbase{
 		$this->setParametro('fecha','fecha','date');
 		$this->setParametro('saldo','saldo','numeric');
         $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('fecha_venta','fecha_venta','date');
+        $this->setParametro('monto_total','monto_total','numeric');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -176,6 +182,64 @@ class MODDeposito extends MODbase{
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
+
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function  reporteDepositoBancaInternet()
+    {
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_deposito_sel';
+        $this->transaccion='OBING_DEPBIN_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+
+        $this->setParametro('fecha_ini','fecha_ini','date');
+        $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setParametro('id_moneda','id_moneda','integer');
+
+        $this->setCount(false);
+
+
+        $this->captura('fecha','varchar');
+        $this->captura('banco','varchar');
+        $this->captura('monto','numeric');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function  reporteDepositoBancaInternetArchivo()
+    {
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_deposito_sel';
+        $this->transaccion='OBING_DEPBINARC_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+
+        $this->setParametro('fecha_ini','fecha_ini','date');
+        $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setParametro('id_moneda','id_moneda','integer');
+
+        $this->setCount(false);
+
+
+        $this->captura('fecha','varchar');
+        $this->captura('banco','varchar');
+        $this->captura('monto','numeric');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
 
 
         //Devuelve la respuesta

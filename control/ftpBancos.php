@@ -6,7 +6,14 @@ include_once(dirname(__FILE__).'/../../lib/lib_general/ExcelInput.php');
 
 //Generamos el documento con REST
 $pxpRestClient = PxpRestClient::connect('127.0.0.1',substr($_SESSION["_FOLDER"], 1) .'pxp/lib/rest/')
-    ->setCredentialsPxp("admin","123");
+    ->setCredentialsPxp($_GET['user'],$_GET['pw']);
+
+
+$datos_skybiz_archivo_bd = $pxpRestClient->doPost('obingresos/SkybizArchivo/listarSkybizArchivo',
+    array(	"start"=>0,"limit"=>500000000,"sort"=>"id_skybiz_archivo","dir"=>"ASC"));
+
+$resp_datos = json_decode($datos_skybiz_archivo_bd);
+
 
 
 
@@ -22,7 +29,11 @@ $pxpRestClient = PxpRestClient::connect('127.0.0.1',substr($_SESSION["_FOLDER"],
 $file_a_buscar = '20170201 SPP_BCO BOB.xlsx';
 $folder_ftp = 'SkyBiz/';
 
-$local_file = '/var/www/html/kerp_capacitacion/';
+//$local_file = '/var/www/html/kerp_capacitacion/';
+//$local_file = '/var/www/html/kerp_capacitacion/uploaded_files/sis_obingresos/';
+$local_file = dirname(__FILE__).'/../../uploaded_files/sis_obingresos/';
+
+//$local_file = '/var/www/html/kerp_capacitacion/uploaded_files/sis_obingresos/';
 $server_file = 'SkyBiz/20170201 SPP_BCO BOB.xlsx';
 
 // establecer una conexión básica
@@ -34,114 +45,106 @@ $login_result = ftp_login($conn_id,"Skybizr", "xdbskybizr");
 $contents_on_server = ftp_nlist($conn_id, $folder_ftp); //Returns an array of filenames from the specified directory on success or FALSE on error.
 
 
+//obtenemos en un array los archivos que estan registrados concatenando la ruta de archivo para poder comparar con la lista del ftp
+foreach ($resp_datos->datos as $datos){
+    $arra_archivos_registrados[] = 'SkyBiz/'.$datos->nombre_archivo;
 
-$date = new DateTime();
-
-$date->modify('-2 day');
-
-$hoy = $date->format('Ymd');
-echo $hoy;
-$arra_bancos = array( "ECO",
-                        //"ECOU",
-                        //"BUNU",
-                        "BNB",
-                        //"BNBU",
-                        "BUN",
-                        "BIS",
-                        //"BISU",
-                        "BME",
-                       // "BMEU",
-                        "TMY",
-                        //"TMYU",
-                        "ECF",
-                       // "ECFU",
-                        "BEC",
-                        //"BECU",
-                        "BCR",
-                        //"BCRU",
-                        "BCO",
-                        //"BCOU"
-                        );
+}
 
 $arra_excel_registrados = array();
 
-foreach ($arra_bancos as $valor) {
+//recorremos la lista ftp y veremos si ya esta o no
+foreach ($contents_on_server as $archivo_server) {
+
+    $nombre_solo_archivo =explode("/", $archivo_server);
+    $nombre_solo_archivo = $nombre_solo_archivo[1];
+
+    if (in_array($archivo_server, $arra_archivos_registrados)) {
+        //ya existe registrado el archivo
+        echo "<br>";
+        echo $archivo_server." ya fue registrado anteriormente";
+
+        $arra_excel_registrados[] = array(
+            "nombre_archivo" => $nombre_solo_archivo,
+            "subido" => "no",
+            "comentario" => "",
+            "moneda" => $moneda
+        );
 
 
-    $monedas = array("BOB","USD");
-
-    foreach ($monedas as $moneda) {
-        $cadena_archivo_a_descargar = $hoy." "."SPP_".$valor." ".$moneda.".xlsx";
-
-
+    }else{
+        //no existe registrado el archivo asi que se debe copiar y registrar a la bd
+        echo "<br>";
+        echo $archivo_server." recien encontrado ";
 
 
-        if (in_array("SkyBiz/".$cadena_archivo_a_descargar, $contents_on_server))
-        {
-            echo "<br>";
-            echo $cadena_archivo_a_descargar." fue encontrado";
-
-            // intenta descargar $server_file y guardarlo en $local_file
-            if (ftp_get($conn_id, $local_file.$cadena_archivo_a_descargar,"SkyBiz/".$cadena_archivo_a_descargar , FTP_BINARY)) {
-                echo "Se ha guardado satisfactoriamente en $local_file\n";
-
-                $arra_excel_registrados[] = array(
-                    "nombre_archivo" => $cadena_archivo_a_descargar,
-                    "subido" => "si",
-                    "comentario" => "",
-                    "moneda" => $moneda
-                );
-
-            } else {
-                $arra_excel_registrados[] = array(
-                    "nombre_archivo" => $cadena_archivo_a_descargar,
-                    "subido" => "si",
-                    "comentario" => "problema al descargarlo",
-                    "moneda" => $moneda
-                );
-                echo "Ha habido un problema\n";
-            }
 
 
-        }
-        else
-        {
+        // intenta descargar $server_file y guardarlo en $local_file
+       
+        if (ftp_get($conn_id, $local_file.$archivo_server,$archivo_server , FTP_BINARY)) {
+            echo "Se ha guardado satisfactoriamente en $local_file\n";
+
             $arra_excel_registrados[] = array(
-                "nombre_archivo" => $cadena_archivo_a_descargar,
-                "subido" => "no",
+                "nombre_archivo" => $nombre_solo_archivo,
+                "subido" => "si",
                 "comentario" => "",
-                "moneda" => $moneda
+                "moneda" => ""
             );
 
-            echo "<br>";
-            echo $cadena_archivo_a_descargar." no fue encontrado : ";
-        };
-    }
+        } else {
+            $arra_excel_registrados[] = array(
+                "nombre_archivo" => $nombre_solo_archivo,
+                "subido" => "no",
+                "comentario" => "problema al descargarlo",
+                "moneda" => ""
+            );
+            echo "Ha habido un problema\n ";
+            //print_r(error_get_last());
+        }
 
+    }
 }
+
+
+
+
 
 
 $arra_json = json_encode($arra_excel_registrados);
 
 
 
-$res = $pxpRestClient->doPost('obingresos/SkybizArchivo/insertarSkybizArchivoJson',
-    array(	"arra_json"=>$arra_json,"fecha"=>$date->format('Y/m/d')));
+/*$res = $pxpRestClient->doPost('obingresos/SkybizArchivo/insertarSkybizArchivoJson',
+    array(	"arra_json"=>$arra_json));
 
-$resp_root = json_decode($res);
+$resp_root = json_decode($res);*/
 
-if($resp_root->ROOT->error == false){
+
+
+
+//if($resp_root->ROOT->error == false){
 
 
     foreach ($arra_excel_registrados as $registrados){
+
+
+
         $arra_excel_detalle = array();
         if($registrados["subido"] == "si"){
 
-            $archivoExcel = new ExcelInput($local_file.$registrados["nombre_archivo"], "SKYBIZR");
-            $archivoExcel->recuperarColumnasExcel();
-            $arrayArchivo = $archivoExcel->leerColumnasArchivoExcel();
-            foreach ($arrayArchivo as $fila) {
 
+
+
+           
+            $archivoExcel = new ExcelInput($local_file.'SkyBiz/'.$registrados["nombre_archivo"], "SKYBIZR");
+            $archivoExcel->recuperarColumnasExcel();
+
+
+            $arrayArchivo = $archivoExcel->leerColumnasArchivoExcel();
+
+
+            foreach ($arrayArchivo as $fila) {
 
                 //echo $fila["authorization_"];
                 if($fila["entity"] != 'TOTAL'){
@@ -164,18 +167,29 @@ if($resp_root->ROOT->error == false){
 
 
 
+
             }
 
+
             $json = json_encode($arra_excel_detalle);
+
             $res = $pxpRestClient->doPost('obingresos/SkybizArchivoDetalle/insertarSkybizArchivoDetalleJson',
                 array(	"arra_json"=>$json,"nombre_archivo"=>$registrados["nombre_archivo"]));
+
+            $resp_root = json_decode($res);
+
+
+
+
+            echo '<br>';
+            var_dump($resp_root->ROOT->error);
 
 
 
         }
     }
 
-}
+//}
 
 
 

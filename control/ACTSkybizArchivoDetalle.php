@@ -13,6 +13,12 @@ class ACTSkybizArchivoDetalle extends ACTbase{
 		$this->objParam->defecto('ordenacion','id_skybiz_archivo_detalle');
 
 		$this->objParam->defecto('dir_ordenacion','asc');
+
+		if($this->objParam->getParametro('id_skybiz_archivo') != ''){
+			$this->objParam->addFiltro("skydet.id_skybiz_archivo = ".$this->objParam->getParametro('id_skybiz_archivo'));
+		}
+
+		
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);
 			$this->res = $this->objReporte->generarReporteListado('MODSkybizArchivoDetalle','listarSkybizArchivoDetalle');

@@ -65,7 +65,10 @@ BEGIN
 						dep.fecha_mod,
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
-						mon.codigo_internacional as desc_moneda
+						mon.codigo_internacional as desc_moneda,
+                        dep.agt,
+                        dep.fecha_venta,
+                        dep.monto_total
 						from obingresos.tdeposito dep
 						inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
@@ -185,98 +188,6 @@ BEGIN
 			return v_consulta;
 
     end;
-    
-    /*********************************
- 	#TRANSACCION:  'OBING_REPRESVEW_SEL'
- 	#DESCRIPCION:	Reporte Deposito
- 	#AUTOR:		Gonzalo Sarmiento 
- 	#FECHA:		06-12-2016
-	***********************************/
-
-    ELSIF(p_transaccion= 'OBING_REPRESVEW_SEL')then
-		begin
-        	raise exception 'llega';
-            if(v_parametros.tipo = 'sin_boletos_web')then
-                v_consulta = 'select b.nro_boleto as boleto_resiber,
-                              dbw.billete as boleto_ventas_web,
-                             bfp.numero_tarjeta,
-                             b.fecha_emision as fecha,
-                             b.total as monto_resiber,
-                             dbw.importe as monto_ventas_web,
-                             b.moneda
-                      from obingresos.tboleto b
-                           inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
-                           left join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
-                           left join obingresos.tventa_web_modificaciones ree on ree.nro_boleto_reemision = b.nro_boleto
-                           left join obingresos.tventa_web_modificaciones anu on anu.nro_boleto = b.nro_boleto
-                      where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
-                            b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
-                            bfp.numero_tarjeta like ''%000000005555''  and
-                            b.estado_reg = ''activo'' and
-                            bfp.tarjeta = ''VI'' and voided = ''no'' and (dbw.billete is null and ree.nro_boleto is null and anu.nro_boleto is null )
-                            group by b.nro_boleto, b.fecha_emision,
-                                     dbw.billete, bfp.numero_tarjeta,
-                                     dbw.importe, dbw.moneda,
-                                   b.total, b.moneda
-                            order by fecha';
-            elsif(v_parametros.tipo='sin_boletos_resiber')then
-                v_consulta = 'select b.nro_boleto as boleto_resiber,
-                                    dbw.billete as boleto_ventas_web,
-                                   bfp.numero_tarjeta,
-                                   dbw.fecha as fecha,
-                                   dbw.importe as monto_resiber,
-                                   b.total as monto_ventas_web,       
-                                   dbw.moneda
-                            from obingresos.tdetalle_boletos_web dbw 
-                                 left join obingresos.tboleto b on dbw.billete = b.nro_boleto     
-                                 left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
-                            where dbw.fecha >= '''||v_parametros.fecha_ini||'''::date and
-                                  dbw.fecha < '''||v_parametros.fecha_fin||'''::date and
-                                   b.nro_boleto is null and dbw.medio_pago != ''COMPLETAR-CC'' and 
-                                  b.estado_reg =''activo''
-                            group by b.nro_boleto, fecha, dbw.billete, bfp.numero_tarjeta,
-                            dbw.importe, dbw.moneda, b.total, b.moneda
-                            UNION ALL
-                            select b.nro_boleto as boleto_resiber,
-                                    dbw.billete as boleto_ventas_web,
-                                   bfp.numero_tarjeta,
-                                   b.fecha_emision as fecha,
-                                   b.total as monto_resiber,
-                                   dbw.importe as monto_ventas_web,
-                                   dbw.moneda
-                            from obingresos.tboleto b
-                                 inner join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
-                                 left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
-                                 left join obingresos.tventa_web_modificaciones vwm on vwm.nro_boleto = b.nro_boleto
-                            where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
-                                  b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
-                                  voided = ''si''  and  dbw.medio_pago != ''COMPLETAR-CC'' and 
-                                  b.estado_reg =''activo'' and vwm.nro_boleto is null
-                            order by fecha';
-            else
-                v_consulta='select b.nro_boleto as boleto_resiber,
-                            dbw.billete as boleto_ventas_web,
-                           bfp.numero_tarjeta,
-                           b.fecha_emision as fecha,
-                           b.total as monto_resiber,
-                           dbw.importe as monto_ventas_web,
-                           b.moneda
-                    from obingresos.tboleto b
-                         inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
-                         left join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto
-                    where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
-                          b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
-                          bfp.numero_tarjeta like ''%000000005555'' and
-                          bfp.tarjeta = ''VI'' and
-                          voided = ''no'' and
-                          b.total!=dbw.importe and dbw.medio_pago != ''COMPLETAR-CC''
-                    group by b.nro_boleto, b.fecha_emision, dbw.billete, bfp.numero_tarjeta,
-                    dbw.importe, dbw.moneda, b.total, b.moneda
-                    order by fecha';
-            end if;
-            return v_consulta;
-        end;
-
 	/*********************************
  	#TRANSACCION:  'OBING_DEP_CONT'
  	#DESCRIPCION:	Conteo de registros
@@ -298,6 +209,57 @@ BEGIN
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEPBIN_SEL'
+ 	#DESCRIPCION:	Reporte de depositos banca por internet
+ 	#AUTOR:		jrivera
+ 	#FECHA:		06-01-2016 22:42:28
+	***********************************/
+
+	elsif(p_transaccion='OBING_DEPBIN_SEL')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select to_char(dep.fecha,''DD/MM/YYYY'')::varchar, dep.agt,dep.monto_deposito
+					    from obingresos.tdeposito dep                    
+					    
+					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
+                        dep.fecha >= ''' || v_parametros.fecha_ini || ''' and dep.fecha <= ''' || v_parametros.fecha_fin || ''' and
+                        dep.id_moneda = '||v_parametros.id_moneda || '
+                        order by 1,2';
+			
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEPBINARC_SEL'
+ 	#DESCRIPCION:	Reporte depositos banca por internet acrhivos FTP
+ 	#AUTOR:		jrivera
+ 	#FECHA:		06-01-2016 22:42:28
+	***********************************/
+
+	elsif(p_transaccion='OBING_DEPBINARC_SEL')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select to_char(a.fecha,''DD/MM/YYYY'')::varchar, a.banco,sum(ad.total_amount)
+					    from obingresos.tskybiz_archivo_detalle ad
+                        inner join obingresos.tskybiz_archivo a on a.id_archivo = ad.id_archivo
+                        inner join param.tmoneda m on m.codigo_internacional = a.moneda             
+					    
+					    where  ad.estado_reg = ''activo'' and 
+                        a.fecha >= ''' || v_parametros.fecha_ini || ''' and a.fecha <= ''' || v_parametros.fecha_fin || ''' and
+                        m.id_moneda = '||v_parametros.id_moneda || '
+                        group by a.fecha,a.banco
+                        order by 1,2';
+			
+			
 			--Devuelve la respuesta
 			return v_consulta;
 

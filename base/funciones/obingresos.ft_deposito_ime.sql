@@ -4,8 +4,8 @@ CREATE OR REPLACE FUNCTION obingresos.ft_deposito_ime (
   p_tabla varchar,
   p_transaccion varchar
 )
-  RETURNS varchar AS
-  $body$
+RETURNS varchar AS
+$body$
   /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_deposito_ime
@@ -49,44 +49,82 @@ BEGIN
 	if(p_transaccion='OBING_DEP_INS')then
 
         begin
-       		insert into obingresos.tdeposito(
-			estado_reg,
-			nro_deposito,
-			monto_deposito,
-			id_moneda_deposito,
-			id_agencia,
-			fecha,
-			saldo,
-            moneda,
-			id_usuario_reg,
-			fecha_reg,
-			id_usuario_ai,
-			usuario_ai,
-			id_usuario_mod,
-			fecha_mod,
-            descripcion,
-            pnr
-          	) values(
-			'activo',
-			v_parametros.nro_deposito,
-			v_parametros.monto_deposito,
-			v_parametros.id_moneda_deposito,
-			v_parametros.id_agencia,
-			v_parametros.fecha,
-			v_parametros.saldo,
-            v_parametros.moneda,
-			p_id_usuario,
-			now(),
-			v_parametros._id_usuario_ai,
-			v_parametros._nombre_usuario_ai,
-			null,
-			null,
-            v_parametros.descripcion,
-			v_parametros.pnr
+        	if (v_parametros.tipo = 'banca') then
+            	insert into obingresos.tdeposito(
+                estado_reg,
+                nro_deposito,
+                monto_deposito,
+                id_moneda_deposito,
+                fecha,
+                agt,
+                id_usuario_reg,
+                fecha_reg,
+                id_usuario_ai,
+                usuario_ai,
+                id_usuario_mod,
+                fecha_mod,
+                tipo,
+                fecha_venta,
+                monto_total
+                ) values(
+                'activo',
+                v_parametros.nro_deposito,
+                v_parametros.monto_deposito,
+                v_parametros.id_moneda_deposito,               
+                v_parametros.fecha,                
+                v_parametros.agt,
+                p_id_usuario,
+                now(),
+                v_parametros._id_usuario_ai,
+                v_parametros._nombre_usuario_ai,
+                null,
+                null,
+                v_parametros.tipo,
+                v_parametros.fecha_venta,
+                v_parametros.monto_total
+                )RETURNING id_deposito into v_id_deposito;
+            
+            else
+            
+                insert into obingresos.tdeposito(
+                estado_reg,
+                nro_deposito,
+                monto_deposito,
+                id_moneda_deposito,
+                id_agencia,
+                fecha,
+                saldo,
+                moneda,
+                id_usuario_reg,
+                fecha_reg,
+                id_usuario_ai,
+                usuario_ai,
+                id_usuario_mod,
+                fecha_mod,
+                descripcion,
+                pnr
+                ) values(
+                'activo',
+                v_parametros.nro_deposito,
+                v_parametros.monto_deposito,
+                v_parametros.id_moneda_deposito,
+                v_parametros.id_agencia,
+                v_parametros.fecha,
+                v_parametros.saldo,
+                v_parametros.moneda,
+                p_id_usuario,
+                now(),
+                v_parametros._id_usuario_ai,
+                v_parametros._nombre_usuario_ai,
+                null,
+                null,
+                v_parametros.descripcion,
+                v_parametros.pnr
 
 
 
-			)RETURNING id_deposito into v_id_deposito;
+                )RETURNING id_deposito into v_id_deposito;
+            end if;
 
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos almacenado(a) con exito (id_deposito'||v_id_deposito||')');
@@ -118,7 +156,9 @@ BEGIN
 			id_usuario_mod = p_id_usuario,
 			fecha_mod = now(),
 			id_usuario_ai = v_parametros._id_usuario_ai,
-			usuario_ai = v_parametros._nombre_usuario_ai
+			usuario_ai = v_parametros._nombre_usuario_ai,
+            fecha_venta = v_parametros.fecha_venta,
+			monto_total = v_parametros.monto_total
 			where id_deposito=v_parametros.id_deposito;
 
 			--Definicion de la respuesta
