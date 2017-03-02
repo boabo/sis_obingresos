@@ -597,6 +597,10 @@ CREATE TYPE obingresos.json_ins_skybiz_archivo_detalle AS (
 
 ALTER TABLE obingresos.tskybiz_archivo ADD banco VARCHAR(255) NULL;
 
+select pxp.f_insert_tgui ('Skybiz', 'Skybiz', 'SKYBIZ', 'si', 8, 'sis_obingresos/vista/skybiz_archivo/SkybizArchivo.php', 2, '', 'SkybizArchivo', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('SKYBIZ', 'OBINGRESOS');
+
+
 /********************************************F-SCP-FFP-OBINGRESOS-0-01/03/2017********************************************/
 
 /********************************************I-SCP-JRR-OBINGRESOS-0-02/03/2017********************************************/

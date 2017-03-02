@@ -84,7 +84,7 @@ INNER JOIN obingresos.tskybiz_archivo_detalle det on det.id_skybiz_archivo = sky
 usu2.cuenta ,
 skybiz.moneda,
 skybiz.banco';
-				
+
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 
 
