@@ -209,7 +209,7 @@ class RReporteDepositoBancaInternet
             'fill' => array(
                 'type' => PHPExcel_Style_Fill::FILL_SOLID,
                 'color' => array(
-                    'rgb' => '0066CC'
+                    'rgb' => 'FFF66'
                 )
             ));
         $styleTitulos3 = array(
@@ -256,12 +256,12 @@ class RReporteDepositoBancaInternet
             for ($j=0; $j<count($this->bancos);$j++) {
                 if (isset($this->datos[$this->fechas[$i]][$this->bancos[$j]])) {
                     if (!isset($this->datos_archivo[$this->fechas[$i]][$this->bancos[$j]]) || $this->datos_archivo[$this->fechas[$i]][$this->bancos[$j]] != $this->datos[$this->fechas[$i]][$this->bancos[$j]]) {
-                        $this->docexcel->getActiveSheet()->getStyle($this->equivalencias[$j +1 ] . $fila . ':'.$this->equivalencias[$j +1 ] . $fila)->applyFromArray($styleTitulos2);
+                        $this->docexcel->getActiveSheet()->getStyle($this->equivalencias[$j +1 ] . $fila . ':'.$this->equivalencias[$j +1 ] . $fila)->applyFromArray($styleTitulos4);
                     }
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, $this->datos[$this->fechas[$i]][$this->bancos[$j]]);
                 } else {
                     if (isset($this->datos_archivo[$this->fechas[$i]][$this->bancos[$j]]) && $this->datos_archivo[$this->fechas[$i]][$this->bancos[$j]] != '0') {
-                        $this->docexcel->getActiveSheet()->getStyle($this->equivalencias[$j +1 ] . $fila . ':'.$this->equivalencias[$j +1 ] . $fila)->applyFromArray($styleTitulos2);
+                        $this->docexcel->getActiveSheet()->getStyle($this->equivalencias[$j +1 ] . $fila . ':'.$this->equivalencias[$j +1 ] . $fila)->applyFromArray($styleTitulos4);
                     }
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, 0);
                 }
