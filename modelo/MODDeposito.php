@@ -210,6 +210,7 @@ class MODDeposito extends MODbase{
 
         //Ejecuta la instruccion
         $this->armarConsulta();
+
         $this->ejecutarConsulta();
 
 

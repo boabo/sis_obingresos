@@ -189,7 +189,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     id_grupo:1,
                     grid:true,
-                    form:true
+                    form:true,
+                    bottom_filter : true
                 },
                 {
                     config:{

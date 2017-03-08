@@ -228,7 +228,7 @@ BEGIN
 					    from obingresos.tdeposito dep                    
 					    
 					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
-                        dep.fecha >= ''' || v_parametros.fecha_ini || ''' and dep.fecha <= ''' || v_parametros.fecha_fin || ''' and
+                        dep.fecha_venta >= ''' || v_parametros.fecha_ini || ''' and dep.fecha_venta <= ''' || v_parametros.fecha_fin || ''' and
                         dep.id_moneda_deposito = '||v_parametros.id_moneda || '
                         order by 1,2';
 			

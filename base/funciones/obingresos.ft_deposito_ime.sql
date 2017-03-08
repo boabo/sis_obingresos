@@ -158,7 +158,8 @@ BEGIN
 			id_usuario_ai = v_parametros._id_usuario_ai,
 			usuario_ai = v_parametros._nombre_usuario_ai,
             fecha_venta = v_parametros.fecha_venta,
-			monto_total = v_parametros.monto_total
+			monto_total = v_parametros.monto_total,
+            agt = v_parametros.agt
 			where id_deposito=v_parametros.id_deposito;
 
 			--Definicion de la respuesta
