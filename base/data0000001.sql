@@ -36,3 +36,11 @@ select pxp.f_insert_testructura_gui ('RDEPBINT', 'OBINGRESOS');
 
 /***********************************F-DAT-JRR-OBINGRESOS-0-01/03/2017*****************************************/
 
+/************************************I-DAT-JRR-OBINGRESOS-0-17/03/2017*************************************************/
+
+select pxp.f_insert_tgui ('Venta de Boletos', 'Venta de Boletos', 'REGBOL', 'si', 7, 'sis_obingresos/vista/boleto/Boleto.php', 2, '', 'Boleto', 'VEF');
+select pxp.f_insert_tgui ('Boletos en Caja', 'Boletos en Caja', 'BOLCAJ', 'si', 7, 'sis_obingresos/vista/boleto/BoletoCaja.php', 2, '', 'BoletoCaja', 'VEF');
+select pxp.f_insert_tgui ('Boletos Vendidos', 'Boletos Vendidos', 'VENBOLVEN', 'si', 8, 'sis_obingresos/vista/boleto/BoletoVendido.php', 2, '', 'BoletoVendido', 'VEF');
+
+/************************************F-DAT-JRR-OBINGRESOS-0-17/03/2017*************************************************/
+
