@@ -611,3 +611,12 @@ ALTER TABLE obingresos.tdeposito
 ADD COLUMN monto_total NUMERIC(18,2);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-02/03/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+ALTER TABLE obingresos.tventa_web_modificaciones
+ADD COLUMN fecha_reserva_antigua DATE;
+
+ALTER TABLE obingresos.tventa_web_modificaciones
+ADD COLUMN pnr_antiguo VARCHAR (20);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/

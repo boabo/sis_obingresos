@@ -94,3 +94,7 @@ ON obingresos.tforma_pago FOR EACH ROW
 EXECUTE PROCEDURE obingresos.f_tr_forma_pago();
 
 /************************************F-DEP-JRR-OBINGRESOS-0-16/06/2016*************************************************/
+
+/************************************I-DEP-JRR-OBINGRESOS-0-16/03/2017*************************************************/
+ALTER TABLE obingresos.tforma_pago ENABLE ALWAYS TRIGGER tforma_pago_tr;
+/************************************F-DEP-JRR-OBINGRESOS-0-16/03/2017*************************************************/
