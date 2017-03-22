@@ -4,8 +4,8 @@ CREATE OR REPLACE FUNCTION obingresos.ft_venta_web_modificaciones_sel (
   p_tabla varchar,
   p_transaccion varchar
 )
-  RETURNS varchar AS
-  $body$
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_venta_web_modificaciones_sel
@@ -60,7 +60,7 @@ BEGIN
 						vwebmod.id_usuario_mod,
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
-                        (case when vwebmod.tipo = ''reemision'' then
+                        (case when vwebmod.tipo = ''reemision'' or vwebmod.tipo = ''emision_manual'' then
                         	vwebmod.procesado
                         else
                         	''no aplica''
@@ -69,7 +69,10 @@ BEGIN
                         	''si''
                         else
                         	''no''
-                        end)::varchar as anulado
+                        end)::varchar as anulado,
+                        vwebmod.pnr_antiguo,
+                        vwebmod.fecha_reserva_antigua,
+                        vwebmod.banco
 						from obingresos.tventa_web_modificaciones vwebmod
 						inner join segu.tusuario usu1 on usu1.id_usuario = vwebmod.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = vwebmod.id_usuario_mod

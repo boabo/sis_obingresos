@@ -48,6 +48,28 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
 			type:'Field',
 			form:true 
 		},
+        {
+            config:{
+                name: 'tipo',
+                fieldLabel: 'Tipo',
+                allowBlank: false,
+                emptyText:'Tipo...',
+                typeAhead: true,
+                triggerAction: 'all',
+                lazyRender:true,
+                mode: 'local',
+                gwidth: 100,
+                store:['anulado','reemision','emision_manual']
+            },
+            type:'ComboBox',
+            filters:{
+                type: 'list',
+                options: ['anulado','reemision','emision_manual'],
+            },
+            id_grupo:1,
+            grid:true,
+            form:true
+        },
 		{
 			config:{
 				name: 'nro_boleto',
@@ -64,32 +86,11 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:true
 		},
-        {
-            config:{
-                name: 'tipo',
-                fieldLabel: 'Tipo',
-                allowBlank: false,
-                emptyText:'Tipo...',
-                typeAhead: true,
-                triggerAction: 'all',
-                lazyRender:true,
-                mode: 'local',
-                gwidth: 100,
-                store:['anulado','reemision']
-            },
-            type:'ComboBox',
-            filters:{
-                type: 'list',
-                options: ['anulado','reemision'],
-            },
-            id_grupo:1,
-            grid:true,
-            form:true
-        },
+
         {
             config:{
                 name: 'nro_boleto_reemision',
-                fieldLabel: 'Boleto Reemitido',
+                fieldLabel: 'Boleto Reemitido-Manual',
                 allowBlank: true,
                 anchor: '80%',
                 gwidth: 100,
@@ -99,6 +100,58 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
             },
             type:'NumberField',
             filters:{pfiltro:'vwebmod.nro_boleto_reemision',type:'string'},
+            id_grupo:1,
+            grid:true,
+            form:true
+        },
+        {
+            config:{
+                name: 'banco',
+                fieldLabel: 'Banco',
+                allowBlank:false,
+                emptyText:'Banco...',
+                typeAhead: true,
+                triggerAction: 'all',
+                lazyRender:true,
+                mode: 'local',
+                gwidth: 150,
+                store:['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','ECF']
+            },
+            type:'ComboBox',
+            id_grupo:1,
+            form:true
+        },
+
+        {
+            config:{
+                name: 'pnr_antiguo',
+                fieldLabel: 'PNR no emitido',
+                allowBlank: true,
+                anchor: '80%',
+                gwidth: 100,
+                maxLength:13,
+                minLength:13,
+                allowDecimals:false
+            },
+            type:'TextField',
+            filters:{pfiltro:'vwebmod.pnr_antiguo',type:'string'},
+            id_grupo:1,
+            grid:true,
+            form:true
+        },
+
+        {
+            config:{
+                name: 'fecha_reserva_antigua',
+                fieldLabel: 'Fecha PNR no emitido',
+                allowBlank: false,
+                anchor: '80%',
+                gwidth: 100,
+                format: 'd/m/Y',
+                renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+            },
+            type:'DateField',
+            filters:{pfiltro:'perven.fecha_reserva_antigua',type:'date'},
             id_grupo:1,
             grid:true,
             form:true
@@ -275,11 +328,14 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
 		{name:'nro_boleto_reemision', type: 'string'},
 		{name:'used', type: 'string'},
         {name:'procesado', type: 'string'},
+        {name:'pnr_antiguo', type: 'string'},
+        {name:'banco', type: 'string'},
         {name:'anulado', type: 'string'},
 		{name:'estado_reg', type: 'string'},
 		{name:'id_usuario_ai', type: 'numeric'},
 		{name:'usuario_ai', type: 'string'},
 		{name:'fecha_reg', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
+        {name:'fecha_reserva_antigua', type: 'date',dateFormat:'Y-m-d'},
 		{name:'id_usuario_reg', type: 'numeric'},
 		{name:'fecha_mod', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
 		{name:'id_usuario_mod', type: 'numeric'},
@@ -294,12 +350,60 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
     iniciarEventos : function () {
         this.Cmp.tipo.on('select',function(c,r) {
             if (r.data.field1 == 'reemision') {
+                this.mostrarComponente(this.Cmp.nro_boleto);
+                this.Cmp.nro_boleto.allowBlank = false;
+
                 this.mostrarComponente(this.Cmp.nro_boleto_reemision);
                 this.Cmp.nro_boleto_reemision.allowBlank = false;
+
+                this.ocultarComponente(this.Cmp.fecha_reserva_antigua);
+                this.Cmp.fecha_reserva_antigua.allowBlank = true;
+                this.Cmp.fecha_reserva_antigua.reset();
+
+                this.ocultarComponente(this.Cmp.pnr_antiguo);
+                this.Cmp.pnr_antiguo.allowBlank = true;
+                this.Cmp.pnr_antiguo.reset();
+
+                this.ocultarComponente(this.Cmp.banco);
+                this.Cmp.banco.allowBlank = true;
+                this.Cmp.banco.reset();
+            }
+            else if (r.data.field1 == 'emision_manual') {
+                this.mostrarComponente(this.Cmp.nro_boleto_reemision);
+                this.Cmp.nro_boleto_reemision.allowBlank = false;
+
+                this.mostrarComponente(this.Cmp.fecha_reserva_antigua);
+                this.Cmp.fecha_reserva_antigua.allowBlank = false;
+
+                this.mostrarComponente(this.Cmp.pnr_antiguo);
+                this.Cmp.pnr_antiguo.allowBlank = false;
+
+                this.ocultarComponente(this.Cmp.nro_boleto);
+                this.Cmp.nro_boleto.allowBlank = true;
+                this.Cmp.nro_boleto.reset();
+
+                this.mostrarComponente(this.Cmp.banco);
+                this.Cmp.banco.allowBlank = false;
+
             } else {
+                this.mostrarComponente(this.Cmp.nro_boleto);
+                this.Cmp.nro_boleto.allowBlank = false;
+
                 this.ocultarComponente(this.Cmp.nro_boleto_reemision);
                 this.Cmp.nro_boleto_reemision.allowBlank = true;
                 this.Cmp.nro_boleto_reemision.reset();
+
+                this.ocultarComponente(this.Cmp.fecha_reserva_antigua);
+                this.Cmp.fecha_reserva_antigua.allowBlank = true;
+                this.Cmp.fecha_reserva_antigua.reset();
+
+                this.ocultarComponente(this.Cmp.pnr_antiguo);
+                this.Cmp.pnr_antiguo.allowBlank = true;
+                this.Cmp.pnr_antiguo.reset();
+
+                this.ocultarComponente(this.Cmp.banco);
+                this.Cmp.banco.allowBlank = true;
+                this.Cmp.banco.reset();
             }
         },this);
     },
@@ -320,14 +424,64 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
 
 
         Phx.vista.VentaWebModificaciones.superclass.onButtonEdit.call(this);
+
         if (this.Cmp.tipo_dato.getValue() == 'reemision') {
+            this.mostrarComponente(this.Cmp.nro_boleto);
+            this.Cmp.nro_boleto.allowBlank = false;
+
             this.mostrarComponente(this.Cmp.nro_boleto_reemision);
             this.Cmp.nro_boleto_reemision.allowBlank = false;
+
+            this.ocultarComponente(this.Cmp.fecha_reserva_antigua);
+            this.Cmp.fecha_reserva_antigua.allowBlank = true;
+            this.Cmp.fecha_reserva_antigua.reset();
+
+            this.ocultarComponente(this.Cmp.pnr_antiguo);
+            this.Cmp.pnr_antiguo.allowBlank = true;
+            this.Cmp.pnr_antiguo.reset();
+
+            this.ocultarComponente(this.Cmp.banco);
+            this.Cmp.banco.allowBlank = true;
+            this.Cmp.banco.reset();
+        }
+        else if (this.Cmp.tipo_dato.getValue() == 'emision_manual') {
+            this.mostrarComponente(this.Cmp.nro_boleto_reemision);
+            this.Cmp.nro_boleto_reemision.allowBlank = false;
+
+            this.mostrarComponente(this.Cmp.fecha_reserva_antigua);
+            this.Cmp.fecha_reserva_antigua.allowBlank = false;
+
+            this.mostrarComponente(this.Cmp.pnr_antiguo);
+            this.Cmp.pnr_antiguo.allowBlank = false;
+
+            this.mostrarComponente(this.Cmp.banco);
+            this.Cmp.banco.allowBlank = false;
+
+            this.ocultarComponente(this.Cmp.nro_boleto);
+            this.Cmp.nro_boleto.allowBlank = true;
+            this.Cmp.nro_boleto.reset();
+
         } else {
+            this.mostrarComponente(this.Cmp.nro_boleto);
+            this.Cmp.nro_boleto.allowBlank = false;
+
             this.ocultarComponente(this.Cmp.nro_boleto_reemision);
             this.Cmp.nro_boleto_reemision.allowBlank = true;
             this.Cmp.nro_boleto_reemision.reset();
+
+            this.ocultarComponente(this.Cmp.fecha_reserva_antigua);
+            this.Cmp.fecha_reserva_antigua.allowBlank = true;
+            this.Cmp.fecha_reserva_antigua.reset();
+
+            this.ocultarComponente(this.Cmp.banco);
+            this.Cmp.banco.allowBlank = true;
+            this.Cmp.banco.reset();
+
+            this.ocultarComponente(this.Cmp.pnr_antiguo);
+            this.Cmp.pnr_antiguo.allowBlank = true;
+            this.Cmp.pnr_antiguo.reset();
         }
+
     },
 
     onButtonNew:function(){
@@ -335,10 +489,24 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
 
         Phx.vista.VentaWebModificaciones.superclass.onButtonNew.call(this);
 
+        this.mostrarComponente(this.Cmp.nro_boleto);
+        this.Cmp.nro_boleto.allowBlank = false;
 
         this.ocultarComponente(this.Cmp.nro_boleto_reemision);
         this.Cmp.nro_boleto_reemision.allowBlank = true;
         this.Cmp.nro_boleto_reemision.reset();
+
+        this.ocultarComponente(this.Cmp.fecha_reserva_antigua);
+        this.Cmp.fecha_reserva_antigua.allowBlank = true;
+        this.Cmp.fecha_reserva_antigua.reset();
+
+        this.ocultarComponente(this.Cmp.pnr_antiguo);
+        this.Cmp.pnr_antiguo.allowBlank = true;
+        this.Cmp.pnr_antiguo.reset();
+
+        this.ocultarComponente(this.Cmp.banco);
+        this.Cmp.banco.allowBlank = true;
+        this.Cmp.banco.reset();
 
     },
 	bdel:true,
