@@ -145,6 +145,18 @@ class RConciliacionBancaInter
     }
     function generarDatos()
     {
+        $styleTitulos1 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 12,
+                'name'  => 'Arial'
+            ),
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+            ),
+        );
+        
         $styleTitulos4 = array(
 
             'fill' => array(
@@ -228,15 +240,25 @@ class RConciliacionBancaInter
                 $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(17);
                 $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(18);
                 $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(40);
-                $this->docexcel->getActiveSheet()->getStyle('A2:F2')->getAlignment()->setWrapText(true);
-                $this->docexcel->getActiveSheet()->getStyle('A2:F2')->applyFromArray($styleTitulos2);
-                $this->docexcel->getActiveSheet()->setCellValue('A2','Fecha');
-                $this->docexcel->getActiveSheet()->setCellValue('B2','PNR');
-                $this->docexcel->getActiveSheet()->setCellValue('C2','Monto_Ing');
-                $this->docexcel->getActiveSheet()->setCellValue('D2','Monto_Sky');
-                $this->docexcel->getActiveSheet()->setCellValue('E2','Fecha Pago');
-                $this->docexcel->getActiveSheet()->setCellValue('F2','Observaciones');
-                $fila = 3;
+
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'CONCILIACION BANCARIA '. $this->objParam->getParametro('banco') . '(' . $this->objParam->getParametro('moneda').')'  );
+
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,3,'Fecha: '.  $valor['fecha']);
+                $this->docexcel->getActiveSheet()->getStyle('A2:D2')->applyFromArray($styleTitulos1);
+                $this->docexcel->getActiveSheet()->mergeCells('A2:D2');
+
+                $this->docexcel->getActiveSheet()->getStyle('A3:D3')->applyFromArray($styleTitulos3);
+                $this->docexcel->getActiveSheet()->mergeCells('A3:D3');
+
+                $this->docexcel->getActiveSheet()->getStyle('A4:F4')->getAlignment()->setWrapText(true);
+                $this->docexcel->getActiveSheet()->getStyle('A4:F4')->applyFromArray($styleTitulos2);
+                $this->docexcel->getActiveSheet()->setCellValue('A4','Fecha');
+                $this->docexcel->getActiveSheet()->setCellValue('B4','PNR');
+                $this->docexcel->getActiveSheet()->setCellValue('C4','Monto_Ing');
+                $this->docexcel->getActiveSheet()->setCellValue('D4','Monto_Sky');
+                $this->docexcel->getActiveSheet()->setCellValue('E4','Fecha Pago');
+                $this->docexcel->getActiveSheet()->setCellValue('F4','Observaciones');
+                $fila = 5;
             }
 
             if ( $valor['monto_ingresos'] != $valor['monto_archivos']) {

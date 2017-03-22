@@ -619,4 +619,7 @@ ADD COLUMN fecha_reserva_antigua DATE;
 ALTER TABLE obingresos.tventa_web_modificaciones
 ADD COLUMN pnr_antiguo VARCHAR (20);
 
+ALTER TABLE obingresos.tventa_web_modificaciones
+  ADD COLUMN banco VARCHAR(5);
+
 /********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
