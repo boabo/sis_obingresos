@@ -37,6 +37,9 @@ class MODVentaWebModificaciones extends MODbase{
 		$this->captura('usr_mod','varchar');
         $this->captura('procesado','varchar');
         $this->captura('anulado','varchar');
+        $this->captura('pnr_antiguo','varchar');
+        $this->captura('fecha_reserva_antigua','date');
+        $this->captura('banco','varchar');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -59,6 +62,9 @@ class MODVentaWebModificaciones extends MODbase{
 		$this->setParametro('nro_boleto_reemision','nro_boleto_reemision','varchar');
 		$this->setParametro('used','used','varchar');
 		$this->setParametro('estado_reg','estado_reg','varchar');
+        $this->setParametro('pnr_antiguo','pnr_antiguo','varchar');
+        $this->setParametro('fecha_reserva_antigua','fecha_reserva_antigua','date');
+        $this->setParametro('banco','banco','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -82,6 +88,9 @@ class MODVentaWebModificaciones extends MODbase{
 		$this->setParametro('nro_boleto_reemision','nro_boleto_reemision','varchar');
 		$this->setParametro('used','used','varchar');
 		$this->setParametro('estado_reg','estado_reg','varchar');
+        $this->setParametro('pnr_antiguo','pnr_antiguo','varchar');
+        $this->setParametro('fecha_reserva_antigua','fecha_reserva_antigua','date');
+        $this->setParametro('banco','banco','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

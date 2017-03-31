@@ -4,8 +4,8 @@ CREATE OR REPLACE FUNCTION obingresos.ft_venta_web_modificaciones_ime (
   p_tabla varchar,
   p_transaccion varchar
 )
-  RETURNS varchar AS
-  $body$
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_venta_web_modificaciones_ime
@@ -61,7 +61,10 @@ BEGIN
 			id_usuario_reg,
 			fecha_mod,
 			id_usuario_mod,
-            procesado
+            procesado,
+            fecha_reserva_antigua,
+            pnr_antiguo,
+            banco	
           	) values(
 			v_parametros.nro_boleto,
 			v_parametros.tipo,
@@ -75,10 +78,17 @@ BEGIN
 			p_id_usuario,
 			null,
 			null,
-			'no'				
+			'no',
+            v_parametros.fecha_reserva_antigua,
+            v_parametros.pnr_antiguo,
+            v_parametros.banco				
 			
 			
 			)RETURNING id_venta_web_modificaciones into v_id_venta_web_modificaciones;
+            
+            if (v_parametros.tipo = 'emision_manual') then
+            	select informix.f_modificar_datos_web_emi_manual( v_parametros.nro_boleto_reemision,v_parametros.banco);
+            end if;
             
             if (v_parametros.tipo = 'reemision') then
             	select informix.f_modificar_datos_web_reemision( v_parametros.nro_boleto_reemision,v_parametros.nro_boleto);
@@ -120,14 +130,21 @@ BEGIN
 			fecha_mod = now(),
 			id_usuario_mod = p_id_usuario,
 			id_usuario_ai = v_parametros._id_usuario_ai,
-			usuario_ai = v_parametros._nombre_usuario_ai
+			usuario_ai = v_parametros._nombre_usuario_ai,
+            fecha_reserva_antigua = v_parametros.fecha_reserva_antigua,
+            pnr_antiguo = v_parametros.pnr_antiguo,
+            banco = v_parametros.banco
 			where id_venta_web_modificaciones=v_parametros.id_venta_web_modificaciones;
             
             select * into v_registro
             from obingresos.tventa_web_modificaciones
             where id_venta_web_modificaciones=v_parametros.id_venta_web_modificaciones;
             
-            if (v_registro.tipo = 'reemision' and v_registro.procesado = 'no') then
+            if ( v_parametros.tipo = 'emision_manual' and v_registro.procesado = 'no') then
+            	select informix.f_modificar_datos_web_emi_manual( v_parametros.nro_boleto_reemision,v_parametros.banco);
+            end if;
+            
+            if (v_registro.tipo = 'reemision'  and v_registro.procesado = 'no') then
             	select informix.f_modificar_datos_web_reemision( v_parametros.nro_boleto_reemision,v_parametros.nro_boleto);
             end if;
                
@@ -150,6 +167,10 @@ BEGIN
 	elsif(p_transaccion='OBING_VWEBMOD_ELI')then
 
 		begin
+        	select * into v_registro
+            from obingresos.tventa_web_modificaciones
+            where id_venta_web_modificaciones=v_parametros.id_venta_web_modificaciones;
+            
         	if (v_registro.procesado = 'si') then
             	raise exception 'No es posible eliminar el registro porq ya fue procesado';
             end if;

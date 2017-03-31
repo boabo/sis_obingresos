@@ -612,6 +612,7 @@ ADD COLUMN monto_total NUMERIC(18,2);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-02/03/2017********************************************/
 
+
 /********************************************I-SCP-JRR-OBINGRESOS-0-20/03/2017********************************************/
 ALTER TABLE obingresos.tboleto
   ADD COLUMN fare_calc TEXT;
@@ -645,3 +646,16 @@ ALTER TABLE obingresos.tboleto_vuelo
   ALTER COLUMN id_aeropuerto_destino SET NOT NULL;
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-24/03/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+ALTER TABLE obingresos.tventa_web_modificaciones
+ADD COLUMN fecha_reserva_antigua DATE;
+
+ALTER TABLE obingresos.tventa_web_modificaciones
+ADD COLUMN pnr_antiguo VARCHAR (20);
+
+ALTER TABLE obingresos.tventa_web_modificaciones
+  ADD COLUMN banco VARCHAR(5);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+
