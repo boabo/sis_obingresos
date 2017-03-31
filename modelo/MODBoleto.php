@@ -78,6 +78,8 @@ class MODBoleto extends MODbase{
 		$this->captura('ruta_completa','varchar');
         $this->captura('monto_total_fp','numeric');
         $this->captura('mensaje_error','text');
+        $this->captura('id_boleto_vuelo','integer');
+        $this->captura('vuelo_retorno','varchar');
 
 		
 		
@@ -147,9 +149,10 @@ class MODBoleto extends MODbase{
         $this->setParametro('codigo_tarjeta2','codigo_tarjeta2','varchar');
 		$this->setParametro('ctacte2','ctacte2','varchar');
 		$this->setParametro('comision','comision','numeric');	
-		$this->setParametro('estado','estado','varchar');		
+		$this->setParametro('estado','estado','varchar');
+        $this->setParametro('id_boleto_vuelo','id_boleto_vuelo','integer');
 
-		//Ejecuta la instruccion
+        //Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
 
@@ -213,7 +216,9 @@ class MODBoleto extends MODbase{
 		$this->setParametro('ruta_completa','ruta_completa','varchar');	
 		$this->setParametro('vuelos','vuelos','text');	
 		$this->setParametro('localizador','localizador','varchar');		
-		$this->setParametro('identificacion','identificacion','varchar');		
+		$this->setParametro('identificacion','identificacion','varchar');
+        $this->setParametro('fare_calc','fare_calc','text');
+        $this->setParametro('vuelos2','vuelos2','text');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -251,10 +256,16 @@ class MODBoleto extends MODbase{
 		$this->captura('identificacion','varchar');
 		$this->captura('pais','varchar');
 		$this->captura('origen','varchar');
+        $this->captura('direccion','varchar');
+        $this->captura('telefono','varchar');
+        $this->captura('fare_calc','text');
+        $this->captura('detalle_tasas','varchar');
+        $this->captura('conexion','varchar');
 		
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
+
 		$this->ejecutarConsulta();
 		
 		//Devuelve la respuesta
@@ -271,7 +282,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('id_boleto','id_boleto','integer');//ok
 				
 		//Definicion de la lista del resultado del query
-		$this->captura('fecha','varchar');
+		$this->captura('fecha_origen','varchar');
+        $this->captura('fecha_destino','varchar');
 		$this->captura('vuelo','varchar');		
 		$this->captura('desde','varchar');
 		$this->captura('hacia','varchar');
@@ -279,9 +291,16 @@ class MODBoleto extends MODbase{
 		$this->captura('hora_destino','varchar');
 		$this->captura('tarifa','varchar');
 		$this->captura('equipaje','varchar');
+        $this->captura('clase','varchar');
+        $this->captura('cupon','smallint');
+        $this->captura('flight_status','varchar');
+        $this->captura('conexion','varchar');
+        $this->captura('retorno','varchar');
+
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
+
 		$this->ejecutarConsulta();
 		
 		//Devuelve la respuesta

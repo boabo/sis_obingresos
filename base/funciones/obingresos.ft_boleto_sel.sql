@@ -27,6 +27,7 @@ DECLARE
 	v_parametros  		record;
 	v_nombre_funcion   	text;
 	v_resp				varchar;
+    v_conexion			varchar;
 			    
 BEGIN
 
@@ -142,9 +143,12 @@ BEGIN
                         bol.moneda_sucursal,
                         bol.ruta_completa,
                         forpa.monto_total_fp,
-                        bol.mensaje_error
+                        bol.mensaje_error,
+                        bv.id_boleto_vuelo,
+                        (bv.aeropuerto_origen || ''-'' || bv.aeropuerto_destino)::varchar as vuelo_retorno
 						from obingresos.tboleto bol
                         inner join obingresos.tagencia age on age.id_agencia = bol.id_agencia
+                        left join obingresos.tboleto_vuelo bv on bv.id_boleto = bol.id_boleto and bv.retorno = ''si''
                         left join forma_pago_temporal forpa on forpa.id_boleto = bol.id_boleto
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
 						inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
@@ -197,7 +201,14 @@ BEGIN
     elsif(p_transaccion='OBING_BOLFAC_SEL')then
 
 		begin
-			--Sentencia de la consulta de conteo de registros
+        select ((sum(COALESCE(bv.tiempo_conexion,0)) /60 ) || 'h' || (sum(COALESCE(bv.tiempo_conexion,0)) % 60 ) || 'm')::varchar as conexion
+        	into v_conexion
+		from obingresos.tboleto_vuelo bv
+        where (bv.id_boleto = v_parametros.id_boleto or bv.id_boleto_conjuncion = v_parametros.id_boleto) and cupon != 1 and retorno != 'si';
+        if (v_conexion is null) then
+        	v_conexion = '';
+        end if;
+        	--Sentencia de la consulta de conteo de registros
         v_consulta:='
     with 
     origen as (select bv.id_boleto, l.codigo as pais
@@ -206,8 +217,9 @@ BEGIN
                 inner join param.tlugar l on l.id_lugar = param.f_get_id_lugar_pais(a.id_lugar)
                 where bv.id_boleto =  ' || v_parametros.id_boleto|| '  
                 order by bv.id_boleto_vuelo ASC limit 1 offset 0) ,
-    tasas as (select bt.id_boleto, sum(bt.importe) as importe
+    tasas as (select bt.id_boleto, sum(bt.importe) as importe,pxp.list((bt.importe || '' '' || t.codigo)::varchar)::varchar as tasas
             from obingresos.tboleto_impuesto bt
+            inner join obingresos.timpuesto t on t.id_impuesto = bt.id_impuesto
             where bt.id_boleto = ' || v_parametros.id_boleto|| ' and bt.calculo_tarifa = ''no''
             group by id_boleto),
 	 sujeto as (
@@ -254,7 +266,15 @@ BEGIN
                         end)::varchar as tipo_identificacion,
                         substr(b.identificacion,3)::varchar as identificacion,
                         pais.codigo::varchar as pais,
-                        ori.pais as origen
+                        ori.pais as origen,
+                        s.direccion,
+                        s.telefono,
+                        b.fare_calc,
+                        (t.tasas ||  (case when b.xt is null or b.xt = 0 
+                        						then '''' 
+                        						else '','' || b.xt || '' XT''
+                                                end))::varchar as detalle_tasas,
+                        ''' || v_conexion || '''::varchar as conexion
                                                 
                         from  obingresos.tboleto b
                         inner join vef.tpunto_venta pv on b.id_punto_venta = pv.id_punto_venta
@@ -285,17 +305,27 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-        v_consulta:='select to_char(bv.fecha,''DD MON YYYY'')::varchar as fecha,
-                          bv.vuelo,(lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde, (ld.nombre || '' ('' || ad.codigo || '')'')::varchar as hacia,
-                          to_char(bv.hora_origen,''HH:MI'')::varchar as hora_origen,to_char(bv.hora_destino,''HH:MI'')::varchar as hora_destino,
-                          bv.tarifa, bv.equipaje
+        v_consulta:='select to_char(bv.fecha_hora_origen,''DDMON'')::varchar as fecha_origen,
+        					to_char(bv.fecha_hora_destino,''DDMON'')::varchar as fecha_origen,
+                          (bv.linea || bv.vuelo)::varchar,
+                          (lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde, 
+                          (ld.nombre || '' ('' || ad.codigo || '')'')::varchar as hacia,
+                          to_char(bv.fecha_hora_origen,''HHMI'')::varchar as hora_origen,
+                          to_char(bv.fecha_hora_destino,''HHMI'')::varchar as hora_destino,
+                          bv.tarifa, 
+                          bv.equipaje,
+                          bv.clase,
+                          bv.cupon,
+                          bv.flight_status,
+                          ((bv.tiempo_conexion /60 ) || ''h'' || (bv.tiempo_conexion % 60 ) || ''m'')::varchar as conexion,
+                          bv.retorno
                           from obingresos.tboleto_vuelo bv
                           inner join obingresos.taeropuerto ao on bv.id_aeropuerto_origen = ao.id_aeropuerto
                           inner join obingresos.taeropuerto ad on bv.id_aeropuerto_destino = ad.id_aeropuerto
                           inner join param.tlugar lo on lo.id_lugar = ao.id_lugar
                           inner join param.tlugar ld on ld.id_lugar = ad.id_lugar
                           where bv.id_boleto = ' || v_parametros.id_boleto|| ' or bv.id_boleto_conjuncion = ' || v_parametros.id_boleto|| ' 
-                          order by bv.id_boleto_vuelo ASC';
+                          order by bv.cupon ASC';
 
 
         --Devuelve la respuesta

@@ -101,7 +101,8 @@ $body$
       voided,
       nit,
       razon,
-      medio_pago     
+      medio_pago,
+      fare_calc     
       ';
 
         valores:=NEW.id_usuario_reg ||','''||
@@ -140,7 +141,8 @@ $body$
                  coalesce ('''' || NEW.voided || '''','NULL')||','||
                  coalesce ('''' || NEW.nit || '''','NULL')||','||
                  coalesce ('''' || NEW.razon || '''','NULL')||','||
-                 coalesce ('''' || NEW.medio_pago || '''','NULL');
+                 coalesce ('''' || NEW.medio_pago || '''','NULL')||','||
+                 coalesce ('''' || NEW.fare_calc || '''','NULL');
         raise notice '%',valores;
         consulta='INSERT INTO obingresos.'||nombre_tabla||' (' || campos || ') VALUES ('||valores||');';
 
