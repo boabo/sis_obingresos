@@ -182,7 +182,7 @@ $body$
         end if;
         --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('01/02/2017'::date,
+        from generate_series('01/03/2017'::date,
                              now()::date - interval '1 day', '1 day'::interval) i;
 
 
@@ -206,7 +206,7 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        from generate_series('01/02/2017'::date,
+        from generate_series('01/03/2017'::date,
                              now()::date - interval '1 day', '1 day'::interval) i loop
           
           if (exists (select 1 
