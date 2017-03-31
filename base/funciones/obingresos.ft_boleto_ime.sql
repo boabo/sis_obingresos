@@ -64,6 +64,16 @@ DECLARE
     v_vuelo_fields			varchar[];
     v_mensaje				varchar;
     v_suma_tasas			numeric;
+    v_cupon					integer;
+    v_aux_separacion		VARCHAR[];
+    v_codigo_pais			varchar;
+    v_aux_string			varchar;
+    v_fecha_llegada			date;
+    v_fecha_hora_origen		timestamp;
+    v_fecha_hora_destino	timestamp;
+    v_fecha_hora_destino_ant timestamp;	
+    v_aeropuertos 			varchar[];
+    v_retorno				varchar;
 			    
 BEGIN
 
@@ -243,6 +253,23 @@ BEGIN
                     );  
                 end if; 
             end if;  
+            
+            update obingresos.tboleto_vuelo 
+            set retorno = 'si'
+            where id_boleto_vuelo = v_parametros.id_boleto_vuelo
+            returning cupon into v_cupon;
+            
+            update obingresos.tboleto_vuelo 
+            set retorno = 'no'
+            where id_boleto = v_parametros.id_boleto
+            and cupon < v_cupon;
+            
+            update obingresos.tboleto_vuelo 
+            set retorno = 'si_sec'
+            where id_boleto = v_parametros.id_boleto
+            and cupon > v_cupon;
+            
+            
 			
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')'); 
@@ -414,7 +441,7 @@ BEGIN
         begin
         	
         	
-        	select ag.id_agencia,ag.codigo,sm.id_moneda,suc.id_lugar,mon.codigo_internacional 
+        	select ag.id_agencia,ag.codigo,sm.id_moneda,suc.id_lugar,mon.codigo_internacional
             	into v_id_agencia,v_agt,v_id_moneda_sucursal,v_id_lugar_sucursal,v_cod_moneda_sucursal
             from vef.tpunto_venta pv
             inner join obingresos.tagencia ag on ag.codigo = pv.codigo
@@ -427,6 +454,8 @@ BEGIN
             select m.id_moneda into v_id_moneda
             from param.tmoneda m
             where m.codigo_internacional = v_parametros.moneda;
+            
+            
             
             select m.id_moneda into v_id_moneda_usd
             from param.tmoneda m
@@ -452,6 +481,20 @@ BEGIN
             
             if (v_id_lugar_pais is null) then
             	raise exception 'El punto de venta con el que esta logueado en este momento no tiene un pais relacionado. Comuniquese con el administrador';
+            end if;
+            
+            select l.codigo into v_codigo_pais
+            from param.tlugar l
+            where id_lugar = v_id_lugar_pais;
+            
+            if (position(v_codigo_pais in pxp.f_get_variable_global('obingresos_remover_q_pais')) > 0 ) then
+            	v_aux_separacion = string_to_array(v_parametros.fare_calc,' ');
+                FOREACH v_aux_string IN ARRAY v_aux_separacion LOOP
+                	
+                    if (substring(v_aux_string from 1 for 1) = 'Q' and pxp.f_is_positive_integer(substring(v_aux_string from 2 for 1))) THEN
+                    	v_parametros.fare_calc = replace(v_parametros.fare_calc, v_aux_string || ' ', '');	
+                    end if;
+                END LOOP; 
             end if;
             
             v_rutas = string_to_array(v_parametros.rutas,'#');
@@ -505,7 +548,8 @@ BEGIN
             id_punto_venta,
             ruta_completa,
             localizador,
-            identificacion
+            identificacion,
+            fare_calc
           	) values(
             v_id_boleto,
 			v_id_agencia,
@@ -538,7 +582,8 @@ BEGIN
             v_parametros.id_punto_venta,
             v_parametros.ruta_completa,
             v_parametros.localizador,
-            v_parametros.identificacion
+            v_parametros.identificacion,
+            v_parametros.fare_calc
 			);
             
             v_mensaje = '';
@@ -621,9 +666,9 @@ BEGIN
                 
             end loop;
             
-            if (v_suma_tasas + v_parametros.neto != v_parametros.total) then
-            	raise exception 'El importe total del boleto no es igual a la suma del neto y las tasas/impuestos%',v_suma_tasas;
-            end if;
+            --if (v_suma_tasas + v_parametros.neto != v_parametros.total) then
+            --	raise exception 'El importe total del boleto no es igual a la suma del neto y las tasas/impuestos%',v_suma_tasas;
+            --end if;
             
             v_fp = string_to_array(substring(v_parametros.fp from 2),'#');
             v_moneda_fp = string_to_array(substring(v_parametros.moneda_fp from 2),'#');
@@ -636,13 +681,13 @@ BEGIN
                 from obingresos.tforma_pago fp
                 inner join param.tmoneda m on m.id_moneda = fp.id_moneda 
                 where fp.codigo = v_forma_pago and 
-                	m.codigo_internacional = v_moneda_fp[v_posicion] and 
+                	m.codigo_internacional = (case when v_moneda_fp[v_posicion] = '' or v_moneda_fp[v_posicion] is null then v_parametros.moneda else v_moneda_fp[v_posicion] end)   and 
                     fp.id_lugar = v_id_lugar_pais;
                     
                 if (v_id_forma_pago is null) then
-                	raise exception 'No existe la forma de pago:%',v_forma_pago;
+                	raise exception 'No existe la forma de pago:%,%,%',v_forma_pago,v_moneda_fp[v_posicion],v_id_lugar_pais;
                 end if;
-                    
+                  
             	 INSERT INTO 
                     obingresos.tboleto_forma_pago
                   (
@@ -656,43 +701,109 @@ BEGIN
                     v_valor_fp[v_posicion]::numeric,
                     v_id_forma_pago,
                     v_id_boleto
-                  );                  
+                  );     
+                             
                   v_posicion = v_posicion + 1;
             END LOOP;    
-            
+            --vuelos 1
             v_vuelos = string_to_array(v_parametros.vuelos,'$$$'); 
+            
+             --Boleto en conjuncion
+          if (pxp.f_existe_parametro(p_tabla,'id_boleto') = TRUE) then
+              	select max(cupon) + 1 into v_cupon
+                from obingresos.tboleto_vuelo bv
+                where id_boleto = v_parametros.id_boleto;
+                      
+           end if;
+           if (v_cupon is null) then
+           		v_cupon = 1;
+           end if;
             
             FOREACH v_vuelo IN ARRAY v_vuelos
             LOOP
             	 v_vuelo_fields = string_to_array(v_vuelo,'|');
-                 
+                  
                                     
             	 INSERT INTO 
                     obingresos.tboleto_vuelo
                   (
                     id_usuario_reg,  
-                    id_boleto,
-                    fecha,
+                    id_boleto,                    
                     vuelo,
                     hora_origen,
                     id_aeropuerto_origen,
                     id_aeropuerto_destino,
                     tarifa,
                     equipaje,
-                    status
+                    status,
+                    cupon,
+                    aeropuerto_origen,
+                    aeropuerto_destino,
+                    clase,
+                    flight_status,
+                    linea
                   )
                   VALUES (
                     p_id_usuario,    
-                    v_id_boleto,
-                    to_date(v_vuelo_fields[1] || to_char(now(),'YY') , 'DDMONYY'),
+                    v_id_boleto,                    
                     v_vuelo_fields[2],
                     to_timestamp(v_vuelo_fields[3],'HH24MI')::time,
                     (select id_aeropuerto from obingresos.taeropuerto a where a.codigo = v_vuelo_fields[4]),
                     (select id_aeropuerto from obingresos.taeropuerto a where a.codigo = v_vuelo_fields[5]),
                     v_vuelo_fields[6],
                     v_vuelo_fields[7],
-                    v_vuelo_fields[8]
+                    v_vuelo_fields[8],
+                    v_cupon,
+                    v_vuelo_fields[4],
+                    v_vuelo_fields[5],
+                    v_vuelo_fields[9],
+                    v_vuelo_fields[10],
+                    v_vuelo_fields[11]
                   );  
+                  v_cupon = v_cupon +1;
+                  
+            END LOOP; 
+            
+            --vuelos 2
+            
+            v_vuelos = string_to_array(v_parametros.vuelos2,'$$$'); 
+            v_retorno = 'no';
+            FOREACH v_vuelo IN ARRAY v_vuelos
+            LOOP
+            	 
+            	 v_vuelo_fields = string_to_array(v_vuelo,'|');
+                 if (v_vuelo_fields[2] = ANY(v_aeropuertos) and v_retorno = 'no') then
+                 	v_retorno = 'si';
+                 elsif (v_retorno = 'no') then
+                 	v_aeropuertos = array_append(v_aeropuertos, v_vuelo_fields[1]);                    
+                 else
+                 	v_retorno = 'si_sec';                 
+                 end if;
+                 v_fecha =to_date(v_vuelo_fields[3] , 'DDMONYY');
+                 if (position('+1' in v_vuelo_fields[5]) > 0) then                 
+                 	v_fecha_llegada = v_fecha + interval '1 day';
+                    v_vuelo_fields[5] = replace(v_vuelo_fields[5], '+1', '');
+                 else
+                 	v_fecha_llegada = v_fecha;
+                 end if;
+                 
+                 v_fecha_hora_origen = to_timestamp(to_char(v_fecha,'DD/MM/YYYY') || ' ' || v_vuelo_fields[4], 'DD/MM/YYYY HH24MI');
+                 v_fecha_hora_destino = to_timestamp(to_char(v_fecha_llegada,'DD/MM/YYYY') || ' ' || v_vuelo_fields[5], 'DD/MM/YYYY HH24MI');
+                 
+                 
+                 update obingresos.tboleto_vuelo 
+                 set fecha_hora_origen =  v_fecha_hora_origen,
+                 fecha_hora_destino =  v_fecha_hora_destino,
+                 retorno = v_retorno,
+                 tiempo_conexion = EXTRACT('epoch' FROM v_fecha_hora_origen - v_fecha_hora_destino_ant ) / 60
+                 where id_boleto = v_id_boleto and 
+                 id_aeropuerto_origen = (select id_aeropuerto from obingresos.taeropuerto a where a.codigo = v_vuelo_fields[1]) and
+                 id_aeropuerto_destino = (select id_aeropuerto from obingresos.taeropuerto a where a.codigo = v_vuelo_fields[2])
+                 returning cupon into v_cupon;
+                 
+                 v_fecha_hora_destino_ant = v_fecha_hora_destino;
+                 
+                 
                   
             END LOOP; 
             

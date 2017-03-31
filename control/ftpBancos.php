@@ -138,10 +138,12 @@ $resp_root = json_decode($res);*/
 
            
             $archivoExcel = new ExcelInput($local_file.'SkyBiz/'.$registrados["nombre_archivo"], "SKYBIZR");
-            $archivoExcel->recuperarColumnasExcel();
-
+            $res = $archivoExcel->recuperarColumnasExcel();
+            
 
             $arrayArchivo = $archivoExcel->leerColumnasArchivoExcel();
+
+
 
 
             foreach ($arrayArchivo as $fila) {
@@ -173,12 +175,13 @@ $resp_root = json_decode($res);*/
 
             $json = json_encode($arra_excel_detalle);
 
+
             $res = $pxpRestClient->doPost('obingresos/SkybizArchivoDetalle/insertarSkybizArchivoDetalleJson',
                 array(	"arra_json"=>$json,"nombre_archivo"=>$registrados["nombre_archivo"]));
 
             $resp_root = json_decode($res);
 
-
+            
 
 
             echo '<br>';

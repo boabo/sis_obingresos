@@ -7,6 +7,7 @@
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
 include(dirname(__FILE__).'/../reportes/RBoleto.php');
+include(dirname(__FILE__).'/../reportes/RBoletoBRPDF.php');
 include(dirname(__FILE__).'/../reportes/RReporteBoletoResiberVentasWeb.php');
 
 class ACTBoleto extends ACTbase{
@@ -114,7 +115,7 @@ class ACTBoleto extends ACTbase{
 				//si el boleto no esta registrado se registra
 				} else {
 					if ($this->res->getTotal() == 0) {				
-						$this->res=$this->obtenerBoletoFromServicio();
+						$cantidad_vuelos=$this->obtenerBoletoFromServicio();
 					}
 				}
 			}
@@ -150,10 +151,11 @@ class ACTBoleto extends ACTbase{
 			if ($this->res->getTotal() == 1) {		
 				$this->res->imprimirRespuesta($this->res->generarJson());
 			} else {
-				$this->obtenerBoletoFromServicio();				
+				$cantidad_vuelos = $this->obtenerBoletoFromServicio();
 				
 				$this->objFunc=$this->create('MODBoleto');	
-				$this->res=$this->objFunc->listarBoleto($this->objParam);				
+				$this->res=$this->objFunc->listarBoleto($this->objParam);
+                $this->res->setExtraData(array(	"cantidad_vuelos"=>$cantidad_vuelos));
 				$this->res->imprimirRespuesta($this->res->generarJson());
 			}
 		}
@@ -210,13 +212,27 @@ class ACTBoleto extends ACTbase{
 			
 		} else {			
 			$res = json_decode($cadena, true);
+
+            $vuelos2 = $this->obtenerVuelos($res['billete']['pnrs']['pnr'], $res['billete']['nom_apdos']['#text']);
+
+            $cantidad_vuelos = substr_count($vuelos2,'$$$') + 1;
+
+            $this->objParam->addParametro('vuelos2',$vuelos2);
 			
 			$this->objParam->addParametro('pasajero',$res['billete']['nom_apdos']['#text']);
 			$this->objParam->addParametro('fecha_emision',$res['billete']['fecha_emision']['#text']);
 			$this->objParam->addParametro('total',$res['billete']['total']['#text']);
 			$this->objParam->addParametro('moneda',$res['billete']['moneda']['#text']);
 			$this->objParam->addParametro('neto',$res['billete']['tarifa']['#text']);
-			$this->objParam->addParametro('localizador',$res['billete']['pnrs']['pnr']);
+
+            if (is_array($res['billete']['pnrs']['pnr'])) {
+                $pnr = explode(' ',$res['billete']['pnrs']['pnr'][0]);
+                $pnr = $res['billete']['pnrs']['pnr'][0];
+                $this->objParam->addParametro('localizador', $pnr);
+            } else {
+                $this->objParam->addParametro('localizador',$res['billete']['pnrs']['pnr']);
+            }
+
 
             if (isset($res['billete']['identificacion'])) {
                 $this->objParam->addParametro('identificacion',$res['billete']['identificacion']['#text']);
@@ -248,6 +264,9 @@ class ACTBoleto extends ACTbase{
 				$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][0]['fare_basis'];
 				$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][0]['kgs'];
 				$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][0]['status'];
+                $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][0]['clase'];
+                $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][0]['flight_status'];
+                $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][0]['linea'];
 				
 				$ruta_completa = $res['billete']['vuelos']['vuelo'][0]['origen'] . '-' . $res['billete']['vuelos']['vuelo'][0]['destino'];
 				for ($i = 1;$i < $cupones;$i++) {
@@ -260,6 +279,9 @@ class ACTBoleto extends ACTbase{
 					$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][$i]['fare_basis'];
 					$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][$i]['kgs'];
 					$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][$i]['status'];
+                    $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][$i]['clase'];
+                    $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][$i]['flight_status'];
+                    $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo'][$i]['linea'];
 				}
 			} else {
 				$ruta_completa = $res['billete']['vuelos']['vuelo']['origen'] . '-' . $res['billete']['vuelos']['vuelo']['destino'];
@@ -273,6 +295,9 @@ class ACTBoleto extends ACTbase{
 				$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo']['fare_basis'];
 				$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo']['kgs'];
 				$vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo']['status'];
+                $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo']['clase'];
+                $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo']['flight_status'];
+                $vuelos = $vuelos . "|" . $res['billete']['vuelos']['vuelo']['linea'];
 				$this->objParam->addParametro('destino',$res['billete']['vuelos']['vuelo']['destino']);
 				
 			}
@@ -286,6 +311,7 @@ class ACTBoleto extends ACTbase{
 				$impuesto = "";
 			}
 			$this->objParam->addParametro('impuestos',$impuesto);
+            $this->objParam->addParametro('fare_calc',$res['billete']['fare_calc']['#text']);
 			
 			$tasa = "";
 			if (isset($res['billete']['tasas']['tasa'])) {
@@ -365,10 +391,17 @@ class ACTBoleto extends ACTbase{
 			$this->objParam->addParametro('moneda_fp',$moneda_fp);
 			$this->objParam->addParametro('valor_fp',$valor_fp);
 			$rutas = '';
-			foreach ($res['billete']['vuelos']['vuelo'] as $dato) {
-				$rutas .= '#' . $dato['origen'];
-				$rutas .= '#' . $dato['destino'];
-			} 			
+            if (isset($res['billete']['vuelos']['vuelo'][0])) {
+                foreach ($res['billete']['vuelos']['vuelo'] as $dato) {
+
+                    $rutas .= '#' . $dato['origen'];
+                    $rutas .= '#' . $dato['destino'];
+                }
+            } else {
+                $rutas .= '#' . $res['billete']['vuelos']['vuelo']['origen'];
+                $rutas .= '#' . $res['billete']['vuelos']['vuelo']['destino'];
+            }
+
 			$this->objParam->addParametro('rutas',$rutas);
 			
 			$this->objFunc=$this->create('MODBoleto');
@@ -379,30 +412,131 @@ class ACTBoleto extends ACTbase{
 				exit;
 			}
 		}
+        return $cantidad_vuelos;
 		
 	}
+
+    function obtenerVuelos ($pnr, $nombres) {
+        $respuesta = '';
+        if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
+            throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
+        }
+        $arreglo = explode('/',$nombres);
+
+        if (is_array($pnr)) {
+            $pnr = explode(' ',$pnr[0]);
+            $pnr = $pnr[0];
+        }
+
+        $data = array(	"credenciales"=>$_SESSION['_CREDENCIALES_RESIBER'],
+            "idioma"=>"ES",
+            "pnr"=>$pnr,
+            "apellido"=>$arreglo[0],
+            "ip"=>"127.0.0.1",
+            "xmlJson"=>false);
+
+        $json_data = json_encode($data);
+
+        $s = curl_init();
+        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/Servicios/ServicioInterno.svc/TraerReserva');
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+        $_out = curl_exec($s);
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+
+        if (!$status) {
+            throw new Exception("No se pudo conectar con Resiber");
+        }
+        curl_close($s);
+
+        $res = json_decode($_out);
+        $cadena = str_replace('"terminal_salida":{,},', '', $res->TraerReservaResult);
+
+
+        if(strpos($cadena, 'Error') !== false) {
+            throw new Exception('No se encontro el pnr indicado.');
+
+        } else {
+            $res = json_decode($cadena, true);
+
+            foreach ($res['reserva']['vuelos']['vuelo'] as $value) {
+               $respuesta .= $value['origen'] . '|' .  $value['destino'] .'|' .  $value['fecha_salida'] .'|' .  $value['hora_salida'] . '|' . $value['hora_llegada'] . '$$$';
+            }
+            $respuesta = substr($respuesta, 0, -3);
+
+        }
+
+        return $respuesta;
+    }
 
 	function reporteBoleto(){
-		$this->objFunc = $this->create('MODBoleto');
-		$datos = array();
-		$this->res = $this->objFunc->listarBoletoReporte($this->objParam);
-		$datos = $this->res->getDatos();
-		$datos = $datos[0];
-		
-		
-		$this->objFunc = $this->create('MODBoleto');
-		$this->res = $this->objFunc->listarBoletoDetalleReporte($this->objParam);
-		$datos['detalle'] = $this->res->getDatos();
-		
-		$reporte = new RBoleto();
-		$temp = array();
-		
-		$temp['html'] = $reporte->generarHtml($datos);
-		$this->res->setDatos($temp);
-		$this->res->imprimirRespuesta($this->res->generarJson());
+
+        if (isset($_SESSION['_OBINGRESOS_TIPO_BOLETO']) && $_SESSION['_OBINGRESOS_TIPO_BOLETO'] == 'PDFBR') {
+            $this->reporteBoletoBRPDF();
+        } else {
+
+            $this->objFunc = $this->create('MODBoleto');
+            $datos = array();
+            $this->res = $this->objFunc->listarBoletoReporte($this->objParam);
+            $datos = $this->res->getDatos();
+            $datos = $datos[0];
+
+
+            $this->objFunc = $this->create('MODBoleto');
+            $this->res = $this->objFunc->listarBoletoDetalleReporte($this->objParam);
+            $datos['detalle'] = $this->res->getDatos();
+
+            $reporte = new RBoleto();
+            $temp = array();
+
+            $temp['html'] = $reporte->generarHtml($datos);
+            $this->res->setDatos($temp);
+            $this->res->imprimirRespuesta($this->res->generarJson());
+        }
 		
 
 	}
+
+    function reporteBoletoBRPDF() {
+
+
+        $this->objFunc = $this->create('MODBoleto');
+        $this->res = $this->objFunc->listarBoletoReporte($this->objParam);
+        $this->objParam->addParametro('datos_maestro',$this->res->getDatos());
+
+
+
+        $this->objFunc = $this->create('MODBoleto');
+        $this->res = $this->objFunc->listarBoletoDetalleReporte($this->objParam);
+        $this->objParam->addParametro('datos_detalle',$this->res->getDatos());
+
+        $nombreArchivo=uniqid(md5(session_id()).'Boleto');
+
+        $this->objParam->addParametro('titulo_archivo','Boleto');
+        $nombreArchivo.='.pdf';
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        $this->objParam->addParametro('orientacion','P');
+        $this->objParam->addParametro('tamano','A4');
+
+        //Instancia la clase de pdf
+        $this->objReporteFormato=new RBoletoBRPDF($this->objParam);
+        $this->objReporteFormato->generarReporte();
+        $this->objReporteFormato->output($this->objReporteFormato->url_archivo,'F');
+
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado',
+            'Se generó con éxito el reporte: '.$nombreArchivo,'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+
+    }
 
     function detalleDiarioBoletosWeb(){
         $this->objFunc=$this->create('MODBoleto');
