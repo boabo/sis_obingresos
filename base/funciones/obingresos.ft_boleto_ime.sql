@@ -74,6 +74,7 @@ DECLARE
     v_fecha_hora_destino_ant timestamp;	
     v_aeropuertos 			varchar[];
     v_retorno				varchar;
+    v_id_boleto_vuelo		integer;
 			    
 BEGIN
 
@@ -759,7 +760,11 @@ BEGIN
                     v_vuelo_fields[9],
                     v_vuelo_fields[10],
                     v_vuelo_fields[11]
-                  );  
+                  ) returning id_boleto_vuelo into v_id_boleto_vuelo;  
+                  
+                  update obingresos.tboleto_vuelo
+                  set validez_tarifa = obingresos.f_get_validez_tarifa(v_id_boleto_vuelo)
+                  where id_boleto_vuelo = v_id_boleto_vuelo;
                   v_cupon = v_cupon +1;
                   
             END LOOP; 

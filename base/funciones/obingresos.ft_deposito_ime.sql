@@ -180,12 +180,12 @@ BEGIN
 	elsif(p_transaccion='OBING_DEP_SUB')then
    			begin
             
-            if (v_parametros.estado = 'Payment requested') then 
+            if (trim(both ' ' from v_parametros.estado) = 'Payment requested') then 
             	v_parametros.pnr = substring(v_parametros.pnr from 1 for 5);
                 
                 select id_moneda into v_id_moneda
                 from param.tmoneda m
-                where m.codigo_internacional = v_parametros.moneda;
+                where m.codigo_internacional = trim(both ' ' from v_parametros.moneda);
                 
                 if (v_id_moneda is null)then
                     raise exception 'No existe la moneda % en la base de datos',v_parametros.moneda;
@@ -193,7 +193,7 @@ BEGIN
                 
                 if (exists(	select nro_deposito 
                             from obingresos.tdeposito 
-                            where nro_deposito = v_parametros.nro_deposito)) then
+                            where nro_deposito = trim(both ' ' from v_parametros.nro_deposito))) then
                     raise exception 'El deposito % ya esta registrado',v_parametros.nro_deposito;            
                 end if;
                 
@@ -210,17 +210,17 @@ BEGIN
                 tipo,
                 observaciones
                 ) values(
-                v_parametros.nro_deposito,
+                trim(both ' ' from v_parametros.nro_deposito),
                 --v_parametros.id_agencia,
                 v_parametros.monto_deposito,
-                v_parametros.moneda,
-                v_parametros.descripcion,
-                v_parametros.pnr,
+                trim(both ' ' from v_parametros.moneda),
+                trim(both ' ' from v_parametros.descripcion),
+                trim(both ' ' from v_parametros.pnr),
                 v_id_moneda,
                 v_parametros.monto_deposito,
                 to_date(v_parametros.fecha,'DD/MM/YYYY'),
                 v_parametros.tipo,
-                v_parametros.observaciones
+                trim(both ' ' from v_parametros.observaciones)
                 
                 )RETURNING id_deposito into v_id_deposito;
             end if;
