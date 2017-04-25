@@ -224,12 +224,13 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, dep.agt,dep.monto_deposito
+			v_consulta:='select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, dep.agt,sum(dep.monto_deposito)
 					    from obingresos.tdeposito dep                    
 					    
 					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
                         dep.fecha_venta >= ''' || v_parametros.fecha_ini || ''' and dep.fecha_venta <= ''' || v_parametros.fecha_fin || ''' and
                         dep.id_moneda_deposito = '||v_parametros.id_moneda || '
+                        group by to_char(dep.fecha_venta,''DD/MM/YYYY''),dep.agt
                         order by 1,2';
 			
 

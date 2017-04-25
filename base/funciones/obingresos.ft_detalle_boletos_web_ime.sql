@@ -113,7 +113,7 @@ $body$
                       set procesado = 'no',
                       endoso = v_registros."endoso",
                       nit = v_nit,
-                      razon_social =  upper(v_razon_social),
+                      razon_social =  (case when v_razon_social = '' then NULL else upper(v_razon_social) END),
                       fecha_mod = to_date(v_parametros.fecha,'MM/DD/YYYY')
                       where  id_detalle_boletos_web = v_id_detalle_boletos_web;
           --if (v_id_detalle_boletos_web is null) then
@@ -146,7 +146,7 @@ $body$
               'web',
               to_date(v_parametros.fecha,'MM/DD/YYYY'),
               v_nit,
-              upper(v_razon_social)
+              (case when v_razon_social = '' then NULL else upper(v_razon_social) END)
             );
           end if;
 
@@ -182,7 +182,7 @@ $body$
         end if;
         --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('01/02/2017'::date,
+        from generate_series('01/04/2017'::date,
                              now()::date - interval '1 day', '1 day'::interval) i;
 
 
@@ -206,7 +206,7 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        from generate_series('01/02/2017'::date,
+        from generate_series('01/04/2017'::date,
                              now()::date - interval '1 day', '1 day'::interval) i loop
           
           if (exists (select 1 

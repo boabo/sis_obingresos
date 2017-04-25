@@ -58,7 +58,7 @@ BEGIN
           vef.tforma_pago 
         SET           
           estado_reg = NEW.estado_reg,         
-          nombre = NEWnombre,          
+          nombre = NEW.nombre,          
           id_moneda = NEW.id_moneda          
         WHERE 
           id_forma_pago = NEW.id_forma_pago;

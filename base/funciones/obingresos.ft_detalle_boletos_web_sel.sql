@@ -102,13 +102,14 @@ $body$
                       group by ad.issue_date_time::date
                       order by ad.issue_date_time::date)
                       union all 
-                      (select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, dep.monto_deposito, ''depositos''::varchar as tipo
+                      (select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, sum(dep.monto_deposito)::numeric, ''depositos''::varchar as tipo
 					    from obingresos.tdeposito dep                    
 					    
 					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
                         dep.agt = ''' || v_parametros.banco || ''' and 
                         dep.fecha_venta >= ''' || v_parametros.fecha_ini || ''' and dep.fecha_venta <= ''' || v_parametros.fecha_fin || ''' and
                         dep.id_moneda_deposito = '||v_parametros.id_moneda || '
+                        group by to_char(dep.fecha_venta,''DD/MM/YYYY'')
                         order by 1)';
                       
                       raise notice '%', v_consulta;

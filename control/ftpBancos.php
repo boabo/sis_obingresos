@@ -21,7 +21,6 @@ $resp_datos = json_decode($datos_skybiz_archivo_bd);
 
 
 
-
 //concetamos el ftp
 
 // definir algunas variables

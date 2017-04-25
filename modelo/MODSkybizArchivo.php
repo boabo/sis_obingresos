@@ -40,7 +40,9 @@ class MODSkybizArchivo extends MODbase{
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
+
 		$this->ejecutarConsulta();
+
 		
 		//Devuelve la respuesta
 		return $this->respuesta;

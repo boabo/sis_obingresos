@@ -88,9 +88,16 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 
         Phx.CP.loadingHide();
         var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+        console.log(objRes);
 		var objetoDatos = (objRes.ROOT == undefined)?objRes.datos:objRes.ROOT.datos;
-        var wnd = window.open("about:blank", "", "_blank");
-		wnd.document.write(objetoDatos.html);
+        var objetoDetalle = (objRes.ROOT == undefined)?objRes.detalle:objRes.ROOT.detalle;
+        if ("archivo_generado" in objetoDetalle ) {
+            window.open('../../../lib/lib_control/Intermediario.php?r=' + objetoDetalle.archivo_generado + '&t='+new Date().toLocaleTimeString())
+        } else {
+            var wnd = window.open("about:blank", "", "_blank");
+            wnd.document.write(objetoDatos.html);
+        }
+
 
 
     },
@@ -423,6 +430,50 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:true
 		},
+
+        {
+            config: {
+                name: 'id_boleto_vuelo',
+                fieldLabel: 'Vuelo Ini Retorno',
+                allowBlank: true,
+                emptyText: 'Vuelo...',
+                store: new Ext.data.JsonStore({
+                    url: '../../sis_obingresos/control/BoletoVuelo/listarBoletoVuelo',
+                    id: 'id_boleto_vuelo',
+                    root: 'datos',
+                    sortInfo: {
+                        field: 'cupon',
+                        direction: 'ASC'
+                    },
+                    totalProperty: 'total',
+                    fields: ['id_boleto_vuelo', 'boleto_vuelo'],
+                    remoteSort: true,
+                    baseParams: {par_filtro: 'bvu.aeropuerto_origen#bvu.aeropuerto_destino'}
+                }),
+                valueField: 'id_boleto_vuelo',
+                displayField: 'boleto_vuelo',
+                gdisplayField: 'vuelo_retorno',
+                hiddenName: 'id_boleto_vuelo',
+                forceSelection: true,
+                typeAhead: false,
+                triggerAction: 'all',
+                lazyRender: true,
+                mode: 'remote',
+                pageSize: 15,
+                queryDelay: 1000,
+                gwidth: 150,
+                listWidth:450,
+                resizable:true,
+                minChars: 2,
+                renderer : function(value, p, record) {
+                    return String.format('{0}', record.data['vuelo_retorno']);
+                }
+            },
+            type: 'ComboBox',
+            id_grupo: 0,
+            grid: true,
+            form: true
+        },
 
 		{
 			config:{
@@ -884,6 +935,8 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		{name:'usr_mod', type: 'string'},
 		{name:'nombre_agencia', type: 'string'},
 		{name:'id_forma_pago', type: 'numeric'},
+        {name:'id_boleto_vuelo', type: 'numeric'},
+        {name:'vuelo_retorno', type: 'string'},
 		{name:'forma_pago', type: 'string'},
 		{name:'numero_tarjeta', type: 'string'},
 		{name:'ctacte', type: 'string'},
@@ -948,9 +1001,10 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		
 		
 		this.Cmp.nro_boleto.on('keyup',function(){
-			
+			console.log('llega');
 			if (this.Cmp.nro_boleto.getValue().length == 10) {
 				Phx.CP.loadingShow();
+                
 				Ext.Ajax.request({
 	                url:'../../sis_obingresos/control/Boleto/getBoletoServicio',                
 	                params: {'nro_boleto':this.Cmp.nro_boleto.getValue(),
@@ -1112,10 +1166,18 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 				this.Cmp.monto_forma_pago2.setValue(objRes.datos[0].monto_forma_pago2);
                 this.Cmp.codigo_forma_pago2.setValue(objRes.datos[0].codigo_forma_pago2);
 				this.Cmp.moneda_fp2.setValue(objRes.datos[0].moneda_fp2);
+                this.Cmp.id_boleto_vuelo.setValue(objRes.datos[0].id_boleto_vuelo);
+                this.Cmp.id_boleto_vuelo.setRawValue(objRes.datos[0].vuelo_retorno);
+
+                this.Cmp.id_boleto_vuelo.store.baseParams.id_boleto = objRes.datos[0].id_boleto;
 				
 				this.Cmp.moneda_sucursal.setValue(objRes.datos[0].moneda_sucursal);
 				this.Cmp.tc.setValue(objRes.datos[0].tc);
 				this.Cmp.comision.setDisabled(false);
+
+                if (objRes.countData.cantidad_vuelos > 4) {
+                    this.Cmp.tiene_conjuncion.setValue(true);
+                }
 				
 				this.manejoComponentesFp1(objRes.datos[0].id_forma_pago,objRes.datos[0].codigo_forma_pago);
 				this.manejoComponentesFp2(objRes.datos[0].id_forma_pago2,objRes.datos[0].codigo_forma_pago2);
@@ -1131,6 +1193,7 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		this.Cmp.nro_boleto.allowBlank = false;
 		this.Cmp.comision.setDisabled(false);
 		this.Cmp.nro_boleto.setDisabled(true);
+        this.Cmp.id_boleto_vuelo.baseParams.id_boleto = objRes.datos[0].id_boleto;
 
 
 		this.manejoComponentesFp1(this.sm.getSelected().data['id_forma_pago'],this.sm.getSelected().data['codigo_forma_pago']);
