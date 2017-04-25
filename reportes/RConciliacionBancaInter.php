@@ -156,7 +156,7 @@ class RConciliacionBancaInter
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
         );
-        
+
         $styleTitulos4 = array(
 
             'fill' => array(
