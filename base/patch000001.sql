@@ -319,6 +319,7 @@ ADD COLUMN calculo_tarifa VARCHAR(2) DEFAULT 'no' NOT NULL;
 
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-19/07/2016********************************************/
+
 /********************************************I-SCP-JRR-OBINGRESOS-0-30/09/2016********************************************/
 
 ALTER TABLE obingresos.tboleto_forma_pago
@@ -658,4 +659,45 @@ ALTER TABLE obingresos.tventa_web_modificaciones
   ADD COLUMN banco VARCHAR(5);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+/********************************************I-SCP-JRR-OBINGRESOS-0-28/04/2017********************************************/
+CREATE TABLE obingresos.tcomision_agencia (
+  id_comision SERIAL,
+  id_contrato INTEGER,
+  id_agencia INTEGER,
+  descripcion VARCHAR(255),
+  tipo_comision VARCHAR(10),
+  mercado VARCHAR(20),
+  porcentaje NUMERIC(5,2),
+  moneda VARCHAR(3),
+  limite_superior NUMERIC(18,2),
+  limite_inferior NUMERIC(18,2),
+  PRIMARY KEY(id_comision)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
 
+/********************************************F-SCP-JRR-OBINGRESOS-0-28/04/2017********************************************/
+
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
+CREATE TABLE obingresos.tcomision_agencia (
+  id_comision SERIAL,
+  id_contrato INTEGER,
+  id_agencia INTEGER,
+  descripcion VARCHAR(255),
+  tipo_comision VARCHAR(10),
+  mercado VARCHAR(20),
+  porcentaje NUMERIC(5,2),
+  moneda VARCHAR(3),
+  limite_superior NUMERIC(18,2),
+  limite_inferior NUMERIC(18,2),
+  PRIMARY KEY(id_comision)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
+
+/********************************************I-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/
+
+CREATE UNIQUE INDEX tskybiz_archivo_nombre_archivo_uindex ON obingresos.tskybiz_archivo (nombre_archivo);
+
+/********************************************F-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/

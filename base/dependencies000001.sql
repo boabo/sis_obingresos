@@ -106,3 +106,21 @@ select pxp.f_insert_testructura_gui ('VENBOLVEN', 'VEF');
 ALTER TABLE obingresos.tforma_pago ENABLE ALWAYS TRIGGER tforma_pago_tr;
 /************************************F-DEP-JRR-OBINGRESOS-0-16/03/2017*************************************************/
 
+/********************************************I-DEP-JRR-OBINGRESOS-0-28/04/2016********************************************/
+ALTER TABLE ONLY obingresos.tcomision_agencia
+    ADD CONSTRAINT fk_tcomision__id_contrato
+    FOREIGN KEY (id_contrato) REFERENCES leg.tcontrato(id_contrato);
+
+ALTER TABLE ONLY obingresos.tcomision_agencia
+    ADD CONSTRAINT fk_tcomision__id_agencia
+    FOREIGN KEY (id_agencia) REFERENCES obingresos.tagencia(id_agencia);
+
+/********************************************F-DEP-JRR-OBINGRESOS-0-28/04/2016********************************************/
+
+/********************************************I-DEP-FFP-OBINGRESOS-0-02/05/2017********************************************/
+
+ALTER TABLE ONLY obingresos.tskybiz_archivo_detalle
+  ADD CONSTRAINT fk_skybiz_archivo_detalle__id_skybiz_archivo
+FOREIGN KEY (id_skybiz_archivo) REFERENCES obingresos.tskybiz_archivo(id_skybiz_archivo);
+
+/********************************************F-DEP-FFP-OBINGRESOS-0-02/05/2017********************************************/
