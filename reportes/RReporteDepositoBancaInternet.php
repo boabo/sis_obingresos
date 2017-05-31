@@ -269,6 +269,16 @@ class RReporteDepositoBancaInternet
             $fila++;
 
         }
+
+        //armar sumatoria:
+        $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':' .$this->equivalencias[count($this->bancos)] . $fila)->applyFromArray($styleTitulos2);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila,'TOTAL');
+        for ($j=0; $j<count($this->bancos);$j++) {
+            $columna = $this->equivalencias[$j +1 ];
+
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, '=SUM(' . $columna . '6:' . $columna .($fila-1).")");
+        }
+
         $fila = 6;
 
         $this->docexcel->setActiveSheetIndex(1);
@@ -287,6 +297,15 @@ class RReporteDepositoBancaInternet
             $fila++;
 
         }
+        //armar sumatoria:
+        $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':' .$this->equivalencias[count($this->bancos)] . $fila)->applyFromArray($styleTitulos2);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila,'TOTAL');
+        for ($j=0; $j<count($this->bancos);$j++) {
+            $columna = $this->equivalencias[$j +1 ];
+
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow($j + 1, $fila, '=SUM(' . $columna . '6:' . $columna .($fila-1).")");
+        }
+
         $this->docexcel->setActiveSheetIndex(0);
 
     }

@@ -16,6 +16,11 @@ $resp_datos = json_decode($datos_skybiz_archivo_bd);
 
 
 
+//si existe error al traer los archivos existentes que ya se registaron entonces exit
+if($resp_datos->ROOT->error == true){
+    echo "error al traer datos del erp";
+    exit;
+}
 
 
 
