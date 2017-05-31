@@ -82,7 +82,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
         iniciarEventos:function(){
             this.Cmp.id_moneda.on('select', function(c,r,i){
-                this.cmp.moneda.setValue(this.Cmp.id_moneda.getRawValue());
+                console.log(this.Cmp);
+                this.Cmp.moneda.setValue(this.Cmp.id_moneda.getRawValue());
+                alert(this.Cmp.moneda.getValue());
             },this);
         },
         tipo : 'reporte',
