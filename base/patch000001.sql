@@ -679,20 +679,38 @@ WITH (oids = false);
 
 
 /********************************************I-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
-CREATE TABLE obingresos.tcomision_agencia (
-  id_comision SERIAL,
-  id_contrato INTEGER,
-  id_agencia INTEGER,
-  descripcion VARCHAR(255),
-  tipo_comision VARCHAR(10),
-  mercado VARCHAR(20),
-  porcentaje NUMERIC(5,2),
-  moneda VARCHAR(3),
-  limite_superior NUMERIC(18,2),
-  limite_inferior NUMERIC(18,2),
-  PRIMARY KEY(id_comision)
+
+CREATE TABLE obingresos.ttipo_periodo (
+  id_tipo_periodo SERIAL,
+  tipo VARCHAR(20) NOT NULL,
+  tiempo VARCHAR(20) NOT NULL,
+  medio_pago VARCHAR(30) NOT NULL,
+  tipo_cc VARCHAR(20),
+  pago_comision VARCHAR(2),
+  estado VARCHAR(10) NOT NULL,
+  fecha_ini_primer_periodo DATE,
+  CONSTRAINT ttipo_periodo_pkey PRIMARY KEY(id_tipo_periodo)
 ) INHERITS (pxp.tbase)
+
 WITH (oids = false);
+
+COMMENT ON COLUMN obingresos.ttipo_periodo.tipo
+IS 'portal,venta_propia';
+
+COMMENT ON COLUMN obingresos.ttipo_periodo.tiempo
+IS 'bsp,1d,2d,5d';
+
+COMMENT ON COLUMN obingresos.ttipo_periodo.medio_pago
+IS 'banca_electronica,cuenta_corriente';
+
+COMMENT ON COLUMN obingresos.ttipo_periodo.tipo_cc
+IS 'prepago,postpago';
+
+COMMENT ON COLUMN obingresos.ttipo_periodo.pago_comision
+IS 'si,no';
+
+COMMENT ON COLUMN obingresos.ttipo_periodo.estado
+IS 'activo,inactivo';
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
 
@@ -701,3 +719,90 @@ WITH (oids = false);
 CREATE UNIQUE INDEX tskybiz_archivo_nombre_archivo_uindex ON obingresos.tskybiz_archivo (nombre_archivo);
 
 /********************************************F-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/
+
+/********************************************I-SCP-FFP-OBINGRESOS-0-04/05/2017********************************************/
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN tipo_persona VARCHAR(15);
+
+ALTER TABLE obingresos.tperiodo_venta
+  ADD COLUMN id_tipo_periodo INTEGER;
+
+ALTER TABLE obingresos.tperiodo_venta
+  DROP COLUMN id_pais;
+
+ALTER TABLE obingresos.tperiodo_venta
+  DROP COLUMN tipo;
+
+COMMENT ON COLUMN obingresos.tagencia.tipo_persona
+IS 'juridica|natural';
+
+CREATE TABLE obingresos.tmovimiento_entidad (
+  id_movimiento_entidad SERIAL,
+  tipo VARCHAR(8) NOT NULL,
+  pnr VARCHAR(8),
+  fecha DATE NOT NULL,
+  apellido VARCHAR(200),
+  monto NUMERIC(18,2) NOT NULL,
+  id_moneda INTEGER NOT NULL,
+  autorizacion__nro_deposito VARCHAR(200),
+  garantia VARCHAR(2) NOT NULL,
+  ajuste VARCHAR(2) NOT NULL,
+  id_periodo_venta INTEGER,
+  id_agencia INTEGER NOT NULL,
+  monto_total NUMERIC(18,2) NOT NULL,
+  CONSTRAINT tmovimiento_entidad_pkey PRIMARY KEY(id_movimiento_entidad)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+CREATE TABLE obingresos.tperiodo_venta_agencia (
+  id_periodo_venta_agencia SERIAL NOT NULL,
+  id_agencia INTEGER NOT NULL,
+  id_periodo_venta INTEGER NOT NULL,
+  monto_usd NUMERIC(18,2) NOT NULL,
+  monto_mb NUMERIC(18,2) NOT NULL,
+  deposito_mb NUMERIC(18,2) NOT NULL,
+  deposito_usd NUMERIC(18,2) NOT NULL,
+  estado VARCHAR(15) NOT NULL,
+  fecha_cierre DATE NOT NULL,
+  total_mb_cierre NUMERIC(18,2) NOT NULL,
+  total_mb_pagado NUMERIC(18,2) NOT NULL,
+  PRIMARY KEY(id_periodo_venta_agencia)
+) INHERITS (pxp.tbase)
+;
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN id_periodo_venta INTEGER;
+
+ALTER TABLE obingresos.tdeposito
+  ADD COLUMN id_periodo_venta INTEGER;
+
+
+
+ALTER TABLE obingresos.tdeposito
+  ADD COLUMN estado TYPE VARCHAR(10) COLLATE pg_catalog."default";
+
+ALTER TABLE obingresos.tdeposito
+  ALTER COLUMN estado SET DEFAULT 'borrador'::character varying;
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN moneda_restrictiva VARCHAR(2) DEFAULT 'si' NOT NULL;
+
+/********************************************F-SCP-FFP-OBINGRESOS-0-04/05/2017********************************************/
+
+/********************************************I-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
+CREATE TABLE obingresos.tobservaciones_conciliacion (
+  id_observaciones_conciliacion SERIAL NOT NULL,
+  tipo_observacion VARCHAR(20) NOT NULL,
+  observacion TEXT NOT NULL,
+  fecha_observacion DATE NOT NULL,
+  banco VARCHAR(30),
+  PRIMARY KEY(id_observaciones_conciliacion)
+) INHERITS (pxp.tbase)
+;
+
+COMMENT ON COLUMN obingresos.tobservaciones_conciliacion.tipo_observacion
+IS 'skybiz,portal';
+
+/********************************************F-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
+

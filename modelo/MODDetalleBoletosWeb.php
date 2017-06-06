@@ -86,5 +86,57 @@ class  MODDetalleBoletosWeb extends MODbase{
         return $this->respuesta;
     }
 
+    function listarConciliacionResumen(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_CONBINRES_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('id_periodo','id_periodo','integer');
+        $this->setParametro('id_gestion','id_gestion','integer');
+
+        $this->setCount(false);
+        $this->captura('tipo', 'varchar');
+        $this->captura('banco', 'varchar');
+        $this->captura('moneda', 'varchar');
+        $this->captura('monto1', 'numeric');
+        $this->captura('monto2', 'numeric');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+
+
+
+        $this->ejecutarConsulta();
+
+        return $this->respuesta;
+    }
+
+    function listarConciliacionObservaciones(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_CONBINOBS_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('id_periodo','id_periodo','integer');
+        $this->setParametro('id_gestion','id_gestion','integer');
+        $this->setParametro('tipo','tipo','varchar');
+
+        $this->setCount(false);
+        $this->captura('banco', 'varchar');
+        $this->captura('fecha', 'varchar');
+        $this->captura('observacion', 'text');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+
+
+        $this->ejecutarConsulta();
+
+        return $this->respuesta;
+    }
+
 }
 ?>
