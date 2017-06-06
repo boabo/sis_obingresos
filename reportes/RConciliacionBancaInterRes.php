@@ -273,7 +273,7 @@ class RConciliacionBancaInterRes
 
             if (isset($this->datos[$this->bancos[$i]]['depositos']['USD']['monto1'])) {
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4,$fila,$this->datos[$this->bancos[$i]]['depositos']['USD']['monto1']);
-                $depositos_usd =  $this->datos[$this->bancos[$i]]['depositos']['usd']['monto1'];
+                $depositos_usd =  $this->datos[$this->bancos[$i]]['depositos']['USD']['monto1'];
             }
 
             if ($boletos_bob != $depositos_bob) {
