@@ -263,6 +263,7 @@ BEGIN
                             where nro_deposito = trim(both ' ' from v_parametros.order_code))) then
                                  
                 insert into obingresos.tdeposito(
+                id_usuario_reg,
                   nro_deposito,
                   --id_agencia,
                   monto_deposito,
@@ -275,6 +276,7 @@ BEGIN
                   tipo,
                   observaciones
                   ) values(
+                  p_id_usuario,
                   trim(both ' ' from v_parametros.order_code),
                   --v_parametros.id_agencia,
                   v_parametros.monto,
