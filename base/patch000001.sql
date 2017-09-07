@@ -658,4 +658,19 @@ ALTER TABLE obingresos.tventa_web_modificaciones
   ADD COLUMN banco VARCHAR(5);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+/********************************************I-SCP-JRR-OBINGRESOS-0-07/04/2017********************************************/
+ALTER TABLE obingresos.tboleto_vuelo
+  ADD COLUMN validez_tarifa INTEGER;
 
+  CREATE TABLE obingresos.tclase_tarifaria (
+  id_clase_tarifaria SERIAL,
+  codigo VARCHAR(1),
+  tipo_condicion VARCHAR(15) NOT NULL,
+  ruta VARCHAR(5)[],
+  aeropuerto VARCHAR(5)[],
+  pais VARCHAR(2),
+  duracion_meses INTEGER,
+  CONSTRAINT tclase_tarifaria_pkey PRIMARY KEY(id_clase_tarifaria)
+) INHERITS (pxp.tbase);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-07/04/2017********************************************/

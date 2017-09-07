@@ -211,6 +211,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('fp','fp','varchar');
 		$this->setParametro('moneda_fp','moneda_fp','varchar');
 		$this->setParametro('valor_fp','valor_fp','varchar');
+        $this->setParametro('tarjeta_fp','tarjeta_fp','varchar');
+        $this->setParametro('autorizacion_fp','autorizacion_fp','varchar');
 		$this->setParametro('rutas','rutas','varchar');	
 		
 		$this->setParametro('ruta_completa','ruta_completa','varchar');	
@@ -222,8 +224,9 @@ class MODBoleto extends MODbase{
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
-		
+
 		$this->ejecutarConsulta();
+
 
 		//Devuelve la respuesta
 		return $this->respuesta;
@@ -296,13 +299,17 @@ class MODBoleto extends MODbase{
         $this->captura('flight_status','varchar');
         $this->captura('conexion','varchar');
         $this->captura('retorno','varchar');
+        $this->captura('validez_tarifaria','integer');
+        $this->captura('pais_origen','varchar');
+        $this->captura('pais_destino','varchar');
 
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
+        
 
 		$this->ejecutarConsulta();
-		
+
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}

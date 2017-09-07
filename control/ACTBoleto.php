@@ -329,6 +329,8 @@ class ACTBoleto extends ACTbase{
 			$fp = '';
 			$moneda_fp = '';
 			$valor_fp = '';
+            $tarjeta_fp = '';
+            $autorizacion_fp = '';
 			foreach ($fps as $dato) {
 				
 				$temp_array = explode('/', $dato);
@@ -339,35 +341,46 @@ class ACTBoleto extends ACTbase{
 						$temp_array[1] = substr($temp_array[1], 3);
 						$temp_array[1] = trim($temp_array[1]);
 						$valor_fp .= '#' . $temp_array[1];
+                        $tarjeta_fp .= '#';
+                        $autorizacion_fp .= '#';
 					} else if(strpos($temp_array[0], 'TKT,CASH')!== FALSE)	{
 						$fp .= '#EX';						
 						$moneda_fp .= '#' . $res['billete']['moneda']['#text'];
 						$valor_fp .= '#0';
+                        $tarjeta_fp .= '#';
+                        $autorizacion_fp .= '#';
 					}else {
 						$fp .= '#CA';
 						$moneda_fp .= '#' . substr($temp_array[1], 0,3);
 						$temp_array[1] = substr($temp_array[1], 3);
 						$temp_array[1] = trim($temp_array[1]);
 						$valor_fp .= '#' . $temp_array[1];
+                        $tarjeta_fp .= '#';
+                        $autorizacion_fp .= '#';
 					}			
 															
 					
 				} else if (strpos($temp_array[0], 'DEPU')!== FALSE) { //El boleto tiene un valor de 0						
 						$fp .= '#CA';
 						$moneda_fp .= '#' . $res['billete']['moneda']['#text'];		
-						$valor_fp .= '#' . '0';											
+						$valor_fp .= '#' . '0';
+                        $tarjeta_fp .= '#';
+                        $autorizacion_fp .= '#';
 					
 				}else if (strpos($temp_array[0], 'SF') !== FALSE) { //forma de pago SF
 					if (strpos($temp_array[0], 'SFCA')!== FALSE) {
 						$fp .= '#SFCA';
-						$moneda_fp .= '#' . substr($temp_array[1], 0,3);						
-										
+						$moneda_fp .= '#' . substr($temp_array[1], 0,3);
+                        $tarjeta_fp .= '#';
+                        $autorizacion_fp .= '#';
 						$temp_array[1] = substr($temp_array[1], 3);
 						$temp_array[1] = trim($temp_array[1]);
 						$valor_fp .= '#' . $temp_array[1];
 					} else if (strpos($temp_array[0], 'SFCC')!== FALSE){
 						$temp_array[0] = str_replace('SFCC', 'SF', $temp_array[0]);
 						$fp .= '#' . substr($temp_array[0], 0,4);
+                        $tarjeta_fp .= '#';
+                        $autorizacion_fp .= '#';
 						$moneda_fp .= '#' . substr($temp_array[3], 0,3);					
 						$temp_array[3] = substr($temp_array[3], 3);
 						$temp_array[3] = trim($temp_array[3]);
@@ -378,7 +391,9 @@ class ACTBoleto extends ACTbase{
 				} else if (strpos($temp_array[0], ',') == 2){ //tarjeta de credito
 					$fp .= '#CC' . substr($temp_array[0], 0,2);
 					$moneda_fp .= '#' . substr($temp_array[3], 0,3);					
-					$temp_array[3] = substr($temp_array[3], 3);
+					$tarjeta_fp .= '#' . substr($temp_array[0], 3);
+                    $autorizacion_fp .= '#' .$temp_array[2];
+                    $temp_array[3] = substr($temp_array[3], 3);
 					$temp_array[3] = trim($temp_array[3]);
 					$valor_fp .= '#' . $temp_array[3];				
 					
@@ -390,6 +405,8 @@ class ACTBoleto extends ACTbase{
 			$this->objParam->addParametro('fp',$fp);
 			$this->objParam->addParametro('moneda_fp',$moneda_fp);
 			$this->objParam->addParametro('valor_fp',$valor_fp);
+            $this->objParam->addParametro('tarjeta_fp',$tarjeta_fp);
+            $this->objParam->addParametro('autorizacion_fp',$autorizacion_fp);
 			$rutas = '';
             if (isset($res['billete']['vuelos']['vuelo'][0])) {
                 foreach ($res['billete']['vuelos']['vuelo'] as $dato) {

@@ -74,6 +74,9 @@ DECLARE
     v_fecha_hora_destino_ant timestamp;	
     v_aeropuertos 			varchar[];
     v_retorno				varchar;
+    v_id_boleto_vuelo		integer;
+    v_autorizacion_fp		varchar[];
+    v_tarjeta_fp			varchar[];
 			    
 BEGIN
 
@@ -673,6 +676,8 @@ BEGIN
             v_fp = string_to_array(substring(v_parametros.fp from 2),'#');
             v_moneda_fp = string_to_array(substring(v_parametros.moneda_fp from 2),'#');
             v_valor_fp = string_to_array(substring(v_parametros.valor_fp from 2),'#');
+            v_autorizacion_fp = string_to_array(substring(v_parametros.autorizacion_fp from 2),'#');
+            v_tarjeta_fp = string_to_array(substring(v_parametros.tarjeta_fp from 2),'#');
             v_posicion = 1;
             FOREACH v_forma_pago IN ARRAY v_fp
             LOOP
@@ -694,13 +699,18 @@ BEGIN
                     id_usuario_reg,                    
                     importe,
                     id_forma_pago,
-                    id_boleto
+                    id_boleto,
+                    numero_tarjeta,
+                    codigo_tarjeta
+                    
                   )
                   VALUES (
                     p_id_usuario,                   
                     v_valor_fp[v_posicion]::numeric,
                     v_id_forma_pago,
-                    v_id_boleto
+                    v_id_boleto,
+                    v_tarjeta_fp[v_posicion],
+                    v_autorizacion_fp[v_posicion]
                   );     
                              
                   v_posicion = v_posicion + 1;
@@ -759,7 +769,11 @@ BEGIN
                     v_vuelo_fields[9],
                     v_vuelo_fields[10],
                     v_vuelo_fields[11]
-                  );  
+                  )returning id_boleto_vuelo into v_id_boleto_vuelo;  
+                  
+                  update obingresos.tboleto_vuelo
+                  set validez_tarifa = obingresos.f_get_validez_tarifaria(v_id_boleto_vuelo)
+                  where id_boleto_vuelo = v_id_boleto_vuelo;
                   v_cupon = v_cupon +1;
                   
             END LOOP; 
