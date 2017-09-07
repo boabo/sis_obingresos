@@ -75,8 +75,10 @@ DECLARE
     v_aeropuertos 			varchar[];
     v_retorno				varchar;
     v_id_boleto_vuelo		integer;
+
     v_autorizacion_fp		varchar[];
     v_tarjeta_fp			varchar[];
+
 			    
 BEGIN
 
@@ -769,6 +771,7 @@ BEGIN
                     v_vuelo_fields[9],
                     v_vuelo_fields[10],
                     v_vuelo_fields[11]
+
                   )returning id_boleto_vuelo into v_id_boleto_vuelo;  
                   
                   update obingresos.tboleto_vuelo

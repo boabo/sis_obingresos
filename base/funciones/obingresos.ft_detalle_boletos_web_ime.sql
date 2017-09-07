@@ -108,12 +108,12 @@ $body$
           from obingresos.tdetalle_boletos_web d
           where d.billete = v_registros."Billete"::varchar;
 
-          if ((v_id_detalle_boletos_web is not null and v_registros."MedioDePago" = 'COMPLETAR-CC') or v_procesado = 'no') then
+          if (v_id_detalle_boletos_web is not null and v_procesado = 'no') then
                       update obingresos.tdetalle_boletos_web
                       set procesado = 'no',
                       endoso = v_registros."endoso",
                       nit = v_nit,
-                      razon_social =  upper(v_razon_social),
+                      razon_social =  (case when v_razon_social = '' then NULL else upper(v_razon_social) END),
                       fecha_mod = to_date(v_parametros.fecha,'MM/DD/YYYY')
                       where  id_detalle_boletos_web = v_id_detalle_boletos_web;
           --if (v_id_detalle_boletos_web is null) then
@@ -146,7 +146,7 @@ $body$
               'web',
               to_date(v_parametros.fecha,'MM/DD/YYYY'),
               v_nit,
-              upper(v_razon_social)
+              (case when v_razon_social = '' then NULL else upper(v_razon_social) END)
             );
           end if;
 
@@ -182,8 +182,8 @@ $body$
         end if;
         --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('01/02/2017'::date,
-                             now()::date - interval '1 day', '1 day'::interval) i;
+        from generate_series('29/06/2017'::date,
+                             '30/06/2017'::date - interval '1 day', '1 day'::interval) i;
 
 
         --Definicion de la respuesta
@@ -206,8 +206,8 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        from generate_series('01/02/2017'::date,
-                             now()::date - interval '1 day', '1 day'::interval) i loop
+        from generate_series('01/06/2017'::date,
+                            now()::date - interval '1 day', '1 day'::interval) i loop
           
           if (exists (select 1 
           		from obingresos.tboleto b
@@ -215,7 +215,7 @@ $body$
               for v_registros in
               select  *
               from obingresos.tdetalle_boletos_web d
-              where origen = 'web' and procesado = 'no' and fecha = v_fecha loop
+              where origen = 'web' and procesado = 'no' and (pxp.f_is_positive_integer(d.nit) or d.medio_pago != 'COMPLETAR-CC') and fecha = v_fecha loop
 
                 execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
               end loop;

@@ -1,13 +1,13 @@
-CREATE OR REPLACE FUNCTION "obingresos"."ft_skybiz_archivo_detalle_sel"(	
+CREATE OR REPLACE FUNCTION "obingresos"."ft_observaciones_conciliacion_sel"(	
 				p_administrador integer, p_id_usuario integer, p_tabla character varying, p_transaccion character varying)
 RETURNS character varying AS
 $BODY$
 /**************************************************************************
  SISTEMA:		Ingresos
- FUNCION: 		obingresos.ft_skybiz_archivo_detalle_sel
- DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tskybiz_archivo_detalle'
- AUTOR: 		 (admin)
- FECHA:	        15-02-2017 19:08:58
+ FUNCION: 		obingresos.ft_observaciones_conciliacion_sel
+ DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tobservaciones_conciliacion'
+ AUTOR: 		 (jrivera)
+ FECHA:	        01-06-2017 21:16:45
  COMENTARIOS:	
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
@@ -26,45 +26,38 @@ DECLARE
 			    
 BEGIN
 
-	v_nombre_funcion = 'obingresos.ft_skybiz_archivo_detalle_sel';
+	v_nombre_funcion = 'obingresos.ft_observaciones_conciliacion_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
 	/*********************************    
- 	#TRANSACCION:  'OBING_SKYDET_SEL'
+ 	#TRANSACCION:  'OBING_OBC_SEL'
  	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		admin	
- 	#FECHA:		15-02-2017 19:08:58
+ 	#AUTOR:		jrivera	
+ 	#FECHA:		01-06-2017 21:16:45
 	***********************************/
 
-	if(p_transaccion='OBING_SKYDET_SEL')then
+	if(p_transaccion='OBING_OBC_SEL')then
      				
     	begin
     		--Sentencia de la consulta
 			v_consulta:='select
-						skydet.id_skybiz_archivo_detalle,
-						skydet.entity,
-						skydet.request_date_time,
-						skydet.currency,
-						skydet.total_amount,
-						skydet.ip,
-						skydet.status,
-						skydet.estado_reg,
-						skydet.issue_date_time,
-						skydet.identifier_pnr,
-						skydet.id_skybiz_archivo,
-						skydet.pnr,
-						skydet.authorization_,
-						skydet.id_usuario_ai,
-						skydet.usuario_ai,
-						skydet.fecha_reg,
-						skydet.id_usuario_reg,
-						skydet.id_usuario_mod,
-						skydet.fecha_mod,
+						obc.id_observaciones_conciliacion,
+						obc.tipo_observacion,
+						obc.estado_reg,
+						obc.fecha_observacion,
+						obc.banco,
+						obc.observacion,
+						obc.id_usuario_reg,
+						obc.fecha_reg,
+						obc.usuario_ai,
+						obc.id_usuario_ai,
+						obc.fecha_mod,
+						obc.id_usuario_mod,
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod	
-						from obingresos.tskybiz_archivo_detalle skydet
-						inner join segu.tusuario usu1 on usu1.id_usuario = skydet.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = skydet.id_usuario_mod
+						from obingresos.tobservaciones_conciliacion obc
+						inner join segu.tusuario usu1 on usu1.id_usuario = obc.id_usuario_reg
+						left join segu.tusuario usu2 on usu2.id_usuario = obc.id_usuario_mod
 				        where  ';
 			
 			--Definicion de la respuesta
@@ -77,20 +70,20 @@ BEGIN
 		end;
 
 	/*********************************    
- 	#TRANSACCION:  'OBING_SKYDET_CONT'
+ 	#TRANSACCION:  'OBING_OBC_CONT'
  	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		admin	
- 	#FECHA:		15-02-2017 19:08:58
+ 	#AUTOR:		jrivera	
+ 	#FECHA:		01-06-2017 21:16:45
 	***********************************/
 
-	elsif(p_transaccion='OBING_SKYDET_CONT')then
+	elsif(p_transaccion='OBING_OBC_CONT')then
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_skybiz_archivo_detalle)
-					    from obingresos.tskybiz_archivo_detalle skydet
-					    inner join segu.tusuario usu1 on usu1.id_usuario = skydet.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = skydet.id_usuario_mod
+			v_consulta:='select count(id_observaciones_conciliacion)
+					    from obingresos.tobservaciones_conciliacion obc
+					    inner join segu.tusuario usu1 on usu1.id_usuario = obc.id_usuario_reg
+						left join segu.tusuario usu2 on usu2.id_usuario = obc.id_usuario_mod
 					    where ';
 			
 			--Definicion de la respuesta		    
@@ -119,4 +112,4 @@ END;
 $BODY$
 LANGUAGE 'plpgsql' VOLATILE
 COST 100;
-ALTER FUNCTION "obingresos"."ft_skybiz_archivo_detalle_sel"(integer, integer, character varying, character varying) OWNER TO postgres;
+ALTER FUNCTION "obingresos"."ft_observaciones_conciliacion_sel"(integer, integer, character varying, character varying) OWNER TO postgres;

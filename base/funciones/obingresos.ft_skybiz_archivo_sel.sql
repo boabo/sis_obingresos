@@ -1,7 +1,11 @@
-CREATE OR REPLACE FUNCTION "obingresos"."ft_skybiz_archivo_sel"(	
-				p_administrador integer, p_id_usuario integer, p_tabla character varying, p_transaccion character varying)
-RETURNS character varying AS
-$BODY$
+CREATE OR REPLACE FUNCTION obingresos.ft_skybiz_archivo_sel (
+  p_administrador integer,
+  p_id_usuario integer,
+  p_tabla varchar,
+  p_transaccion varchar
+)
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_skybiz_archivo_sel
@@ -112,7 +116,7 @@ skybiz.banco';
 			
 			--Definicion de la respuesta		    
 			v_consulta:=v_consulta||v_parametros.filtro;
-
+			raise notice '%',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
@@ -133,7 +137,9 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
-$BODY$
-LANGUAGE 'plpgsql' VOLATILE
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
 COST 100;
-ALTER FUNCTION "obingresos"."ft_skybiz_archivo_sel"(integer, integer, character varying, character varying) OWNER TO postgres;

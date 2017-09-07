@@ -20,7 +20,7 @@ Phx.vista.SubirDeposito = Ext.extend(Phx.frmInterfaz,{
                 triggerAction: 'all',
                 lazyRender:true,
                 mode: 'local',
-                store:['ogone']
+                store:['ogone','worldpay']
             },
             type:'ComboBox',
             id_grupo:0,
@@ -28,7 +28,7 @@ Phx.vista.SubirDeposito = Ext.extend(Phx.frmInterfaz,{
         },
         {
             config:{
-                fieldLabel: "Documento (archivo csv separado por |)",
+                fieldLabel: "Documento (archivo csv separado por | o xls)",
                 gwidth: 130,
                 inputType:'file',
                 name: 'archivo',

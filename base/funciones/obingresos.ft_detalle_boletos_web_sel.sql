@@ -29,6 +29,8 @@ $body$
     v_resp				varchar;
     v_banco_aux			varchar;
     v_cod_moneda		varchar;
+    v_fecha_ini			date;
+    v_fecha_fin			date;
 
   BEGIN
 
@@ -102,13 +104,14 @@ $body$
                       group by ad.issue_date_time::date
                       order by ad.issue_date_time::date)
                       union all 
-                      (select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, dep.monto_deposito, ''depositos''::varchar as tipo
+                      (select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, sum(dep.monto_deposito)::numeric, ''depositos''::varchar as tipo
 					    from obingresos.tdeposito dep                    
 					    
 					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
                         dep.agt = ''' || v_parametros.banco || ''' and 
                         dep.fecha_venta >= ''' || v_parametros.fecha_ini || ''' and dep.fecha_venta <= ''' || v_parametros.fecha_fin || ''' and
                         dep.id_moneda_deposito = '||v_parametros.id_moneda || '
+                        group by to_char(dep.fecha_venta,''DD/MM/YYYY'')
                         order by 1)';
                       
                       raise notice '%', v_consulta;
@@ -220,6 +223,104 @@ $body$
         order by 2,a.fecha,3';
                       
                       raise notice '%', v_consulta;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+    /*********************************
+     #TRANSACCION:  'OBING_CONBINRES_SEL'
+     #DESCRIPCION:	Resumen de conciliacion banca por inter
+     #AUTOR:		JRR
+     #FECHA:		18-11-2016
+    ***********************************/
+
+    elsif(p_transaccion='OBING_CONBINRES_SEL')then
+
+      begin
+      	SELECT p.fecha_ini,p.fecha_fin 
+        	into v_fecha_ini,v_fecha_fin 
+        from param .tperiodo p
+        where p.id_periodo = v_parametros.id_periodo;
+        --Sentencia de la consulta
+        v_consulta:='
+        	(select ''boletos''::varchar,b.medio_pago::varchar, m.codigo_internacional::varchar,sum(b.total),NULL::numeric
+            from obingresos.tboleto b
+            inner join param.tmoneda m on m.id_moneda = b.id_moneda_boleto
+            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMY'') and
+            b.estado_reg = ''activo'' and b.voided = ''no''
+            group by b.medio_pago,m.codigo_internacional
+            order by b.medio_pago,m.codigo_internacional)
+            
+            union all
+            
+            (select ''depositos''::varchar,d.agt::varchar,m.codigo_internacional::varchar,
+            sum(d.monto_deposito),NULL::numeric
+            from obingresos.tdeposito d
+            inner join param.tmoneda m on m.id_moneda = d.id_moneda_deposito
+            where d.tipo = ''banca'' and  d.estado_reg = ''activo'' and 
+            	d.fecha_venta between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || '''  
+            group by d.agt ,m.codigo_internacional
+            order by d.agt,m.codigo_internacional)
+            
+            union all
+            
+            select ''ajustes''::varchar,b.medio_pago::varchar, mon.codigo_internacional::varchar,
+            sum(case when a.fecha = ''' || v_fecha_ini || ''' then
+							b.total
+						else
+                        	0
+                        end) as saldo_anterior_mes,
+            sum(case when a.fecha = ''' || (v_fecha_fin + interval '1 day')::date || ''' then
+                b.total
+            else
+                0
+            end) as saldo_siguiente_mes
+            from obingresos.tskybiz_archivo a
+            inner join obingresos.tskybiz_archivo_detalle ad on 
+                    ad.id_skybiz_archivo = a.id_skybiz_archivo
+            inner join obingresos.tboleto b on b.localizador = ad.pnr and 
+                    to_timestamp(ad.issue_date_time,''YYYY-MM-DD HH24:MI:SS'')::timestamp::date = b.fecha_emision
+            inner join param.tmoneda mon on mon.id_moneda = b.id_moneda_boleto
+            where  ((a.fecha = ''' || v_fecha_ini || ''' and b.fecha_emision = ''' || (v_fecha_ini - interval '1 day')::date || ''') or 
+                    (a.fecha = ''' || (v_fecha_fin + interval '1 day')::date || ''' and b.fecha_emision = ''' || v_fecha_fin || ''')) and
+            b.estado_reg = ''activo'' and b.voided = ''no'' and b.medio_pago not in (''OTROS'',''TMY'') and b.id_moneda_boleto = 1
+            group by b.medio_pago , mon.codigo_internacional
+            ';
+            
+            raise notice '%',v_consulta;
+                      
+                     
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+    /*********************************
+     #TRANSACCION:  'OBING_CONBINOBS_SEL'
+     #DESCRIPCION:	Listado 
+     #AUTOR:		JRR
+     #FECHA:		18-11-2016
+    ***********************************/
+
+    elsif(p_transaccion='OBING_CONBINOBS_SEL')then
+
+      begin
+      	SELECT p.fecha_ini,p.fecha_fin 
+        	into v_fecha_ini,v_fecha_fin 
+        from param .tperiodo p
+        where p.id_periodo = v_parametros.id_periodo;
+        --Sentencia de la consulta
+        v_consulta:='
+        	select banco, to_char(fecha_observacion,''DD/MM/YYYY'')::varchar, observacion::text
+            from obingresos.tobservaciones_conciliacion
+            where fecha_observacion >= ''' || v_fecha_ini || ''' and fecha_observacion <= ''' || v_fecha_fin || ''' and
+            tipo_observacion = ''' || v_parametros.tipo ||  '''
+            ';
+            
+            raise notice '%',v_consulta;
+                      
+                     
 
         --Devuelve la respuesta
         return v_consulta;

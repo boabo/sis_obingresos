@@ -40,6 +40,9 @@ class MODDeposito extends MODbase{
         $this->captura('agt','varchar');
         $this->captura('fecha_venta','date');
         $this->captura('monto_total','numeric');
+        $this->captura('nombre_agencia','varchar');
+        $this->captura('desc_periodo','text');
+        $this->captura('estado','varchar');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -125,6 +128,23 @@ class MODDeposito extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+
+    function cambiaEstadoDeposito(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_VALIDEPO_UPD';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_deposito','id_deposito','int4');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
     function subirDatos(){
         //Definicion de variables para ejecucion del procedimiento
         $this->procedimiento='obingresos.ft_deposito_ime';
@@ -142,6 +162,30 @@ class MODDeposito extends MODbase{
         $this->setParametro('fecha','fecha','varchar');
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('observaciones','observaciones','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function subirDatosWP(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEPWP_SUB';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('order_code','order_code','varchar');
+        $this->setParametro('fecha','fecha','varchar');
+        $this->setParametro('hora','hora','varchar');
+        $this->setParametro('metodo_pago','metodo_pago','varchar');
+        $this->setParametro('estado','estado','varchar');
+        $this->setParametro('tarjeta','tarjeta','varchar');
+        $this->setParametro('moneda','moneda','varchar');
+        $this->setParametro('monto','monto','numeric');
+
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -210,6 +254,7 @@ class MODDeposito extends MODbase{
 
         //Ejecuta la instruccion
         $this->armarConsulta();
+
 
         $this->ejecutarConsulta();
 

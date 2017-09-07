@@ -130,7 +130,7 @@ Phx.vista.VentaWebModificaciones=Ext.extend(Phx.gridInterfaz,{
                 anchor: '80%',
                 gwidth: 100,
                 maxLength:13,
-                minLength:13,
+                minLength:5,
                 allowDecimals:false
             },
             type:'TextField',
