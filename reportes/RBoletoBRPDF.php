@@ -22,7 +22,8 @@ class RBoletoBRPDF extends  ReportePDF {
     function generarReporte() {
         $this->setFontSubsetting(false);
         $this->SetLeftMargin(10);
-        $this->SetRightMargin(5);
+        $this->SetTopMargin(15);
+        $this->SetRightMargin(10);
 
         $this->AddPage();
 
@@ -56,14 +57,18 @@ class RBoletoBRPDF extends  ReportePDF {
         $this->Cell(15,5,'NOME',0,0,'R');
         $this->Cell(80,5,': ' . $datos_maestro[0]['pasajero'],0,1,'L');
         $this->SetFont('Courier','',10);
-        $this->Cell(70,5,'IATA: 56991266',0,1,'L');
-
-        $this->Cell(70,5,'TELEFONE: ' . $datos_maestro[0]['telefono'],0,1,'L');
-
-        $this->ln();
+        $this->Cell(70,5,'IATA: 56991266',0,0,'L');
 
         $this->SetFont('Courier','B',10);
-        $this->Cell(85,5,'NUMERO DO BILHETE',0,0,'L');
+        $this->Cell(15,5,'DOCUMENTO',0,0,'R');
+        $this->Cell(80,5,': ' . $datos_maestro[0]['identificacion'],0,1,'L');
+
+        $this->SetFont('Courier','',10);
+
+        $this->Cell(70,5,'TELEFONE: ' . $datos_maestro[0]['telefono'],0,0,'L');
+
+        $this->SetFont('Courier','B',10);
+        $this->Cell(15,5,'BILHETE',0,0,'R');
         $this->Cell(80,5,': ETKT ' .$datos_maestro[0]['nro_boleto'],0,1,'L');
 
         $this->Cell(85,5,'CODIGO DE RESERVA',0,0,'L');
@@ -72,28 +77,40 @@ class RBoletoBRPDF extends  ReportePDF {
         $this->ln();
 
         $this->Cell(40,5,'DE /PARA',0,0,'L');
-        $this->Cell(25,5,'VOO',0,0,'L');
-        $this->Cell(10,5,'CL',0,0,'L');
+        $this->Cell(25,5,'VOO',0,0,'R');
+        $this->Cell(10,5,'CL',0,0,'C');
         $this->Cell(20,5,'SAI',0,0,'L');
         $this->Cell(20,5,'CHE',0,0,'L');
         $this->Cell(30,5,'BASE TARIFA',0,0,'L');
-        $this->Cell(15,5,'MAL',0,0,'L');
+        $this->Cell(15,5,'BAG',0,0,'L');
         $this->Cell(10,5,'ST',0,0,'L');
         $this->Cell(15,5,'CX',0,1,'L');
         $this->SetFont('Courier','',10);
         $this->ln();
         $cantidad = 0;
+        $validez = $datos_detalle[0]['validez_tarifaria'];
+        $tipo_vuelo = 'nacional';
+        $solo_y = 'si';
+        $solo_b = 'si';
+        $solo_yb = 'si';
 
         foreach ($datos_detalle as $value) {
 
+            if ($validez != $value['validez_tarifaria']) {
+                $validez = 'combinability';
+            }
+
+            if ($value['pais_origen'] != 'BO' || $value['pais_destino'] != 'BO') {
+                $tipo_vuelo = 'internacional';
+            }
 
             $y = $this->getY();
-            $this->multiCell(40,5,$value['desde'] . ' - ',0,'L');
+            $this->multiCell(40,5,$value['desde'] ,0,'L');
             $y2 = $this->getY();
             $this->setXY(50,$y);
 
-            $this->Cell(25,5,$value['vuelo'],0,0,'L');
-            $this->Cell(10,5,$value['clase'],0,0,'L');
+            $this->Cell(25,5,$value['vuelo'],0,0,'R');
+            $this->Cell(10,5,$value['clase'],0,0,'C');
             $this->Cell(20,5,$value['fecha_origen'],0,0,'L');
             $this->Cell(20,5,$value['fecha_destino'],0,0,'L');
             $this->Cell(30,5,$value['tarifa'],0,0,'L');
@@ -119,15 +136,28 @@ class RBoletoBRPDF extends  ReportePDF {
                 $this->AddPage();
             }
 
+            if ($value['clase'] != 'Y') {
+                $solo_y = 'no';
+            }
+
+            if ($value['clase'] != 'B') {
+                $solo_b = 'no';
+            }
+
+            if ($value['clase'] != 'B' && $value['clase'] != 'Y') {
+                $solo_yb = 'no';
+            }
         }
 
-        $this->Cell(30,5,'ENDOSOS',0,0,'L');
+        $this->SetFont('Courier','',9);
+
+        $this->Cell(45,5,'ENDOSSOS',0,0,'L');
         $this->Cell(100,5,': '. $datos_maestro[0]['endoso'],0,1,'L');
 
-        $this->Cell(30,5,'COD DE VIAGEM',0,0,'L');
+        $this->Cell(45,5,'COD DE VIAGEM',0,0,'L');
         $this->Cell(100,5,': ',0,1,'L');
 
-        $this->Cell(30,5,'PAGAMENTO',0,0,'L');
+        $this->Cell(45,5,'PAGAMENTO',0,0,'L');
         $this->Cell(100,5,': ' . $datos_maestro[0]['forma_pago'],0,1,'L');
 
         if ($cantidad == 7) {
@@ -136,15 +166,16 @@ class RBoletoBRPDF extends  ReportePDF {
 
         $this->ln();
 
-        $this->Cell(40,5,'CALCULO DA TARIFA',0,0,'L');
-        $this->multiCell(150,5,': ' . $datos_maestro[0]['fare_calc'],0,'L');
-        $this->Cell(40,5,'TARIFA AEREA',0,0,'L');
+        $this->Cell(45,5,'CALCULO DA TARIFA',0,0,'L');
+        $this->Cell(3,5,':',0,0,'R');
+        $this->multiCell(150,5, $datos_maestro[0]['fare_calc'],0,'L');
+        $this->Cell(45,5,'TARIFA AEREA',0,0,'L');
         $this->Cell(150,5,': ' . $datos_maestro[0]['neto'],0,1,'L');
-        $this->Cell(40,5,'TAXA',0,0,'L');
+        $this->Cell(45,5,'TAXA',0,0,'L');
         $this->Cell(150,5,': ' . $datos_maestro[0]['tasas_impuestos'] . ' (' . $datos_maestro[0]['detalle_tasas']  . ')',0,1,'L');
 
         $this->SetFont('Courier','B',10);
-        $this->Cell(40,5,'TOTAL',0,0,'L');
+        $this->Cell(45,5,'TOTAL',0,0,'L');
         $this->Cell(150,5,': ' . $datos_maestro[0]['total'],0,1,'L');
 
         if ($cantidad == 6 || $cantidad == 5)  {
@@ -153,41 +184,81 @@ class RBoletoBRPDF extends  ReportePDF {
 
         $this->ln();
 
-        $this->SetFont('Courier','',10);
+        $this->SetFont('Courier','',8);
 
-        $this->Cell(50,5,'VALIDADE DO BILHETE',0,0,'L');
+        $this->Cell(45,5,'VALIDADE DO BILHETE',0,0,'L');
         $this->Cell(150,5,': 1 ANO',0,1,'L');
 
-        $this->Cell(50,5,'VALIDADE FARE',0,0,'L');
-        $this->Cell(150,5,': ',0,1,'L');
+        if ($validez == '1') {
+            $validez = '1 MES';
+        } else if($validez == 'combinability') {
+            $validez = 'EM CASO DE DUAS OU MAIS CLASSES DE RESERVA, A REGRA MAIS RESTRITIVA SERÁ APLICADA';
+        } else {
+            $validez = $validez . ' MESES';
+        }
 
-        $impuestos = $datos_maestro[0]['origen']=='BO'?' + IMPOSTOS BOLIVIA':'';
+        $this->Cell(45,5,'VALIDADE DA TARIFA',0,0,'L');
+        $this->Cell(150,5,': ' . $validez,0,1,'L');
 
-        $this->Cell(50,5,'REEMBOLSO',0,0,'L');
-        $this->Cell(150,5,': PENA 60 USD' . $impuestos ,0,1,'L');
+        $impuestos = $datos_maestro[0]['origen']=='BO'?' +  IMPOSTO BOLIVIANO RETIDO':'';
 
-        $this->Cell(50,5,'NO SHOW',0,0,'L');
-        $this->Cell(150,5,': MULTAS 50 USD',0,1,'L');
+        $this->Cell(45,5,'REEMBOLSO',0,0,'L');
+        $this->Cell(3,5,':',0,0,'R');
+        if ($tipo_vuelo == 'nacional') {
+            if ($solo_y == 'si') {
+                $this->MultiCell(150, 5, 'NÃO HÁ MULTA ' . $impuestos . "\n", 0, 'J');
+            } else {
+                $this->MultiCell(150, 5, 'O BILHETE COM TARIFA A PARTIR DE USD71.00 A MULTA É DE USD30.00 E O BILHETE CUJA TARIFA É MENOR DE USD71.00 A MULTA É DE USD20.00 ' . $impuestos . "\n", 0, 'J');
+            }
 
-        $this->Cell(50,5,'MUDAR DATA (EXCHANGE)',0,0,'L');
-        $this->Cell(150,5,': AJUSTE DA TAXA + PENA 50 USD',0,1,'L');
-
-        $this->Cell(50,5,'TEMPOS DE CONEXÃO',0,0,'L');
-        $this->Cell(150,5,': '.$datos_maestro[0]['conexion'],0,1,'L');
-
-        $this->Cell(50,5,'BAGAGEM DE MÃO',0,0,'L');
-        $this->Cell(150,5,': 1 PARTE 7 KG',0,1,'L');
-
-        $this->Cell(50,5,'BAGAGEM REGISTADA',0,0,'L');
-        $this->Cell(150,5,': 1 PARTE 30 KG',0,1,'L');
-
-
-
-
-
-
+        } else {
+            $this->Cell(150, 5, 'MULTA USD60.00 ' . $impuestos, 0,1, 'L');
+        }
+        $this->Cell(45,5,'NO SHOW',0,0,'L');
+        if ($tipo_vuelo == 'nacional') {
+            $this->Cell(150,5,': MULTA USD5.00',0,1,'L');
+        } else {
+            $this->Cell(150,5,': MULTA USD50.00',0,1,'L');
+        }
 
 
+        $this->Cell(45,5,'ALTERAÇÃO DE DATA OU ROTA',0,0,'L');
+        $this->Cell(3,5,':',0,0,'R');
+        if ($tipo_vuelo == 'nacional') {
+            if ($solo_y == 'si' || $solo_b == 'si' || $solo_yb == 'si') {
+                $this->MultiCell(145,5,'NÃO HÁ MULTA.' . "\n",0,'J');
+            } else {
+                $this->MultiCell(145,5,'MULTA USD5.00 DE ACORDO A DISPONIBILIDADE, EM CASO DE TARIFA SUPERIOR SERÁ COBRADA A DIFERENÇA + MULTA USD5.00 ' . $impuestos . "\n",0,'J');
+            }
+        } else {
+            $this->MultiCell(145,5,'MULTA USD50.00 DE ACORDO A DISPONIBILIDADE, EM CASO DE TARIFA SUPERIOR SERÁ COBRADA A DIFERENÇA + MULTA USD50.00 ' . $impuestos . "\n",0,'J');
+        }
+
+
+
+
+        $this->Cell(45,5,'ALTERAÇÃO DE NOME',0,0,'L');
+        $this->Cell(3,5,':',0,0,'R');
+        $this->MultiCell(145,5,'PERMITIDA DESDE QUE NÃO ALTERE O CARÁTER PESSOAL DO PASSAGEIRO, O BILHETE É INTRANSFERÍVEL.',0,'J');
+
+        $this->Cell(45,5,'ARREPENDIMENTO',0,0,'L');
+        $this->Cell(3,5,':',0,0,'R');
+        $this->MultiCell(145,5,'É PERMITIDO DESISTIR DA COMPRA DA PASSAGEM AÉREA SEM QUALQUER ÔNUS, DESDE QUE O FAÇA NO PRAZO DE ATÉ 24HS, A CONTAR DA DATA DO RECEBIMENTO DO COMPROVANTE. A REGRA APLICA-SE PARA COMPRAS FEITAS COM ANTECEDÊNCIA IGUAL OU SUPERIOR A 7 (SETE) DIAS EM RELAÇÃO A DATA DE EMBARQUE. ULTRAPASSADO ESTE PRAZO, APLICA-SE MULTA DA REGRA TARIFÁRIA.',0,'J');
+
+        $this->Cell(45,5,'BAGAGEM DE MÃO',0,0,'L');
+        if ($tipo_vuelo == 'nacional') {
+            $this->Cell(150, 5, ': 1 PEÇA 5 KG', 0, 1, 'L');
+        } else {
+            $this->Cell(150, 5, ': 1 PEÇA 7 KG', 0, 1, 'L');
+        }
+
+        $this->Cell(45,5,'BAGAGEM DESPACHADA',0,0,'L');
+
+        if ($tipo_vuelo == 'nacional') {
+            $this->Cell(150, 5, ': 1 PEÇA 20 KG', 0, 1, 'L');
+        } else {
+            $this->Cell(150, 5, ': 1 PEÇA 30 KG', 0, 1, 'L');
+        }
 
 
     }

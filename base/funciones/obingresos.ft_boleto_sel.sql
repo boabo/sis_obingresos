@@ -355,7 +355,7 @@ BEGIN
                         else
                         	''''
                         end)::varchar as tipo_identificacion,
-                        substr(b.identificacion,3)::varchar as identificacion,
+                        b.identificacion::varchar as identificacion,
                         pais.codigo::varchar as pais,
                         ori.pais as origen,
                         s.direccion,
@@ -401,20 +401,25 @@ BEGIN
                           (bv.linea || bv.vuelo)::varchar,
                           (lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde, 
                           (ld.nombre || '' ('' || ad.codigo || '')'')::varchar as hacia,
-                          to_char(bv.fecha_hora_origen,''HHMI'')::varchar as hora_origen,
-                          to_char(bv.fecha_hora_destino,''HHMI'')::varchar as hora_destino,
+                          to_char(bv.fecha_hora_origen,''HH24MI'')::varchar as hora_origen,
+                          to_char(bv.fecha_hora_destino,''HH24MI'')::varchar as hora_destino,
                           bv.tarifa, 
                           bv.equipaje,
                           bv.clase,
                           bv.cupon,
                           bv.flight_status,
                           ((bv.tiempo_conexion /60 ) || ''h'' || (bv.tiempo_conexion % 60 ) || ''m'')::varchar as conexion,
-                          bv.retorno
+                          bv.retorno,
+                          bv.validez_tarifa,
+                          po.codigo as pais_origen,
+                          pd.codigo as pais_destino
                           from obingresos.tboleto_vuelo bv
                           inner join obingresos.taeropuerto ao on bv.id_aeropuerto_origen = ao.id_aeropuerto
                           inner join obingresos.taeropuerto ad on bv.id_aeropuerto_destino = ad.id_aeropuerto
                           inner join param.tlugar lo on lo.id_lugar = ao.id_lugar
                           inner join param.tlugar ld on ld.id_lugar = ad.id_lugar
+                          inner join param.tlugar po on po.id_lugar = param.f_get_id_lugar_pais(lo.id_lugar)
+                          inner join param.tlugar pd on pd.id_lugar = param.f_get_id_lugar_pais(ld.id_lugar)
                           where bv.id_boleto = ' || v_parametros.id_boleto|| ' or bv.id_boleto_conjuncion = ' || v_parametros.id_boleto|| ' 
                           order by bv.cupon ASC';
 

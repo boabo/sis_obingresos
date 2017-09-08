@@ -75,7 +75,14 @@ DECLARE
     v_aeropuertos 			varchar[];
     v_retorno				varchar;
     v_id_boleto_vuelo		integer;
+
     v_valor_forma_pago		numeric;
+
+
+    v_autorizacion_fp		varchar[];
+    v_tarjeta_fp			varchar[];
+
+
 			    
 BEGIN
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -822,6 +829,8 @@ raise notice 'llega 0';
             v_fp = string_to_array(substring(v_parametros.fp from 2),'#');
             v_moneda_fp = string_to_array(substring(v_parametros.moneda_fp from 2),'#');
             v_valor_fp = string_to_array(substring(v_parametros.valor_fp from 2),'#');
+            v_autorizacion_fp = string_to_array(substring(v_parametros.autorizacion_fp from 2),'#');
+            v_tarjeta_fp = string_to_array(substring(v_parametros.tarjeta_fp from 2),'#');
             v_posicion = 1;
             FOREACH v_forma_pago IN ARRAY v_fp
             LOOP
@@ -843,13 +852,18 @@ raise notice 'llega 0';
                     id_usuario_reg,                    
                     importe,
                     id_forma_pago,
-                    id_boleto
+                    id_boleto,
+                    numero_tarjeta,
+                    codigo_tarjeta
+                    
                   )
                   VALUES (
                     p_id_usuario,                   
                     v_valor_fp[v_posicion]::numeric,
                     v_id_forma_pago,
-                    v_id_boleto
+                    v_id_boleto,
+                    v_tarjeta_fp[v_posicion],
+                    v_autorizacion_fp[v_posicion]
                   );     
                              
                   v_posicion = v_posicion + 1;
@@ -908,10 +922,11 @@ raise notice 'llega 0';
                     v_vuelo_fields[9],
                     v_vuelo_fields[10],
                     v_vuelo_fields[11]
-                  ) returning id_boleto_vuelo into v_id_boleto_vuelo;  
+
+                  )returning id_boleto_vuelo into v_id_boleto_vuelo;  
                   
                   update obingresos.tboleto_vuelo
-                  set validez_tarifa = obingresos.f_get_validez_tarifa(v_id_boleto_vuelo)
+                  set validez_tarifa = obingresos.f_get_validez_tarifaria(v_id_boleto_vuelo)
                   where id_boleto_vuelo = v_id_boleto_vuelo;
                   v_cupon = v_cupon +1;
                   
@@ -1390,7 +1405,7 @@ raise notice 'llega 0';
 
 EXCEPTION
 				
-	WHEN OTHERS THEN
+	WHEN OTHERS THEN 
 		v_resp='';
 		v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
 		v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);

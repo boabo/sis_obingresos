@@ -76,6 +76,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');
         $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
+        $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
 
 
 		//Ejecuta la instruccion

@@ -1192,6 +1192,11 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
                 this.Cmp.id_boleto_vuelo.setValue(objRes.datos[0].id_boleto_vuelo);
                 this.Cmp.id_boleto_vuelo.setRawValue(objRes.datos[0].vuelo_retorno);
 
+                this.Cmp.codigo_tarjeta.setValue(objRes.datos[0].codigo_tarjeta);
+                this.Cmp.numero_tarjeta.setValue(objRes.datos[0].numero_tarjeta);
+                this.Cmp.codigo_tarjeta2.setValue(objRes.datos[0].codigo_tarjeta2);
+                this.Cmp.numero_tarjeta2.setValue(objRes.datos[0].numero_tarjeta2);
+
                 this.Cmp.id_boleto_vuelo.store.baseParams.id_boleto = objRes.datos[0].id_boleto;
 				
 				this.Cmp.moneda_sucursal.setValue(objRes.datos[0].moneda_sucursal);
@@ -1216,7 +1221,7 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		this.Cmp.nro_boleto.allowBlank = false;
 		this.Cmp.comision.setDisabled(false);
 		this.Cmp.nro_boleto.setDisabled(true);
-        this.Cmp.id_boleto_vuelo.baseParams.id_boleto = objRes.datos[0].id_boleto;
+        this.Cmp.id_boleto_vuelo.store.baseParams.id_boleto = this.sm.getSelected().data['id_boleto'];
 
 
 		this.manejoComponentesFp1(this.sm.getSelected().data['id_forma_pago'],this.sm.getSelected().data['codigo_forma_pago']);

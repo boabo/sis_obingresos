@@ -651,6 +651,24 @@ ALTER TABLE obingresos.tventa_web_modificaciones
   ADD COLUMN banco VARCHAR(5);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-07/04/2017********************************************/
+ALTER TABLE obingresos.tboleto_vuelo
+  ADD COLUMN validez_tarifa INTEGER;
+
+  CREATE TABLE obingresos.tclase_tarifaria (
+  id_clase_tarifaria SERIAL,
+  codigo VARCHAR(1),
+  tipo_condicion VARCHAR(15) NOT NULL,
+  ruta VARCHAR(5)[],
+  aeropuerto VARCHAR(5)[],
+  pais VARCHAR(2),
+  duracion_meses INTEGER,
+  CONSTRAINT tclase_tarifaria_pkey PRIMARY KEY(id_clase_tarifaria)
+) INHERITS (pxp.tbase);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-07/04/2017********************************************/
+
 /********************************************I-SCP-JRR-OBINGRESOS-0-28/04/2017********************************************/
 CREATE TABLE obingresos.tcomision_agencia (
   id_comision SERIAL,
@@ -704,13 +722,11 @@ IS 'si,no';
 COMMENT ON COLUMN obingresos.ttipo_periodo.estado
 IS 'activo,inactivo';
 
-/********************************************F-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
-
-/********************************************I-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/
-
 CREATE UNIQUE INDEX tskybiz_archivo_nombre_archivo_uindex ON obingresos.tskybiz_archivo (nombre_archivo);
 
-/********************************************F-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/
+/********************************************F-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
+
+
 
 /********************************************I-SCP-FFP-OBINGRESOS-0-04/05/2017********************************************/
 ALTER TABLE obingresos.tagencia
@@ -782,6 +798,11 @@ ALTER TABLE obingresos.tperiodo_venta_agencia
 
 /********************************************F-SCP-FFP-OBINGRESOS-0-04/05/2017********************************************/
 
+
+
+
+
+
 /********************************************I-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
 CREATE TABLE obingresos.tobservaciones_conciliacion (
   id_observaciones_conciliacion SERIAL NOT NULL,
@@ -797,6 +818,7 @@ COMMENT ON COLUMN obingresos.tobservaciones_conciliacion.tipo_observacion
 IS 'skybiz,portal';
 
 /********************************************F-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
+<<<<<<< HEAD
 
 /********************************************I-SCP-FFP-OBINGRESOS-0-16/06/2017********************************************/
 ALTER TABLE obingresos.tdetalle_boletos_web
@@ -992,3 +1014,5 @@ ALTER TABLE obingresos.tperiodo_venta
   ADD COLUMN fecha_pago DATE;
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-17/08/2017********************************************/
+=======
+>>>>>>> 99e4b57d2fd48695caf0e8c3ad4eb38e4dba29bc

@@ -43,13 +43,14 @@ select pxp.f_insert_testructura_gui ('RDEPBINT', 'CBANXIN');
 
 /***********************************F-DAT-JRR-OBINGRESOS-0-01/03/2017*****************************************/
 
-/************************************I-DAT-JRR-OBINGRESOS-0-17/03/2017*************************************************/
+/************************************I-DAT-JRR-OBINGRESOS-0-07/04/2017*************************************************/
 
-select pxp.f_insert_tgui ('Venta de Boletos', 'Venta de Boletos', 'REGBOL', 'si', 7, 'sis_obingresos/vista/boleto/Boleto.php', 2, '', 'Boleto', 'VEF');
-select pxp.f_insert_tgui ('Boletos en Caja', 'Boletos en Caja', 'BOLCAJ', 'si', 7, 'sis_obingresos/vista/boleto/BoletoCaja.php', 2, '', 'BoletoCaja', 'VEF');
-select pxp.f_insert_tgui ('Boletos Vendidos', 'Boletos Vendidos', 'VENBOLVEN', 'si', 8, 'sis_obingresos/vista/boleto/BoletoVendido.php', 2, '', 'BoletoVendido', 'VEF');
+INSERT INTO pxp.variable_global ("variable", "valor", "descripcion")
+VALUES (E'obingresos_validar_tarjeta', E'no', NULL);
 
-/************************************F-DAT-JRR-OBINGRESOS-0-17/03/2017*************************************************/
+/************************************F-DAT-JRR-OBINGRESOS-0-07/04/2017*************************************************/
+
+
 
 /************************************I-DAT-JRR-OBINGRESOS-0-17/03/2017*************************************************/
 
@@ -93,8 +94,10 @@ select pxp.f_insert_testructura_gui ('CONBANIRES', 'CBANXIN');
 
 /************************************F-DAT-JRR-OBINGRESOS-0-01/06/2017*************************************************/
 
+
 /************************************I-DAT-JRR-OBINGRESOS-0-17/08/2017*************************************************/
 select pxp.f_insert_tgui ('Control Facturas Agencias', 'Control Facturas Agencias', 'CONFACAG', 'si', 3, 'sis_obingresos/vista/total_comision_mes/TotalComisionMes.php', 3, '', 'TotalComisionMes', 'OBINGRESOS');
 select pxp.f_insert_testructura_gui ('CONFACAG', 'CONPORCOR');
 
 /************************************F-DAT-JRR-OBINGRESOS-0-17/08/2017*************************************************/
+
