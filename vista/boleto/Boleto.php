@@ -288,6 +288,28 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
         },
 		{
 			config:{
+				name: 'voided',
+				fieldLabel: 'Anulado',
+				anchor: '60%',
+				gwidth: 80,
+				readOnly:true,
+				renderer : function(value, p, record) {
+					if (record.data['voided'] != 'si') {
+						return String.format('<div title="Anulado"><b><font color="green">{0}</font></b></div>', value);
+
+					} else {
+						return String.format('<div title="Anulado"><b><font color="red">{0}</font></b></div>', value);
+					}
+				}
+			},
+			type:'TextField',
+			filters:{pfiltro:'bol.voided',type:'string'},
+			id_grupo:0,
+			grid:true,
+			form:true
+		},
+		{
+			config:{
 				name: 'boletos',
 				fieldLabel: 'Boletos a Pagar',				
 				anchor: '80%',
@@ -958,7 +980,8 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		{name:'tc', type: 'numeric'},
 		{name:'moneda_fp1', type: 'string'},
 		{name:'moneda_fp2', type: 'string'},
-		
+		{name:'voided', type: 'string'}
+
 	],
 	sortInfo:{
 		field: 'id_boleto',

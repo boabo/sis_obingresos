@@ -27,6 +27,14 @@ class ACTDetalleBoletosWeb extends ACTbase{
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
     }
 
+    function insertarBilletePortal(){
+        $this->objFunc=$this->create('MODDetalleBoletosWeb');
+
+        $this->res=$this->objFunc->insertarBilletePortal($this->objParam);
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
     function conciliacionBancaInter(){
         $this->objFunc = $this->create('MODDetalleBoletosWeb');
         $this->res = $this->objFunc->listarConciliacionTotales($this->objParam);

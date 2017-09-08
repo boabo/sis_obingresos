@@ -141,13 +141,14 @@ BEGIN
                                                 
                         bol.tc,
                         bol.moneda_sucursal,
-                        bol.ruta_completa,
+                        bol.ruta_completa,                        
+                        bol.voided,
                         forpa.monto_total_fp,
                         bol.mensaje_error,
                         bv.id_boleto_vuelo,
                         (bv.aeropuerto_origen || ''-'' || bv.aeropuerto_destino)::varchar as vuelo_retorno
 						from obingresos.tboleto bol
-                        inner join obingresos.tagencia age on age.id_agencia = bol.id_agencia
+                        left join obingresos.tagencia age on age.id_agencia = bol.id_agencia
                         left join obingresos.tboleto_vuelo bv on bv.id_boleto = bol.id_boleto and bv.retorno = ''si''
                         left join forma_pago_temporal forpa on forpa.id_boleto = bol.id_boleto
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
@@ -158,19 +159,86 @@ BEGIN
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
         v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        --raise exception '%', v_consulta;
+        raise notice '%', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 						
 		end;
 
+        
+	/*********************************    
+     #TRANSACCION:  'OBING_PNRBOL_SEL'
+ 	#DESCRIPCION:	Consulta de datos
+ 	#AUTOR:		Gonzalo Sarmiento	
+ 	#FECHA:		14-07-2017
+	***********************************/
+	
+    elsif(p_transaccion='OBING_PNRBOL_SEL')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+            /*v_consulta:='select localizador,
+                                 total,
+                                 comision,
+                                 liquido,
+                                 id_moneda_boleto,
+                                 moneda,
+                                 neto,
+                                 origen,
+                                 destino,
+                                 fecha_emision,
+                                 boletos,
+                                 pasajeros
+                          from obingresos.vpnr 
+                          where ';*/
+			v_consulta:='with formas_pago as(select localizador,
+                               array_agg(fp.id_forma_pago) as ids_forma_pago,
+                               array_agg(fp.nombre||'' - ''||mon.codigo_internacional)::varchar[] as formas_pago,
+                               array_agg(pfp.importe) as importes
+                        from obingresos.vpnr pn
+                        inner join obingresos.tpnr_forma_pago pfp on pfp.pnr = pn.localizador
+                        inner join obingresos.tforma_pago fp on fp.id_forma_pago=pfp.id_forma_pago
+                        inner join param.tmoneda mon on mon.id_moneda=fp.id_moneda
+                        group by localizador)
+                        select
+                        nr.localizador,
+                               nr.total,
+                               nr.comision,
+                               nr.liquido,
+                               nr.id_moneda_boleto,
+                               nr.moneda,
+                               nr.neto,
+                               nr.origen,
+                               nr.destino,
+                               nr.fecha_emision,
+                               nr.boletos,
+                               nr.pasajeros,
+                               fpo.ids_forma_pago[1] as id_forma_pago,
+                               fpo.formas_pago[1] as forma_pago,
+                               fpo.importes[1] as monto_forma_pago,
+                               fpo.ids_forma_pago[2] as id_forma_pago2,
+                               fpo.formas_pago[2] as forma_pago2,
+                               fpo.importes[2] as monto_forma_pago2
+                        from obingresos.vpnr nr
+                        left join formas_pago fpo on fpo.localizador=nr.localizador
+                        where ';
+                        
+			--Definicion de la respuesta		    
+			v_consulta:=v_consulta||v_parametros.filtro;
+            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;            
+			raise notice 'v_consulta %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
 	/*********************************    
      #TRANSACCION:  'OBING_BOL_CONT'
  	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		jrivera	
+ 	#AUTOR:		jrivera		
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
-
+    
     elsif(p_transaccion='OBING_BOL_CONT')then
 
 		begin
@@ -181,11 +249,34 @@ BEGIN
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
 					    inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
-					    where  bol.estado_reg = ''activo'' and ';
+					    where  bol.estado_reg = ''activo'' and  ';
 			
 			--Definicion de la respuesta		    
 			v_consulta:=v_consulta||v_parametros.filtro;
 
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+        
+    /*********************************    
+     #TRANSACCION:  'OBING_PNRBOL_CONT'
+ 	#DESCRIPCION:	Conteo de registros
+ 	#AUTOR:		Gonzalo Sarmiento	
+ 	#FECHA:		14-07-2017
+	***********************************/
+	
+    elsif(p_transaccion='OBING_PNRBOL_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+            v_consulta:='select count(localizador)
+						from obingresos.vpnr nr
+                        where ';
+			
+			--Definicion de la respuesta		    
+			v_consulta:=v_consulta||v_parametros.filtro;
+			raise notice 'v_consulta %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 

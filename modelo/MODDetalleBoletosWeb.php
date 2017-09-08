@@ -112,6 +112,36 @@ class  MODDetalleBoletosWeb extends MODbase{
 
         return $this->respuesta;
     }
+    function insertarBilletePortal(){
+
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_ime';
+        $this->transaccion='OBING_DETBOPOR_INS';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('billete','billete','varchar');
+        $this->setParametro('medio_pago','medio_pago','varchar');
+        $this->setParametro('entidad','entidad','varchar');
+        $this->setParametro('moneda','moneda','varchar');
+        $this->setParametro('importe','importe','numeric');
+        $this->setParametro('fecha_emision','fecha_emision','date');
+        $this->setParametro('nit','nit','varchar');
+        $this->setParametro('razon_social','razon_social','varchar');
+        $this->setParametro('fecha_pago','fecha_pago','date');
+        $this->setParametro('id_entidad','id_entidad','integer');
+        $this->setParametro('comision','comision','numeric');
+        $this->setParametro('neto','neto','numeric');
+        $this->setParametro('numero_autorizacion','numero_autorizacion','varchar');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 
     function listarConciliacionObservaciones(){
         //Definicion de variables para ejecucion del procedimientp
@@ -135,6 +165,34 @@ class  MODDetalleBoletosWeb extends MODbase{
 
         $this->ejecutarConsulta();
 
+        return $this->respuesta;
+    }
+	
+	function validarBoletos(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_OBSERVA_SEL';
+        $this->tipo_procedimiento='SEL';
+		$this->setCount(false);
+
+        $this->setParametro('fecha_emision','fecha_emision','date');
+        $this->setParametro('detalle','detalle','text');
+		
+		
+        $this->captura('billete', 'varchar');
+        $this->captura('pnr', 'varchar');
+        $this->captura('total', 'numeric');
+        $this->captura('moneda', 'varchar');
+        $this->captura('tipo_observacion', 'varchar');
+		$this->captura('observacion', 'text');		
+		
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
         return $this->respuesta;
     }
 

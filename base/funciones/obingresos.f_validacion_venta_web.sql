@@ -6,7 +6,6 @@ $body$
     v_res	text;
     v_id_alarma	integer;
   BEGIN
-  v_res = '';
     with consulta as (select b.nro_boleto,
                         b.numero_tarjeta,
                         b.fecha_emision
@@ -29,26 +28,15 @@ $body$
     )
     select string_agg(c.nro_boleto || ' , ' || c.numero_tarjeta || ' , ' || to_char(c.fecha_emision,'DD/MM/YYYY'),'<BR>') into v_res
     from consulta c;
-    if v_res != '' then
-    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos con # tarjeta ****5555 no reportados',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
-	end if;
-    
-    v_res = '';
+    v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos con # tarjeta ****5555 no reportados',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
+
     select string_agg(b.nro_boleto || ' , ' || to_char(b.fecha_emision,'DD/MM/YYYY'),'<BR>') into v_res
     from obingresos.tventa_web_modificaciones vwm
       inner join obingresos.tboleto b on b.nro_boleto = vwm.nro_boleto and b.estado_reg = 'activo'
     where b.voided = 'no';
-	if v_res != '' then
-    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos anulados en Resiber, por anular en sistema de ingresos',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo,dcamacho@boa.bo,xzambrana@boa.bo,gsanabria@boa.bo'));
-	end if;
-    
-    v_res = '';
-	select string_agg(dbw.billete || ' , ' || coalesce(dbw.entidad_pago,'') || ' , ' || to_char(dbw.fecha,'DD/MM/YYYY')|| ' , ' || coalesce(dbw.nit,''),'<BR>') into v_res
-    from obingresos.tdetalle_boletos_web dbw 
-    where dbw.procesado = 'no' and (not pxp.f_is_positive_integer(dbw.nit)  or dbw.nit is null);
-    if v_res != '' then
-    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos con Nit no numerico',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
-  	end if;
+
+    v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos anulados en Resiber, por anular en sistema de ingresos',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo,dcamacho@boa.bo,xzambrana@boa.bo,gsanabria@boa.bo'));
+
   END;
 $body$
 LANGUAGE 'plpgsql'

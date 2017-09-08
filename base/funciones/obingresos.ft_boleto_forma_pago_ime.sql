@@ -31,6 +31,9 @@ DECLARE
 	v_mensaje_error         text;
 	v_id_boleto_forma_pago	integer;
 	v_codigo_fp				varchar;
+    v_localizador			varchar;
+    v_id_forma_pago			integer;
+    v_importe				numeric;
 			    
 BEGIN
 
@@ -50,6 +53,10 @@ BEGIN
         	select fp.codigo into v_codigo_fp
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
+            
+            select localizador into v_localizador
+            from obingresos.tboleto
+            where id_boleto=v_parametros.id_boleto;
         	
         	--Sentencia de la insercion
         	insert into obingresos.tboleto_forma_pago(			
@@ -91,6 +98,24 @@ BEGIN
 			
 			
 			)RETURNING id_boleto_forma_pago into v_id_boleto_forma_pago;
+            
+            IF EXISTS(
+                SELECT 1
+                FROM obingresos.tpnr_forma_pago
+                WHERE pnr=v_localizador
+                AND id_forma_pago=v_parametros.id_forma_pago
+                )THEN
+                	UPDATE 
+                    obingresos.tpnr_forma_pago
+                    SET
+                    importe=importe+v_parametros.importe
+                    WHERE pnr=v_localizador and
+                    id_forma_pago=v_parametros.id_forma_pago;
+            ELSE
+                INSERT INTO obingresos.tpnr_forma_pago
+                (pnr, id_forma_pago, importe)
+                VALUES(v_localizador, v_parametros.id_forma_pago, v_parametros.importe);
+            END IF;
 			
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago almacenado(a) con exito (id_boleto_forma_pago'||v_id_boleto_forma_pago||')'); 
@@ -155,9 +180,29 @@ BEGIN
 	elsif(p_transaccion='OBING_BFP_ELI')then
 
 		begin
+        	select bol.localizador, bfp.id_forma_pago, bfp.importe 
+            into v_localizador, v_id_forma_pago, v_importe
+            from obingresos.tboleto_forma_pago bfp
+            inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
+            where bfp.id_boleto_forma_pago=v_parametros.id_boleto_forma_pago;
+        	
 			--Sentencia de la eliminacion
 			delete from obingresos.tboleto_forma_pago
             where id_boleto_forma_pago=v_parametros.id_boleto_forma_pago;
+            
+            IF EXISTS(
+                SELECT 1
+                FROM obingresos.tpnr_forma_pago
+                WHERE pnr=v_localizador
+                AND id_forma_pago=v_id_forma_pago
+                )THEN
+                	UPDATE 
+                    obingresos.tpnr_forma_pago
+                    SET
+                    importe=importe-v_importe
+                    WHERE pnr=v_localizador and
+                    id_forma_pago=v_id_forma_pago;
+            END IF;
                
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago eliminado(a)'); 

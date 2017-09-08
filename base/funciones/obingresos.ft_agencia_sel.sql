@@ -99,6 +99,28 @@ BEGIN
 			return v_consulta;
 
 		end;
+    /*********************************
+ 	#TRANSACCION:  'OBING_AGEDOCON_SEL'
+ 	#DESCRIPCION:	Lista de documentos a subir por contrato
+ 	#AUTOR:		jrivera
+ 	#FECHA:		06-01-2016 21:30:12
+	***********************************/
+
+	elsif(p_transaccion='OBING_AGEDOCON_SEL')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select dwf.id_documento_wf,td.codigo as codigo_tipo_documento,td.nombre
+					    from leg.tcontrato c
+					    inner join wf.tdocumento_wf dwf on dwf.id_proceso_wf = c.id_proceso_wf
+                        inner join wf.ttipo_documento td on td.id_tipo_documento = dwf.id_tipo_documento
+					    where c.id_contrato = ' || v_parametros.id_contrato;
+
+			
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
 
 	else
 

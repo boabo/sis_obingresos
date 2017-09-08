@@ -19,17 +19,17 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		this.init();
 		this.iniciarEventos();
 		this.load({params:{start:0, limit:this.tam_pag}});
-		this.addButton('btnBoletos',
+		this.addButton('btnMovimientos',
             {
-                text: 'Boletos',
+                text: 'Movimientos',
                 iconCls: 'bchecklist',
                 disabled: true,
-                handler: this.openBoletos,
-                tooltip: '<b>Boletos</b><br/>Lista los boletos vendidos por esta agencia.'
+                handler: this.openMovimientos,
+                tooltip: '<b>Movimientos</b><br/>Lista de movimientos por agencia.'
             }
         );
         
-        this.addButton('btnDepositos',
+        /*this.addButton('btnDepositos',
             {
                 text: 'Depositos',
                 iconCls: 'bchecklist',
@@ -37,7 +37,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
                 handler: this.openDepositos,
                 tooltip: '<b>Depositos</b><br/>Lista los depositos realizados por esta agencia.'
             }
-        );
+        );*/
 	},
 			
 	Atributos:[
@@ -267,21 +267,21 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 	},
 	preparaMenu:function()
     {	   
-        this.getBoton('btnBoletos').enable(); 
-        this.getBoton('btnDepositos').enable();  
+        this.getBoton('btnMovimientos').enable();
+        //this.getBoton('btnDepositos').enable();
         Phx.vista.Agencia.superclass.preparaMenu.call(this);
     },
     liberaMenu:function()
     {	
-        this.getBoton('btnBoletos').disable();
-        this.getBoton('btnDepositos').disable();
+        this.getBoton('btnMovimientos').disable();
+        //this.getBoton('btnDepositos').disable();
         
         Phx.vista.Agencia.superclass.liberaMenu.call(this);
     },
-    openBoletos : function () {
+        openMovimientos : function () {
     	var rec = {maestro: this.sm.getSelected().data};
             
-            Phx.CP.loadWindows('../../../sis_obingresos/vista/boleto/Boleto.php',
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/movimiento_entidad/MovimientoEntidad.php',
                     'Boletos',
                     {
                         width:'95%',
@@ -289,7 +289,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
                     },
                     rec,
                     this.idContenedor,
-                    'Boleto'
+                    'MovimientoEntidad'
         )
     },
     

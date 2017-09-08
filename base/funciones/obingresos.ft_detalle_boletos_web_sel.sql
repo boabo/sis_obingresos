@@ -31,6 +31,14 @@ $body$
     v_cod_moneda		varchar;
     v_fecha_ini			date;
     v_fecha_fin			date;
+    v_registros			record;
+    v_id_moneda			integer;
+    v_id_agencia		integer;
+    v_id_tipo_periodo	integer;
+    v_tabla				varchar;
+    v_pnr_no_boleto		text;
+    
+    v_id_alarma			integer;
 
   BEGIN
 
@@ -60,6 +68,162 @@ $body$
                                 FROM obingresos.tboleto b
                                 INNER JOIN  obingresos.tdetalle_boletos_web d on d.billete = b.nro_boleto
                                 where b.fecha_emision >= '''||v_parametros.fecha_ini||'''and b.fecha_emision <= '''||v_parametros.fecha_fin||''' ';
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+    /*********************************
+     #TRANSACCION:  'OBING_OBSERVA_SEL'
+     #DESCRIPCION:	Insercion de detalle boletos del portal y generacion de observaciones
+     #AUTOR:		JRR
+     #FECHA:		09-08-2017
+    ***********************************/  
+    elsif(p_transaccion='OBING_OBSERVA_SEL')then
+
+      begin
+      
+      	            
+        --generar observaciones
+        
+        --reportar los estan en movimiento y no fueron reportados por el portal o hay diferencia en monto      
+       for v_registros in (
+           with aux as (
+            select dbw.numero_autorizacion, sum(dbw.importe - dbw.comision)as total
+            from obingresos.tdetalle_boletos_web dbw 
+            where dbw.estado_reg = 'activo' and 
+                dbw.origen = 'portal' and dbw.medio_pago = 'CUENTA-CORRI' and
+                dbw.fecha =  v_parametros.fecha_emision
+            group by dbw.numero_autorizacion)
+            select me.pnr,me.autorizacion__nro_deposito,me.monto,a.total
+            from obingresos.tmovimiento_entidad me
+            left join aux a on a.numero_autorizacion = me.autorizacion__nro_deposito
+            where me.tipo = 'debito' and me.pnr is not null and me.estado_reg = 'activo' and
+            me.fecha = v_parametros.fecha_emision and 
+            (a.numero_autorizacion is null or a.total != me.monto))loop
+       		
+            v_pnr_no_boleto = v_pnr_no_boleto || 
+            					(case when v_registros.total is null then  
+            						'El pnr '|| v_registros.autorizacion__nro_deposito ||'ha sido autorizado pero no emitido. <BR>'
+            					else
+                                	'Los montos no igualan para el pnr '|| v_registros.autorizacion__nro_deposito || ' ,monto boletos : ' || v_registros.total || ' , monto reserva : '||v_registros.monto || '<BR>'
+                                END);
+       end loop;
+       
+       v_id_alarma = (select param.f_inserta_alarma_dblink (1,'PORTAL - Diferencias entre reservas autorizadas y boletos emitidos',v_pnr_no_boleto,'jaime.rivera@boa.bo,earrazola@boa.bo,fvargas@boa.bo')); 
+       
+              
+        
+        --los q no fueron reportados por el portal y si por la ret
+        insert into obingresos.tobservaciones_portal
+        	(id_usuario_reg, billete, pnr,total,moneda,tipo_observacion,observacion,fecha_emision)
+        with temp_bol as (
+            select dbw.numero_autorizacion,dbw.fecha,dbw.moneda,sum(dbw.importe)
+            from obingresos.tdetalle_boletos_web dbw 
+            where dbw.estado_reg = 'activo' and dbw.origen = 'portal'
+            group by dbw.numero_autorizacion,dbw.fecha,dbw.moneda
+        )
+		select p_id_usuario as id_usuario_reg,br.nro_boleto as billete,
+        		NULL::varchar,br.total as monto,mon.codigo_internacional as moneda,'ret_no_portal'::varchar as tipo_observacion,
+                'El pnr no ha sido reportado por el portal y llego en el archivo de la ret'::text as observacion,
+                br.fecha_emision
+        from obingresos.tboleto_retweb br  
+        inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
+        left join obingresos.tdetalle_boletos_web  dbw on dbw.numero_autorizacion = me.autorizacion__nro_deposito and
+        dbw.estado_reg = 'activo' and dbw.origen = 'portal'
+        				     
+        where me.estado_reg = 'activo' and me.fecha = '03/08/2017' 
+        	and me.tipo = 'debito' and me.autorizacion__nro_deposito is not null and
+            me.ajuste = 'no' and me.pnr is not null and dbw.numero_autorizacion is null;
+        
+        
+        --los q no fueron reportados por la ret y si por el portal
+        insert into obingresos.tobservaciones_portal
+        	(id_usuario_reg, billete, pnr,total,moneda,tipo_observacion,observacion,fecha_emision)
+        select p_id_usuario as id_usuario_reg,dbw.billete,
+        		br.pnr,dbw.importe as monto,dbw.moneda,'portal_no_ret'::varchar as tipo_observacion,
+                'El boleto no ha sido reportado en el archivo RET pero si en el portal corporativo'::text as observacion,
+                dbw.fecha
+         
+        from obingresos.tdetalle_boletos_web dbw 
+        left join obingresos.tboleto_retweb br on dbw.billete = br.nro_boleto and br.estado = '1'
+        where dbw.fecha = v_parametros.fecha_emision and br.id_boleto_retweb is null;
+        
+        
+        --Diferencias en monto
+        insert into obingresos.tobservaciones_portal
+        	(id_usuario_reg, billete, pnr,total,moneda,tipo_observacion,observacion,fecha_emision)
+        select p_id_usuario as id_usuario_reg,dbw.billete,
+        		br.pnr,br.total as monto,dbw.moneda,'diferencia_monto'::varchar as tipo_observacion,
+                ('El monto en la RET es '|| br.total ||' y en el portal '||dbw.importe)::text as observacion,
+                dbw.fecha
+         
+        from obingresos.tdetalle_boletos_web dbw 
+        inner join obingresos.tboleto_retweb br on dbw.billete = br.nro_boleto
+        where br.estado = '1' and dbw.fecha = v_parametros.fecha_emision and 
+        br.total != dbw.importe;
+        
+        
+        
+        --generar periodo venta cc si correpsonde
+        select id_tipo_periodo into v_id_tipo_periodo
+        from obingresos.ttipo_periodo tp
+        where tp.estado_reg = 'activo' and tp.medio_pago = 'cuenta_corriente' and tipo = 'portal';
+        
+        v_tabla = pxp.f_crear_parametro(ARRAY[	'_nombre_usuario_ai',
+                                '_id_usuario_ai',
+                                'id_tipo_periodo',
+                                'fecha'],
+            				ARRAY[	coalesce(v_parametros._nombre_usuario_ai,''),
+                                coalesce(v_parametros._id_usuario_ai::varchar,''),
+                                v_id_tipo_periodo,
+                                v_parametros.fecha_emision
+                                ],
+                            ARRAY['varchar',
+                                'integer',	
+                            	'integer',
+                                'date']
+                            );
+        v_resp = obingresos.ft_periodo_venta_ime(p_administrador,p_id_usuario,v_tabla,'OBING_PERVEN_INS');
+        
+        --generar periodo banca_internet si corresponde
+        select id_tipo_periodo into v_id_tipo_periodo
+        from obingresos.ttipo_periodo tp
+        where tp.estado_reg = 'activo' and tp.medio_pago = 'banca_internet' and tipo = 'portal' and 
+        tp.fecha_ini_primer_periodo <= v_parametros.fecha_emision;
+        
+        v_tabla = pxp.f_crear_parametro(ARRAY[	'_nombre_usuario_ai',
+                                '_id_usuario_ai',
+                                'id_tipo_periodo',
+                                'fecha'],
+            				ARRAY[	coalesce(v_parametros._nombre_usuario_ai,''),
+                                coalesce(v_parametros._id_usuario_ai::varchar,''),
+                                v_id_tipo_periodo,
+                                v_parametros.fecha_emision
+                                ],
+                            ARRAY['varchar',
+                                'integer',	
+                            	'integer',
+                                'date']
+                            );
+        --solo se genera el periodo para ventas de banca si corresponde
+        if (v_id_tipo_periodo is not null) then
+        	v_resp = obingresos.ft_periodo_venta_ime(p_administrador,p_id_usuario,v_tabla,'OBING_PERVEN_INS');
+        end if;
+        --generar totales facturas si corresponde
+        
+        v_resp = obingresos.f_generar_totales_facturas_portal(p_id_usuario,v_parametros.fecha_emision);
+                
+        --Sentencia de la consulta d eobservaciones
+        v_consulta:='SELECT
+                                billete,
+                                pnr,                               
+                                total,
+                                moneda,
+                                tipo_observacion,
+                                observacion
+                                FROM obingresos.tobservaciones_portal                               
+                                where fecha_emision = '''||v_parametros.fecha_emision||'''';
 
         --Devuelve la respuesta
         return v_consulta;

@@ -25,6 +25,14 @@ class ACTBoleto extends ACTbase{
 		if ($this->objParam->getParametro('id_punto_venta') != '') {
 			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
 		}
+
+		if ($this->objParam->getParametro('localizador') != '') {
+			$this->objParam->addFiltro("bol.localizador = ''". $this->objParam->getParametro('localizador')."''");
+		}
+
+		if ($this->objParam->getParametro('fecha_emision') != '') {
+			$this->objParam->addFiltro("bol.fecha_emision = ''". $this->objParam->getParametro('fecha_emision')."''");
+		}
 		
 		if ($this->objParam->getParametro('estado') != '') {
 			if ($this->objParam->getParametro('estado') == 'borrador') {
@@ -53,6 +61,53 @@ class ACTBoleto extends ACTbase{
 			
 			$this->res=$this->objFunc->listarBoleto($this->objParam);
 		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
+	function listarPNRBoleto(){
+		$this->objParam->defecto('ordenacion','fecha_emision');
+
+		$this->objParam->defecto('dir_ordenacion','desc');
+
+		/*if ($this->objParam->getParametro('id_agencia') != '') {
+			$this->objParam->addFiltro("bol.id_agencia = ". $this->objParam->getParametro('id_agencia'));
+		}*/
+
+		if ($this->objParam->getParametro('officeID') != '') {
+			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
+		}
+
+		if ($this->objParam->getParametro('estado') != '') {
+			if ($this->objParam->getParametro('estado') == 'borrador') {
+				$this->objParam->addFiltro("(nr.id_usuario_reg = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
+																												from segu.tusuario_rol
+																												where id_rol = 1 and estado_reg = ''activo'' and
+																												id_usuario = ". $_SESSION["ss_id_usuario"] . " ))");
+			}
+
+			//$this->objParam->addFiltro("bol.estado = ''". $this->objParam->getParametro('estado')."''");
+		}
+
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarPNRBoleto');
+		} else{
+			$this->objFunc=$this->create('MODBoleto');
+
+			$this->res=$this->objFunc->listarPNRBoleto($this->objParam);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
+	function modificarFpPNRBoleto(){
+		/*$this->objParam->defecto('ordenacion','id_boleto');
+		$this->objParam->defecto('dir_ordenacion','desc');
+		$this->objParam->defecto('puntero','0');
+		$this->objParam->defecto('cantidad','1');
+		*/
+		$this->objFunc=$this->create('MODBoleto');
+		$this->res=$this->objFunc->modificarFpPNRBoleto($this->objParam);
+
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
@@ -93,7 +148,7 @@ class ACTBoleto extends ACTbase{
 		$this->objParam->defecto('ordenacion','id_boleto');
 		$this->objParam->defecto('dir_ordenacion','desc');
 		$this->objParam->defecto('puntero','0');
-		$this->objParam->defecto('cantidad','1');		
+		$this->objParam->defecto('cantidad','1');
 			
 		if($this->objParam->insertar('ids_seleccionados')) {
 			$this->objParamAux = $this->objParam;
@@ -172,22 +227,289 @@ class ACTBoleto extends ACTbase{
 		$this->res=$this->objFunc->cambiaEstadoBoleto($this->objParam);
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
+
+	function traerBoletos(){
+
+		if ($this->objParam->getParametro('id_punto_venta') != '') {
+			$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+		}
+
+		if ($this->objParam->getParametro('fecha') != '') {
+			$fecha = $this->objParam->getParametro('fecha');
+		}else{
+			$fecha = date("Ymd");
+		}
+		$this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
+		$this->res=$this->objFunc->obtenerOfficeID($this->objParam);
+		$datos = $this->res->getDatos();
+		$officeid = $datos[0]['officeid'];
+
+		//boletos en bolivianos
+		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"CBBOB0900","dateFrom"=>$fecha,"dateTo"=>$fecha);
+		$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"BOB");
+		$data_string = json_encode($data);
+		//$request =  'http://wservices.obairlines.bo/Dotacion.AppService/SvcDotacion.svc/RevertirDotacionAlmacenes';
+		$request =  'http://wservices.obairlines.bo/esb/RITISERP.svc/Boa_RITRetrieveSales';
+		$session = curl_init($request);
+		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($session, CURLOPT_HTTPHEADER, array(
+						'Content-Type: application/json',
+						'Content-Length: ' . strlen($data_string))
+		);
+
+		$result = curl_exec($session);
+		curl_close($session);
+
+		$respuesta = json_decode($result);
+		
+		$xmlRespuesta = new SimpleXMLElement(str_replace("utf-16", "utf-8",$respuesta->Boa_RITRetrieveSalesResult));
+		//var_dump($xmlRespuesta); exit;
+		if(isset($xmlRespuesta->queryReportDataDetails)) {
+			$moneda = $xmlRespuesta->queryReportDataDetails->currencyInfo->currencyDetails->currencyIsoCode->__toString();
+			//var_dump($moneda); exit;
+			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
+
+				//var_dump($boleto->documentNumber->documentDetails->number->__toString());
+
+				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
+				//$this->objParam->addParametro('fecha_emision', $fecha);
+				$this->objParam->addParametro('fecha_emision',"20170808");
+
+				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'CANX') {
+					$this->objParam->addParametro('voided', 'si');
+				}
+				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'TKTT') {
+					$this->objParam->addParametro('voided', 'no');
+				}
+				$this->objParam->addParametro('pasajero', $boleto->passengerName->paxDetails->surname->__toString());
+				foreach ($boleto->monetaryInformation->otherMonetaryDetails as $montoBoleto) {
+					if ($montoBoleto->typeQualifier->__toString() == 'T') {
+						$this->objParam->addParametro('total', $montoBoleto->amount->__toString());
+						$this->objParam->addParametro('liquido', $montoBoleto->amount->__toString());
+						$this->objParam->addParametro('neto', $montoBoleto->amount->__toString());
+					} else {
+						if ($montoBoleto->typeQualifier->__toString() == 'TTX') {
+							$this->objParam->addParametro('tasas', $montoBoleto->amount->__toString());
+						} else {
+							if ($montoBoleto->typeQualifier->__toString() == 'F') {
+								$this->objParam->addParametro('comision', $montoBoleto->amount->__toString());
+							} else {
+								if ($montoBoleto->typeQualifier->__toString() == 'OB') {
+									$this->objParam->addParametro('carrier_fees', $montoBoleto->amount->__toString());
+								}
+							}
+						}
+					}
+				}
+				$this->objParam->addParametro('moneda', $moneda);
+				/*$this->objParam->addParametro('endoso',"");
+				$this->objParam->addParametro('origen',"");
+				$this->objParam->addParametro('destino',"");
+				$this->objParam->addParametro('cupones',"");
+				$this->objParam->addParametro('impuestos',"");*/
+				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CA') {
+					//forma de pago cash
+					$this->objParam->addParametro('fp', 'CA');
+					$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
+				}
+
+				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'MX') {
+					//exception valor forma de pago no definida
+					//throw new Exception(__METHOD__.'FORMA DE PAGO MX NO DEFINIDO');
+					$this->objParam->addParametro('fp', 'CA');
+					$this->objParam->addParametro('valor_fp', 0);
+				}
+
+				//$this->objParam->addParametro('mandar_fp',"");
+				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '') {
+					//exception valor forma de pago no definida
+					throw new Exception(__METHOD__ . 'VALOR FORMA DE PAGO NO DEFINIDO');
+				}
+
+				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CC') {
+					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'VI') {
+						$this->objParam->addParametro('fp', 'CCVI');
+					}
+					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
+						$this->objParam->addParametro('fp', 'CCCA');
+					}
+					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
+						$this->objParam->addParametro('fp', 'CCAX');
+					}
+				}
+
+				/*$this->objParam->addParametro('rutas',"");
+				$this->objParam->addParametro('ruta_completa',"");
+				$this->objParam->addParametro('vuelos',"");*/
+				$this->objParam->addParametro('localizador', $boleto->reservationInformation->reservation->controlNumber->__toString());
+				/*$this->objParam->addParametro('identificacion',"");
+				$this->objParam->addParametro('fare_calc',"");
+				$this->objParam->addParametro('vuelos2',"");*/
+
+				if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+					$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
+					$this->objFunc = $this->create('MODBoleto');
+					$this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
+				} else {
+					$this->objFunc = $this->create('MODBoleto');
+					$this->res = $this->objFunc->insertarBoletoServicioAmadeus($this->objParam);
+				}
+
+				if ($this->res->getTipo() == 'ERROR') {
+					$this->res->imprimirRespuesta($this->res->generarJson());
+					exit;
+				}
+			}
+		}
+
+		////boletos en dolares
+		$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
+		$data_string = json_encode($data);
+		//$request =  'http://wservices.obairlines.bo/Dotacion.AppService/SvcDotacion.svc/RevertirDotacionAlmacenes';
+		$request =  'http://wservices.obairlines.bo/esb/RITISERP.svc/Boa_RITRetrieveSales';
+		$session = curl_init($request);
+		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($session, CURLOPT_HTTPHEADER, array(
+						'Content-Type: application/json',
+						'Content-Length: ' . strlen($data_string))
+		);
+
+		$result = curl_exec($session);
+		curl_close($session);
+
+		$respuesta = json_decode($result);
+
+		$xmlRespuesta = new SimpleXMLElement(str_replace("utf-16", "utf-8",$respuesta->Boa_RITRetrieveSalesResult));
+		//var_dump($xmlRespuesta); exit;
+		if(isset($xmlRespuesta->queryReportDataDetails)) {
+			$moneda = $xmlRespuesta->queryReportDataDetails->currencyInfo->currencyDetails->currencyIsoCode->__toString();
+			//var_dump($moneda); exit;
+			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
+
+				//var_dump($boleto->documentNumber->documentDetails->number->__toString());
+
+				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
+				//$this->objParam->addParametro('fecha_emision', $fecha);
+				$this->objParam->addParametro('fecha_emision',"20170808");
+
+				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'CANX') {
+					$this->objParam->addParametro('voided', 'si');
+				}
+				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'TKTT') {
+					$this->objParam->addParametro('voided', 'no');
+				}
+				$this->objParam->addParametro('pasajero', $boleto->passengerName->paxDetails->surname->__toString());
+				foreach ($boleto->monetaryInformation->otherMonetaryDetails as $montoBoleto) {
+					if ($montoBoleto->typeQualifier->__toString() == 'T') {
+						$this->objParam->addParametro('total', $montoBoleto->amount->__toString());
+						$this->objParam->addParametro('liquido', $montoBoleto->amount->__toString());
+						$this->objParam->addParametro('neto', $montoBoleto->amount->__toString());
+					} else {
+						if ($montoBoleto->typeQualifier->__toString() == 'TTX') {
+							$this->objParam->addParametro('tasas', $montoBoleto->amount->__toString());
+						} else {
+							if ($montoBoleto->typeQualifier->__toString() == 'F') {
+								$this->objParam->addParametro('comision', $montoBoleto->amount->__toString());
+							} else {
+								if ($montoBoleto->typeQualifier->__toString() == 'OB') {
+									$this->objParam->addParametro('carrier_fees', $montoBoleto->amount->__toString());
+								}
+							}
+						}
+					}
+				}
+				$this->objParam->addParametro('moneda', $moneda);
+				/*$this->objParam->addParametro('endoso',"");
+				$this->objParam->addParametro('origen',"");
+				$this->objParam->addParametro('destino',"");
+				$this->objParam->addParametro('cupones',"");
+				$this->objParam->addParametro('impuestos',"");*/
+				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CA') {
+					//forma de pago cash
+					$this->objParam->addParametro('fp', 'CA');
+					$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
+				}
+
+				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'MX') {
+					//exception valor forma de pago no definida
+					//throw new Exception(__METHOD__.'FORMA DE PAGO MX NO DEFINIDO');
+					$this->objParam->addParametro('fp', 'CA');
+					$this->objParam->addParametro('valor_fp', 0);
+				}
+
+				//$this->objParam->addParametro('mandar_fp',"");
+				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '') {
+					//exception valor forma de pago no definida
+					throw new Exception(__METHOD__ . 'VALOR FORMA DE PAGO NO DEFINIDO');
+				}
+
+				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CC') {
+					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'VI') {
+						$this->objParam->addParametro('fp', 'CCVI');
+					}
+					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
+						$this->objParam->addParametro('fp', 'CCCA');
+					}
+					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
+						$this->objParam->addParametro('fp', 'CCAX');
+					}
+				}
+
+				/*$this->objParam->addParametro('rutas',"");
+				$this->objParam->addParametro('ruta_completa',"");
+				$this->objParam->addParametro('vuelos',"");*/
+				$this->objParam->addParametro('localizador', $boleto->reservationInformation->reservation->controlNumber->__toString());
+				/*$this->objParam->addParametro('identificacion',"");
+				$this->objParam->addParametro('fare_calc',"");
+				$this->objParam->addParametro('vuelos2',"");*/
+
+				if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+					$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
+					$this->objFunc = $this->create('MODBoleto');
+					$this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
+				} else {
+					$this->objFunc = $this->create('MODBoleto');
+					$this->res = $this->objFunc->insertarBoletoServicioAmadeus($this->objParam);
+				}
+
+				if ($this->res->getTipo() == 'ERROR') {
+					$this->res->imprimirRespuesta($this->res->generarJson());
+					exit;
+				}
+			}
+		}
+
+		$this->mensajeRes=new Mensaje();
+		$this->mensajeRes->setMensaje('EXITO','ACTBoleto.php','Se recuperaron los boletos',
+				'Se recuperaron los boletos cone exito','control');
+		$this->mensajeRes->imprimirRespuesta($this->mensajeRes->generarJson());
+		//var_dump($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->{'documentData'});
+		//var_dump($xmlRespuesta->xpath('//documentData'));
+
+	}
 	
 	function obtenerBoletoFromServicio(){
 		
 		if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
 			throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
 		}
-		$data = array(	"credenciales"=>$_SESSION['_CREDENCIALES_RESIBER'],
+		$data = array(	"credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
 											"idioma"=>"ES",
-											"tkt"=>$this->objParam->getParametro('nro_boleto'),
+                                            "tkt"=>"9302400053068",
+                                            "pnr"=>"LOAKNP",
 											"ip"=>"127.0.0.1",
 											"xmlJson"=>false);
 
 		$json_data = json_encode($data);
 
 		$s = curl_init();
-		curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/Servicios/ServicioInterno.svc/TraerTkt');
+		curl_setopt($s, CURLOPT_URL, 'http://skbpruebas.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
 		curl_setopt($s, CURLOPT_POST, true);
 		curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
 		curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -206,12 +528,12 @@ class ACTBoleto extends ACTbase{
 		$res = json_decode($_out);
 		$cadena = str_replace('"terminal_salida":{,},', '', $res->TraerTktResult);
 
-		
 		if(strpos($cadena, 'Error') !== false) {
 			throw new Exception('No se encontro el numero de billete indicado.');
 			
 		} else {			
 			$res = json_decode($cadena, true);
+
 
             $vuelos2 = $this->obtenerVuelos($res['billete']['pnrs']['pnr'], $res['billete']['nom_apdos']['#text']);
 
@@ -656,6 +978,32 @@ class ACTBoleto extends ACTbase{
 		$this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
 
 	}
+
+    function insertarBoletosRET ()
+    {
+
+        $this->objFunc = $this->create('MODBoleto');
+        //1.insertar boletos enviados de la RET
+        $this->res = $this->objFunc->insertarBoletosRET($this->objParam);
+        //1.1 si hay error devolver el error
+        //1.2 si no hay error llamar a servicio de generacion de tickets emitidos Portal, insertar en la tabla y generar observaciones localmente
+        // y devolver la observaciones en un arreglo
+
+        //1.2.1 si hay error devolver el error
+
+        //1.2.2 si no hay error llamar al servicio de registro de observaciones Portal enviando las observaciones
+        //del punto 1.2
+        
+        //1.2.2.1 si hay error devolver el error
+        
+        //1.2.2.2 si no hay error se inserta el periodo de venta banca
+        //inserta totales de preiodo venta
+        //1.2.2.3 si no hay error se inserta el periodo de venta cuenta corriente
+        //inserta periodo de venta cuenta corriente
+        $this->res->imprimirRespuesta($this->res->generarJson());
+
+    }
+
 }
 
 ?>
