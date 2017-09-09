@@ -198,7 +198,9 @@ BEGIN
                               end);
                              
                 if (v_codigo_tarjeta is not null) then
-                	v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                    if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
+                		v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                	end if;
                 end if;
                  
                 INSERT INTO 
@@ -623,12 +625,13 @@ raise notice 'llega 0';
                         
             select to_date(v_parametros.fecha_emision, 'DDMONYY') into v_fecha;
             
-            v_tc = (select param.f_get_tipo_cambio_v2(v_id_moneda_sucursal,v_id_moneda_usd,v_fecha,'O'));
             
+            v_tc = (select param.f_get_tipo_cambio_v2(v_id_moneda_sucursal,v_id_moneda_usd,v_fecha,'O'));
+                  
             if (v_tc is null) then
             	raise exception 'No existe tipo de cambio para la moneda USD,  en la fecha %',v_fecha;
             end if;
-                       
+                 
             if (v_id_lugar_sucursal is null) then
             	raise exception 'El punto de venta con el que esta logueado en este momento no tiene un lugar asignado. Comuniquese con el administrador';
             end if;
@@ -741,7 +744,7 @@ raise notice 'llega 0';
             v_parametros.identificacion,
             v_parametros.fare_calc
 			);
-            
+           
             v_mensaje = '';
             v_suma_impuestos = 0;
             for v_registros in (select out_impuesto,out_valor 
@@ -920,7 +923,7 @@ raise notice 'llega 0';
                     v_vuelo_fields[4],
                     v_vuelo_fields[5],
                     v_vuelo_fields[9],
-                    v_vuelo_fields[10],
+                    'OK',
                     v_vuelo_fields[11]
 
                   )returning id_boleto_vuelo into v_id_boleto_vuelo;  

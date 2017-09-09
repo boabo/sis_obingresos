@@ -146,7 +146,8 @@ BEGIN
                         forpa.monto_total_fp,
                         bol.mensaje_error,
                         bv.id_boleto_vuelo,
-                        (bv.aeropuerto_origen || ''-'' || bv.aeropuerto_destino)::varchar as vuelo_retorno
+                        (bv.aeropuerto_origen || ''-'' || bv.aeropuerto_destino)::varchar as vuelo_retorno,
+                        bol.localizador
 						from obingresos.tboleto bol
                         left join obingresos.tagencia age on age.id_agencia = bol.id_agencia
                         left join obingresos.tboleto_vuelo bv on bv.id_boleto = bol.id_boleto and bv.retorno = ''si''

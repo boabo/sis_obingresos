@@ -81,6 +81,7 @@ class MODBoleto extends MODbase{
         $this->captura('mensaje_error','text');
         $this->captura('id_boleto_vuelo','integer');
         $this->captura('vuelo_retorno','varchar');
+        $this->captura('localizador','varchar');
 
 		
 		
@@ -331,6 +332,7 @@ class MODBoleto extends MODbase{
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
+
 
 		$this->ejecutarConsulta();
 

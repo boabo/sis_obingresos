@@ -624,6 +624,9 @@ ALTER TABLE obingresos.tboleto
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN fecha_hora_origen TIMESTAMP(0) WITHOUT TIME ZONE;
 
+ALTER TABLE obingresos.tboleto_vuelo
+  ADD COLUMN fecha_hora_destino TIMESTAMP(0) WITHOUT TIME ZONE;
+
 
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN tiempo_conexion INTEGER;
@@ -636,6 +639,7 @@ ALTER TABLE obingresos.tboleto_vuelo
 
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN flight_status VARCHAR(5);
+
 
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-24/03/2017********************************************/
@@ -818,7 +822,7 @@ COMMENT ON COLUMN obingresos.tobservaciones_conciliacion.tipo_observacion
 IS 'skybiz,portal';
 
 /********************************************F-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
-<<<<<<< HEAD
+
 
 /********************************************I-SCP-FFP-OBINGRESOS-0-16/06/2017********************************************/
 ALTER TABLE obingresos.tdetalle_boletos_web
@@ -1014,5 +1018,4 @@ ALTER TABLE obingresos.tperiodo_venta
   ADD COLUMN fecha_pago DATE;
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-17/08/2017********************************************/
-=======
->>>>>>> 99e4b57d2fd48695caf0e8c3ad4eb38e4dba29bc
+
