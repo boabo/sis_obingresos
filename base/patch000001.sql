@@ -626,7 +626,7 @@ ALTER TABLE obingresos.tboleto_vuelo
 
 
 ALTER TABLE obingresos.tboleto_vuelo
-  ADD COLUMN fecha_hora_origen TIMESTAMP(0) WITHOUT TIME ZONE;
+  ADD COLUMN fecha_hora_destino TIMESTAMP(0) WITHOUT TIME ZONE;
 
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN tiempo_conexion INTEGER;
