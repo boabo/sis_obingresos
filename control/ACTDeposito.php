@@ -9,14 +9,22 @@
 require_once(dirname(__FILE__).'/../reportes/RReporteDepositoOgone.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteDepositoBancaInternet.php');
 include_once(dirname(__FILE__).'/../../lib/lib_general/ExcelInput.php');
+include(dirname(__FILE__).'/../../lib/rest/NetOBRestClient.php');
 class ACTDeposito extends ACTbase{    
 			
 	function listarDeposito(){
 		$this->objParam->defecto('ordenacion','id_deposito');
 
 		$this->objParam->defecto('dir_ordenacion','desc');
+        if($this->objParam->getParametro('id_apertura_cierre_caja') != '') {
+            $this->objParam->addFiltro(" dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja'));
+        }
 		if ($this->objParam->getParametro('id_agencia') != '') {
 			$this->objParam->addFiltro("dep.id_agencia = ". $this->objParam->getParametro('id_agencia'));
+		}
+		
+		if ($this->objParam->getParametro('id_deposito') != '') {
+			$this->objParam->addFiltro("dep.id_deposito = ". $this->objParam->getParametro('id_deposito'));
 		}
 
         if ($this->objParam->getParametro('tipo') != '') {
@@ -54,9 +62,59 @@ class ACTDeposito extends ACTbase{
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
+    function eliminarDepositoPortal(){
+        $this->objFunc=$this->create('MODDeposito');
+        $this->res=$this->objFunc->eliminarDeposito($this->objParam);
+
+        if ($this->res->getTipo() == 'EXITO') {
+            $datos = $this->res->getDatos();
+
+            $rest_uri = str_replace('http://','',$_SESSION['_OBNET_REST_URI']);
+            $rest_uri = str_replace('https://','',$rest_uri);
+
+
+            $netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
+            $netOBRestClient->setHeaders(array('Content-Type: json;'));
+
+
+
+                $res = $netOBRestClient->doPost('ModificarEstadoDeposito',
+                    array(
+                        "idDepositoERP"=> $datos['id_deposito'],
+                        "estadoDeposito"=> 'eliminado'
+                    ));
+
+
+
+
+        }
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
     function cambiaEstadoDeposito(){
         $this->objFunc=$this->create('MODDeposito');
         $this->res=$this->objFunc->cambiaEstadoDeposito($this->objParam);
+
+        if ($this->res->getTipo() == 'EXITO') {
+            $datos = $this->res->getDatos();
+
+            $rest_uri = str_replace('http://','',$_SESSION['_OBNET_REST_URI']);
+            $rest_uri = str_replace('https://','',$rest_uri);
+
+
+            $netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
+            $netOBRestClient->setHeaders(array('Content-Type: json;'));
+
+
+
+                $res = $netOBRestClient->doPost('ModificarEstadoDeposito',
+                    array(
+                        "idDepositoERP"=> $datos['id_deposito'],
+                        "estadoDeposito"=> 'validado'
+                    ));
+
+        }
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
@@ -242,6 +300,63 @@ class ACTDeposito extends ACTbase{
         $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
         $this->mensajeExito->setArchivoGenerado($nombreArchivo);
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+    }
+
+    function subirArchivoDeposito(){
+        //validar que todo este bien parametrizado
+        if (!isset($_SESSION['_FTP_INGRESOS_SERV']) || !isset($_SESSION['_FTP_INGRESOS_USR']) ||!isset($_SESSION['_FTP_INGRESOS_PASS']) ||
+            !isset($_SESSION['_LOCAL_REST_USR']) ||!isset($_SESSION['_LOCAL_REST_PASS']) ) {
+            throw new Exception("No existe parametrizacion completa para conexion FTP o REST", 3);
+        }
+
+        //Crear conexion rest
+        $folder = ltrim($_SESSION["_FOLDER"], '/');
+        $pxpRestClient = PxpRestClient::connect($_SERVER['HTTP_HOST'], $folder . 'pxp/lib/rest/')
+            ->setCredentialsPxp($_SESSION['_LOCAL_REST_USR'],$_SESSION['_LOCAL_REST_PASS']);
+
+        //copiar archivo ftp al tmp
+
+        $conn_id = ftp_connect($_SESSION['_FTP_INGRESOS_SERV']);
+
+
+
+        // iniciar sesión con nombre de usuario y contraseña
+        $login_result = ftp_login($conn_id, $_SESSION['_FTP_INGRESOS_USR'], $_SESSION['_FTP_INGRESOS_PASS']);
+
+
+        ftp_pasv($conn_id,true);
+
+        $local_file = "/tmp/" . $this->objParam->getParametro('nombre_archivo');
+        $server_file = "FTPContratos/" . $this->objParam->getParametro('nombre_archivo');
+
+        // intenta descargar $server_file y guardarlo en $local_file
+        if (ftp_get($conn_id, $local_file, $server_file, FTP_BINARY)) {
+
+        } else {
+            throw new Exception("No se ha podido leer el archivo", 3);
+        }
+
+        // cerrar la conexión ftp
+        ftp_close($conn_id);
+
+
+
+        $out = $pxpRestClient->doPost('parametros/Archivo/subirArchivo',
+            array(
+                "tabla"=>"obingresos.tdeposito",
+                "codigo_tipo_archivo"=>"ESCANDEP",
+                "nombre_descriptivo"=>"",
+                "id_tabla"=>$this->objParam->getParametro('id_deposito'),
+                "archivo" => '@' . $local_file . ';filename='.$this->objParam->getParametro('nombre_archivo')
+
+            ));
+        $obj_out = json_decode($out);
+
+        $obj_out->ROOT->datos->url = $_SERVER['HTTP_HOST'] . $_SESSION["_FOLDER"] . str_replace('./../../../','',$obj_out->ROOT->datos->url);
+        $out = json_encode($obj_out);
+        echo $out;
+        exit;
 
     }
 }

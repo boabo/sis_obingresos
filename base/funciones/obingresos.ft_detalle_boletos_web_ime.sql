@@ -40,6 +40,7 @@ $body$
     v_id_alarma					integer;
     v_id_detalle_boletos_web	integer;
     v_procesado					varchar;
+    v_id_moneda				integer;
 
 
   BEGIN
@@ -108,7 +109,7 @@ $body$
           from obingresos.tdetalle_boletos_web d
           where d.billete = v_registros."Billete"::varchar;
 
-          if (v_id_detalle_boletos_web is not null and v_procesado = 'no') then
+          if ((v_id_detalle_boletos_web is not null and v_registros."MedioDePago" = 'COMPLETAR-CC') or v_procesado = 'no') then
                       update obingresos.tdetalle_boletos_web
                       set procesado = 'no',
                       endoso = v_registros."endoso",
@@ -160,7 +161,99 @@ $body$
         return v_resp;
 
       end;
+      
+	/*********************************
+     #TRANSACCION:  'OBING_DETBOPOR_INS'
+     #DESCRIPCION:	Insercion de registros Protal corporativo
+     #AUTOR:		jrivera
+     #FECHA:		10-06-2016 20:37:45
+    ***********************************/
 
+    elsif(p_transaccion='OBING_DETBOPOR_INS')then
+
+      begin
+          select d.id_detalle_boletos_web,d.procesado into  v_id_detalle_boletos_web,v_procesado
+          from obingresos.tdetalle_boletos_web d
+          where d.billete = v_parametros.billete;
+
+          if (v_id_detalle_boletos_web is not null) then
+          		raise exception 'El billete % ya esta registrado en el ERP', v_parametros.billete;            
+            elsif (v_id_detalle_boletos_web is null) then
+            
+            select m.id_moneda into v_id_moneda
+            from param.tmoneda m
+            where m.codigo_internacional = v_parametros.moneda;
+                        
+            INSERT INTO
+              obingresos.tdetalle_boletos_web
+              (
+                id_usuario_reg,
+                billete,
+                conjuncion,
+                medio_pago,
+                entidad_pago,
+                moneda,
+                importe,
+                endoso,
+                origen,
+                fecha,
+                nit,
+                razon_social,
+                fecha_pago,
+                id_agencia,
+                comision,                
+                numero_tarjeta,
+                numero_autorizacion,
+                id_moneda,
+                neto
+              )
+            VALUES (
+              p_id_usuario,
+               v_parametros.billete,
+               NULL,
+               v_parametros.medio_pago,--CUENTA-CORRI,PBANCA-ELECTRONI
+               v_parametros.entidad,--NINGUNA
+               v_parametros.moneda,
+               v_parametros.importe,
+              '',--endoso              
+              'portal',
+              v_parametros.fecha_emision,
+              v_parametros.nit,
+              v_parametros.razon_social,
+              v_parametros.fecha_pago,
+              v_parametros.id_entidad,
+              v_parametros.comision,
+              NULL,
+              v_parametros.numero_autorizacion,
+              v_id_moneda,
+              v_parametros.neto
+            )returning id_detalle_boletos_web into v_id_detalle_boletos_web;
+          end if;
+		
+        --actualizar neto y fecha de emision
+        with aux as (
+        select dbw.numero_autorizacion, sum(neto) as neto
+        from obingresos.tdetalle_boletos_web dbw 
+        where dbw.estado_reg = 'activo' and 
+        	dbw.origen = 'portal' and dbw.medio_pago = 'CUENTA-CORRI' and
+            dbw.numero_autorizacion =  v_parametros.numero_autorizacion
+        group by dbw.numero_autorizacion)
+        update obingresos.tmovimiento_entidad
+        set neto = a.neto,
+        fecha = v_parametros.fecha_emision
+        from aux a
+        where a.numero_autorizacion = obingresos.tmovimiento_entidad.autorizacion__nro_deposito; 
+        
+        
+        --Definicion de la respuesta
+        v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Detalle Boletos insertado correctamente (id_detalle_boletos_web'||v_id_detalle_boletos_web||')');
+        v_resp = pxp.f_agrega_clave(v_resp,'id_detalle_boletos_web',v_id_detalle_boletos_web::varchar);
+
+        --Devuelve la respuesta
+        return v_resp;
+
+      end;
+          
     /*********************************
      #TRANSACCION:  'OBING_BOWEBFEC_MOD'
      #DESCRIPCION:	Obtiene la maxima fecha en la tabla detalle_boletos_web
@@ -182,8 +275,8 @@ $body$
         end if;
         --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('29/06/2017'::date,
-                             '30/06/2017'::date - interval '1 day', '1 day'::interval) i;
+        from generate_series('01/08/2017'::date,
+                             now()::date - interval '1 day', '1 day'::interval) i;
 
 
         --Definicion de la respuesta
@@ -206,8 +299,8 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        from generate_series('01/06/2017'::date,
-                            now()::date - interval '1 day', '1 day'::interval) i loop
+        from generate_series('01/08/2017'::date,
+                             now()::date - interval '1 day', '1 day'::interval) i loop
           
           if (exists (select 1 
           		from obingresos.tboleto b
@@ -215,7 +308,7 @@ $body$
               for v_registros in
               select  *
               from obingresos.tdetalle_boletos_web d
-              where origen = 'web' and procesado = 'no' and (pxp.f_is_positive_integer(d.nit) or d.medio_pago != 'COMPLETAR-CC') and fecha = v_fecha loop
+              where origen = 'web' and procesado = 'no' and fecha = v_fecha and origen = 'web' loop
 
                 execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
               end loop;

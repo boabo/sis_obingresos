@@ -43,6 +43,7 @@ class MODDeposito extends MODbase{
         $this->captura('nombre_agencia','varchar');
         $this->captura('desc_periodo','text');
         $this->captura('estado','varchar');
+        $this->captura('id_apertura_cierre_caja','int4');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -74,6 +75,8 @@ class MODDeposito extends MODbase{
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');
+        $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
+        $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
 
 
 		//Ejecuta la instruccion
@@ -100,6 +103,9 @@ class MODDeposito extends MODbase{
 		$this->setParametro('id_agencia','id_agencia','int4');
 		$this->setParametro('fecha','fecha','date');
 		$this->setParametro('saldo','saldo','numeric');
+		$this->setParametro('descripcion','descripcion','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('moneda','moneda','varchar');
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');

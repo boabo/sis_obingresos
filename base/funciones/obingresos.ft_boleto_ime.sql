@@ -76,12 +76,15 @@ DECLARE
     v_retorno				varchar;
     v_id_boleto_vuelo		integer;
 
+    v_valor_forma_pago		numeric;
+
+
     v_autorizacion_fp		varchar[];
     v_tarjeta_fp			varchar[];
 
+
 			    
 BEGIN
-
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
     v_parametros = pxp.f_get_record(p_tabla);
 
@@ -91,7 +94,7 @@ BEGIN
  	#AUTOR:		jrivera	
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
-
+	
 	if(p_transaccion='OBING_BOL_INS')then
 					
         begin
@@ -171,7 +174,7 @@ BEGIN
                 
                 v_mensaje = v_boleto.mensaje_error;  
             
-                update obingresos.tboleto set estado = 'borrador'
+                update obingresos.tboleto set estado = 'borrador', id_punto_venta=v_parametros.id_punto_venta
                 where id_boleto = v_parametros.id_boleto and estado is null;
                 
                 
@@ -195,7 +198,9 @@ BEGIN
                               end);
                              
                 if (v_codigo_tarjeta is not null) then
-                	v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta,v_codigo_tarjeta);
+                    if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
+                		v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                	end if;
                 end if;
                  
                 INSERT INTO 
@@ -435,6 +440,154 @@ BEGIN
 		end;
         
     /*********************************    
+ 	#TRANSACCION:  'OBING_MODFPPNR_UPD'
+ 	#DESCRIPCION:	Modifica la forma de pago de un grupo de boletos PNR
+ 	#AUTOR:		Gonzalo Sarmiento Sejas	
+ 	#FECHA:		23-08-2017
+	***********************************/
+
+	elsif(p_transaccion='OBING_MODFPPNR_UPD')then
+					
+        begin
+        	raise notice 'llega 000';
+        	v_saldo_fp1 = v_parametros.monto_forma_pago;
+            /*v_saldo_fp2 = 	(case when v_parametros.monto_forma_pago2 is null then 
+            					0 
+            				else 
+                            	v_parametros.monto_forma_pago2 
+                            end);*/
+            
+            --v_ids = string_to_array(v_parametros.ids_seleccionados,',');
+            FOR v_id_boleto IN (select id_boleto
+									 from obingresos.tboleto
+									 where localizador=v_parametros.localizador)LOOP
+              delete from obingresos.tboleto_forma_pago 
+              where id_boleto = v_id_boleto;        
+			  
+              --raise notice 'valores % % % ',v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago;
+            	if (v_saldo_fp1 > 0) then
+              		v_valor = obingresos.f_monto_pagar_boleto(v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago);
+             		v_saldo_fp1 = v_saldo_fp1 - v_valor;
+                    select fp.codigo into v_codigo_tarjeta
+                    from obingresos.tforma_pago fp
+                    where fp.id_forma_pago = v_parametros.id_forma_pago;
+                    
+                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then 
+                                            substring(v_codigo_tarjeta from 3 for 2)				
+                                    else
+                                          NULL
+                                  end);
+                    if (v_codigo_tarjeta is not null) then
+                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                    end if;
+                    
+                    INSERT INTO 
+                      obingresos.tboleto_forma_pago
+                    (
+                      id_usuario_reg,                    
+                      importe,
+                      id_forma_pago,
+                      id_boleto,
+                      ctacte,
+                      numero_tarjeta,
+                      tarjeta
+                    )
+                    VALUES (
+                      p_id_usuario,                   
+                      v_valor,
+                      v_parametros.id_forma_pago,
+                      v_id_boleto,
+                      v_parametros.ctacte,
+                      v_parametros.numero_tarjeta,
+                      v_codigo_tarjeta
+                    );  
+            	end if;
+                /*if (v_saldo_fp2 > 0) then
+              		v_valor = obingresos.f_monto_pagar_boleto(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2 );
+             		v_saldo_fp2 = v_saldo_fp2 - v_valor;
+                    select fp.codigo into v_codigo_tarjeta
+                    from obingresos.tforma_pago fp
+                    where fp.id_forma_pago = v_parametros.id_forma_pago2;
+                    
+                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then 
+                                            substring(v_codigo_tarjeta from 3 for 2)				
+                                    else
+                                          NULL
+                                  end);
+                    if (v_codigo_tarjeta is not null) then
+                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
+                    end if;
+                    
+                    INSERT INTO 
+                      obingresos.tboleto_forma_pago
+                    (
+                      id_usuario_reg,                    
+                      importe,
+                      id_forma_pago,
+                      id_boleto,
+                      ctacte,
+                      numero_tarjeta,
+                      tarjeta
+                    )
+                    VALUES (
+                      p_id_usuario,                   
+                      v_valor,
+                      v_parametros.id_forma_pago2,
+                      v_id_boleto,
+                      v_parametros.ctacte2,
+                      v_parametros.numero_tarjeta2,
+                      v_codigo_tarjeta
+                    );  
+            	end if;
+                */
+                	raise notice 'llega 2';
+                select obingresos.f_valida_boleto_fp(v_id_boleto) into v_res; 
+raise notice 'llega 0';
+               update obingresos.tboleto 
+               set id_usuario_cajero = p_id_usuario,
+               estado = 'pagado'
+               where id_boleto=v_id_boleto;
+               raise notice 'llega 1';     
+               select * into v_boleto
+               from obingresos.tboleto
+               where id_boleto = v_id_boleto;
+               raise notice 'llega 2';
+                --Si el usuario que cambia el estado del boleto a estado pagado no es cajero
+                  --lanzamos excepcion
+                  if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and 
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and 
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and 
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
+                  end if;
+                  
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and 
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and 
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and 
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'Antes de emitir un boleto debe realizar una apertura de caja';
+                  end if;
+                
+            END LOOP;
+            
+            if (v_saldo_fp1 > 0) then
+            	raise exception 'El monto total de las formas de pago es superior al monto de los boletos seleccionados, excendente de: % ',v_saldo_fp1;
+            end if;  
+			--raise exception 'llega %, % ',v_saldo_fp1,v_parametros.id_forma_pago;
+			--Definicion de la respuesta
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de pago de Boletos modificado con exito (PNR: '||v_parametros.localizador||')'); 
+            v_resp = pxp.f_agrega_clave(v_resp,'pnr',v_parametros.localizador::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+        
+    /*********************************    
  	#TRANSACCION:  'OBING_BOLSERV_INS'
  	#DESCRIPCION:	Insercion de boletos desde servicio REST de Resiber
  	#AUTOR:		jrivera	
@@ -472,12 +625,13 @@ BEGIN
                         
             select to_date(v_parametros.fecha_emision, 'DDMONYY') into v_fecha;
             
-            v_tc = (select param.f_get_tipo_cambio_v2(v_id_moneda_sucursal,v_id_moneda_usd,v_fecha,'O'));
             
+            v_tc = (select param.f_get_tipo_cambio_v2(v_id_moneda_sucursal,v_id_moneda_usd,v_fecha,'O'));
+                  
             if (v_tc is null) then
             	raise exception 'No existe tipo de cambio para la moneda USD,  en la fecha %',v_fecha;
             end if;
-                       
+                 
             if (v_id_lugar_sucursal is null) then
             	raise exception 'El punto de venta con el que esta logueado en este momento no tiene un lugar asignado. Comuniquese con el administrador';
             end if;
@@ -590,7 +744,7 @@ BEGIN
             v_parametros.identificacion,
             v_parametros.fare_calc
 			);
-            
+           
             v_mensaje = '';
             v_suma_impuestos = 0;
             for v_registros in (select out_impuesto,out_valor 
@@ -769,7 +923,7 @@ BEGIN
                     v_vuelo_fields[4],
                     v_vuelo_fields[5],
                     v_vuelo_fields[9],
-                    v_vuelo_fields[10],
+                    'OK',
                     v_vuelo_fields[11]
 
                   )returning id_boleto_vuelo into v_id_boleto_vuelo;  
@@ -864,7 +1018,273 @@ BEGIN
             return v_resp;
 
 		end;
+        
+    /*********************************    
+ 	#TRANSACCION:  'OBING_BOLSERVAMA_INS'
+ 	#DESCRIPCION:	Insercion de boletos desde servicio REST de Amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		19-07-2016
+	***********************************/
 
+	elsif(p_transaccion='OBING_BOLSERVAMA_INS')then
+					
+        begin        
+        	
+            IF NOT EXISTS(SELECT 1
+            			  FROM obingresos.tboleto
+            			  WHERE nro_boleto=v_parametros.nro_boleto)THEN
+        
+                SELECT id_moneda into v_id_moneda
+                FROM param.tmoneda
+                WHERE codigo_internacional=v_parametros.moneda;
+                
+                select nextval('obingresos.tboleto_id_boleto_seq'::regclass) into v_id_boleto; 
+
+                INSERT INTO obingresos.tboleto
+                (nro_boleto,
+                total,
+                comision,
+                moneda,
+                voided,
+                estado,
+                id_punto_venta,
+                localizador,
+                fecha_emision,
+                id_moneda_boleto,
+                pasajero,
+                liquido,
+                neto,
+                xt,
+                monto_pagado_moneda_boleto,
+                id_usuario_reg,
+                id_boleto
+                )VALUES(v_parametros.nro_boleto::varchar,
+                v_parametros.total::numeric,
+                v_parametros.comision::numeric,
+                v_parametros.moneda::varchar,
+                v_parametros.voided::varchar,
+                'borrador',
+                v_parametros.id_punto_venta,
+                v_parametros.localizador::varchar,
+                v_parametros.fecha_emision::date,
+                v_id_moneda,
+                v_parametros.pasajero::varchar,
+                v_parametros.liquido::numeric,
+                v_parametros.neto::numeric,
+                0,
+                0.00,
+                p_id_usuario,
+                v_id_boleto
+                );
+                
+                if(trim(v_parametros.fp)='')then
+                	v_forma_pago='CA';
+            	else
+                	v_forma_pago=v_parametros.fp;
+                end if;
+                
+                SELECT id_forma_pago into v_id_forma_pago 
+                FROM obingresos.tforma_pago
+                WHERE codigo=v_forma_pago AND id_moneda=v_id_moneda;
+                
+				if(trim(v_parametros.fp)='')then
+                	v_valor_forma_pago=0;
+            	else
+                	v_valor_forma_pago=v_parametros.valor_fp;
+                end if;
+                
+                INSERT INTO obingresos.tboleto_forma_pago
+                (id_usuario_reg,
+                id_boleto,
+                id_forma_pago,
+                importe
+                )
+                VALUES(
+                p_id_usuario,
+                v_id_boleto,
+                v_id_forma_pago,
+                v_valor_forma_pago
+                );
+                
+                IF EXISTS(
+                SELECT 1
+                FROM obingresos.tpnr_forma_pago
+                WHERE pnr=v_parametros.localizador
+                AND id_forma_pago=v_id_forma_pago
+                )THEN
+                	UPDATE 
+                    obingresos.tpnr_forma_pago
+                    SET
+                    importe=importe+v_valor_forma_pago
+                    WHERE pnr=v_parametros.localizador and
+                    id_forma_pago=v_id_forma_pago;
+                ELSE
+                	INSERT INTO obingresos.tpnr_forma_pago
+                    (pnr, id_forma_pago, importe)
+                    VALUES(v_parametros.localizador, v_id_forma_pago, v_valor_forma_pago);
+                END IF;
+                
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')'); 
+            	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
+            ELSE
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boleto '||v_parametros.nro_boleto||' ya se encuentraba registrado');     
+            END IF;
+
+            --Devuelve la respuesta
+            return v_resp;      
+        
+        end;
+
+	/*********************************    
+ 	#TRANSACCION:  'OBING_ACTBOLAMA_INS'
+ 	#DESCRIPCION:	Actualizacion de boletos desde servicio REST de Amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		10-08-2017
+	***********************************/
+
+	elsif(p_transaccion='OBING_ACTBOLAMA_INS')then
+					
+        begin        
+        	
+            IF EXISTS(SELECT 1
+            			  FROM obingresos.tboleto
+            			  WHERE nro_boleto=v_parametros.nro_boleto
+                          AND id_punto_venta=v_parametros.id_punto_venta
+                          AND id_usuario_cajero=v_parametros.id_usuario_cajero
+                          AND estado='pagado')THEN
+                          
+            	UPDATE obingresos.tboleto
+                SET voided=v_parametros.voided
+                WHERE nro_boleto=v_parametros.nro_boleto
+                          AND id_punto_venta=v_parametros.id_punto_venta
+                          AND id_usuario_cajero=v_parametros.id_usuario_cajero
+                          AND estado='pagado';                    
+                
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos actualizado(a) con exito (nro_boleto'||v_parametros.nro_boleto||')'); 
+            	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
+            ELSE
+            	IF EXISTS(SELECT 1
+            			  FROM obingresos.tboleto
+            			  WHERE nro_boleto=v_parametros.nro_boleto
+                          AND id_punto_venta=v_parametros.id_punto_venta
+                          AND id_usuario_cajero=v_parametros.id_usuario_cajero
+                          AND estado='borrador')THEN
+                          
+	            	--Definicion de la respuesta
+					v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boleto '||v_parametros.nro_boleto||' no se encuentra en estado pagado');
+                ELSE 
+                	v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boleto '||v_parametros.nro_boleto||' no se encuentra en la base de datos ERPBOA.');
+                    
+                END IF;
+            END IF;
+
+            --Devuelve la respuesta
+            return v_resp;      
+        
+        end;
+
+	/*********************************    
+ 	#TRANSACCION:  'OBING_BOLSERVAMA_INS'
+ 	#DESCRIPCION:	Insercion de boletos desde servicio REST de Amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		19-07-2016
+	***********************************/
+
+	elsif(p_transaccion='OBING_BOLSERVAMA_INS')then
+					
+        begin   
+        
+        	IF NOT EXISTS(SELECT 1
+            			  FROM obingresos.tboleto
+            			  WHERE nro_boleto=v_parametros.nro_boleto)THEN
+        
+                SELECT id_moneda into v_id_moneda
+                FROM param.tmoneda
+                WHERE codigo_internacional=v_parametros.moneda;
+                
+                select nextval('obingresos.tboleto_id_boleto_seq'::regclass) into v_id_boleto; 
+
+                INSERT INTO obingresos.tboleto
+                (nro_boleto,
+                total,
+                comision,
+                moneda,
+                voided,
+                estado,
+                id_punto_venta,
+                localizador,
+                fecha_emision,
+                id_moneda_boleto,
+                pasajero,
+                liquido,
+                neto,
+                xt,
+                monto_pagado_moneda_boleto,
+                id_usuario_reg,
+                id_boleto
+                )VALUES(v_parametros.nro_boleto::varchar,
+                v_parametros.total::numeric,
+                v_parametros.comision::numeric,
+                v_parametros.moneda::varchar,
+                v_parametros.voided::varchar,
+                'borrador',
+                v_parametros.id_punto_venta,
+                v_parametros.localizador::varchar,
+                v_parametros.fecha_emision::date,
+                v_id_moneda,
+                v_parametros.pasajero::varchar,
+                v_parametros.liquido::numeric,
+                v_parametros.neto::numeric,
+                0,
+                0.00,
+                p_id_usuario,
+                v_id_boleto
+                );
+                
+                if(trim(v_parametros.fp)='')then
+                	v_forma_pago='CA';
+            	else
+                	v_forma_pago=v_parametros.fp;
+                end if;
+                
+                SELECT id_forma_pago into v_id_forma_pago 
+                FROM obingresos.tforma_pago
+                WHERE codigo=v_forma_pago AND id_moneda=v_id_moneda;
+                
+				if(trim(v_parametros.fp)='')then
+                	v_valor_forma_pago=0;
+            	else
+                	v_valor_forma_pago=v_parametros.valor_fp;
+                end if;
+                
+                INSERT INTO obingresos.tboleto_forma_pago
+                (id_usuario_reg,
+                id_boleto,
+                id_forma_pago,
+                importe
+                )
+                VALUES(
+                p_id_usuario,
+                v_id_boleto,
+                v_id_forma_pago,
+                v_valor_forma_pago
+                );    
+                
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')'); 
+            	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
+            ELSE
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boleto % ya se encuentraba registrado'||v_parametros.nro_boleto);     
+            END IF;
+
+            --Devuelve la respuesta
+            return v_resp;
+        end;
+        
 	/*********************************    
  	#TRANSACCION:  'OBING_BOL_MOD'
  	#DESCRIPCION:	Modificacion de registros
@@ -950,7 +1370,7 @@ BEGIN
                 
                  --Si el usuario que cambia el estado del boleto a estado pagado no es cajero
                   --lanzamos excepcion
-                  
+                  raise notice 'v_boleto.fecha_reg % p_id_usuario % v_boleto.id_punto_venta %', v_boleto.fecha_reg, p_id_usuario, v_boleto.id_punto_venta;
                   if (exists(	select 1
                                   from vef.tapertura_cierre_caja acc
                                   where acc.id_usuario_cajero = p_id_usuario and 
@@ -988,7 +1408,7 @@ BEGIN
 
 EXCEPTION
 				
-	WHEN OTHERS THEN
+	WHEN OTHERS THEN 
 		v_resp='';
 		v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
 		v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);

@@ -93,3 +93,11 @@ select pxp.f_insert_tgui ('Conciliacion Res Banca X Inter', 'Conciliacion Banca 
 select pxp.f_insert_testructura_gui ('CONBANIRES', 'CBANXIN');
 
 /************************************F-DAT-JRR-OBINGRESOS-0-01/06/2017*************************************************/
+
+
+/************************************I-DAT-JRR-OBINGRESOS-0-17/08/2017*************************************************/
+select pxp.f_insert_tgui ('Control Facturas Agencias', 'Control Facturas Agencias', 'CONFACAG', 'si', 3, 'sis_obingresos/vista/total_comision_mes/TotalComisionMes.php', 3, '', 'TotalComisionMes', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('CONFACAG', 'CONPORCOR');
+
+/************************************F-DAT-JRR-OBINGRESOS-0-17/08/2017*************************************************/
+

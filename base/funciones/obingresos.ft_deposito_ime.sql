@@ -33,6 +33,7 @@ DECLARE
     v_id_agencia			integer;
     v_id_moneda				integer;
     v_pnr					varchar;
+    v_estado				varchar;
 
 
 BEGIN
@@ -101,7 +102,7 @@ BEGIN
                 nro_deposito,
                 monto_deposito,
                 id_moneda_deposito,
-                id_agencia,
+               -- id_agencia,
                 fecha,
                 saldo,                
                 id_usuario_reg,
@@ -116,7 +117,7 @@ BEGIN
                 v_parametros.nro_deposito,
                 v_parametros.monto_deposito,
                 v_id_moneda,
-                v_parametros.id_agencia,
+               --  COALESCE( v_parametros.id_agencia,null),
                 v_parametros.fecha,
                 v_parametros.saldo,                
                 p_id_usuario,
@@ -127,6 +128,13 @@ BEGIN
                 null,
                 'borrador'
                 )RETURNING id_deposito into v_id_deposito;
+            end if;
+            
+            if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then
+            
+            	update obingresos.tdeposito 
+                set id_periodo_venta = v_parametros.id_periodo_venta
+                where id_deposito = v_id_deposito;
             end if;
 
 			--Definicion de la respuesta
@@ -148,22 +156,62 @@ BEGIN
 	elsif(p_transaccion='OBING_DEP_MOD')then
 
 		begin
-			--Sentencia de la modificacion
-			update obingresos.tdeposito set
-			nro_deposito = v_parametros.nro_deposito,
-			monto_deposito = v_parametros.monto_deposito,
-			id_moneda_deposito = v_parametros.id_moneda_deposito,
-			id_agencia = v_parametros.id_agencia,
-			fecha = v_parametros.fecha,
-			saldo = v_parametros.saldo,
-			id_usuario_mod = p_id_usuario,
-			fecha_mod = now(),
-			id_usuario_ai = v_parametros._id_usuario_ai,
-			usuario_ai = v_parametros._nombre_usuario_ai,
-            fecha_venta = v_parametros.fecha_venta,
-			monto_total = v_parametros.monto_total,
-            agt = v_parametros.agt
-			where id_deposito=v_parametros.id_deposito;
+        	if (v_parametros.tipo = 'agencia') then
+            	SELECT estado into v_estado
+                from obingresos.tdeposito
+                where id_deposito = v_parametros.id_deposito;
+                
+                if (v_estado != 'borrador') then
+                	raise exception 'No es posible modificar depositos validados';
+                end if;
+                
+            end if;
+            
+            if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
+            
+            	v_id_moneda = v_parametros.id_moneda_deposito;
+            else
+            	select m.id_moneda into v_id_moneda
+                from param.tmoneda m
+                where m.codigo_internacional = v_parametros.moneda;
+            end if;
+            
+            if (v_parametros.tipo = 'banca') then
+                --Sentencia de la modificacion
+                update obingresos.tdeposito set
+                nro_deposito = v_parametros.nro_deposito,
+                monto_deposito = v_parametros.monto_deposito,
+                id_moneda_deposito = v_id_moneda,
+                id_agencia =  v_parametros.id_agencia,
+                fecha = v_parametros.fecha,
+                saldo = v_parametros.saldo,
+                id_usuario_mod = p_id_usuario,
+                fecha_mod = now(),
+                id_usuario_ai = v_parametros._id_usuario_ai,
+                usuario_ai = v_parametros._nombre_usuario_ai,
+                fecha_venta = v_parametros.fecha_venta,
+                monto_total = v_parametros.monto_total,
+                agt = v_parametros.agt
+                where id_deposito=v_parametros.id_deposito;
+            else
+            	--Sentencia de la modificacion
+                update obingresos.tdeposito set
+                nro_deposito = v_parametros.nro_deposito,
+                monto_deposito = v_parametros.monto_deposito,
+                id_moneda_deposito = v_id_moneda,
+                id_agencia =  v_parametros.id_agencia,
+                fecha = v_parametros.fecha,
+                saldo = v_parametros.saldo,
+                id_usuario_mod = p_id_usuario,
+                fecha_mod = now(),
+                id_usuario_ai = v_parametros._id_usuario_ai,
+                usuario_ai = v_parametros._nombre_usuario_ai
+                --fecha_venta = v_parametros.fecha_venta,
+                --monto_total = v_parametros.monto_total,
+                --agt = v_parametros.agt
+                where id_deposito=v_parametros.id_deposito;
+            	
+            end if;
 
 			--Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos modificado(a)');
