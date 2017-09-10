@@ -791,7 +791,7 @@ ALTER TABLE obingresos.tdeposito
 
 
 ALTER TABLE obingresos.tdeposito
-  ADD COLUMN estado TYPE VARCHAR(10) COLLATE pg_catalog."default";
+  ADD COLUMN estado VARCHAR(10) COLLATE pg_catalog."default";
 
 ALTER TABLE obingresos.tdeposito
   ALTER COLUMN estado SET DEFAULT 'borrador'::character varying;
