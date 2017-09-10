@@ -68,11 +68,18 @@ BEGIN
 						mon.codigo_internacional as desc_moneda,
                         dep.agt,
                         dep.fecha_venta,
-                        dep.monto_total
+                        dep.monto_total,
+                        age.nombre as nombre_agencia,
+                        (to_char(pv.fecha_ini,''DD/MM/YYYY'') || ''-'' || to_char(pv.fecha_fin,''DD/MM/YYYY'') || '' '' ||
+                        tp.tipo_cc)::text as desc_periodo,
+                        dep.estado
 						from obingresos.tdeposito dep
 						inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
 						inner join param.tmoneda mon on mon.id_moneda = dep.id_moneda_deposito
+                        left join obingresos.tagencia age on age.id_agencia = dep.id_agencia
+                        left join obingresos.tperiodo_venta pv on pv.id_periodo_venta = dep.id_periodo_venta
+                        left join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
 				        where  ';
 
 			--Definicion de la respuesta

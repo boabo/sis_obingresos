@@ -96,7 +96,12 @@ $body$
             end if;
 
           ELSE
-            v_error = 'No existe un caracter de separacion en el campo endoso para el boleto ' || v_registros."Billete";
+          	if v_registros."Entidad" = 'BFS' then
+            	v_razon_social = NULL;
+            	v_nit = NULL;
+            else
+            	v_error = 'No existe un caracter de separacion en el campo endoso para el boleto ' || v_registros."Billete";
+          	end if;
           end if;
 
           if (v_error != '') then
@@ -182,8 +187,8 @@ $body$
         end if;
         --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('29/06/2017'::date,
-                             '30/06/2017'::date - interval '1 day', '1 day'::interval) i;
+        from generate_series('01/08/2017'::date,
+                             now()::date - interval '1 day', '1 day'::interval) i;
 
 
         --Definicion de la respuesta
@@ -206,7 +211,7 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        from generate_series('01/06/2017'::date,
+        from generate_series('01/08/2017'::date,
                             now()::date - interval '1 day', '1 day'::interval) i loop
           
           if (exists (select 1 
@@ -215,7 +220,7 @@ $body$
               for v_registros in
               select  *
               from obingresos.tdetalle_boletos_web d
-              where origen = 'web' and procesado = 'no' and (pxp.f_is_positive_integer(d.nit) or d.medio_pago != 'COMPLETAR-CC') and fecha = v_fecha loop
+              where origen = 'web' and procesado = 'no' and fecha = v_fecha loop
 
                 execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
               end loop;
