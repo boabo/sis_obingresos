@@ -31,7 +31,6 @@ DECLARE
 	v_mensaje_error         text;
 	v_id_venta_web_modificaciones	integer;
     v_registro				record;
-    v_prueba				varchar;
 			    
 BEGIN
 
@@ -87,13 +86,12 @@ BEGIN
 			
 			)RETURNING id_venta_web_modificaciones into v_id_venta_web_modificaciones;
             
-            if (v_parametros.tipo = 'emision_manual') then            	
-                select informix.f_modificar_datos_web_emi_manual( v_parametros.nro_boleto_reemision,v_parametros.banco)into v_prueba;
-            
+            if (v_parametros.tipo = 'emision_manual') then
+            	select informix.f_modificar_datos_web_emi_manual( v_parametros.nro_boleto_reemision,v_parametros.banco);
             end if;
             
             if (v_parametros.tipo = 'reemision') then
-            	select informix.f_modificar_datos_web_reemision( v_parametros.nro_boleto_reemision,v_parametros.nro_boleto)into v_prueba;
+            	select informix.f_modificar_datos_web_reemision( v_parametros.nro_boleto_reemision,v_parametros.nro_boleto);
             end if;
 			
 			--Definicion de la respuesta
@@ -143,11 +141,11 @@ BEGIN
             where id_venta_web_modificaciones=v_parametros.id_venta_web_modificaciones;
             
             if ( v_parametros.tipo = 'emision_manual' and v_registro.procesado = 'no') then
-            	select informix.f_modificar_datos_web_emi_manual( v_parametros.nro_boleto_reemision,v_parametros.banco)into v_prueba;
+            	select informix.f_modificar_datos_web_emi_manual( v_parametros.nro_boleto_reemision,v_parametros.banco);
             end if;
             
             if (v_registro.tipo = 'reemision'  and v_registro.procesado = 'no') then
-            	select informix.f_modificar_datos_web_reemision( v_parametros.nro_boleto_reemision,v_parametros.nro_boleto) into v_prueba;
+            	select informix.f_modificar_datos_web_reemision( v_parametros.nro_boleto_reemision,v_parametros.nro_boleto);
             end if;
                
 			--Definicion de la respuesta

@@ -14,7 +14,7 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
 
 	constructor:function(config){
 		this.maestro=config.maestro;
-		this.initButtons=[this.combo_gestion,this.combo_pais,this.combo_tipo];
+		this.initButtons=[this.combo_gestion,this.combo_tipo];
     	//llama al constructor de la clase padre
 		Phx.vista.PeriodoVenta.superclass.constructor.call(this,config);
 		this.init();
@@ -24,55 +24,38 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
                 text: 'Generar Periodo',
                 iconCls: 'blist',
                 disabled: true,                
-                handler: this.onButtonNew,
-                tooltip: 'Generar periodos para la gestion seleccionada'                
+                handler: this.onGenerarPeriodo,
+                tooltip: 'Generar periodo'
+            }
+        );
+        
+        this.addButton('btnAgencias',
+            {
+                text: 'Agencias',
+                iconCls: 'blist',
+                disabled: true,                
+                handler: this.onAgencias,
+                tooltip: 'Totales del periodo por agencia'
             }
         );
 	},	
+	onAgencias : function() {
+    	var rec = {maestro: this.sm.getSelected().data};
+						      
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/periodo_venta/PeriodoVentaAgencia.php',
+                    'Totales por agencia',
+                    {
+                        width:800,
+                        height:'90%'
+                    },
+                    rec,
+                    this.idContenedor,
+                    'PeriodoVentaAgencia');
+    },
 	
 	agregarArgsExtraSubmit: function() {
-    	this.argumentExtraSubmit.id_pais = this.combo_pais.getValue();
     	this.argumentExtraSubmit.id_gestion = this.combo_gestion.getValue();
-    	this.argumentExtraSubmit.tipo = this.combo_tipo.getValue();
-    },
-	onButtonNew: function(b) {
-		this.Cmp.tipo_periodo.reset(); 
-        //es apra generar el periodo
-        if (b.id == 'b-btnGenerar-docs-PERVEN') {
-        	this.mostrarComponente(this.Cmp.tipo_periodo);
-        	this.Cmp.tipo_periodo.allowBlank = false;
-        	
-        	this.ocultarComponente(this.Cmp.mes);
-        	this.Cmp.mes.allowBlank = true;
-        	
-        	this.ocultarComponente(this.Cmp.nro_periodo_mes);
-        	this.Cmp.nro_periodo_mes.allowBlank = true;
-        	
-        	this.ocultarComponente(this.Cmp.fecha_ini);
-        	this.Cmp.fecha_ini.allowBlank = true;
-        	
-        	this.ocultarComponente(this.Cmp.fecha_fin);
-        	this.Cmp.fecha_fin.allowBlank = true;
-        	
-        //es para insertar periodos	
-        } else {
-        	this.ocultarComponente(this.Cmp.tipo_periodo);
-        	this.Cmp.tipo_periodo.allowBlank = true;
-        	
-        	this.mostrarComponente(this.Cmp.mes);
-        	this.Cmp.mes.allowBlank = false;
-        	
-        	this.mostrarComponente(this.Cmp.nro_periodo_mes);
-        	this.Cmp.nro_periodo_mes.allowBlank = false;
-        	
-        	this.mostrarComponente(this.Cmp.fecha_ini);
-        	this.Cmp.fecha_ini.allowBlank = false;
-        	
-        	this.mostrarComponente(this.Cmp.fecha_fin);
-        	this.Cmp.fecha_fin.allowBlank = false;
-        }
-        Phx.vista.PeriodoVenta.superclass.onButtonNew.call(this);
-        
+    	this.argumentExtraSubmit.id_tipo_periodo = this.combo_tipo.getValue();
     },
 	
 	combo_gestion : new Ext.form.ComboBox({
@@ -103,69 +86,43 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
 	        selectOnFocus:true,
 	        width:100
 	    }),
-	combo_pais : new Ext.form.ComboBox({				
-				allowBlank: false,
-				emptyText:'Pais...',
-				store:new Ext.data.JsonStore(
-				{
-					url: '../../sis_parametros/control/Lugar/listarLugar',
-					id: 'id_lugar',
-					root: 'datos',
-					sortInfo:{
-						field: 'nombre',
-						direction: 'ASC'
-					},
-					totalProperty: 'total',
-					fields: ['id_lugar','id_lugar_fk','codigo','nombre','tipo','sw_municipio','sw_impuesto','codigo_largo'],
-					// turn on remote sorting
-					remoteSort: true,
-					baseParams:{par_filtro:'lug.nombre',tipo:'pais'}
-				}),
-				valueField: 'id_lugar',
-				displayField: 'nombre',				
-				hiddenName: 'id_lugar',
-    			triggerAction: 'all',
-    			lazyRender:true,
-				mode:'remote',
-				pageSize:50,
-				queryDelay:500,
-				anchor:"100%",
-				minChars:2,
-				width:130
-				}),
-	combo_tipo : new Ext.form.ComboBox({  			
-			allowBlank:false,
-			emptyText:'Tipo...',
-			store: new Ext.data.JsonStore({
-				url: '../../sis_parametros/control/Catalogo/listarCatalogoCombo',
-				id: 'id_catalogo',
-				root: 'datos',
-				sortInfo:{
-					field: 'descripcion',
-					direction: 'ASC'
-				},
-				totalProperty: 'total',
-				fields: ['id_catalogo','codigo','descripcion'],
-				// turn on remote sorting
-				remoteSort: true,
-				baseParams: Ext.apply({par_filtro:'descripcion'},{
-							cod_subsistema : 'OBINGRESOS',
-							catalogo_tipo : 'tipo_periodo'
-						})
-			}),    				
-			valueField: 'codigo',
-			displayField: 'descripcion',		   				
-			hiddenName: 'catalogo',
-			forceSelection:true,
-			typeAhead: false,
-   			triggerAction: 'all',
-   			lazyRender:true,
-			mode:'remote',
-			pageSize:10,
-			queryDelay:1000,
-			width:130,
-			minChars:2
-	   	}),
+
+        combo_tipo : new Ext.form.ComboBox({
+            store: new Ext.data.JsonStore({
+
+                url: '../../sis_obingresos/control/TipoPeriodo/listarTipoPeriodo',
+                id: 'id_tipo_periodo',
+                root: 'datos',
+                sortInfo:{
+                    field: 'id_tipo_periodo',
+                    direction: 'DESC'
+                },
+                totalProperty: 'total',
+                fields: [
+                    {name:'id_tipo_periodo'},
+                    {name:'tipo', type: 'string'},
+                    {name:'tiempo', type: 'string'},
+                    {name:'medio_pago', type: 'string'},
+                    {name:'tipo_cc', type: 'string'},
+                    {name:'estado', type: 'string'}
+
+
+                ],
+                remoteSort: true,
+                baseParams:{start:0,limit:10}
+            }),
+            displayField: 'tipo',
+            tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>Tipo:</b> {tipo}</p><p><b>Tiempo:</b> {tiempo}</p><p><b>Medio Pago:</b> {medio_pago}</p></div></tpl>',
+            valueField: 'id_tipo_periodo',
+            typeAhead: true,
+            listWidth : 150,
+            resizable : true,
+            mode: 'remote',
+            triggerAction: 'all',
+            emptyText:'TipoPer...',
+            selectOnFocus:true,
+            width:100
+        }),
 			
 	Atributos:[
 		{
@@ -182,106 +139,94 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
             config:{
                 name: 'tipo_periodo',
                 fieldLabel: 'Tipo Periodo',
-                allowBlank: false,
-                anchor: '40%',
-                gwidth: 130,
-                maxLength:20,
-                emptyText:'tipo...',                   
-                typeAhead: true,
-                triggerAction: 'all',
-                lazyRender:true,
-                mode: 'local',
-                store:['diario','8_dias_bsp']
+                gwidth: 130
             },
-            type:'ComboBox',            
-            id_grupo:1,            
-            grid:false,
-            form:true
+            type:'Field',
+            grid:true,
+            form:false
         },
+        {
+            config:{
+                name: 'medio_pago',
+                fieldLabel: 'Medio Pago',
+                gwidth: 130
+            },
+            type:'Field',
+            grid:true,
+            form:false
+        },       
+
+        {
+            config:{
+                name: 'mes',
+                fieldLabel: 'Mes',
+                gwidth: 130
+            },
+            type:'Field',
+            grid:true,
+            form:false
+        },
+
+        /*{
+            config:{
+                name: 'nro_periodo_mes',
+                fieldLabel: '# en el mes',
+                gwidth: 130
+            },
+            type:'Field',
+            grid:true,
+            form:false
+        },*/
+
 		
-		{
-			config:{
-		        store:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
-		        typeAhead: false,
-		        allowBlank : false,
-		        name: 'mes',
-		        fieldLabel: 'Mes',
-		        mode: 'local',		        
-		        emptyText:'Periodo...',
-		        triggerAction: 'all',
-                lazyRender:true,                
-		        width:135
-		    },
-				type:'ComboBox',
-				filters:{   
-                         type: 'list',
-                         pfiltro:'perven.mes',
-                         options: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-                    },				
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
-		
-		{
-			config:{
-				name: 'nro_periodo_mes',
-				fieldLabel: '# en el mes',
-				allowBlank: false,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:4
-			},
-				type:'NumberField',
-				filters:{pfiltro:'perven.nro_periodo_mes',type:'numeric'},
-				id_grupo:1,
-				grid:true,
-				form:true
-		},
+
 		{
 			config:{
 				name: 'fecha_ini',
 				fieldLabel: 'Fecha Inicio',
-				allowBlank: false,
-				anchor: '80%',
 				gwidth: 100,
-							format: 'd/m/Y', 
-							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+                format: 'd/m/Y',
+                renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
 			},
 				type:'DateField',
 				filters:{pfiltro:'perven.fecha_ini',type:'date'},
-				id_grupo:1,
 				grid:true,
-				form:true
+				form:false
 		},
 		{
 			config:{
 				name: 'fecha_fin',
 				fieldLabel: 'Fecha Fin',
-				allowBlank: false,
-				anchor: '80%',
 				gwidth: 100,
-							format: 'd/m/Y', 
-							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+                format: 'd/m/Y',
+                renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
 			},
 				type:'DateField',
 				filters:{pfiltro:'perven.fecha_fin',type:'date'},
-				id_grupo:1,
 				grid:true,
-				form:true
+				form:false
 		},
+        {
+            config:{
+                name: 'fecha_pago',
+                fieldLabel: 'Fecha Pago',
+                gwidth: 100,
+                format: 'd/m/Y',
+                renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+            },
+            type:'DateField',
+            filters:{pfiltro:'perven.fecha_pago',type:'date'},
+            grid:true,
+            form:true
+        },
 		{
 			config:{
 				name: 'estado',
 				fieldLabel: 'Estado',
-				allowBlank: false,
-				anchor: '80%',
-				gwidth: 100,
-				maxLength:15
+				gwidth: 100
 			},
 				type:'TextField',
 				filters:{pfiltro:'perven.estado',type:'string'},
-				id_grupo:1,
 				grid:true,
 				form:false
 		},
@@ -398,7 +343,7 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
 	],
 	tam_pag:50,	
 	title:'Periodo de Venta',
-	ActSave:'../../sis_obingresos/control/PeriodoVenta/insertarPeriodoVenta',
+	ActSave:'../../sis_obingresos/control/PeriodoVenta/modificarPeriodoVenta',
 	ActDel:'../../sis_obingresos/control/PeriodoVenta/eliminarPeriodoVenta',
 	ActList:'../../sis_obingresos/control/PeriodoVenta/listarPeriodoVenta',
 	id_store:'id_periodo_venta',
@@ -411,7 +356,9 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
 		{name:'nro_periodo_mes', type: 'numeric'},
 		{name:'fecha_fin', type: 'date',dateFormat:'Y-m-d'},
 		{name:'fecha_ini', type: 'date',dateFormat:'Y-m-d'},
-		{name:'tipo', type: 'string'},
+        {name:'fecha_pago', type: 'date',dateFormat:'Y-m-d'},
+		{name:'tipo_periodo', type: 'string'},        
+        {name:'medio_pago', type: 'string'},
 		{name:'estado_reg', type: 'string'},
 		{name:'id_usuario_ai', type: 'numeric'},
 		{name:'id_usuario_reg', type: 'numeric'},
@@ -431,26 +378,16 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
 	    
         this.combo_gestion.on('select', function(c,r,i) {            
             this.store.baseParams.id_gestion = this.combo_gestion.getValue();
-            if (this.combo_gestion.getValue() && this.combo_pais.getValue() && this.combo_tipo.getValue())
+            if (this.combo_gestion.getValue() &&  this.combo_tipo.getValue())
             {
             	this.load({params:{start:0, limit:this.tam_pag}});
             	this.getBoton('btnGenerar').enable();
             }
-        } , this);
-        
-        this.combo_pais.on('select', function(c,r,i) {            
-            this.store.baseParams.id_lugar = this.combo_pais.getValue();
-            if (this.combo_gestion.getValue() && this.combo_pais.getValue() && this.combo_tipo.getValue())
-            {
-            	this.load({params:{start:0, limit:this.tam_pag}});
-            	this.getBoton('btnGenerar').enable();
-            }
-            
         } , this);
         
         this.combo_tipo.on('select', function(c,r,i) {            
             this.store.baseParams.tipo = this.combo_tipo.getValue();
-            if (this.combo_gestion.getValue() && this.combo_pais.getValue() && this.combo_tipo.getValue())
+            if (this.combo_gestion.getValue() && this.combo_tipo.getValue())
             {
             	this.load({params:{start:0, limit:this.tam_pag}});
             	this.getBoton('btnGenerar').enable();
@@ -458,8 +395,35 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
             
         } , this);
 	},
-	bdel:true,
-	bsave:true
+    onGenerarPeriodo : function () {
+        var rec = this.sm.getSelected();
+        Phx.CP.loadingShow();
+        Ext.Ajax.request({
+            url:'../../sis_obingresos/control/PeriodoVenta/insertarPeriodoVenta',
+            params: {'id_tipo_periodo':this.combo_tipo.getValue(),
+                'id_gestion':this.combo_gestion.getValue()},
+            success:this.successSave,
+            failure: this.conexionFailure,
+            timeout:this.timeout,
+            scope:this
+        });
+
+    },
+    preparaMenu:function()
+    {	var rec = this.sm.getSelected();        
+        Phx.vista.PeriodoVenta.superclass.preparaMenu.call(this); 
+        this.getBoton('btnAgencias').enable();  
+    },
+    liberaMenu:function()
+    {	
+               
+        Phx.vista.PeriodoVenta.superclass.liberaMenu.call(this);
+        this.getBoton('btnAgencias').disable();  
+    },
+	bdel:false,
+	bsave:false,
+    bnew:false,
+    bedit:true
 	}
 )
 </script>

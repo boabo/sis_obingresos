@@ -76,21 +76,97 @@ class MODBoleto extends MODbase{
 		$this->captura('tc','numeric');
 		$this->captura('moneda_sucursal','varchar');
 		$this->captura('ruta_completa','varchar');
+		$this->captura('voided','varchar');
         $this->captura('monto_total_fp','numeric');
         $this->captura('mensaje_error','text');
         $this->captura('id_boleto_vuelo','integer');
         $this->captura('vuelo_retorno','varchar');
+        $this->captura('localizador','varchar');
 
 		
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
-		
+		//var_dump($this->consulta); exit;
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
-			
+
+	function listarPNRBoleto(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_boleto_sel';
+		$this->transaccion='OBING_PNRBOL_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+
+		//Definicion de la lista del resultado del query
+		$this->captura('localizador','varchar');
+		$this->captura('total','numeric');
+		$this->captura('comision','numeric');
+		$this->captura('liquido','numeric');
+		$this->captura('id_moneda_boleto','int4');
+		$this->captura('moneda','varchar');
+		$this->captura('neto','numeric');
+		$this->captura('origen','varchar');
+		$this->captura('destino','varchar');
+		$this->captura('fecha_emision','date');
+		$this->captura('boletos','text');
+		$this->captura('pasajeros','text');
+		$this->captura('id_forma_pago','int4');
+		$this->captura('forma_pago','varchar');
+		$this->captura('monto_forma_pago','numeric');
+		$this->captura('id_forma_pago2','int4');
+		$this->captura('forma_pago2','varchar');
+		$this->captura('monto_forma_pago2','numeric');
+		/*
+		$this->captura('moneda_fp1','varchar');
+
+		$this->captura('id_forma_pago2','integer');
+		$this->captura('forma_pago2','varchar');
+		$this->captura('monto_forma_pago2','numeric');
+		$this->captura('codigo_forma_pago2','varchar');
+		$this->captura('numero_tarjeta2','varchar');
+		$this->captura('codigo_tarjeta2','varchar');
+		$this->captura('ctacte2','varchar');
+		$this->captura('moneda_fp2','varchar');
+
+
+		$this->captura('tc','numeric');
+		$this->captura('moneda_sucursal','varchar');
+		$this->captura('ruta_completa','varchar');
+		$this->captura('monto_total_fp','numeric');
+		$this->captura('mensaje_error','text');
+		$this->captura('id_boleto_vuelo','integer');
+		$this->captura('vuelo_retorno','varchar');
+		*/
+
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//var_dump($this->consulta); exit;
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function obtenerOfficeID(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_boleto_sel';
+		$this->transaccion='OBING_PNRBOL_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_punto_venta','id_punto_venta','int4');
+		//Definicion de la lista del resultado del query
+		$this->captura('officeID','varchar');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function insertarBoleto(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_ime';
@@ -151,8 +227,40 @@ class MODBoleto extends MODbase{
 		$this->setParametro('comision','comision','numeric');	
 		$this->setParametro('estado','estado','varchar');
         $this->setParametro('id_boleto_vuelo','id_boleto_vuelo','integer');
+        $this->setParametro('id_punto_venta','id_punto_venta','integer');
 
         //Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function modificarFpPNRBoleto(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_MODFPPNR_UPD';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('localizador','localizador','varchar');
+		$this->setParametro('total','total','numeric');
+		$this->setParametro('moneda','moneda','varchar');
+		$this->setParametro('id_forma_pago','id_forma_pago','integer');
+		$this->setParametro('monto_forma_pago','monto_forma_pago','varchar');
+		$this->setParametro('numero_tarjeta','numero_tarjeta','integer');
+		$this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+		$this->setParametro('ctacte','ctacte','numeric');
+		$this->setParametro('id_forma_pago2','id_forma_pago2','integer');
+		$this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
+		$this->setParametro('numero_tarjeta2','numero_tarjeta2','varchar');
+		$this->setParametro('codigo_tarjeta2','codigo_tarjeta2','varchar');
+		$this->setParametro('ctacte2','ctacte2','varchar');
+		$this->setParametro('id_punto_venta','id_punto_venta','integer');
+
+
+		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
 
@@ -211,6 +319,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('fp','fp','varchar');
 		$this->setParametro('moneda_fp','moneda_fp','varchar');
 		$this->setParametro('valor_fp','valor_fp','varchar');
+        $this->setParametro('tarjeta_fp','tarjeta_fp','varchar');
+        $this->setParametro('autorizacion_fp','autorizacion_fp','varchar');
 		$this->setParametro('rutas','rutas','varchar');	
 		
 		$this->setParametro('ruta_completa','ruta_completa','varchar');	
@@ -222,12 +332,108 @@ class MODBoleto extends MODbase{
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
-		
+
+
+		$this->ejecutarConsulta();
+
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function insertarBoletoServicioAmadeus(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_BOLSERVAMA_INS';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		//$this->setParametro('id_boleto','id_boleto','integer');//ok
+		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
+		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
+		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
+		$this->setParametro('pasajero','pasajero','varchar');//ok
+		$this->setParametro('total','total','numeric');//ok
+		$this->setParametro('liquido','liquido','numeric');//ok
+		$this->setParametro('neto','neto','numeric');//ok
+		$this->setParametro('tasas','tasas','varchar');//ok
+		$this->setParametro('comision','comision','numeric');//ok
+		$this->setParametro('carrier_fees','carrier_fees','varchar');//ok
+		$this->setParametro('moneda','moneda','varchar');//ok
+		$this->setParametro('voided','voided','varchar');//ok
+		//$this->setParametro('origen','origen','varchar');//ok
+		//$this->setParametro('destino','destino','varchar');//ok
+		//$this->setParametro('cupones','cupones','integer');//ok
+		//$this->setParametro('impuestos','impuestos','varchar');//ok
+
+		$this->setParametro('fp','fp','varchar');
+		//$this->setParametro('moneda_fp','moneda_fp','varchar');
+		$this->setParametro('valor_fp','valor_fp','numeric');
+		//$this->setParametro('rutas','rutas','varchar');
+
+		//$this->setParametro('ruta_completa','ruta_completa','varchar');
+		///$this->setParametro('vuelos','vuelos','text');
+		$this->setParametro('localizador','localizador','varchar');
+		/*$this->setParametro('identificacion','identificacion','varchar');
+		$this->setParametro('fare_calc','fare_calc','text');
+		$this->setParametro('vuelos2','vuelos2','text');
+		*/
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function actualizaBoletoServicioAmadeus(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_ACTBOLAMA_INS';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
+		$this->setParametro('id_usuario_cajero','id_usuario_cajero','integer');//ok
+		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
+		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
+		//$this->setParametro('pasajero','pasajero','varchar');//ok
+		//$this->setParametro('total','total','numeric');//ok
+		//$this->setParametro('liquido','liquido','numeric');//ok
+		//$this->setParametro('neto','neto','numeric');//ok
+		//$this->setParametro('tasas','tasas','varchar');//ok
+		//$this->setParametro('comision','comision','numeric');//ok
+		//$this->setParametro('carrier_fees','carrier_fees','varchar');//ok
+		//$this->setParametro('moneda','moneda','varchar');//ok
+		$this->setParametro('voided','voided','varchar');//ok
+		//$this->setParametro('fp','fp','varchar');
+		//$this->setParametro('valor_fp','valor_fp','numeric');
+		$this->setParametro('localizador','localizador','varchar');
+		//Ejecuta la instruccion
+		$this->armarConsulta();
 		$this->ejecutarConsulta();
 
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+
+    function insertarBoletosRET(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_retweb_ime';
+        $this->transaccion='OBING_BOLRW_INS';
+        $this->tipo_procedimiento='IME';
+
+
+        $this->setParametro('fecha_emision','fecha_emision','date');
+        $this->setParametro('detalle','detalle','text');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 
 	function listarBoletoReporte(){
 		//Definicion de variables para ejecucion del procedimientp
@@ -296,13 +502,17 @@ class MODBoleto extends MODbase{
         $this->captura('flight_status','varchar');
         $this->captura('conexion','varchar');
         $this->captura('retorno','varchar');
+        $this->captura('validez_tarifaria','integer');
+        $this->captura('pais_origen','varchar');
+        $this->captura('pais_destino','varchar');
 
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
+        
 
 		$this->ejecutarConsulta();
-		
+
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}

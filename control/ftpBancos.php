@@ -43,9 +43,10 @@ $server_file = 'SkyBiz/20170201 SPP_BCO BOB.xlsx';
 // establecer una conexión básica
 $conn_id = ftp_connect("172.17.45.4");
 
+
 // iniciar sesión con nombre de usuario y contraseña
 $login_result = ftp_login($conn_id,"Skybizr", "xdbskybizr");
-ftp_pasv($conn_id,true);
+
 $contents_on_server = ftp_nlist($conn_id, $folder_ftp); //Returns an array of filenames from the specified directory on success or FALSE on error.
 
 
@@ -72,7 +73,7 @@ foreach ($contents_on_server as $archivo_server) {
             "nombre_archivo" => $nombre_solo_archivo,
             "subido" => "no",
             "comentario" => "",
-            "moneda" => $moneda
+            "moneda" => ""
         );
 
 

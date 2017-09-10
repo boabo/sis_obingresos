@@ -288,6 +288,28 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
         },
 		{
 			config:{
+				name: 'voided',
+				fieldLabel: 'Anulado',
+				anchor: '60%',
+				gwidth: 80,
+				readOnly:true,
+				renderer : function(value, p, record) {
+					if (record.data['voided'] != 'si') {
+						return String.format('<div title="Anulado"><b><font color="green">{0}</font></b></div>', value);
+
+					} else {
+						return String.format('<div title="Anulado"><b><font color="red">{0}</font></b></div>', value);
+					}
+				}
+			},
+			type:'TextField',
+			filters:{pfiltro:'bol.voided',type:'string'},
+			id_grupo:0,
+			grid:true,
+			form:false
+		},
+		{
+			config:{
 				name: 'boletos',
 				fieldLabel: 'Boletos a Pagar',				
 				anchor: '80%',
@@ -300,6 +322,20 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 				grid:false,
 				form:true
 		},
+        {
+            config:{
+                name: 'localizador',
+                fieldLabel: 'Pnr',
+                anchor: '40%',
+                gwidth: 130
+            },
+            type:'TextField',
+            filters:{pfiltro:'bol.localizador',type:'string'},
+            id_grupo:0,
+            grid:true,
+            form:true,
+            bottom_filter: true
+        },
 		{
 			config:{
 				name: 'nro_boleto',
@@ -328,6 +364,7 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 				form:true,
 				bottom_filter: true
 		},
+
 		{
 			config:{
 				name: 'tiene_conjuncion',
@@ -920,6 +957,7 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		{name:'origen', type: 'string'},
 		{name:'destino', type: 'string'},
 		{name:'retbsp', type: 'string'},
+        {name:'localizador', type: 'string'},
 		{name:'monto_pagado_moneda_boleto', type: 'numeric'},
         {name:'monto_total_fp', type: 'numeric'},
 		{name:'tipdoc', type: 'string'},
@@ -958,7 +996,8 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		{name:'tc', type: 'numeric'},
 		{name:'moneda_fp1', type: 'string'},
 		{name:'moneda_fp2', type: 'string'},
-		
+		{name:'voided', type: 'string'}
+
 	],
 	sortInfo:{
 		field: 'id_boleto',
@@ -1002,13 +1041,15 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		
 		this.Cmp.nro_boleto.on('keyup',function(){
 			console.log('llega');
-			if (this.Cmp.nro_boleto.getValue().length == 10) {
+			if (this.Cmp.nro_boleto.getValue().length == 10 && this.Cmp.localizador.getValue().length == 6) {
 				Phx.CP.loadingShow();
                 
 				Ext.Ajax.request({
 	                url:'../../sis_obingresos/control/Boleto/getBoletoServicio',                
 	                params: {'nro_boleto':this.Cmp.nro_boleto.getValue(),
-	                		'id_punto_venta':this.id_punto_venta},
+	                		'id_punto_venta':this.id_punto_venta,
+                            'pnr':this.Cmp.localizador.getValue()
+                            },
 	                success:this.successGetBoletoServicio,
 	                failure: this.conexionFailure,	                
 	                timeout:this.timeout,
@@ -1169,6 +1210,11 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
                 this.Cmp.id_boleto_vuelo.setValue(objRes.datos[0].id_boleto_vuelo);
                 this.Cmp.id_boleto_vuelo.setRawValue(objRes.datos[0].vuelo_retorno);
 
+                this.Cmp.codigo_tarjeta.setValue(objRes.datos[0].codigo_tarjeta);
+                this.Cmp.numero_tarjeta.setValue(objRes.datos[0].numero_tarjeta);
+                this.Cmp.codigo_tarjeta2.setValue(objRes.datos[0].codigo_tarjeta2);
+                this.Cmp.numero_tarjeta2.setValue(objRes.datos[0].numero_tarjeta2);
+
                 this.Cmp.id_boleto_vuelo.store.baseParams.id_boleto = objRes.datos[0].id_boleto;
 				
 				this.Cmp.moneda_sucursal.setValue(objRes.datos[0].moneda_sucursal);
@@ -1193,7 +1239,7 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		this.Cmp.nro_boleto.allowBlank = false;
 		this.Cmp.comision.setDisabled(false);
 		this.Cmp.nro_boleto.setDisabled(true);
-        this.Cmp.id_boleto_vuelo.baseParams.id_boleto = objRes.datos[0].id_boleto;
+        this.Cmp.id_boleto_vuelo.store.baseParams.id_boleto = this.sm.getSelected().data['id_boleto'];
 
 
 		this.manejoComponentesFp1(this.sm.getSelected().data['id_forma_pago'],this.sm.getSelected().data['codigo_forma_pago']);

@@ -624,9 +624,8 @@ ALTER TABLE obingresos.tboleto
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN fecha_hora_origen TIMESTAMP(0) WITHOUT TIME ZONE;
 
-
 ALTER TABLE obingresos.tboleto_vuelo
-  ADD COLUMN fecha_hora_origen TIMESTAMP(0) WITHOUT TIME ZONE;
+  ADD COLUMN fecha_hora_destino TIMESTAMP(0) WITHOUT TIME ZONE;
 
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN tiempo_conexion INTEGER;
@@ -640,11 +639,7 @@ ALTER TABLE obingresos.tboleto_vuelo
 ALTER TABLE obingresos.tboleto_vuelo
   ADD COLUMN flight_status VARCHAR(5);
 
-ALTER TABLE obingresos.tboleto_vuelo
-  ALTER COLUMN id_aeropuerto_origen SET NOT NULL;
 
-ALTER TABLE obingresos.tboleto_vuelo
-  ALTER COLUMN id_aeropuerto_destino SET NOT NULL;
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-24/03/2017********************************************/
 
@@ -659,6 +654,24 @@ ALTER TABLE obingresos.tventa_web_modificaciones
   ADD COLUMN banco VARCHAR(5);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-22/03/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-07/04/2017********************************************/
+ALTER TABLE obingresos.tboleto_vuelo
+  ADD COLUMN validez_tarifa INTEGER;
+
+  CREATE TABLE obingresos.tclase_tarifaria (
+  id_clase_tarifaria SERIAL,
+  codigo VARCHAR(1),
+  tipo_condicion VARCHAR(15) NOT NULL,
+  ruta VARCHAR(5)[],
+  aeropuerto VARCHAR(5)[],
+  pais VARCHAR(2),
+  duracion_meses INTEGER,
+  CONSTRAINT tclase_tarifaria_pkey PRIMARY KEY(id_clase_tarifaria)
+) INHERITS (pxp.tbase);
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-07/04/2017********************************************/
+
 /********************************************I-SCP-JRR-OBINGRESOS-0-28/04/2017********************************************/
 CREATE TABLE obingresos.tcomision_agencia (
   id_comision SERIAL,
@@ -712,13 +725,11 @@ IS 'si,no';
 COMMENT ON COLUMN obingresos.ttipo_periodo.estado
 IS 'activo,inactivo';
 
-/********************************************F-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
-
-/********************************************I-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/
-
 CREATE UNIQUE INDEX tskybiz_archivo_nombre_archivo_uindex ON obingresos.tskybiz_archivo (nombre_archivo);
 
-/********************************************F-SCP-FFP-OBINGRESOS-0-02/05/2017********************************************/
+/********************************************F-SCP-JRR-OBINGRESOS-0-02/05/2017********************************************/
+
+
 
 /********************************************I-SCP-FFP-OBINGRESOS-0-04/05/2017********************************************/
 ALTER TABLE obingresos.tagencia
@@ -780,7 +791,7 @@ ALTER TABLE obingresos.tdeposito
 
 
 ALTER TABLE obingresos.tdeposito
-  ADD COLUMN estado TYPE VARCHAR(10) COLLATE pg_catalog."default";
+  ADD COLUMN estado VARCHAR(10) COLLATE pg_catalog."default";
 
 ALTER TABLE obingresos.tdeposito
   ALTER COLUMN estado SET DEFAULT 'borrador'::character varying;
@@ -789,6 +800,11 @@ ALTER TABLE obingresos.tperiodo_venta_agencia
   ADD COLUMN moneda_restrictiva VARCHAR(2) DEFAULT 'si' NOT NULL;
 
 /********************************************F-SCP-FFP-OBINGRESOS-0-04/05/2017********************************************/
+
+
+
+
+
 
 /********************************************I-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
 CREATE TABLE obingresos.tobservaciones_conciliacion (
@@ -807,9 +823,207 @@ IS 'skybiz,portal';
 /********************************************F-SCP-FFP-OBINGRESOS-0-31/05/2017********************************************/
 
 
+
 /********************************************I-SCP-GSS-OBINGRESOS-0-13/07/2017********************************************/
 
 ALTER TABLE obingresos.tboleto
   ADD COLUMN pnr VARCHAR(6);
 
 /********************************************F-SCP-GSS-OBINGRESOS-0-13/07/2017********************************************/
+
+/********************************************I-SCP-FFP-OBINGRESOS-0-16/06/2017********************************************/
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN fecha_pago DATE;
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN id_agencia INTEGER;
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN comision NUMERIC(18,2);
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN numero_tarjeta VARCHAR(20);
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN numero_autorizacion VARCHAR(8);
+
+CREATE TYPE obingresos.detalle_boletos_portal AS (
+  "Billete" VARCHAR(15),
+  "CNJ" VARCHAR(255),
+  "MedioDePago" VARCHAR(50),
+  "Entidad" VARCHAR(50),
+  "Moneda" VARCHAR(3),
+  "ImportePasaje" NUMERIC(18,2),
+  "ImporteTarifa" NUMERIC(18,2),
+  "OrigenDestino" VARCHAR(255),
+  "Nit" VARCHAR(30),
+  "RazonSocial" VARCHAR(255),
+  "FechaPago" VARCHAR(20),
+  "idEntidad" INTEGER,
+  "Comision" NUMERIC(18,2),
+  "NumeroTarjeta" VARCHAR(20),
+  "NumeroAutorizacion" VARCHAR(8),
+  "FechaEmision" VARCHAR(20)
+);
+
+/********************************************F-SCP-FFP-OBINGRESOS-0-16/06/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-24/07/2017********************************************/
+
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN id_periodo_venta INTEGER;
+  
+ALTER TABLE obingresos.tboleto_retweb
+  ADD COLUMN id_moneda INTEGER;
+  
+ALTER TABLE obingresos.tboleto_retweb
+  ADD COLUMN comision NUMERIC(18,2);
+  
+ALTER TABLE obingresos.tboleto_retweb
+  ADD COLUMN pnr VARCHAR(20);
+  
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN billete VARCHAR(20);
+  
+ ALTER TABLE obingresos.tboleto_retweb
+  ADD COLUMN id_agencia INTEGER;
+  
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN id_moneda INTEGER;
+  
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ALTER COLUMN deposito_mb SET DEFAULT 0;
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ALTER COLUMN deposito_usd SET DEFAULT 0;
+  
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  DROP COLUMN total_mb_cierre;
+  
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  DROP COLUMN total_mb_pagado;
+/********************************************F-SCP-JRR-OBINGRESOS-0-24/07/2017********************************************/
+
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-04/08/2017********************************************/
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN nit VARCHAR(30);
+  
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ADD COLUMN neto NUMERIC(18,2);
+  
+ALTER TABLE obingresos.tboleto_retweb
+  ALTER COLUMN tarjeta DROP NOT NULL;
+  
+ALTER TABLE obingresos.tboleto_retweb
+  ADD COLUMN forma_pago VARCHAR(100);
+
+ALTER TABLE obingresos.tboleto_retweb
+  ADD COLUMN neto NUMERIC(18,2);
+  
+CREATE TABLE obingresos.tobservaciones_portal (
+  id_observaciones_portal SERIAL NOT NULL,
+  billete VARCHAR(15) ,
+  pnr VARCHAR(15) ,
+  total NUMERIC(18,2) NOT NULL,
+  moneda VARCHAR(3),  
+  tipo_observacion VARCHAR(20) NOT NULL,
+  observacion TEXT NOT NULL,  
+  PRIMARY KEY(id_observaciones_portal)
+) INHERITS (pxp.tbase)
+;
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+  ALTER COLUMN numero_autorizacion TYPE VARCHAR(200) COLLATE pg_catalog."default";
+
+ALTER TABLE obingresos.tperiodo_venta
+  ADD COLUMN codigo_periodo VARCHAR(15) NOT NULL;
+
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN neto NUMERIC(18,2);
+
+
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_credito_mb NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_credito_usd NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_debito_mb NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_debito_usd NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_boletos_mb NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_boletos_usd NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_neto_mb NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_neto_usd NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_comision_mb NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN monto_comision_usd NUMERIC(18,2);
+
+
+ALTER TABLE obingresos.tperiodo_venta_agencia
+  ADD COLUMN total_comision_mb NUMERIC(18,2);
+
+ALTER TABLE obingresos.tobservaciones_portal
+  ADD COLUMN fecha_emision DATE;
+/********************************************F-SCP-JRR-OBINGRESOS-0-04/08/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-17/08/2017********************************************/
+CREATE TABLE obingresos.ttotal_comision_mes (
+  gestion NUMERIC(4,0) NOT NULL,
+  periodo NUMERIC(2,0) NOT NULL,
+  total_comision NUMERIC(18,2) NOT NULL,
+  id_tipo_periodo INTEGER NOT NULL,
+  id_periodos INTEGER[] NOT NULL
+) INHERITS (pxp.tbase)
+;
+
+ALTER TABLE obingresos.ttotal_comision_mes
+  ADD COLUMN estado VARCHAR(15);
+
+COMMENT ON COLUMN obingresos.ttotal_comision_mes.estado
+IS 'pendiente o verificado';
+
+ALTER TABLE obingresos.ttotal_comision_mes
+  ADD COLUMN id_total_comision_mes SERIAL NOT NULL PRIMARY KEY;
+
+ALTER TABLE obingresos.ttotal_comision_mes
+  ADD COLUMN id_agencia INTEGER;
+
+CREATE RULE ttotal_comision_mes_rl AS ON INSERT TO obingresos.ttotal_comision_mes
+WHERE NEW.total_comision = 0
+DO INSTEAD NOTHING;
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN terciariza VARCHAR(2);
+
+ALTER TABLE obingresos.tagencia
+  ALTER COLUMN terciariza SET DEFAULT 'no';
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN id_agencia_terciarizada INTEGER;
+
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN comision_terciarizada NUMERIC(18,2);
+
+ALTER TABLE obingresos.tperiodo_venta
+  ADD COLUMN fecha_pago DATE;
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-17/08/2017********************************************/
+
+

@@ -55,11 +55,7 @@ $body$
                 CREATE INDEX "'||nombre_tabla||'_fecha_idx" ON "obingresos"."'||nombre_tabla||'"
   				USING btree ("fecha_emision");
                 CREATE INDEX "'||nombre_tabla||'_localizador_idx" ON "obingresos"."'||nombre_tabla||'"
-  				USING btree ("localizador");
-                CREATE TRIGGER '||nombre_tabla||'_tr
-                AFTER INSERT 
-                ON "obingresos"."'||nombre_tabla||'" FOR EACH ROW 
-                EXECUTE PROCEDURE obingresos.f_tr_boleto();
+  				USING btree ("localizador");                
                 ';
 
           execute(crear_tabla);

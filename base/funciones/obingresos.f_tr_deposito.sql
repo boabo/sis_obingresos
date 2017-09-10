@@ -5,7 +5,7 @@ $body$
 DECLARE
   v_agencia				record;
   v_filtro				varchar;
-  v_boletos				record;
+  v_periodo_venta		record;
   v_saldo				numeric;
   v_monto_a_usar		numeric;
   v_fecha_conversion	date;
@@ -13,115 +13,366 @@ DECLARE
   v_tc					numeric;
   v_boleto_completo		boolean;
   v_id_agencia			integer;
-  v_id_moneda			integer;
+  v_id_moneda_base		integer;
+  v_id_moneda_usd		integer;
   v_consulta			varchar;
+  v_monto_mb			numeric;
 BEGIN
 	v_id_agencia = NEW.id_agencia;
+   
     if (v_id_agencia is null) then
+    	
+    	return NEW;
+    elsif (v_id_agencia is not null and NEW.estado = 'validado' and OLD.estado = 'borrador') then
+    	v_id_moneda_base = (select param.f_get_moneda_base()); 
+        select m.id_moneda into v_id_moneda_usd
+        from param.tmoneda m
+        where m.codigo_internacional = 'USD';
+         if (NEW.id_moneda_deposito != v_id_moneda_base and NEW.id_moneda_deposito != v_id_moneda_usd) then
+         	raise exception 'Solo se permite depositos en moneda base o USD';
+         end if;
+    	if (NEW.id_periodo_venta is not null) then
+        	select * into v_periodo_venta
+            from obingresos.tperiodo_venta_agencia pv
+            where pv.id_periodo_venta = NEW.id_periodo_venta and id_agencia = v_id_agencia;
+            
+            if (v_periodo_venta.estado = 'cerrado') then
+            	raise exception 'El periodo de  venta esta cerrado y no se puede registrar depositos en este periodo';
+            end if;
+            
+            --si es moneda restrictiva
+            if (v_periodo_venta.moneda_restrictiva = 'si' ) then
+            	
+            	--si el deposito es en la moneda base
+                if (NEW.id_moneda_deposito = v_id_moneda_base) then                	
+                    --actualizamos el periodo de la agencia
+                    update obingresos.tperiodo_venta_agencia
+                    set monto_mb = (case when NEW.monto_deposito >= (monto_mb*-1) then 0 else monto_mb + NEW.monto_deposito END),
+                    monto_credito_mb = monto_credito_mb + (case when NEW.monto_deposito >= (monto_mb*-1) then (monto_mb*-1) else NEW.monto_deposito END)
+                    where id_periodo_venta = NEW.id_periodo_venta and id_agencia = v_id_agencia;
+                	--si hay un saldo lo actualizamos en el siguiente periodo
+                    if (NEW.monto_deposito > (v_periodo_venta.monto_mb*-1)) then
+                    	INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        (NEW.monto_deposito + v_periodo_venta.monto_mb),
+                        v_id_moneda_base,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NULL,
+                        v_id_agencia,
+                        (NEW.monto_deposito + v_periodo_venta.monto_mb)
+                      );
+                    end if;
+                    --insertamos el movimiento en el periodo actual
+                    INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        (case when (NEW.monto_deposito >= (v_periodo_venta.monto_mb*-1)) then
+                        	(v_periodo_venta.monto_mb*-1)
+                        ELSE
+                        	NEW.monto_deposito
+                        end),
+                        v_id_moneda_base,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NEW.id_periodo_venta,
+                        v_id_agencia,
+                        (case when (NEW.monto_deposito >= (v_periodo_venta.monto_mb*-1)) then
+                        	(v_periodo_venta.monto_mb*-1)
+                        ELSE
+                        	NEW.monto_deposito
+                        end)
+                      );
+                else --en dolares
+                	--actualizamos el periodo de la agencia
+                    update obingresos.tperiodo_venta_agencia
+                    set monto_usd = (case when NEW.monto_deposito >= (monto_usd*-1) then 0 else monto_usd + NEW.monto_deposito END),
+                    monto_credito_usd = monto_credito_usd + (case when NEW.monto_deposito >= (monto_usd*-1) then (monto_usd*-1) else NEW.monto_deposito END) 
+                    where id_periodo_venta = NEW.id_periodo_venta and id_agencia = v_id_agencia;
+                	--si hay un saldo lo actualizamos en el siguiente periodo
+                    if (NEW.monto_deposito > (v_periodo_venta.monto_usd *-1)) then
+                    	INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        (NEW.monto_deposito + v_periodo_venta.monto_usd),
+                        v_id_moneda_base,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NULL,
+                        v_id_agencia,
+                        (NEW.monto_deposito + v_periodo_venta.monto_usd)
+                      );
+                    end if;
+                    --insertamos el movimiento en el periodo actual
+                    INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        (case when (NEW.monto_deposito >= (v_periodo_venta.monto_usd*-1)) then
+                        	(v_periodo_venta.monto_usd*-1)
+                        ELSE
+                        	NEW.monto_deposito
+                        end),
+                        v_id_moneda_base,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NEW.id_periodo_venta,
+                        v_id_agencia,
+                        (case when (NEW.monto_deposito >= (v_periodo_venta.monto_usd*-1)) then
+                        	(v_periodo_venta.monto_usd*-1)
+                        ELSE
+                        	NEW.monto_deposito
+                        end)
+                      );
+                
+                end if;
+            else --si la moneda no es restrictiva
+            	--actualizamos el periodo de la agencia
+                	v_monto_mb = (case when NEW.id_moneda_deposito = v_id_moneda_base then
+                    					NEW.monto_deposito
+                    				else
+                                    	param.f_convertir_moneda(v_id_moneda_usd,v_id_moneda_base,NEW.monto_deposito,NEW.fecha)
+                                    end);  
+                    update obingresos.tperiodo_venta_agencia
+                    set monto_mb = (case when v_monto_mb >= (monto_mb*-1) then 0 else monto_mb + v_monto_mb end),
+                    monto_credito_mb = monto_credito_mb + (case when v_monto_mb >= (monto_mb*-1) then (monto_mb*-1) else v_monto_mb END)
+                    where id_periodo_venta = NEW.id_periodo_venta and id_agencia = v_id_agencia;
+                	--si hay un saldo lo actualizamos en el siguiente periodo
+                    if (v_monto_mb > (v_periodo_venta.monto_mb*-1)) then
+                    	INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        (v_monto_mb + v_periodo_venta.monto_mb),
+                        v_id_moneda_base,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NULL,
+                        v_id_agencia,
+                        (v_monto_mb + v_periodo_venta.monto_mb)
+                      );
+                    end if;
+                    INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        (case when (v_monto_mb >= (v_periodo_venta.monto_mb*-1)) then
+                        	(v_periodo_venta.monto_mb*-1)
+                        ELSE
+                        	v_monto_mb
+                        end),
+                       
+                        v_id_moneda_base,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NEW.id_periodo_venta,
+                        v_id_agencia,
+                        (case when (v_monto_mb >= (v_periodo_venta.monto_mb*-1)) then
+                        	(v_periodo_venta.monto_mb*-1)
+                        ELSE
+                        	v_monto_mb
+                        end)
+                      );                    
+            	             
+            end if;
+            
+            --modificar el estado del periodo de venta si los monto_mb y monto_usd son 0 o null
+            update obingresos.tperiodo_venta_agencia
+            set estado = 'cerrado'
+            where  id_periodo_venta = NEW.id_periodo_venta and id_agencia = v_id_agencia and
+            (monto_mb = 0 or monto_mb is null) and (monto_usd = 0 or monto_usd is null);
+        else -- no tiene id_periodo_venta añadir al periodo actual
+        	INSERT INTO 
+                        obingresos.tmovimiento_entidad
+                      (
+                        id_usuario_reg,                        
+                        id_usuario_ai,
+                        usuario_ai,                        
+                        tipo,
+                        pnr,
+                        fecha,
+                        apellido,
+                        monto,
+                        id_moneda,
+                        autorizacion__nro_deposito,
+                        garantia,
+                        ajuste,
+                        id_periodo_venta,
+                        id_agencia,
+                        monto_total
+                      )
+                      VALUES (
+                        NEW.id_usuario_reg,                        
+                         NEW.id_usuario_ai,
+              		  	 NEW.usuario_ai,
+                        'credito',
+                        NULL,
+                        NEW.fecha,
+                        NULL,
+                        NEW.monto_deposito,
+                        NEW.id_moneda_deposito,
+                        NEW.nro_deposito,
+                        'no',
+                        'no',
+                        NULL,
+                        v_id_agencia,
+                        NEW.monto_deposito
+                      );
+        
+        end if;
+    	return NEW;
+    else
     	return NEW;
     end if;
-
-    v_id_moneda = NEW.id_moneda;
-
-    if (v_id_moneda is null) then
-    	raise exception 'No hay moneda para el deposito:%',NEW.nro_deposito;
-    end if;
-
-	--obtener los datos generales de la agencia
-	select * into v_agencia
-    from obingresos.tagencia
-    where id_agencia = v_id_agencia;
-
-    v_filtro = '';
-    --si la agencia solo asocia boletos y depositos de la misma moneda aplico filtro
-    if (v_agencia.depositos_moneda_boleto = 'si') then
-    	v_filtro = v_filtro || ' and bol.id_moneda_boleto = ' || v_id_moneda;
-    end if;
-    v_saldo = NEW.saldo;
-    v_consulta = '	select *
-    					from obingresos.tboleto bol
-                        where bol.liquido > monto_pagado_moneda_boleto
-                        ' || v_filtro ||
-                        'order by id_boleto asc';
-
-    --se recorren todos los boletos que no estan completamente pagados
-    for v_boletos in execute(v_consulta) loop
-
-    	--se verifica con que fecha se debe obtener el tipode  cambio
-        if (v_agencia.tipo_cambio = 'venta') then
-            v_fecha_conversion = v_boletos.fecha_emision;
-        else
-            v_fecha_conversion = NEW.fecha;
-        end if;
-        --obtener el tipo de cambio de la moneda de deposito a la moneda del boleto
-        v_tc = param.f_get_tipo_cambio_v2(v_boletos.id_moneda_boleto,v_id_moneda,
-        	v_fecha_conversion,'O');
-
-        --el monto que se pagara es el liquido menos el monto ya pagado
-        v_monto_a_usar = param.f_convertir_moneda(v_boletos.id_moneda_boleto,v_id_moneda,(v_boletos.liquido - v_boletos.monto_pagado_moneda_boleto),
-        				v_fecha_conversion,'O',2);
-
-        v_boleto_completo = TRUE;
-        --si el monto a pagar es mayor q el saldo solo se paga el saldo
-        if (v_monto_a_usar  > v_saldo)then
-        	v_boleto_completo = FALSE;
-        	v_monto_a_usar = v_saldo;
-        end if;
-
-        --se inserta la relacion entre boleto y deposito
-        INSERT INTO
-            obingresos.tdeposito_boleto
-          (
-            id_usuario_reg,
-            fecha_reg,
-            estado_reg,
-            id_deposito,
-            id_boleto,
-            monto_moneda_boleto,
-            monto_moneda_deposito,
-            tc
-          )
-          VALUES (
-            NEW.id_usuario_reg,
-            now(),
-            'activo',
-            NEW.id_deposito,
-            v_boletos.id_boleto,
-            (case when v_boleto_completo THEN
-            	v_boletos.liquido - v_boletos.monto_pagado_moneda_boleto
-            else
-            	param.f_convertir_moneda(v_id_moneda,v_boletos.id_moneda_boleto,v_monto_a_usar,
-        				v_fecha_conversion,'O',2)
-            END),
-            v_monto_a_usar,
-            v_tc
-          );
-          -- se actualiza el monto pagado del boleto
-          update obingresos.tboleto
-          set monto_pagado_moneda_boleto = (case when v_boleto_completo THEN
-            	v_boletos.liquido
-            else
-            	param.f_convertir_moneda(v_id_moneda,v_boletos.id_moneda_boleto,v_monto_a_usar,
-        				v_fecha_conversion,'O',2)
-            END)
-          WHERE id_boleto = v_boletos.id_boleto;
-
-        --restamos al saldo lo q usamos en este boleto
-        v_saldo = v_saldo - v_monto_a_usar;
-
-        --si ya no tenemos saldo salimos del loop
-        if (v_saldo = 0) then
-           	exit;
-    	end if;
-    end loop;
-    --El nuevo saldo a insertar es lo q nos queda
-    UPDATE obingresos.tdeposito
-    set saldo = v_saldo
-    where id_deposito = NEW.id_deposito;
-
-    return NEW;
-
-
+    
 END;
 $body$
 LANGUAGE 'plpgsql'

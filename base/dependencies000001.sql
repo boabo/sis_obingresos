@@ -289,3 +289,34 @@ FROM leg.tcontrato con
          bol.tipo::text = 'boleta_garantia'::text;
 
 /********************************************F-DEP-FFP-OBINGRESOS-0-04/05/2017********************************************/
+
+
+/********************************************I-DEP-FFP-OBINGRESOS-0-16/06/2017********************************************/
+
+ALTER TABLE ONLY obingresos.tdetalle_boletos_web
+    ADD CONSTRAINT fk_tdetalle_boletos_web__id_agencia
+    FOREIGN KEY (id_agencia) REFERENCES obingresos.tagencia(id_agencia);
+
+/********************************************F-DEP-FFP-OBINGRESOS-0-16/06/2017********************************************/
+
+
+/********************************************I-DEP-JRR-OBINGRESOS-0-24/07/2017********************************************/
+
+ALTER TABLE ONLY obingresos.tboleto_retweb
+    ADD CONSTRAINT fk_tboleto_retweb__id_moneda
+    FOREIGN KEY (id_moneda) REFERENCES obingresos.tagencia(id_moneda);
+    
+ALTER TABLE ONLY obingresos.tdetalle_boletos_web
+    ADD CONSTRAINT fk_tdetalle_boletos_web__id_periodo_venta
+    FOREIGN KEY (id_periodo_venta) REFERENCES obingresos.tperiodo_venta(id_periodo_venta);
+    
+ALTER TABLE ONLY obingresos.tboleto_retweb
+    ADD CONSTRAINT fk_boleto_retweb__id_agencia
+    FOREIGN KEY (id_agencia) REFERENCES obingresos.tagencia(id_agencia);
+    
+ALTER TABLE ONLY obingresos.tdetalle_boletos_web
+    ADD CONSTRAINT fk_tdetalle_boletos_web__id_moneda
+    FOREIGN KEY (id_moneda) REFERENCES param.tmoneda(id_moneda);
+
+
+/********************************************F-DEP-JRR-OBINGRESOS-0-24/07/2017********************************************/

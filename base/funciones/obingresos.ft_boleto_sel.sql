@@ -141,13 +141,15 @@ BEGIN
                                                 
                         bol.tc,
                         bol.moneda_sucursal,
-                        bol.ruta_completa,
+                        bol.ruta_completa,                        
+                        bol.voided,
                         forpa.monto_total_fp,
                         bol.mensaje_error,
                         bv.id_boleto_vuelo,
-                        (bv.aeropuerto_origen || ''-'' || bv.aeropuerto_destino)::varchar as vuelo_retorno
+                        (bv.aeropuerto_origen || ''-'' || bv.aeropuerto_destino)::varchar as vuelo_retorno,
+                        bol.localizador
 						from obingresos.tboleto bol
-                        inner join obingresos.tagencia age on age.id_agencia = bol.id_agencia
+                        left join obingresos.tagencia age on age.id_agencia = bol.id_agencia
                         left join obingresos.tboleto_vuelo bv on bv.id_boleto = bol.id_boleto and bv.retorno = ''si''
                         left join forma_pago_temporal forpa on forpa.id_boleto = bol.id_boleto
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
@@ -158,19 +160,86 @@ BEGIN
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
         v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        --raise exception '%', v_consulta;
+        raise notice '%', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 						
 		end;
 
+        
+	/*********************************    
+     #TRANSACCION:  'OBING_PNRBOL_SEL'
+ 	#DESCRIPCION:	Consulta de datos
+ 	#AUTOR:		Gonzalo Sarmiento	
+ 	#FECHA:		14-07-2017
+	***********************************/
+	
+    elsif(p_transaccion='OBING_PNRBOL_SEL')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+            /*v_consulta:='select localizador,
+                                 total,
+                                 comision,
+                                 liquido,
+                                 id_moneda_boleto,
+                                 moneda,
+                                 neto,
+                                 origen,
+                                 destino,
+                                 fecha_emision,
+                                 boletos,
+                                 pasajeros
+                          from obingresos.vpnr 
+                          where ';*/
+			v_consulta:='with formas_pago as(select localizador,
+                               array_agg(fp.id_forma_pago) as ids_forma_pago,
+                               array_agg(fp.nombre||'' - ''||mon.codigo_internacional)::varchar[] as formas_pago,
+                               array_agg(pfp.importe) as importes
+                        from obingresos.vpnr pn
+                        inner join obingresos.tpnr_forma_pago pfp on pfp.pnr = pn.localizador
+                        inner join obingresos.tforma_pago fp on fp.id_forma_pago=pfp.id_forma_pago
+                        inner join param.tmoneda mon on mon.id_moneda=fp.id_moneda
+                        group by localizador)
+                        select
+                        nr.localizador,
+                               nr.total,
+                               nr.comision,
+                               nr.liquido,
+                               nr.id_moneda_boleto,
+                               nr.moneda,
+                               nr.neto,
+                               nr.origen,
+                               nr.destino,
+                               nr.fecha_emision,
+                               nr.boletos,
+                               nr.pasajeros,
+                               fpo.ids_forma_pago[1] as id_forma_pago,
+                               fpo.formas_pago[1] as forma_pago,
+                               fpo.importes[1] as monto_forma_pago,
+                               fpo.ids_forma_pago[2] as id_forma_pago2,
+                               fpo.formas_pago[2] as forma_pago2,
+                               fpo.importes[2] as monto_forma_pago2
+                        from obingresos.vpnr nr
+                        left join formas_pago fpo on fpo.localizador=nr.localizador
+                        where ';
+                        
+			--Definicion de la respuesta		    
+			v_consulta:=v_consulta||v_parametros.filtro;
+            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;            
+			raise notice 'v_consulta %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
 	/*********************************    
      #TRANSACCION:  'OBING_BOL_CONT'
  	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		jrivera	
+ 	#AUTOR:		jrivera		
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
-
+    
     elsif(p_transaccion='OBING_BOL_CONT')then
 
 		begin
@@ -181,11 +250,34 @@ BEGIN
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
 					    inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
-					    where  bol.estado_reg = ''activo'' and ';
+					    where  bol.estado_reg = ''activo'' and  ';
 			
 			--Definicion de la respuesta		    
 			v_consulta:=v_consulta||v_parametros.filtro;
 
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+        
+    /*********************************    
+     #TRANSACCION:  'OBING_PNRBOL_CONT'
+ 	#DESCRIPCION:	Conteo de registros
+ 	#AUTOR:		Gonzalo Sarmiento	
+ 	#FECHA:		14-07-2017
+	***********************************/
+	
+    elsif(p_transaccion='OBING_PNRBOL_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+            v_consulta:='select count(localizador)
+						from obingresos.vpnr nr
+                        where ';
+			
+			--Definicion de la respuesta		    
+			v_consulta:=v_consulta||v_parametros.filtro;
+			raise notice 'v_consulta %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
@@ -264,7 +356,7 @@ BEGIN
                         else
                         	''''
                         end)::varchar as tipo_identificacion,
-                        substr(b.identificacion,3)::varchar as identificacion,
+                        b.identificacion::varchar as identificacion,
                         pais.codigo::varchar as pais,
                         ori.pais as origen,
                         s.direccion,
@@ -310,20 +402,25 @@ BEGIN
                           (bv.linea || bv.vuelo)::varchar,
                           (lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde, 
                           (ld.nombre || '' ('' || ad.codigo || '')'')::varchar as hacia,
-                          to_char(bv.fecha_hora_origen,''HHMI'')::varchar as hora_origen,
-                          to_char(bv.fecha_hora_destino,''HHMI'')::varchar as hora_destino,
+                          to_char(bv.fecha_hora_origen,''HH24MI'')::varchar as hora_origen,
+                          to_char(bv.fecha_hora_destino,''HH24MI'')::varchar as hora_destino,
                           bv.tarifa, 
                           bv.equipaje,
                           bv.clase,
                           bv.cupon,
                           bv.flight_status,
                           ((bv.tiempo_conexion /60 ) || ''h'' || (bv.tiempo_conexion % 60 ) || ''m'')::varchar as conexion,
-                          bv.retorno
+                          bv.retorno,
+                          bv.validez_tarifa,
+                          po.codigo as pais_origen,
+                          pd.codigo as pais_destino
                           from obingresos.tboleto_vuelo bv
                           inner join obingresos.taeropuerto ao on bv.id_aeropuerto_origen = ao.id_aeropuerto
                           inner join obingresos.taeropuerto ad on bv.id_aeropuerto_destino = ad.id_aeropuerto
                           inner join param.tlugar lo on lo.id_lugar = ao.id_lugar
                           inner join param.tlugar ld on ld.id_lugar = ad.id_lugar
+                          inner join param.tlugar po on po.id_lugar = param.f_get_id_lugar_pais(lo.id_lugar)
+                          inner join param.tlugar pd on pd.id_lugar = param.f_get_id_lugar_pais(ld.id_lugar)
                           where bv.id_boleto = ' || v_parametros.id_boleto|| ' or bv.id_boleto_conjuncion = ' || v_parametros.id_boleto|| ' 
                           order by bv.cupon ASC';
 
