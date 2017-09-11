@@ -19,6 +19,11 @@ class ACTAgencia extends ACTbase{
 			//$this->objParam->addFiltro(" age.id_lugar in (select id_lugar from param.tlugar where codigo=''".$this->objParam->getParametro('lugar')."'')");
 		}
 
+        if($this->objParam->getParametro('vista') == 'corporativo'){
+            $this->objParam->addFiltro(" age.tipo_agencia in(''corporativa'', ''noiata'') ");
+            
+        }
+
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);
 			$this->res = $this->objReporte->generarReporteListado('MODAgencia','listarAgencia');

@@ -777,7 +777,7 @@ class ACTBoleto extends ACTbase{
             $pnr = $pnr[0];
         }
 
-       
+
         $data = array("credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
                     //"credenciales"=>$_SESSION['_CREDENCIALES_RESIBER'],
             "idioma"=>"ES",

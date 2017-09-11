@@ -18,6 +18,9 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		Phx.vista.Agencia.superclass.constructor.call(this,config);
 		this.init();
 		this.iniciarEventos();
+        if (config.vista) {
+            this.store.baseParams.vista = config.vista;
+        }
 		this.load({params:{start:0, limit:this.tam_pag}});
 		this.addButton('btnMovimientos',
             {
@@ -71,7 +74,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'codigo_int',
-				fieldLabel: 'Código Internacional',
+				fieldLabel: 'Officeid',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
