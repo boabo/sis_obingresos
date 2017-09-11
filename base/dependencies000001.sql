@@ -159,7 +159,7 @@ ALTER TABLE ONLY obingresos.tdeposito
     FOREIGN KEY (id_periodo_venta) REFERENCES obingresos.tperiodo_venta(id_periodo_venta);
 
 
-CREATE VIEW leg.vcontrato (
+CREATE OR REPLACE VIEW leg.vcontrato (
     id_usuario_reg,
     id_usuario_mod,
     fecha_reg,
@@ -304,7 +304,7 @@ ALTER TABLE ONLY obingresos.tdetalle_boletos_web
 
 ALTER TABLE ONLY obingresos.tboleto_retweb
     ADD CONSTRAINT fk_tboleto_retweb__id_moneda
-    FOREIGN KEY (id_moneda) REFERENCES obingresos.tagencia(id_moneda);
+    FOREIGN KEY (id_moneda) REFERENCES param.tmoneda(id_moneda);
     
 ALTER TABLE ONLY obingresos.tdetalle_boletos_web
     ADD CONSTRAINT fk_tdetalle_boletos_web__id_periodo_venta

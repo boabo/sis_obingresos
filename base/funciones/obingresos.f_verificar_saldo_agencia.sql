@@ -7,9 +7,11 @@ CREATE OR REPLACE FUNCTION obingresos.f_verificar_saldo_agencia (
   p_apellido varchar = NULL::character varying,
   p_insertar varchar = 'si'::character varying,
   p_monto_total numeric = NULL::numeric,
-  p_fecha date = now()::date
+  p_fecha date = now()::date,
+  out po_autorizacion varchar,
+  out po_saldo numeric
 )
-RETURNS varchar AS
+RETURNS record AS
 $body$
 /**************************************************************************
  FUNCION: 		obingresos.f_verificar_saldo_agencia
@@ -39,14 +41,13 @@ DECLARE
     v_suma_movimientos			numeric;
     v_suma_periodos_ant			numeric;
     v_moneda					varchar;
-    v_saldo						numeric;
-    v_codigo_auto				varchar;
+    
     v_terciariza				varchar;
     v_monto						numeric;
 
 BEGIN
     v_nombre_funcion:='obingresos.f_verificar_saldo_agencia';
-    v_saldo = obingresos.f_get_saldo_agencia(p_id_agencia,p_moneda);
+    po_saldo = obingresos.f_get_saldo_agencia(p_id_agencia,p_moneda);
 
     select coalesce (a.terciariza,'no') into v_terciariza
     from obingresos.tagencia a
@@ -78,8 +79,9 @@ BEGIN
 	end if;
 
     v_id_moneda_base = (select param.f_get_moneda_base());
-    if (v_saldo >= v_monto ) then
-        v_codigo_auto = uuid_generate_v4()::varchar;
+    if (po_saldo >= v_monto ) then
+        po_autorizacion = uuid_generate_v4()::varchar;
+        po_saldo = po_saldo - v_monto;
         if (p_insertar = 'si')then
 
         	INSERT INTO
@@ -112,7 +114,7 @@ BEGIN
                 p_apellido,
                 v_monto,
                 v_id_moneda,
-                v_codigo_auto,
+                po_autorizacion,
                 'no',
                 'no',
                 NULL,
@@ -122,12 +124,12 @@ BEGIN
               );
             end if;
     else
-        raise exception 'La agencia no tiene saldo suficiente para emitir el boleto. El saldo es de % %',v_saldo,v_moneda;
+        raise exception 'La agencia no tiene saldo suficiente para emitir el boleto. El saldo es de % %',po_saldo,v_moneda;
     end if;
 
 
 
-	return v_codigo_auto;
+	return;
 
 EXCEPTION
 

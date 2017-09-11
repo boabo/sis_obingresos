@@ -218,7 +218,8 @@ BEGIN
             	raise exception 'La agencia tiene periodos adeudados vencidos. Verifique su estado de cuenta!!!';            
         	end if;
             
-            v_codigo_auto = obingresos.f_verificar_saldo_agencia(v_parametros.id_agencia,
+            select po_autorizacion, po_saldo into v_codigo_auto ,v_saldo 
+            from obingresos.f_verificar_saldo_agencia(v_parametros.id_agencia,
                 							v_parametros.monto,v_parametros.moneda::varchar,p_id_usuario,v_parametros.pnr,v_parametros.apellido,'si',v_parametros.monto_total,v_parametros.fecha);
             
             
@@ -228,7 +229,7 @@ BEGIN
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','La entidad tiene saldo para emitir la reserva'); 
             v_resp = pxp.f_agrega_clave(v_resp,'tipo_mensaje','exito');
             v_resp = pxp.f_agrega_clave(v_resp,'codigo_autorizacion',v_codigo_auto::varchar);
-
+			v_resp = pxp.f_agrega_clave(v_resp,'saldo',v_saldo::varchar);
             --Devuelve la respuesta
             return v_resp;
 
