@@ -309,7 +309,8 @@ class ACTDeposito extends ACTbase{
             !isset($_SESSION['_LOCAL_REST_USR']) ||!isset($_SESSION['_LOCAL_REST_PASS']) ) {
             throw new Exception("No existe parametrizacion completa para conexion FTP o REST", 3);
         }
-
+        echo "llega";
+        exit;
         //Crear conexion rest
         $folder = ltrim($_SESSION["_FOLDER"], '/');
         $pxpRestClient = PxpRestClient::connect($_SERVER['HTTP_HOST'], $folder . 'pxp/lib/rest/')
@@ -358,6 +359,11 @@ class ACTDeposito extends ACTbase{
         echo $out;
         exit;
 
+    }
+    function completarDeposito(){
+        $this->objFunc=$this->create('MODDeposito');
+        $this->res=$this->objFunc->completarDeposito($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
     }
 }
 
