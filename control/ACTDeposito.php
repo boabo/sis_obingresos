@@ -113,6 +113,8 @@ class ACTDeposito extends ACTbase{
                         "idDepositoERP"=> $datos['id_deposito'],
                         "estadoDeposito"=> 'validado'
                     ));
+                echo $res;
+            exit;
 
         }
         $this->res->imprimirRespuesta($this->res->generarJson());
@@ -354,6 +356,7 @@ class ACTDeposito extends ACTbase{
             ));
         $obj_out = json_decode($out);
 
+        
         $obj_out->ROOT->datos->url = $_SERVER['HTTP_HOST'] . $_SESSION["_FOLDER"] . str_replace('./../../../','',$obj_out->ROOT->datos->url);
         $out = json_encode($obj_out);
         echo $out;
