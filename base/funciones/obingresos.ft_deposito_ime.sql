@@ -34,8 +34,6 @@ DECLARE
     v_id_moneda				integer;
     v_pnr					varchar;
     v_estado				varchar;
-    v_agencia				record;
-    v_id_alarma				integer;
 
 
 BEGIN
@@ -53,7 +51,6 @@ BEGIN
 	if(p_transaccion='OBING_DEP_INS')then
 
         begin
-        	
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
             
             	v_id_moneda = v_parametros.id_moneda_deposito;
@@ -99,13 +96,13 @@ BEGIN
                 )RETURNING id_deposito into v_id_deposito;
             
             else
-            	
+            
                 insert into obingresos.tdeposito(
                 estado_reg,
                 nro_deposito,
                 monto_deposito,
                 id_moneda_deposito,
-                id_agencia,
+               id_agencia,
                 fecha,
                 saldo,                
                 id_usuario_reg,
@@ -120,7 +117,7 @@ BEGIN
                 v_parametros.nro_deposito,
                 v_parametros.monto_deposito,
                 v_id_moneda,
-                 COALESCE( v_parametros.id_agencia,null),
+                COALESCE( v_parametros.id_agencia,null),
                 v_parametros.fecha,
                 v_parametros.saldo,                
                 p_id_usuario,
@@ -131,42 +128,6 @@ BEGIN
                 null,
                 'borrador'
                 )RETURNING id_deposito into v_id_deposito;
-                
-                if (v_parametros.id_agencia is not null) then
-                	--generar alerta para ingresos
-                    select a.*,lu.codigo as ciudad into v_agencia
-                    from obingresos.tagencia a
-                    inner join param.tlugar lu on lu.id_lugar = a.id_lugar
-                    where id_agencia = v_parametros.id_agencia;
-                    
-                    if (v_agencia.tipo_pago = 'prepago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_prep'))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
-                        			|| v_parametros.monto_deposito || ' ' || v_parametros.moneda || ' . Ingrese al ERP para verificarlo',
-                        				pxp.f_get_variable_global('obingresos_notidep_prep')));
-                	end if;
-                    
-                    if (v_agencia.tipo_agencia = 'corporativa' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_corp'))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
-                        			|| v_parametros.monto_deposito || ' ' || v_parametros.moneda || ' . Ingrese al ERP para verificarlo',
-                        				pxp.f_get_variable_global('obingresos_notidep_corp')));
-                	end if;
-                    if (v_agencia.tipo_pago = 'postpago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_prep')) then 
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
-                        			|| v_parametros.monto_deposito || ' ' || v_parametros.moneda || ' . Ingrese al ERP para verificarlo',
-                        				pxp.f_get_variable_global('obingresos_notidep_prep')));
-                	end if;
-                    if (v_agencia.tipo_pago = 'postpago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_posp_'||v_agencia.ciudad))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
-                        			|| v_parametros.monto_deposito || ' ' || v_parametros.moneda || ' . Ingrese al ERP para verificarlo',
-                        				pxp.f_get_variable_global('obingresos_notidep_posp_'||v_agencia.ciudad)));
-                	end if;
-                    
-                    if (exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep'))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito de agencia','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
-                        			|| v_parametros.monto_deposito || ' ' || v_parametros.moneda || ' . Ingrese al ERP para verificarlo',
-                        				pxp.f_get_variable_global('obingresos_notidep')));
-                	end if;
-                end if;
             end if;
             
             if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then

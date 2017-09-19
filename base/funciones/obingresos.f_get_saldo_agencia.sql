@@ -79,7 +79,7 @@ BEGIN
                                 end)
                             END) into v_suma_movimientos
     from obingresos.tmovimiento_entidad me
-    where me.id_periodo_venta is null and me.id_agencia = p_id_agencia;
+    where me.id_periodo_venta is null and me.id_agencia = p_id_agencia and me.estado_reg = 'activo';
 
     --saldo en mb
     v_saldo = coalesce(v_suma_movimientos,0) + coalesce(v_suma_periodos_ant,0);

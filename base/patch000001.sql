@@ -1032,3 +1032,13 @@ ALTER TABLE obingresos.tagencia
   ADD COLUMN email VARCHAR(255);
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-10/09/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-12/09/2017********************************************/
+DROP TRIGGER tdeposito_tr ON obingresos.tdeposito;
+
+CREATE TRIGGER tdeposito_tr
+  AFTER UPDATE
+  ON obingresos.tdeposito FOR EACH ROW
+  EXECUTE PROCEDURE obingresos.f_tr_deposito();
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-12/09/2017********************************************/
