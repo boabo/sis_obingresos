@@ -34,6 +34,10 @@ DECLARE
     v_id_moneda				integer;
     v_pnr					varchar;
     v_estado				varchar;
+    v_agencia				record;
+    v_id_alarma				integer;
+    v_monto_total			numeric;
+    v_moneda				varchar;
 
 
 BEGIN
@@ -51,13 +55,19 @@ BEGIN
 	if(p_transaccion='OBING_DEP_INS')then
 
         begin
+        	
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
             
             	v_id_moneda = v_parametros.id_moneda_deposito;
+                select m.codigo_internacional into v_moneda
+                from param.tmoneda m
+                where m.id_moneda = v_parametros.id_moneda_deposito;
+                
             else
             	select m.id_moneda into v_id_moneda
                 from param.tmoneda m
                 where m.codigo_internacional = v_parametros.moneda;
+                v_moneda = v_parametros.moneda;
             end if;
             
         	if (v_parametros.tipo = 'banca') then
@@ -96,13 +106,13 @@ BEGIN
                 )RETURNING id_deposito into v_id_deposito;
             
             else
-            
+            	
                 insert into obingresos.tdeposito(
                 estado_reg,
                 nro_deposito,
                 monto_deposito,
                 id_moneda_deposito,
-               id_agencia,
+                id_agencia,
                 fecha,
                 saldo,                
                 id_usuario_reg,
@@ -117,7 +127,7 @@ BEGIN
                 v_parametros.nro_deposito,
                 v_parametros.monto_deposito,
                 v_id_moneda,
-                COALESCE( v_parametros.id_agencia,null),
+               v_parametros.id_agencia,
                 v_parametros.fecha,
                 v_parametros.saldo,                
                 p_id_usuario,
@@ -128,6 +138,42 @@ BEGIN
                 null,
                 'borrador'
                 )RETURNING id_deposito into v_id_deposito;
+                
+                if (v_parametros.id_agencia is not null) then
+                	--generar alerta para ingresos
+                    select a.*,lu.codigo as ciudad into v_agencia
+                    from obingresos.tagencia a
+                    inner join param.tlugar lu on lu.id_lugar = a.id_lugar
+                    where id_agencia = v_parametros.id_agencia;
+                    
+                    if (v_agencia.tipo_pago = 'prepago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_prep'))  then
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                        				pxp.f_get_variable_global('obingresos_notidep_prep')));
+                	end if;
+                    
+                    if (v_agencia.tipo_agencia = 'corporativa' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_corp'))  then
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                        				pxp.f_get_variable_global('obingresos_notidep_corp')));
+                	end if;
+                    if (v_agencia.tipo_pago = 'postpago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_prep')) then 
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                        				pxp.f_get_variable_global('obingresos_notidep_prep')));
+                	end if;
+                    if (v_agencia.tipo_pago = 'postpago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_posp_'||v_agencia.ciudad))  then
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                        				pxp.f_get_variable_global('obingresos_notidep_posp_'||v_agencia.ciudad)));
+                	end if;
+                    
+                    if (exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep'))  then
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito de agencia','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por ' 
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                        				pxp.f_get_variable_global('obingresos_notidep')));
+                	end if;
+                end if;
             end if;
             
             if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then
@@ -250,7 +296,7 @@ BEGIN
                 
                 insert into obingresos.tdeposito(
                 nro_deposito,
-                --id_agencia,
+                id_agencia,
                 monto_deposito,
                 moneda,
                 descripcion,
@@ -262,7 +308,7 @@ BEGIN
                 observaciones
                 ) values(
                 trim(both ' ' from v_parametros.nro_deposito),
-                --v_parametros.id_agencia,
+                v_parametros.id_agencia,
                 v_parametros.monto_deposito,
                 trim(both ' ' from v_parametros.moneda),
                 trim(both ' ' from v_parametros.descripcion),
@@ -389,6 +435,85 @@ BEGIN
             return v_resp;
 
 		end;
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEP_INSE'
+ 	#DESCRIPCION:	Insercion de registros
+ 	#AUTOR:		MMV
+ 	#FECHA:		
+	***********************************/
+    
+    elsif(p_transaccion='OBING_DEP_INSE')then
+   			begin
+            	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
+            
+            	v_id_moneda = v_parametros.id_moneda_deposito;
+            else
+            	select m.id_moneda into v_id_moneda
+                from param.tmoneda m
+                where m.codigo_internacional = v_parametros.moneda;
+            end if;
+            
+            	insert into obingresos.tdeposito(
+                estado_reg,
+                nro_deposito,
+                monto_deposito,
+                id_moneda_deposito,
+                fecha,
+               -- agt,
+                id_usuario_reg,
+                fecha_reg,
+                id_usuario_ai,
+                usuario_ai,
+                id_usuario_mod,
+                fecha_mod,
+                tipo,
+                --fecha_venta,
+               -- monto_total,
+                id_apertura_cierre_caja,
+                monto_total
+                ) values(
+                'activo',
+                v_parametros.nro_deposito,
+                v_parametros.monto_deposito,
+                v_id_moneda,               
+                v_parametros.fecha,                
+               -- v_parametros.agt,
+                p_id_usuario,
+                now(),
+                v_parametros._id_usuario_ai,
+                v_parametros._nombre_usuario_ai,
+                null,
+                null,
+                'completar_deposito',
+               -- v_parametros.fecha_venta,
+               -- v_parametros.monto_total,
+                v_parametros.id_apertura_cierre_caja,
+                v_parametros.monto_deposito
+                )RETURNING id_deposito into v_id_deposito;
+                
+                
+                /*select sum(d.monto_deposito)
+                
+                into 
+                v_monto_total
+                from obingresos.tdeposito d
+                where d.id_apertura_cierre_caja = v_parametros.id_apertura_cierre_caja and d.id_moneda_deposito = v_id_moneda;
+                
+                
+                
+                update obingresos.tdeposito set
+                monto_total = v_monto_total
+                where id_deposito = v_id_deposito;*/
+                
+                --Definicion de la respuesta
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos almacenado(a) con exito (id_deposito'||v_id_deposito||')');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_deposito',v_id_deposito::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+            
+    end ;
     
 
 	else

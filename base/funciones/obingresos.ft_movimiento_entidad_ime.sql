@@ -33,6 +33,10 @@ DECLARE
     v_codigo_autorizacion	varchar;
     v_id_periodo_venta		integer;
     v_monto					numeric;
+    v_id_alarma				integer;
+    v_moneda				varchar;
+    v_agencia				varchar;
+    v_usuario				varchar;
 			    
 BEGIN
 
@@ -51,11 +55,24 @@ BEGIN
         begin
         	
         	if (v_parametros.tipo = 'debito') then
-            	v_codigo_autorizacion = obingresos.f_verificar_saldo_agencia(v_parametros.id_agencia,
+            	select po_autorizacion into v_codigo_autorizacion  
+            	from obingresos.f_verificar_saldo_agencia(v_parametros.id_agencia,
                 							v_parametros.monto,v_parametros.id_moneda::varchar,p_id_usuario,NULL,NULL,'no');
             
             end if;	
-        
+            
+            select m.codigo_internacional into v_moneda
+            from param.tmoneda m
+            where id_moneda = v_parametros.id_moneda;
+            
+            select a.nombre into v_agencia
+            from obingresos.tagencia a
+            where a.id_agencia = v_parametros.id_agencia;
+            
+        	select u.cuenta into v_usuario
+            from segu.tusuario u
+            where u.id_usuario = p_id_usuario;
+            
         	--Sentencia de la insercion
         	insert into obingresos.tmovimiento_entidad(
 			id_moneda,
@@ -103,6 +120,12 @@ BEGIN
 			)RETURNING id_movimiento_entidad into v_id_movimiento_entidad;
             
             
+            
+            if (exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep'))  then
+                v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo '|| v_parametros.tipo || 'registrado para la agencia ' || v_agencia,'El usuario ' || v_usuario || ' ha registrado un ajuste de tipo ' 
+                            || v_parametros.tipo || ' para la agencia ' || v_agencia || ' por un monto de ' || v_parametros.monto || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                                pxp.f_get_variable_global('obingresos_notidep')));
+            end if;
 			
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Movimientos almacenado(a) con exito (id_movimiento_entidad'||v_id_movimiento_entidad||')'); 
@@ -123,6 +146,18 @@ BEGIN
 	elsif(p_transaccion='OBING_MOE_MOD')then
 
 		begin
+        	select m.codigo_internacional into v_moneda
+            from param.tmoneda m
+            where id_moneda = v_parametros.id_moneda;
+            
+            select a.nombre into v_agencia
+            from obingresos.tagencia a
+            where a.id_agencia = v_parametros.id_agencia;
+            
+        	select u.cuenta into v_usuario
+            from segu.tusuario u
+            where u.id_usuario = p_id_usuario;
+            
 			--Sentencia de la modificacion
 			update obingresos.tmovimiento_entidad set
 			id_moneda = v_parametros.id_moneda,
@@ -142,6 +177,12 @@ BEGIN
 			id_usuario_ai = v_parametros._id_usuario_ai,
 			usuario_ai = v_parametros._nombre_usuario_ai
 			where id_movimiento_entidad=v_parametros.id_movimiento_entidad;
+            
+            if (exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep'))  then
+                v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Modificacion a movimiento de tipo '|| v_parametros.tipo || ' para la agencia ' || v_agencia,'El usuario ' || v_usuario || ' ha modificado un ' 
+                            || v_parametros.tipo || ' de la agencia ' || v_agencia || ' por un monto de ' || v_parametros.monto || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                                pxp.f_get_variable_global('obingresos_notidep')));
+            end if;
                
 			--Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Movimientos modificado(a)'); 

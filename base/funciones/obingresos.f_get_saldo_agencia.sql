@@ -34,6 +34,7 @@ DECLARE
     v_moneda					varchar;
     v_saldo						numeric;
     v_codigo_auto				varchar;
+    v_id_agencia				integer;
 
 BEGIN
     v_nombre_funcion:='obingresos.f_get_saldo_agencia';
@@ -62,7 +63,11 @@ BEGIN
                 param.f_convertir_moneda(v_id_moneda_usd,v_id_moneda_base,COALESCE(pva.monto_usd,0),now()::date,'O',2)) into v_suma_periodos_ant
     from obingresos.tperiodo_venta_agencia pva
     where pva.id_agencia = p_id_agencia and pva.estado= 'abierto';
-
+    
+	select id_agencia into v_id_agencia
+    from obingresos.tmovimiento_entidad me
+    where me.id_periodo_venta is null and me.id_agencia = p_id_agencia and me.estado_reg = 'activo'
+    for share;
 
     --sumar todos los movimientos debito en - y credito en +
     select sum(case when me.id_moneda = v_id_moneda_base then
