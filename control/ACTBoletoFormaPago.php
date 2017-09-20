@@ -26,7 +26,25 @@ class ACTBoletoFormaPago extends ACTbase{
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
-				
+
+	function listarBoletoAmadeusFormaPago(){
+		$this->objParam->defecto('ordenacion','id_boleto_amadeus_forma_pago');
+
+		$this->objParam->defecto('dir_ordenacion','asc');
+		if ($this->objParam->getParametro('id_boleto_amadeus') != '') {
+			$this->objParam->addFiltro("bfp.id_boleto_amadeus = ". $this->objParam->getParametro('id_boleto_amadeus'));
+		}
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODBoletoFormaPago','listarBoletoAmadeusFormaPago');
+		} else{
+			$this->objFunc=$this->create('MODBoletoFormaPago');
+
+			$this->res=$this->objFunc->listarBoletoAmadeusFormaPago($this->objParam);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
 	function insertarBoletoFormaPago(){
 		$this->objFunc=$this->create('MODBoletoFormaPago');	
 		if($this->objParam->insertar('id_boleto_forma_pago')){

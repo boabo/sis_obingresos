@@ -49,7 +49,44 @@ class MODBoletoFormaPago extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
-			
+
+	function listarBoletoAmadeusFormaPago(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_boleto_forma_pago_sel';
+		$this->transaccion='OBING_BFPAMA_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+
+		//Definicion de la lista del resultado del query
+		$this->captura('id_boleto_amadeus_forma_pago','int4');
+		$this->captura('tipo','varchar');
+		$this->captura('id_forma_pago','int4');
+		$this->captura('id_boleto_amadeus','int4');
+		$this->captura('estado_reg','varchar');
+		$this->captura('tarjeta','varchar');
+		$this->captura('ctacte','varchar');
+		$this->captura('importe','numeric');
+		$this->captura('numero_tarjeta','varchar');
+		$this->captura('id_usuario_ai','int4');
+		$this->captura('id_usuario_reg','int4');
+		$this->captura('usuario_ai','varchar');
+		$this->captura('fecha_reg','timestamp');
+		$this->captura('id_usuario_mod','int4');
+		$this->captura('fecha_mod','timestamp');
+		$this->captura('usr_reg','varchar');
+		$this->captura('usr_mod','varchar');
+		$this->captura('forma_pago','varchar');
+		$this->captura('codigo_forma_pago','varchar');
+		$this->captura('moneda','varchar');
+		$this->captura('codigo_tarjeta','varchar');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function insertarBoletoFormaPago(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_forma_pago_ime';
