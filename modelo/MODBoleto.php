@@ -175,19 +175,19 @@ class MODBoleto extends MODbase{
 		$this->captura('fecha_mod','timestamp');
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
-/*
+
 		$this->captura('id_forma_pago','integer');
 		$this->captura('forma_pago','varchar');
-		$this->captura('monto_forma_pago','numeric');*/
+		$this->captura('monto_forma_pago','numeric');
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('numero_tarjeta','varchar');
 		$this->captura('codigo_tarjeta','varchar');
 		$this->captura('ctacte','varchar');
 		$this->captura('moneda_fp1','varchar');
 
-		/*$this->captura('id_forma_pago2','integer');
+		$this->captura('id_forma_pago2','integer');
 		$this->captura('forma_pago2','varchar');
-		$this->captura('monto_forma_pago2','numeric');*/
+		$this->captura('monto_forma_pago2','numeric');
 		$this->captura('codigo_forma_pago2','varchar');
 		$this->captura('numero_tarjeta2','varchar');
 		$this->captura('codigo_tarjeta2','varchar');
