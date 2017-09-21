@@ -868,7 +868,7 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai',
                 'fecha_reg','fecha_mod','usr_reg','usr_mod','estado','cupones','codigo_noiata','codigo_agencia','neto','tipopax','nombre_agencia','comision'],
-            rowExpander: new Ext.ux.grid.RowExpander({
+            /*rowExpander: new Ext.ux.grid.RowExpander({
                 tpl : new Ext.Template(
                     '<br>',
                     '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Fecha de Emision:&nbsp;&nbsp;</b> {fecha_emision:date("d/m/Y")}</p>',
@@ -878,7 +878,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Creado por:&nbsp;&nbsp;</b> {usr_reg}</p>',
                     '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Modificado por:&nbsp;&nbsp;</b> {usr_mod}</p><br>'
                 )
-            }),
+            }),*/
             bdel:false,
             bnew:false,
             bedit:false,

@@ -338,11 +338,7 @@ class ACTBoleto extends ACTbase{
 					}
 				}
 				$this->objParam->addParametro('moneda', $moneda);
-				/*$this->objParam->addParametro('endoso',"");
-				$this->objParam->addParametro('origen',"");
-				$this->objParam->addParametro('destino',"");
-				$this->objParam->addParametro('cupones',"");
-				$this->objParam->addParametro('impuestos',"");*/
+				/* inicio forma de pago */
 				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CA') {
 					//forma de pago cash
 					$this->objParam->addParametro('fp', 'CA');
@@ -356,8 +352,7 @@ class ACTBoleto extends ACTbase{
 					$this->objParam->addParametro('valor_fp', 0);
 				}
 
-				//$this->objParam->addParametro('mandar_fp',"");
-				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '') {
+				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '' || $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == ' ') {
 					//exception valor forma de pago no definida
 					//throw new Exception(__METHOD__ . 'VALOR FORMA DE PAGO NO DEFINIDO');
 					$this->objParam->addParametro('fp', 'CA');
@@ -374,12 +369,12 @@ class ACTBoleto extends ACTbase{
 						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
 							$this->objParam->addParametro('fp', 'CCAX');
 						}
+						$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
 					}
 				}
 
-				/*$this->objParam->addParametro('rutas',"");
-				$this->objParam->addParametro('ruta_completa',"");
-				$this->objParam->addParametro('vuelos',"");*/
+				/* fin forma de pago */
+
 				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() != 'CANN') {
 					$this->objParam->addParametro('localizador', $boleto->reservationInformation->reservation->controlNumber->__toString());
 				}else{
@@ -471,11 +466,7 @@ class ACTBoleto extends ACTbase{
 					}
 				}
 				$this->objParam->addParametro('moneda', $moneda);
-				/*$this->objParam->addParametro('endoso',"");
-				$this->objParam->addParametro('origen',"");
-				$this->objParam->addParametro('destino',"");
-				$this->objParam->addParametro('cupones',"");
-				$this->objParam->addParametro('impuestos',"");*/
+				/* inicio forma de pago */
 				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CA') {
 					//forma de pago cash
 					$this->objParam->addParametro('fp', 'CA');
@@ -489,8 +480,7 @@ class ACTBoleto extends ACTbase{
 					$this->objParam->addParametro('valor_fp', 0);
 				}
 
-				//$this->objParam->addParametro('mandar_fp',"");
-				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '') {
+				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '' || $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == ' ') {
 					//exception valor forma de pago no definida
 					$this->objParam->addParametro('fp', 'CA');
 					$this->objParam->addParametro('valor_fp', 0);
@@ -506,15 +496,12 @@ class ACTBoleto extends ACTbase{
 					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
 						$this->objParam->addParametro('fp', 'CCAX');
 					}
+					$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
 				}
 
-				/*$this->objParam->addParametro('rutas',"");
-				$this->objParam->addParametro('ruta_completa',"");
-				$this->objParam->addParametro('vuelos',"");*/
+				/* fin forma de pago */
+
 				$this->objParam->addParametro('localizador', $boleto->reservationInformation->reservation->controlNumber->__toString());
-				/*$this->objParam->addParametro('identificacion',"");
-				$this->objParam->addParametro('fare_calc',"");
-				$this->objParam->addParametro('vuelos2',"");*/
 
 				if ($this->objParam->getParametro('id_usuario_cajero') != '') {
 					$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
@@ -523,13 +510,15 @@ class ACTBoleto extends ACTbase{
 				} else {
 					if ($this->objParam->getParametro('reporte') == 'reporte') {
 
-						if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
-							$this->objReporte = new Reporte($this->objParam,$this);
-							$this->res = $this->objReporte->generarReporteListado('MODBoleto','insertarBoletoReporteServicioAmadeus');
-						} else{
+						//if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+							/*$this->objReporte = new Reporte($this->objParam,$this);
+							$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');*/
+							$this->objFunc = $this->create('MODBoleto');
+							$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
+						/*} else{
 							$this->objFunc=$this->create('MODBoleto');
 							$this->res=$this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
-						}
+						}*/
 						/*
 						$this->objFunc = $this->create('MODBoleto');
 						$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);*/
@@ -546,9 +535,15 @@ class ACTBoleto extends ACTbase{
 			}
 		}
 		if ($this->objParam->getParametro('reporte') == 'reporte') {
-			$this->objFunc = $this->create('MODBoleto');
-			$this->res = $this->objFunc->listarBoletoAmadeus($this->objParam);
-			$this->res->imprimirRespuesta($this->res->generarJson());
+			if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+				$this->objReporte = new Reporte($this->objParam,$this);
+				$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');
+				$this->res->imprimirRespuesta($this->res->generarJson());
+			}else {
+				$this->objFunc = $this->create('MODBoleto');
+				$this->res = $this->objFunc->listarBoletoAmadeus($this->objParam);
+				$this->res->imprimirRespuesta($this->res->generarJson());
+			}
 		}else {
 			$this->mensajeRes = new Mensaje();
 			$this->mensajeRes->setMensaje('EXITO', 'ACTBoleto.php', 'Se recuperaron los boletos',
