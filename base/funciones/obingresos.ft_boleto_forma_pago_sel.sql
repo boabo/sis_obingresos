@@ -12,13 +12,13 @@ $body$
  DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tboleto_forma_pago'
  AUTOR: 		 (jrivera)
  FECHA:	        13-06-2016 20:42:15
- COMENTARIOS:	
+ COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
 
- DESCRIPCION:	
- AUTOR:			
- FECHA:		
+ DESCRIPCION:
+ AUTOR:
+ FECHA:
 ***************************************************************************/
 
 DECLARE
@@ -27,21 +27,21 @@ DECLARE
 	v_parametros  		record;
 	v_nombre_funcion   	text;
 	v_resp				varchar;
-			    
+
 BEGIN
 
 	v_nombre_funcion = 'obingresos.ft_boleto_forma_pago_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
-	/*********************************    
+	/*********************************
  	#TRANSACCION:  'OBING_BFP_SEL'
  	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		jrivera	
+ 	#AUTOR:		jrivera
  	#FECHA:		13-06-2016 20:42:15
 	***********************************/
 
 	if(p_transaccion='OBING_BFP_SEL')then
-     				
+
     	begin
     		--Sentencia de la consulta
 			v_consulta:='select
@@ -63,23 +63,24 @@ BEGIN
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
                         (fp.nombre || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
+                        bfp.forma_pago_amadeus,
                         fp.codigo as codigo_forma_pago,
                         mon.codigo_internacional as moneda,
-                        bfp.codigo_tarjeta	
+                        bfp.codigo_tarjeta
 						from obingresos.tboleto_forma_pago bfp
 						inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
 				        inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                         left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
                         where  ';
-			
+
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 
 			--Devuelve la respuesta
 			return v_consulta;
-						
+
 		end;
 
     /*********************************
@@ -113,6 +114,7 @@ BEGIN
 						usu2.cuenta as usr_mod,
                         (fp.nombre || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
                         fp.codigo as codigo_forma_pago,
+                        bfp.forma_pago_amadeus,
                         mon.codigo_internacional as moneda,
                         bfp.codigo_tarjeta
 						from obingresos.tboleto_amadeus_forma_pago bfp
@@ -176,23 +178,23 @@ BEGIN
                         inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
 					    left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
                         where ';
-			
-			--Definicion de la respuesta		    
+
+			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
-					
+
 	else
-					     
+
 		raise exception 'Transaccion inexistente';
-					         
+
 	end if;
-					
+
 EXCEPTION
-					
+
 	WHEN OTHERS THEN
 			v_resp='';
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);

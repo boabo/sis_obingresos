@@ -100,14 +100,8 @@ class ACTBoleto extends ACTbase{
 	}
 
 	function modificarFpPNRBoleto(){
-		/*$this->objParam->defecto('ordenacion','id_boleto');
-		$this->objParam->defecto('dir_ordenacion','desc');
-		$this->objParam->defecto('puntero','0');
-		$this->objParam->defecto('cantidad','1');
-		*/
 		$this->objFunc=$this->create('MODBoleto');
 		$this->res=$this->objFunc->modificarFpPNRBoleto($this->objParam);
-
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
@@ -338,6 +332,7 @@ class ACTBoleto extends ACTbase{
 					}
 				}
 				$this->objParam->addParametro('moneda', $moneda);
+				$this->objParam->addParametro('forma_pago_amadeus', $boleto->fopDetails->fopDescription->formOfPayment->type->__toString());
 				/* inicio forma de pago */
 				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CA') {
 					//forma de pago cash
@@ -362,12 +357,16 @@ class ACTBoleto extends ACTbase{
 					if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CC') {
 						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'VI') {
 							$this->objParam->addParametro('fp', 'CCVI');
-						}
-						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
-							$this->objParam->addParametro('fp', 'CCCA');
-						}
-						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
-							$this->objParam->addParametro('fp', 'CCAX');
+						}else {
+							if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
+								$this->objParam->addParametro('fp', 'CCCA');
+							} else {
+								if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
+									$this->objParam->addParametro('fp', 'CCAX');
+								}else{
+									$this->objParam->addParametro('fp', '');
+								}
+							}
 						}
 						$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
 					}
@@ -380,9 +379,6 @@ class ACTBoleto extends ACTbase{
 				}else{
 					$this->objParam->addParametro('localizador', ' ');
 				}
-				/*$this->objParam->addParametro('identificacion',"");
-				$this->objParam->addParametro('fare_calc',"");
-				$this->objParam->addParametro('vuelos2',"");*/
 
 				if ($this->objParam->getParametro('id_usuario_cajero') != '') {
 					$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
@@ -466,6 +462,7 @@ class ACTBoleto extends ACTbase{
 					}
 				}
 				$this->objParam->addParametro('moneda', $moneda);
+				$this->objParam->addParametro('forma_pago_amadeus', $boleto->fopDetails->fopDescription->formOfPayment->type->__toString());
 				/* inicio forma de pago */
 				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CA') {
 					//forma de pago cash
@@ -489,12 +486,16 @@ class ACTBoleto extends ACTbase{
 				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CC') {
 					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'VI') {
 						$this->objParam->addParametro('fp', 'CCVI');
-					}
-					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
-						$this->objParam->addParametro('fp', 'CCCA');
-					}
-					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
-						$this->objParam->addParametro('fp', 'CCAX');
+					}else {
+						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
+							$this->objParam->addParametro('fp', 'CCCA');
+						} else {
+							if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
+								$this->objParam->addParametro('fp', 'CCAX');
+							} else {
+								$this->objParam->addParametro('fp', '');
+							}
+						}
 					}
 					$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
 				}

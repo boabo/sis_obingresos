@@ -100,6 +100,21 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
+                        name: 'forma_pago_amadeus',
+                        fieldLabel: 'Forma Pago Amadeus',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        maxLength:50
+                    },
+                    type:'TextField',
+
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+                {
+                    config:{
                         name: 'importe',
                         fieldLabel: 'Monto a Pagar',
                         allowBlank:false,
@@ -272,6 +287,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'numero_tarjeta', type: 'string'},
                 {name:'codigo_tarjeta', type: 'string'},
                 {name:'forma_pago', type: 'string'},
+                {name:'forma_pago_amadeus', type: 'string'},
                 {name:'codigo_forma_pago', type: 'string'},
                 {name:'id_usuario_ai', type: 'numeric'},
                 {name:'id_usuario_reg', type: 'numeric'},

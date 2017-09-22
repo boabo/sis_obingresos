@@ -178,6 +178,7 @@ class MODBoleto extends MODbase{
 
 		$this->captura('id_forma_pago','integer');
 		$this->captura('forma_pago','varchar');
+		$this->captura('forma_pago_amadeus','varchar');
 		$this->captura('monto_forma_pago','numeric');
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('numero_tarjeta','varchar');
@@ -187,6 +188,7 @@ class MODBoleto extends MODbase{
 
 		$this->captura('id_forma_pago2','integer');
 		$this->captura('forma_pago2','varchar');
+		$this->captura('forma_pago_amadeus2','varchar');
 		$this->captura('monto_forma_pago2','numeric');
 		$this->captura('codigo_forma_pago2','varchar');
 		$this->captura('numero_tarjeta2','varchar');
@@ -306,9 +308,9 @@ class MODBoleto extends MODbase{
 		$this->setParametro('moneda','moneda','varchar');
 		$this->setParametro('id_forma_pago','id_forma_pago','integer');
 		$this->setParametro('monto_forma_pago','monto_forma_pago','varchar');
-		$this->setParametro('numero_tarjeta','numero_tarjeta','integer');
+		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
 		$this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
-		$this->setParametro('ctacte','ctacte','numeric');
+		$this->setParametro('ctacte','ctacte','varchar');
 		$this->setParametro('id_forma_pago2','id_forma_pago2','integer');
 		$this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
 		$this->setParametro('numero_tarjeta2','numero_tarjeta2','varchar');
@@ -405,7 +407,6 @@ class MODBoleto extends MODbase{
 		$this->tipo_procedimiento='IME';
 
 		//Define los parametros para la funcion
-		//$this->setParametro('id_boleto','id_boleto','integer');//ok
 		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
 		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
 		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
@@ -417,24 +418,12 @@ class MODBoleto extends MODbase{
 		$this->setParametro('comision','comision','numeric');//ok
 		$this->setParametro('carrier_fees','carrier_fees','varchar');//ok
 		$this->setParametro('moneda','moneda','varchar');//ok
+		$this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');//ok
 		$this->setParametro('voided','voided','varchar');//ok
-		//$this->setParametro('origen','origen','varchar');//ok
-		//$this->setParametro('destino','destino','varchar');//ok
-		//$this->setParametro('cupones','cupones','integer');//ok
-		//$this->setParametro('impuestos','impuestos','varchar');//ok
 
 		$this->setParametro('fp','fp','varchar');
-		//$this->setParametro('moneda_fp','moneda_fp','varchar');
 		$this->setParametro('valor_fp','valor_fp','numeric');
-		//$this->setParametro('rutas','rutas','varchar');
-
-		//$this->setParametro('ruta_completa','ruta_completa','varchar');
-		///$this->setParametro('vuelos','vuelos','text');
 		$this->setParametro('localizador','localizador','varchar');
-		/*$this->setParametro('identificacion','identificacion','varchar');
-		$this->setParametro('fare_calc','fare_calc','text');
-		$this->setParametro('vuelos2','vuelos2','text');
-		*/
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -462,6 +451,7 @@ class MODBoleto extends MODbase{
 		$this->setParametro('moneda','moneda','varchar');//ok
 		$this->setParametro('voided','voided','varchar');//ok
 		$this->setParametro('fp','fp','varchar');
+		$this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');
 		$this->setParametro('valor_fp','valor_fp','numeric');
 		$this->setParametro('localizador','localizador','varchar');
 

@@ -452,6 +452,20 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
+                        name: 'forma_pago_amadeus',
+                        fieldLabel: 'Forma Pago Amadeus1',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        maxLength:50
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+                {
+                    config:{
                         name: 'monto_forma_pago',
                         fieldLabel: 'Monto a Pagar 1',
                         allowBlank:false,
@@ -555,6 +569,20 @@ header("content-type: text/javascript; charset=UTF-8");
                     id_grupo: 1,
                     grid: true,
                     form: true
+                },
+                {
+                    config:{
+                        name: 'forma_pago_amadeus2',
+                        fieldLabel: 'Forma Pago Amadeus2',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        maxLength:50
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
+                    form:true
                 },
                 {
                     config:{
@@ -839,6 +867,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'id_boleto_vuelo', type: 'numeric'},
                 {name:'vuelo_retorno', type: 'string'},
                 {name:'forma_pago', type: 'string'},
+                {name:'forma_pago_amadeus', type: 'string'},
                 {name:'numero_tarjeta', type: 'string'},
                 {name:'ctacte', type: 'string'},
                 {name:'codigo_forma_pago', type: 'string'},
@@ -848,6 +877,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 {name:'id_forma_pago2', type: 'numeric'},
                 {name:'forma_pago2', type: 'string'},
+                {name:'forma_pago_amadeus2', type: 'string'},
                 {name:'numero_tarjeta2', type: 'string'},
                 {name:'ctacte2', type: 'string'},
                 {name:'codigo_forma_pago2', type: 'string'},

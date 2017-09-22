@@ -16,16 +16,16 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		this.maestro=config.maestro;
 		this.grupo = 'no';
         this.tipo_usuario = 'vendedor';
+
 		Ext.Ajax.request({
-                url:'../../sis_ventas_facturacion/control/Venta/getVariablesBasicas',                
-                params: {'prueba':'uno'},
-                success:this.successGetVariables,
-                failure: this.conexionFailure,
-                arguments:config,
-                timeout:this.timeout,
-                scope:this
-            });	
-    			
+				url:'../../sis_ventas_facturacion/control/Venta/getVariablesBasicas',
+				params: {'prueba':'uno'},
+				success:this.successGetVariables,
+				failure: this.conexionFailure,
+				arguments:config,
+				timeout:this.timeout,
+				scope:this
+			});
 	},
 	successGetVariables : function (response,request) {
 		//llama al constructor de la clase padre
@@ -63,7 +63,6 @@ Phx.vista.Boleto=Ext.extend(Phx.gridInterfaz,{
 		this.store.baseParams.estado = 'borrador';
 		this.iniciarEventos();
 		this.seleccionarPuntoVentaSucursal();
-				
 	},
 	imprimirBoleto: function(){
 		//Ext.Msg.confirm('Confirmación','¿Está seguro de Imprimir el Comprobante?',function(btn){

@@ -2,8 +2,8 @@
 /**
  *@package pXP
  *@file PNRBoleto.php
- *@author  (jrivera)
- *@date 07-06-2016 18:52:34
+ *@author  Gonzalo Sarmiento
+ *@date 21-09-2017
  *@description Archivo con la interfaz de usuario que permite la ejecucion de todas las funcionalidades del sistema
  */
 
@@ -31,15 +31,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 //llama al constructor de la clase padre
                 Phx.vista.PNRBoleto.superclass.constructor.call(this,request.arguments);
                 this.init();
-                /*this.addButton('btnCaja',
-                    {
-                        text: 'Caja',
-                        iconCls: 'btransfer',
-                        disabled: true,
-                        handler: this.onCaja,
-                        tooltip: 'Envia el boleto para pago en caja'
-                    }
-                );*/
+
                 this.addButton('btnPagado',
                     {
                         text: 'Pagado',
@@ -195,16 +187,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'Field',
                     form:true
                 },
-                /*{
-                    //configuracion del componente
-                    config:{
-                        labelSeparator:'',
-                        inputType:'hidden',
-                        name: 'ids_seleccionados'
-                    },
-                    type:'Field',
-                    form:true
-                },*/
                 {
                     //configuracion del componente
                     config:{
@@ -215,9 +197,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'NumberField',
                     form:true
                 },
-
-
-
                 {
                     //configuracion del componente
                     config:{
@@ -275,12 +254,10 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else {
                                 return String.format('{0}', value);
                             }
-
-
                         }
                     },
                     type:'TextField',
-                    filters:{pfiltro:'localizador',type:'string'},
+                    filters:{pfiltro:'nr.localizador',type:'string'},
                     id_grupo:0,
                     grid:true,
                     form:true,
@@ -301,8 +278,6 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else {
                                 return String.format('{0}', value);
                             }
-
-
                         }
                     },
                     type:'TextArea',
@@ -312,36 +287,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:true
                 },
-                /*{
-                    config:{
-                        name: 'tiene_conjuncion',
-                        fieldLabel: 'Tiene Conjuncion',
-                        anchor: '80%',
-                        checked:false
-
-                    },
-                    type:'Checkbox',
-                    id_grupo:0,
-                    grid:false,
-                    form:true
-                },*/
-
-                /*{
-                    config:{
-                        name: 'nro_boleto_conjuncion',
-                        fieldLabel: 'Conjuncion : 930-',
-                        allowBlank: true,
-                        anchor: '80%',
-                        gwidth: 120,
-                        maxLength:10,
-                        minLength:10
-                    },
-                    type:'TextField',
-                    id_grupo:0,
-                    grid:false,
-                    form:true
-                },*/
-
                 {
                     config:{
                         name: 'pasajeros',
@@ -399,96 +344,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:false
                 },
-                /*{
-                    config:{
-                        name: 'ruta_completa',
-                        fieldLabel: 'Ruta',
-                        anchor: '80%',
-                        gwidth: 120,
-                        readOnly:true
-
-                    },
-                    type:'TextField',
-                    filters:{pfiltro:'bol.ruta_completa',type:'string'},
-                    id_grupo:0,
-                    grid:false,
-                    form:true
-                },*/
-
-                /*{
-                    config: {
-                        name: 'id_boleto_vuelo',
-                        fieldLabel: 'Vuelo Ini Retorno',
-                        allowBlank: true,
-                        emptyText: 'Vuelo...',
-                        store: new Ext.data.JsonStore({
-                            url: '../../sis_obingresos/control/BoletoVuelo/listarBoletoVuelo',
-                            id: 'id_boleto_vuelo',
-                            root: 'datos',
-                            sortInfo: {
-                                field: 'cupon',
-                                direction: 'ASC'
-                            },
-                            totalProperty: 'total',
-                            fields: ['id_boleto_vuelo', 'boleto_vuelo'],
-                            remoteSort: true,
-                            baseParams: {par_filtro: 'bvu.aeropuerto_origen#bvu.aeropuerto_destino'}
-                        }),
-                        valueField: 'id_boleto_vuelo',
-                        displayField: 'boleto_vuelo',
-                        gdisplayField: 'vuelo_retorno',
-                        hiddenName: 'id_boleto_vuelo',
-                        forceSelection: true,
-                        typeAhead: false,
-                        triggerAction: 'all',
-                        lazyRender: true,
-                        mode: 'remote',
-                        pageSize: 15,
-                        queryDelay: 1000,
-                        gwidth: 150,
-                        listWidth:450,
-                        resizable:true,
-                        minChars: 2,
-                        renderer : function(value, p, record) {
-                            return String.format('{0}', record.data['vuelo_retorno']);
-                        }
-                    },
-                    type: 'ComboBox',
-                    id_grupo: 0,
-                    grid: false,
-                    form: true
-                },*/
-
-                /*{
-                    config:{
-                        name: 'estado',
-                        fieldLabel: 'Estado',
-                        gwidth: 100,
-                        readOnly:true
-                    },
-                    type:'TextField',
-                    filters:{pfiltro:'bol.estado',type:'string'},
-                    grid:true,
-                    id_grupo:0,
-                    form:true
-                },*/
-                /*{
-                    config:{
-                        name: 'comision',
-                        fieldLabel: 'Comisión AGT',
-                        allowBlank:true,
-                        anchor: '80%',
-                        allowDecimals:true,
-                        decimalPrecision:2,
-                        allowNegative : false,
-                        disabled:true,
-                        gwidth: 125
-                    },
-                    type:'NumberField',
-                    id_grupo:0,
-                    grid:true,
-                    form:true
-                },*/
                 {
                     config: {
                         name: 'id_forma_pago',
@@ -700,50 +555,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:false,
                     form:false
                 },
-                /*{
-                    config:{
-                        name: 'cupones',
-                        fieldLabel: 'Cupones',
-                        gwidth: 100
-
-                    },
-                    type:'NumberField',
-                    filters:{pfiltro:'bol.cupones',type:'numeric'},
-                    grid:true,
-                    form:false
-                },*/
-                /*{
-                    config:{
-                        name: 'codigo_noiata',
-                        fieldLabel: 'Cod. Noiata',
-                        gwidth: 100
-                    },
-                    type:'TextField',
-
-                    grid:true,
-                    form:false
-                },*/
-
-                /*{
-                    config:{
-                        name: 'codigo_agencia',
-                        fieldLabel: 'agt',
-                        gwidth: 100
-                    },
-                    type:'TextField',
-                    grid:true,
-                    form:false
-                },*/
-                /*{
-                    config:{
-                        name: 'nombre_agencia',
-                        fieldLabel: 'Agencia',
-                        gwidth: 120
-                    },
-                    type:'TextField',
-                    grid:true,
-                    form:false
-                },*/
                 {
                     config:{
                         name: 'neto',
@@ -755,19 +566,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:false
                 },
-                /*{
-                    config:{
-                        name: 'tipopax',
-                        fieldLabel: 'Tipo Pasajero',
-                        gwidth: 110
-                    },
-                    type:'TextField',
-                    filters:{pfiltro:'bol.tipopax',type:'string'},
-                    grid:true,
-                    form:false
-                },*/
-
-
                 {
                     config:{
                         name: 'estado_reg',
@@ -878,7 +676,6 @@ header("content-type: text/javascript; charset=UTF-8");
             fwidth: '70%',
             title:'Boleto',
             ActSave:'../../sis_obingresos/control/Boleto/modificarFpPNRBoleto',
-            //ActDel:'../../sis_obingresos/control/Boleto/eliminarBoleto',
             ActList:'../../sis_obingresos/control/Boleto/listarPNRBoleto',
             id_store:'id_boleto',
             fields: [
@@ -908,23 +705,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 direction: 'DESC'
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai', 'fecha_reg','fecha_mod','usr_reg','usr_mod','estado','neto'],
-            /*rowExpander: new Ext.ux.grid.RowExpander({
-                tpl : new Ext.Template(
-                    '<br>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Fecha de Emision:&nbsp;&nbsp;</b> {fecha_emision:date("d/m/Y")}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b># Cupones:&nbsp;&nbsp;</b> {cupones}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Nombre Agencia:&nbsp;&nbsp;</b> {nombre_agencia}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Codigo NoIata:&nbsp;&nbsp;</b> {codigo_noiata}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Codigo Agencia:&nbsp;&nbsp;</b> {codigo_agencia}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Neto:&nbsp;&nbsp;</b> {neto}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Comision AGT:&nbsp;&nbsp;</b> {comision}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Tipo de Pasajero:&nbsp;&nbsp;</b> {tipopax}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Fecha de Registro:&nbsp;&nbsp;</b> {fecha_reg:date("d/m/Y")}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Fecha Ult. Modificación:&nbsp;&nbsp;</b> {fecha_mod:date("d/m/Y")}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Creado por:&nbsp;&nbsp;</b> {usr_reg}</p>',
-                    '<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Modificado por:&nbsp;&nbsp;</b> {usr_mod}</p><br>'
-                )
-            }),*/
+
             bsave:false,
             bnew:false,
             bedit:false,
@@ -979,7 +760,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
             },
 
-            manejoComponentesFp2 : function (id_fp2,codigo_fp2){
+            /*manejoComponentesFp2 : function (id_fp2,codigo_fp2){
                 if (id_fp2) {
                     //forma de pago 2
                     if (id_fp2 == 0) {
@@ -1040,7 +821,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.id_forma_pago2.setDisabled(true);
                     this.Cmp.monto_forma_pago2.setDisabled(true);
                 }
-            },
+            },*/
 
             iniciarEventos : function () {
 
@@ -1072,20 +853,6 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.monto_forma_pago2.setDisabled(false);
                     }
                 },this);
-
-                /*this.Cmp.comision.on('change',function(field,newValue,oldValue) {
-
-
-                    if (this.Cmp.id_forma_pago2.getValue() && this.getMontoMonBol(this.Cmp.monto_forma_pago2.getValue(),this.Cmp.moneda_fp2.getValue()) > newValue) {
-
-                        this.Cmp.id_forma_pago2.fireEvent('select', {   combo:this.Cmp.id_forma_pago2});
-
-                    } else if (this.Cmp.id_forma_pago.getValue() && this.getMontoMonBol(this.Cmp.monto_forma_pago.getValue(),this.Cmp.moneda_fp1.getValue()) > newValue) {
-
-                        this.Cmp.id_forma_pago.fireEvent('select', {   combo:this.Cmp.id_forma_pago});
-                    }
-
-                },this);*/
 
                 this.Cmp.id_forma_pago.on('select', function (combo,record){
                     if (record) {
@@ -1184,22 +951,7 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             onPagado : function () {
-                //this.onButtonEdit();
-                /*this.ocultarGrupo(0);
-                this.ocultarGrupo(2);*/
                 this.onGrupo();
-                /*var rec = this.sm.getSelected();
-                Phx.CP.loadingShow();
-                Ext.Ajax.request({
-                    url:'../../sis_obingresos/control/Boleto/cambiaEstadoBoleto',
-                    params: {'id_boleto':rec.data.id_boleto,
-                        'accion':'pagado'},
-                    success:this.successSave,
-                    failure: this.conexionFailure,
-                    timeout:this.timeout,
-                    scope:this
-                });*/
-
             },
 
             onTraerBoletos : function () {
@@ -1228,7 +980,7 @@ header("content-type: text/javascript; charset=UTF-8");
             successSave:function(resp){
                 var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
 
-                Phx.vista.Boleto.superclass.successSave.call(this, resp);
+                Phx.vista.PNRBoleto.superclass.successSave.call(this, resp);
                 if (objRes.ROOT.datos.alertas) {
                     Ext.Msg.alert('Error en boleto', objRes.ROOT.datos.alertas);
                 }

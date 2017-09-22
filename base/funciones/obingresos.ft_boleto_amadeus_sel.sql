@@ -51,6 +51,7 @@ BEGIN
                                    array_agg(fp.id_forma_pago) as id_forma_pago,
                                    array_agg(fp.nombre || '' - '' ||
                                      mon.codigo_internacional) as forma_pago,
+                                   array_agg(bfp.forma_pago_amadeus) as forma_pago_amadeus,
                                    array_agg(bfp.importe) as monto_forma_pago,
                                    array_agg(fp.codigo) as codigo_forma_pago,
                                    array_agg(bfp.numero_tarjeta) as
@@ -96,6 +97,7 @@ BEGIN
                          usu2.cuenta as usr_mod,
                          forpa.id_forma_pago[1]::integer as id_forma_pago,
                          forpa.forma_pago[1]::varchar as forma_pago,
+                         forpa.forma_pago_amadeus[1]::varchar as forma_pago_amadeus,
                          forpa.monto_forma_pago[1] as monto_forma_pago,
                          forpa.codigo_forma_pago [ 1 ],
                          forpa.numero_tarjeta [ 1 ],
@@ -104,6 +106,7 @@ BEGIN
                          forpa.moneda_fp [ 1 ],
                          forpa.id_forma_pago[2]::integer as id_formapago2,
                          forpa.forma_pago[2]::varchar as forma_pago2,
+                         forpa.forma_pago_amadeus[2]::varchar as forma_pago_amadeus2,
                          forpa.monto_forma_pago[2] as monto_forma_pago2,
                          codigo_forma_pago [ 2 ] as codigo_forma_pago2,
                          forpa.numero_tarjeta [ 2 ] as numero_tarjeta2,

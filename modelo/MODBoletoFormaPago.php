@@ -38,6 +38,7 @@ class MODBoletoFormaPago extends MODbase{
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
 		$this->captura('forma_pago','varchar');
+		$this->captura('forma_pago_amadeus','varchar');
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('moneda','varchar');
         $this->captura('codigo_tarjeta','varchar');
@@ -75,6 +76,7 @@ class MODBoletoFormaPago extends MODbase{
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
 		$this->captura('forma_pago','varchar');
+		$this->captura('forma_pago_amadeus','varchar');
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('moneda','varchar');
 		$this->captura('codigo_tarjeta','varchar');

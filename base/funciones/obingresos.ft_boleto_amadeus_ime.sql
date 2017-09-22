@@ -98,7 +98,6 @@ BEGIN
 	if(p_transaccion='OBING_BOLREPSERV_INS')then
 
         begin
-        	raise notice 'llegaaaaaaaa';
             IF NOT EXISTS(SELECT 1
             			  FROM obingresos.tboleto_amadeus
             			  WHERE nro_boleto=v_parametros.nro_boleto)THEN
@@ -108,7 +107,7 @@ BEGIN
                 WHERE codigo_internacional=v_parametros.moneda;
 
                 select nextval('obingresos.tboleto_amadeus_id_boleto_amadeus_seq'::regclass) into v_id_boleto;
-				raise notice 'llega0';
+
                 INSERT INTO obingresos.tboleto_amadeus
                 (nro_boleto,
                 total,
@@ -137,34 +136,36 @@ BEGIN
                 p_id_usuario,
                 v_id_boleto
                 );
-            	raise notice 'llega';
+
                 if(trim(v_parametros.fp)='')then
                 	v_forma_pago='CA';
             	else
                 	v_forma_pago=v_parametros.fp;
                 end if;
-                raise notice 'llega2';
+
                 SELECT id_forma_pago into v_id_forma_pago
                 FROM obingresos.tforma_pago
                 WHERE codigo=v_forma_pago AND id_moneda=v_id_moneda;
-                raise notice 'llega3';
+
 				if(trim(v_parametros.fp)='')then
                 	v_valor_forma_pago=0;
             	else
                 	v_valor_forma_pago=v_parametros.valor_fp;
                 end if;
-                raise notice 'llega4';
+
                 INSERT INTO obingresos.tboleto_amadeus_forma_pago
                 (id_usuario_reg,
                 id_boleto_amadeus,
                 id_forma_pago,
-                importe
+                importe,
+                forma_pago_amadeus
                 )
                 VALUES(
                 p_id_usuario,
                 v_id_boleto,
                 v_id_forma_pago,
-                v_valor_forma_pago
+                v_valor_forma_pago,
+                v_parametros.forma_pago_amadeus
                 );
                 /*
                 IF EXISTS(
