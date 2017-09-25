@@ -74,6 +74,28 @@ BEGIN
 
 		end;
 
+    /*********************************
+ 	#TRANSACCION:  'OBING_OFFIDAGE_SEL'
+ 	#DESCRIPCION:	Consulta de datos
+ 	#AUTOR:		Gonzalo Sarmiento Sejas
+ 	#FECHA:		23-09-2017
+	***********************************/
+
+	elsif(p_transaccion='OBING_OFFIDAGE_SEL')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select ag.codigo_int as officeID, ag.codigo as codigo_iata
+						from obingresos.tagencia ag
+						where ag.codigo_int similar to ''[A-Z]%'' ';
+
+			--Definicion de la respuesta
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
 	/*********************************
  	#TRANSACCION:  'OBING_AGE_CONT'
  	#DESCRIPCION:	Conteo de registros

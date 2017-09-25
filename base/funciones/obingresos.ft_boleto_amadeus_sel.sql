@@ -115,7 +115,10 @@ BEGIN
                          forpa.moneda_fp [ 2 ] as moneda_fp2,
                          bol.voided,
                          forpa.monto_total_fp,
-                         bol.localizador
+                         bol.localizador,
+                         bol.forma_pago as forma_pag_amadeus,
+                         bol.officeid,
+                         bol.codigo_iata
                     from obingresos.tboleto_amadeus bol
                     left join forma_pago_temporal forpa on forpa.id_boleto_amadeus = bol.id_boleto_amadeus
                          inner join param.tmoneda mon on mon.id_moneda =

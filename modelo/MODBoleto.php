@@ -199,6 +199,9 @@ class MODBoleto extends MODbase{
 		$this->captura('voided','varchar');
 		$this->captura('monto_total_fp','numeric');
 		$this->captura('localizador','varchar');
+		$this->captura('forma_pag_amadeus','varchar');
+		$this->captura('officeid','varchar');
+		$this->captura('codigo_iata','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -454,6 +457,33 @@ class MODBoleto extends MODbase{
 		$this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');
 		$this->setParametro('valor_fp','valor_fp','numeric');
 		$this->setParametro('localizador','localizador','varchar');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function insertarBoletoAgenciaReporteServicioAmadeus(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_amadeus_ime';
+		$this->transaccion='OBING_BOLREPAG_INS';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
+		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
+		$this->setParametro('pasajero','pasajero','varchar');//ok
+		$this->setParametro('total','total','numeric');//ok
+		$this->setParametro('liquido','liquido','numeric');//ok
+		$this->setParametro('neto','neto','numeric');//ok
+		$this->setParametro('moneda','moneda','varchar');//ok
+		$this->setParametro('voided','voided','varchar');//ok
+		$this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');
+		$this->setParametro('localizador','localizador','varchar');
+		$this->setParametro('officeid','officeid','varchar');
+		$this->setParametro('codigo_iata','codigo_iata','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

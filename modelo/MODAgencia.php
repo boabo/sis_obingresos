@@ -43,6 +43,24 @@ class MODAgencia extends MODbase{
 		return $this->respuesta;
 	}
 
+    function obtenerOfficeIDsAgencias(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_agencia_sel';
+        $this->transaccion='OBING_OFFIDAGE_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        //Definicion de la lista del resultado del query
+        $this->captura('officeID','varchar');
+        $this->captura('codigo_iata','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
     function getDocumentosContrato(){
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_agencia_sel';

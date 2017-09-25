@@ -201,6 +201,73 @@ BEGIN
         end;
 
     /*********************************
+ 	#TRANSACCION:  'OBING_BOLREPAG_INS'
+ 	#DESCRIPCION:	Insercion de boletos desde servicio REST de Amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		19-07-2016
+	***********************************/
+
+	elsif(p_transaccion='OBING_BOLREPAG_INS')then
+
+        begin
+            IF NOT EXISTS(SELECT 1
+            			  FROM obingresos.tboleto_amadeus
+            			  WHERE nro_boleto=v_parametros.nro_boleto)THEN
+
+                SELECT id_moneda into v_id_moneda
+                FROM param.tmoneda
+                WHERE codigo_internacional=v_parametros.moneda;
+
+                select nextval('obingresos.tboleto_amadeus_id_boleto_amadeus_seq'::regclass) into v_id_boleto;
+				raise notice 'llega';
+                INSERT INTO obingresos.tboleto_amadeus
+                (nro_boleto,
+                total,
+                voided,
+                estado,
+                localizador,
+                fecha_emision,
+                id_moneda_boleto,
+                pasajero,
+                liquido,
+                neto,
+                id_usuario_reg,
+                id_boleto_amadeus,
+                forma_pago,
+                officeid,
+                codigo_iata
+                )VALUES(v_parametros.nro_boleto::varchar,
+                v_parametros.total::numeric,
+                v_parametros.voided::varchar,
+                'borrador',
+                v_parametros.localizador::varchar,
+                v_parametros.fecha_emision::date,
+                v_id_moneda,
+                v_parametros.pasajero::varchar,
+                v_parametros.liquido::numeric,
+                v_parametros.neto::numeric,
+                p_id_usuario,
+                v_id_boleto,
+                v_parametros.forma_pago_amadeus,
+                v_parametros.officeid,
+                v_parametros.codigo_iata
+                );
+
+                raise notice 'llega5';
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')');
+            	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
+            ELSE
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boleto '||v_parametros.nro_boleto||' ya se encuentraba registrado');
+            END IF;
+
+            --Devuelve la respuesta
+            return v_resp;
+
+        end;
+
+    /*********************************
  	#TRANSACCION:  'OBING_BOL_ELI'
  	#DESCRIPCION:	Eliminacion de registros
  	#AUTOR:		jrivera
