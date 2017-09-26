@@ -211,8 +211,14 @@ class ACTBoleto extends ACTbase{
 	}
 						
 	function eliminarBoleto(){
-		$this->objFunc=$this->create('MODBoleto');	
+		$this->objFunc=$this->create('MODBoleto');
 		$this->res=$this->objFunc->eliminarBoleto($this->objParam);
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
+	function cambiarRevisionBoleto(){
+		$this->objFunc=$this->create('MODBoleto');
+		$this->res=$this->objFunc->cambiarRevisionBoleto($this->objParam);
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 	
@@ -225,7 +231,8 @@ class ACTBoleto extends ACTbase{
 	function traerBoletos(){
 
 		if ($this->objParam->getParametro('id_punto_venta') != '') {
-			$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+			//$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
 		}
 
 		if ($this->objParam->getParametro('fecha') != '') {
@@ -233,6 +240,8 @@ class ACTBoleto extends ACTbase{
 		}else{
 			$fecha = date("Ymd");
 		}
+
+		$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
 
 		if ($this->objParam->getParametro('reporte') == 'reporte') {
 			$this->objFunc = $this->create('MODBoleto');
@@ -246,16 +255,13 @@ class ACTBoleto extends ACTbase{
 			$this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
 			$datos = $this->res->getDatos();
-			$officeid = $datos[0]['officeid'];
-		}
 
+			$officeid = $datos[0]['officeid'];
+			$id_agencia = $datos[0]['id_agencia'];
+		}
 		//boletos en bolivianos
-		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"CBBOB0900","dateFrom"=>$fecha,"dateTo"=>$fecha);
-		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"BOB");
 		$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
 		$data_string = json_encode($data);
-		//$request =  'http://wservices.obairlines.bo/Dotacion.AppService/SvcDotacion.svc/RevertirDotacionAlmacenes';
-		//$request =  'http://wservices.obairlines.bo/esb/RITISERP.svc/Boa_RITRetrieveSales';
 		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales';
 		$session = curl_init($request);
 		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
@@ -278,12 +284,11 @@ class ACTBoleto extends ACTbase{
 			//var_dump($moneda); exit;
 			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
 
-				//var_dump($boleto->documentNumber->documentDetails->number->__toString());
-
 				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
 				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
+				$this->objParam->addParametro('agente_venta', $boleto->bookingAgent->originIdentification->originatorId->__toString());
 				$this->objParam->addParametro('fecha_emision', $fecha);
-				//$this->objParam->addParametro('fecha_emision',"20170808");
+				$this->objParam->addParametro('id_agencia', $id_agencia);
 
 				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'CANX') {
 					$this->objParam->addParametro('voided', 'si');
@@ -299,19 +304,14 @@ class ACTBoleto extends ACTbase{
 					$total=0;
 					if ($montoBoleto->typeQualifier->__toString() == 'T') {
 
-						//if ($boleto->documentNumber->documentDetails->number->__toString() == '9302400026571'){
-							if($montoBoleto->amount->__toString()!=' '){
-								$total = $montoBoleto->amount->__toString();
-							}
-							//var_dump($total); exit;
-						//}
+						if($montoBoleto->amount->__toString()!=' '){
+							$total = $montoBoleto->amount->__toString();
+						}
+
 						$this->objParam->addParametro('total', $total);
 						$this->objParam->addParametro('liquido', $total);
 						$this->objParam->addParametro('neto', $total);
-						/*if ($boleto->documentNumber->documentDetails->number->__toString() == '9302400026571'){
-							var_dump($montoBoleto->amount->__toString()=='');
-							exit;
-						}*/
+
 					} else {
 						if ($montoBoleto->typeQualifier->__toString() == 'TTX') {
 							if($montoBoleto->amount->__toString()!=' '){
@@ -429,15 +429,14 @@ class ACTBoleto extends ACTbase{
 		//var_dump($xmlRespuesta); exit;
 		if(isset($xmlRespuesta->queryReportDataDetails)) {
 			$moneda = $xmlRespuesta->queryReportDataDetails->currencyInfo->currencyDetails->currencyIsoCode->__toString();
-			//var_dump($moneda); exit;
-			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
 
-				//var_dump($boleto->documentNumber->documentDetails->number->__toString());
+			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
 
 				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
 				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
+				$this->objParam->addParametro('agente_venta', $boleto->bookingAgent->originIdentification->originatorId->__toString());
 				$this->objParam->addParametro('fecha_emision', $fecha);
-				//$this->objParam->addParametro('fecha_emision',"20170808");
+				$this->objParam->addParametro('id_agencia', $id_agencia);
 
 				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'CANX') {
 					$this->objParam->addParametro('voided', 'si');
@@ -514,19 +513,8 @@ class ACTBoleto extends ACTbase{
 					$this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
 				} else {
 					if ($this->objParam->getParametro('reporte') == 'reporte') {
-
-						//if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
-							/*$this->objReporte = new Reporte($this->objParam,$this);
-							$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');*/
-							$this->objFunc = $this->create('MODBoleto');
-							$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
-						/*} else{
-							$this->objFunc=$this->create('MODBoleto');
-							$this->res=$this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
-						}*/
-						/*
 						$this->objFunc = $this->create('MODBoleto');
-						$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);*/
+						$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
 					}else {
 						$this->objFunc = $this->create('MODBoleto');
 						$this->res = $this->objFunc->insertarBoletoServicioAmadeus($this->objParam);
@@ -550,10 +538,13 @@ class ACTBoleto extends ACTbase{
 				$this->res->imprimirRespuesta($this->res->generarJson());
 			}
 		}else {
-			$this->mensajeRes = new Mensaje();
+			/*$this->mensajeRes = new Mensaje();
 			$this->mensajeRes->setMensaje('EXITO', 'ACTBoleto.php', 'Se recuperaron los boletos',
 					'Se recuperaron los boletos con exito', 'control');
-			$this->mensajeRes->imprimirRespuesta($this->mensajeRes->generarJson());
+			var_dump($this->mensajeRes->generarJson()); exit;*/
+			$this->objFunc=$this->create('MODBoleto');
+			$this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+			$this->res->imprimirRespuesta($this->res->generarJson());
 		}
 
 	}

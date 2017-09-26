@@ -47,6 +47,8 @@ class ACTDeposito extends ACTbase{
 	}
 				
 	function insertarDeposito(){
+		
+		
 		$this->objFunc=$this->create('MODDeposito');	
 		if($this->objParam->insertar('id_deposito')){
 			$this->res=$this->objFunc->insertarDeposito($this->objParam);			
