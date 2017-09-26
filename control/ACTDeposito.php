@@ -85,10 +85,7 @@ class ACTDeposito extends ACTbase{
                         "idDepositoERP"=> $datos['id_deposito'],
                         "estadoDeposito"=> 'eliminado'
                     ));
-
-
-
-
+					
         }
 
         $this->res->imprimirRespuesta($this->res->generarJson());
@@ -313,8 +310,7 @@ class ACTDeposito extends ACTbase{
             !isset($_SESSION['_LOCAL_REST_USR']) ||!isset($_SESSION['_LOCAL_REST_PASS']) ) {
             throw new Exception("No existe parametrizacion completa para conexion FTP o REST", 3);
         }
-        echo "llega";
-        exit;
+        
         //Crear conexion rest
         $folder = ltrim($_SESSION["_FOLDER"], '/');
         $pxpRestClient = PxpRestClient::connect($_SERVER['HTTP_HOST'], $folder . 'pxp/lib/rest/')
@@ -333,7 +329,7 @@ class ACTDeposito extends ACTbase{
         ftp_pasv($conn_id,true);
 
         $local_file = "/tmp/" . $this->objParam->getParametro('nombre_archivo');
-        $server_file = "FTPContratos/" . $this->objParam->getParametro('nombre_archivo');
+        $server_file = "FTPContratos#ND/" . $this->objParam->getParametro('nombre_archivo');
 
         // intenta descargar $server_file y guardarlo en $local_file
         if (ftp_get($conn_id, $local_file, $server_file, FTP_BINARY)) {

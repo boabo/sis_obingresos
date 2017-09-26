@@ -1265,6 +1265,7 @@ class ACTBoleto extends ACTbase{
                     'Content-Length: ' . strlen($json_data))
             );
             $_out = curl_exec($s);
+			
             $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
 
             if (!$status) {
@@ -1279,6 +1280,7 @@ class ACTBoleto extends ACTbase{
 
                 $this->objParam->addParametro('fecha', $fecha);
                 $this->objParam->addParametro('detalle_boletos', $_out);
+				
 
                 $this->objFunc = $this->create('MODBoleto');
 
