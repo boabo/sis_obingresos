@@ -57,7 +57,7 @@ BEGIN
         	if (v_parametros.tipo = 'debito') then
             	select po_autorizacion into v_codigo_autorizacion  
             	from obingresos.f_verificar_saldo_agencia(v_parametros.id_agencia,
-                							v_parametros.monto,v_parametros.id_moneda::varchar,p_id_usuario,NULL,NULL,'no');
+                							v_parametros.monto,v_parametros.id_moneda::varchar,p_id_usuario,NULL,NULL,'no',v_parametros.monto);
             
             end if;	
             

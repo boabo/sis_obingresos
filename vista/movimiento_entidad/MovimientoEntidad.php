@@ -81,7 +81,8 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 emptyText:'Tipo...',
                 triggerAction: 'all',
                 lazyRender:true,
-                width:135
+                width:135,
+                readOnly:true
             },
             type:'ComboBox',
             filters:{
@@ -91,7 +92,8 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
             },
             id_grupo:1,
             grid:true,
-            form:true
+            form:true,
+            valorInicial : 'no'
         },
 
         {
@@ -513,6 +515,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
 	bnew:true,
     loadValoresIniciales:function(){
         this.Cmp.id_agencia.setValue(this.maestro.id_agencia);
+        this.Cmp.garantia.setValue('no');
 
     }
 	}
