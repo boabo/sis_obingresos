@@ -517,7 +517,14 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
         this.Cmp.id_agencia.setValue(this.maestro.id_agencia);
         this.Cmp.garantia.setValue('no');
 
-    }
+    },
+    south:{
+		  url:'../../../sis_obingresos/vista/detalle_boletos_web/DetalleBoletosWeb.php',
+		  title:'Billetes', 
+		  height:'50%',
+		  cls:'DetalleBoletosWeb',
+		  collapsed:true
+	},  
 	}
 )
 </script>

@@ -44,6 +44,89 @@ $body$
 
     v_nombre_funcion = 'obingresos.ft_detalle_boletos_web_sel';
     v_parametros = pxp.f_get_record(p_tabla);
+    /*********************************    
+ 	#TRANSACCION:  'OBING_DETBOL_SEL'
+ 	#DESCRIPCION:	Consulta de datos
+ 	#AUTOR:		jrivera	
+ 	#FECHA:		28-09-2017 18:47:46
+	***********************************/
+
+	if(p_transaccion='OBING_DETBOL_SEL')then
+     				
+    	begin
+    		--Sentencia de la consulta
+			v_consulta:='select
+						detbol.id_detalle_boletos_web,
+						detbol.billete,
+						detbol.id_agencia,
+						detbol.id_periodo_venta,
+						detbol.id_moneda,
+						detbol.procesado,
+						detbol.estado_reg,
+						detbol.void,
+						detbol.importe,
+						detbol.nit,
+						detbol.fecha_pago,
+						detbol.razon_social,
+						detbol.numero_tarjeta,
+						detbol.comision,
+						detbol.neto,
+						detbol.entidad_pago,
+						detbol.fecha,
+						detbol.medio_pago,
+						detbol.moneda,
+						detbol.razon_ingresos,
+						detbol.origen,
+						detbol.nit_ingresos,
+						detbol.endoso,
+						detbol.conjuncion,
+						detbol.numero_autorizacion,
+						detbol.id_usuario_reg,
+						detbol.fecha_reg,
+						detbol.usuario_ai,
+						detbol.id_usuario_ai,
+						detbol.id_usuario_mod,
+						detbol.fecha_mod,
+						usu1.cuenta as usr_reg,
+						usu2.cuenta as usr_mod	
+						from obingresos.tdetalle_boletos_web detbol
+						inner join segu.tusuario usu1 on usu1.id_usuario = detbol.id_usuario_reg
+						left join segu.tusuario usu2 on usu2.id_usuario = detbol.id_usuario_mod
+				        where  ';
+			
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+
+			--Devuelve la respuesta
+			return v_consulta;
+						
+		end;
+
+	/*********************************    
+ 	#TRANSACCION:  'OBING_DETBOL_CONT'
+ 	#DESCRIPCION:	Conteo de registros
+ 	#AUTOR:		jrivera	
+ 	#FECHA:		28-09-2017 18:47:46
+	***********************************/
+
+	elsif(p_transaccion='OBING_DETBOL_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select count(id_detalle_boletos_web)
+					    from obingresos.tdetalle_boletos_web detbol
+					    inner join segu.tusuario usu1 on usu1.id_usuario = detbol.id_usuario_reg
+						left join segu.tusuario usu2 on usu2.id_usuario = detbol.id_usuario_mod
+					    where ';
+			
+			--Definicion de la respuesta		    
+			v_consulta:=v_consulta||v_parametros.filtro;
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
 
     /*********************************
      #TRANSACCION:  'OBING_DETBOWEB_SEL'
@@ -52,7 +135,7 @@ $body$
      #FECHA:		18-11-2016
     ***********************************/
 
-    if(p_transaccion='OBING_DETBOWEB_SEL')then
+    elsif(p_transaccion='OBING_DETBOWEB_SEL')then
 
       begin
         --Sentencia de la consulta

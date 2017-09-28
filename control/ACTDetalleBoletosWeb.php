@@ -3,6 +3,31 @@ require_once(dirname(__FILE__).'/../reportes/RReporteNitRazonXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RConciliacionBancaInter.php');
 require_once(dirname(__FILE__).'/../reportes/RConciliacionBancaInterRes.php');
 class ACTDetalleBoletosWeb extends ACTbase{
+	
+	function listarDetalleBoletosWeb(){
+		$this->objParam->defecto('ordenacion','id_detalle_boletos_web');
+
+		$this->objParam->defecto('dir_ordenacion','asc');
+		
+		if($this->objParam->getParametro('id_agencia') != ''){
+			$this->objParam->addFiltro(" detbol.id_agencia = ".$this->objParam->getParametro('id_agencia'));			
+		}
+		
+		if($this->objParam->getParametro('numero_autorizacion') != ''){
+			$this->objParam->addFiltro(" detbol.numero_autorizacion = ''".$this->objParam->getParametro('numero_autorizacion')."''");			
+		}
+		$this->objParam->addFiltro(" detbol.origen = ''portal'' and detbol.numero_autorizacion is not null");
+		
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODDetalleBoletosWeb','listarDetalleBoletosWeb');
+		} else{
+			$this->objFunc=$this->create('MODDetalleBoletosWeb');
+			
+			$this->res=$this->objFunc->listarDetalleBoletosWeb($this->objParam);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
 
     function ReporteNitRazon(){
         $this->objFunc = $this->create('MODDetalleBoletosWeb');

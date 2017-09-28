@@ -3,6 +3,55 @@ class  MODDetalleBoletosWeb extends MODbase{
     function __construct(CTParametro $pParam){
         parent::__construct($pParam);
     }
+	
+	function listarDetalleBoletosWeb(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+		$this->transaccion='OBING_DETBOL_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+				
+		//Definicion de la lista del resultado del query
+		$this->captura('id_detalle_boletos_web','int4');
+		$this->captura('billete','varchar');
+		$this->captura('id_agencia','int4');
+		$this->captura('id_periodo_venta','int4');
+		$this->captura('id_moneda','int4');
+		$this->captura('procesado','varchar');
+		$this->captura('estado_reg','varchar');
+		$this->captura('void','varchar');
+		$this->captura('importe','numeric');
+		$this->captura('nit','varchar');
+		$this->captura('fecha_pago','date');
+		$this->captura('razon_social','varchar');
+		$this->captura('numero_tarjeta','varchar');
+		$this->captura('comision','numeric');
+		$this->captura('neto','numeric');
+		$this->captura('entidad_pago','varchar');
+		$this->captura('fecha','date');
+		$this->captura('medio_pago','varchar');
+		$this->captura('moneda','varchar');
+		$this->captura('razon_ingresos','varchar');
+		$this->captura('origen','varchar');
+		$this->captura('nit_ingresos','varchar');
+		$this->captura('endoso','varchar');
+		$this->captura('conjuncion','varchar');
+		$this->captura('numero_autorizacion','varchar');
+		$this->captura('id_usuario_reg','int4');
+		$this->captura('fecha_reg','timestamp');
+		$this->captura('usuario_ai','varchar');
+		$this->captura('id_usuario_ai','int4');
+		$this->captura('id_usuario_mod','int4');
+		$this->captura('fecha_mod','timestamp');
+		$this->captura('usr_reg','varchar');
+		$this->captura('usr_mod','varchar');
+		
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
     function listarReporteNitRazon(){
         //Definicion de variables para ejecucion del procedimientp
             $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';

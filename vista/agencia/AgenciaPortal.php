@@ -33,6 +33,16 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Movimientos de la agencia corporativa'
                 }
             );
+            
+            this.addButton('btnTkt',
+                {
+                    text: 'Tkts',
+                    iconCls: 'blist',
+                    disabled: true,
+                    handler: this.onTkts,
+                    tooltip: 'Billetes emitidos de la agencia corporativa'
+                }
+            );
 
         },
         onMovimientos : function () {
@@ -49,11 +59,27 @@ header("content-type: text/javascript; charset=UTF-8");
                 'MovimientoEntidad');
 
         },
+        
+        onTkts : function () {
+            var rec = {maestro: this.sm.getSelected().data};
+
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/detalle_boletos_web/DetalleBoletosWeb.php',
+                'Boletos',
+                {
+                    width:800,
+                    height:'90%'
+                },
+                rec,
+                this.idContenedor,
+                'DetalleBoletosWeb');
+
+        },
 
         preparaMenu:function()
         {	var rec = this.sm.getSelected();
             Phx.vista.AgenciaPortal.superclass.preparaMenu.call(this);
             this.getBoton('btnMovimientos').enable();
+            this.getBoton('btnTkt').enable();
 
         },
         liberaMenu:function()
@@ -61,6 +87,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             Phx.vista.AgenciaPortal.superclass.liberaMenu.call(this);
             this.getBoton('btnMovimientos').disable();
+            this.getBoton('btnTkt').disable();
         },
 
     };
