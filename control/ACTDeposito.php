@@ -78,13 +78,15 @@ class ACTDeposito extends ACTbase{
             $netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
             $netOBRestClient->setHeaders(array('Content-Type: json;'));
 
-
+ 
 
                 $res = $netOBRestClient->doPost('ModificarEstadoDeposito',
                     array(
                         "idDepositoERP"=> $datos['id_deposito'],
                         "estadoDeposito"=> 'eliminado'
                     ));
+				$bdlog=new MODLogError('LOG_TRANSACCION','Respuesta servicio ModificarEstadoDeposito','respuesta: '.$res);
+				$bdlog->guardarLogError();
 					
         }
 
@@ -112,8 +114,9 @@ class ACTDeposito extends ACTbase{
                         "idDepositoERP"=> $datos['id_deposito'],
                         "estadoDeposito"=> 'validado'
                     ));
-                echo $res;
-            exit;
+                
+				$bdlog=new MODLogError('LOG_TRANSACCION','Respuesta servicio ModificarEstadoDeposito','respuesta: '.$res);
+				$bdlog->guardarLogError();
 
         }
         $this->res->imprimirRespuesta($this->res->generarJson());
