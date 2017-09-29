@@ -130,6 +130,21 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				id_grupo:1,
 				grid:true,
 				form:true
+		},
+		{
+			config:{
+				name: 'void',
+				fieldLabel: 'Void',
+				allowBlank: false,
+				anchor: '80%',
+				gwidth: 100,
+				maxLength:3
+			},
+				type:'TextField',
+				filters:{pfiltro:'detbol.void',type:'string'},
+				id_grupo:1,
+				grid:true,
+				form:true
 		}
 	],
 	tam_pag:50,	
