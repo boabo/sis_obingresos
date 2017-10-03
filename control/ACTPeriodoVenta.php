@@ -192,16 +192,16 @@ class ACTPeriodoVenta extends ACTbase{
         //1 llamar a servicio de generacion de tickets emitidos Portal, insertar en la tabla y generar observaciones localmente
         // y devolver la observaciones en un arreglo
 
-        $netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
-        $netOBRestClient->setHeaders(array('Content-Type: json;'));
-        $res = $netOBRestClient->doPost('EmisionBoa',
-            array(	"credenciales"=> $_SESSION['_OBNET_REST_CRED'],
+        //$netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
+        //$netOBRestClient->setHeaders(array('Content-Type: json;'));
+        //$res = $netOBRestClient->doPost('EmisionBoa',
+        /*    array(	"credenciales"=> $_SESSION['_OBNET_REST_CRED'],
                 "idioma"=> "ES",
                 "fecha"=> $this->objParam->getParametro('fecha_emision'),
                 "ip"=> "127.0.0.1",
                 "xmlJson"=> false
-            ));
-        $this->objParam->addParametro('detalle',$res);
+            ));*/
+        //$this->objParam->addParametro('detalle',$res);
         
         $this->objFunc = $this->create('MODDetalleBoletosWeb');
 		$this->res = $this->objFunc->validarBoletos($this->objParam);

@@ -256,7 +256,13 @@ BEGIN
                                 END),
                     monto_total = monto_total - dbw.importe,
                     fecha_mod = now(),
-                    neto = dbw.neto,
+                    neto = obingresos.tmovimiento_entidad.neto - dbw.neto,
+                    comision_terciarizada = 
+                    			(case when comision_terciarizada is null or comision_terciarizada = 0 then 
+                    				NULL
+                    			else
+                                	comision_terciarizada - dbw.comision
+                                END),
                     id_usuario_mod = p_id_usuario
                     from obingresos.tdetalle_boletos_web dbw
                     where dbw.billete = v_parametros.billete and id_movimiento_entidad = v_id_movimiento_entidad
