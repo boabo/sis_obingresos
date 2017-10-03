@@ -81,6 +81,10 @@ DECLARE
 
     v_autorizacion_fp		varchar[];
     v_tarjeta_fp			varchar[];
+    v_estado				varchar;
+    v_id_usuario_cajero		integer;
+    v_total					numeric;
+    v_monto_total_fp		numeric;
 
 
 
@@ -204,7 +208,7 @@ BEGIN
                 		v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
                 	end if;
                 end if;
-
+                 --raise exception 'llega';
                 INSERT INTO
                   obingresos.tboleto_forma_pago
                 (
@@ -215,7 +219,10 @@ BEGIN
                   ctacte,
                   numero_tarjeta,
                   codigo_tarjeta,
-                  tarjeta
+                  tarjeta,
+                  forma_pago_amadeus,
+                  fp_amadeus_corregido,
+                  id_usuario_fp_amadeus_corregido
                 )
                 VALUES (
                   p_id_usuario,
@@ -225,7 +232,10 @@ BEGIN
                   v_parametros.ctacte,
                   v_parametros.numero_tarjeta,
                   v_parametros.codigo_tarjeta,
-                  v_codigo_tarjeta
+                  v_codigo_tarjeta,
+                  v_parametros.forma_pago_amadeus,
+                  v_parametros.fp_amadeus_corregido,
+                  p_id_usuario
                 );
 
                 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
@@ -1059,7 +1069,9 @@ raise notice 'llega 0';
                 xt,
                 monto_pagado_moneda_boleto,
                 id_usuario_reg,
-                id_boleto
+                id_boleto,
+                agente_venta,
+                id_agencia
                 )VALUES(v_parametros.nro_boleto::varchar,
                 v_parametros.total::numeric,
                 v_parametros.comision::numeric,
@@ -1076,7 +1088,9 @@ raise notice 'llega 0';
                 0,
                 0.00,
                 p_id_usuario,
-                v_id_boleto
+                v_id_boleto,
+                v_parametros.agente_venta,
+                v_parametros.id_agencia
                 );
 
                 if(trim(v_parametros.fp)='')then
@@ -1248,6 +1262,60 @@ raise notice 'llega 0';
             return v_resp;
 
 		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_REVBOL_MOD'
+ 	#DESCRIPCION:	Revision de boleto
+ 	#AUTOR:		Gonzalo Sarmiento Sejas
+ 	#FECHA:		26-09-2017
+	***********************************/
+
+	elsif(p_transaccion='OBING_REVBOL_MOD')then
+
+		begin
+        	select estado, id_usuario_cajero, total into v_estado, v_id_usuario_cajero, v_total
+            from obingresos.tboleto
+            where id_boleto=v_parametros.id_boleto;
+
+            IF(v_estado is NULL)THEN
+
+              select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+              from obingresos.tboleto_forma_pago bfp
+              inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+              inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
+              where bfp.id_boleto=v_parametros.id_boleto;
+
+              IF (v_monto_total_fp <>v_total)THEN
+              	raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
+              END IF;
+
+              update obingresos.tboleto
+              set
+              estado = 'revisado',
+              id_usuario_cajero=p_id_usuario
+              where id_boleto=v_parametros.id_boleto;
+            ELSE
+              IF(v_id_usuario_cajero != p_id_usuario)THEN
+              	raise exception 'Solo el usuario que reviso puede cambiar el estado del boleto a no revisado';
+              END IF;
+
+              update obingresos.tboleto
+              set
+              estado = NULL,
+              id_usuario_cajero=p_id_usuario
+              where id_boleto=v_parametros.id_boleto;
+
+            END IF;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos revisado');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_parametros.id_boleto::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
     /*********************************
  	#TRANSACCION:  'OBING_BOLEST_MOD'
  	#DESCRIPCION:	Cambia el estado del boleto y valida que la forma de pago sea igual al total del boleto

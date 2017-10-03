@@ -137,17 +137,25 @@ BEGIN
 
 		begin
 		
+        	IF EXISTS(select 1
+            		  from obingresos.tboleto_forma_pago bfp
+                      inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
+                      where bfp.id_boleto_forma_pago=v_parametros.id_boleto_forma_pago
+                      and bol.estado='revisado')THEN
+            	raise exception 'No es posible modificar la forma de pago de un boleto revisado';
+            END IF;
+
 			select fp.codigo into v_codigo_fp
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
-        	
-        	
+
+
 			--Sentencia de la modificacion
-			update obingresos.tboleto_forma_pago set			
+			update obingresos.tboleto_forma_pago set
 			id_forma_pago = v_parametros.id_forma_pago,
 			id_boleto = v_parametros.id_boleto,
-			tarjeta = (case when v_codigo_fp like 'CC%' or v_codigo_fp like 'SF%' then 
-								substring(v_codigo_fp from 3 for 2)				
+			tarjeta = (case when v_codigo_fp like 'CC%' or v_codigo_fp like 'SF%' then
+								substring(v_codigo_fp from 3 for 2)
 							else
 								NULL
 						end),
@@ -160,6 +168,13 @@ BEGIN
 			id_usuario_ai = v_parametros._id_usuario_ai,
 			usuario_ai = v_parametros._nombre_usuario_ai
 			where id_boleto_forma_pago=v_parametros.id_boleto_forma_pago;
+
+            if (pxp.f_existe_parametro(p_tabla,'fp_amadeus_corregido')) then
+            	UPDATE obingresos.tboleto_forma_pago set
+                fp_amadeus_corregido = v_parametros.fp_amadeus_corregido,
+                id_usuario_fp_amadeus_corregido = p_id_usuario
+                where id_boleto_forma_pago=v_parametros.id_boleto_forma_pago;
+            end if;
                
 			--Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago modificado(a)'); 

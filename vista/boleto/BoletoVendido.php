@@ -23,12 +23,12 @@ Phx.vista.BoletoVendido = {
 
 		this.store.baseParams.estado = 'pagado';				
 	},
-	preparaMenu:function() { 
-        
+    preparaMenu:function() {
+
     },
-    liberaMenu:function() {	              
-        
-    },    
-    
+    liberaMenu:function() {
+
+    },
+
 };
 </script>

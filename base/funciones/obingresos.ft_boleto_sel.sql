@@ -177,21 +177,6 @@ BEGIN
     elsif(p_transaccion='OBING_PNRBOL_SEL')then
 
 		begin
-			--Sentencia de la consulta de conteo de registros
-            /*v_consulta:='select localizador,
-                                 total,
-                                 comision,
-                                 liquido,
-                                 id_moneda_boleto,
-                                 moneda,
-                                 neto,
-                                 origen,
-                                 destino,
-                                 fecha_emision,
-                                 boletos,
-                                 pasajeros
-                          from obingresos.vpnr 
-                          where ';*/
 			v_consulta:='with formas_pago as(select localizador,
                                array_agg(fp.id_forma_pago) as ids_forma_pago,
                                array_agg(fp.nombre||'' - ''||mon.codigo_internacional)::varchar[] as formas_pago,
@@ -223,23 +208,84 @@ BEGIN
                         from obingresos.vpnr nr
                         left join formas_pago fpo on fpo.localizador=nr.localizador
                         where ';
-                        
-			--Definicion de la respuesta		    
+
+			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
-            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;            
+            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 			raise notice 'v_consulta %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
 
-	/*********************************    
+    /*********************************
+     #TRANSACCION:  'OBING_BOLEMI_SEL'
+ 	#DESCRIPCION:	Consulta de datos boletos emitidos de amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		26-09-2017
+	***********************************/
+
+    elsif(p_transaccion='OBING_BOLEMI_SEL')then
+
+		begin
+
+        	v_consulta:='with forma_pago_temporal as(
+                                          select bfp.id_boleto,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(bfp.forma_pago_amadeus) as forma_pago_amadeus,
+                                                 array_agg(bfp.importe) as monto_forma_pago,
+                                                 array_agg(bfp.fp_amadeus_corregido) as fp_amadeus_corregido
+                                          from obingresos.tboleto_forma_pago bfp
+                                               inner join obingresos.tforma_pago fp on
+                                                 fp.id_forma_pago = bfp.id_forma_pago
+                                               inner join obingresos.tboleto bol on bol.id_boleto = bfp.id_boleto
+                                               inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                          where ' || v_parametros.filtro || '
+                                          group by bfp.id_boleto)
+                          select nr.id_boleto,
+                          		 nr.localizador,
+                                 nr.total,
+                                 nr.liquido,
+                                 nr.id_moneda_boleto,
+                                 nr.moneda,
+                                 nr.neto,
+                                 nr.fecha_emision,
+                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                 nr.pasajero,
+                                 nr.voided,
+                                 nr.estado,
+                                 usu.desc_persona::varchar as agente_venta,
+                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                 fpo.forma_pago_amadeus [1]::varchar as forma_pago_amadeus,
+                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                 fpo.fp_amadeus_corregido [1]::varchar as fp_amadeus_corregido,
+                                 fpo.id_forma_pago [ 2 ]::integer as id_forma_pago2,
+                                 fpo.forma_pago [ 2 ]::varchar as forma_pago2,
+                                 fpo.forma_pago_amadeus [2]::varchar as forma_pago_amadeus2,
+                                 fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2
+                          from obingresos.tboleto nr
+                          inner join forma_pago_temporal fpo on fpo.id_boleto=nr.id_boleto
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario ';
+
+            --Definicion de la respuesta
+			--v_consulta:=v_consulta||v_parametros.filtro;
+        	v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+        raise notice 'v_consulta %', v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+        end;
+
+	/*********************************
      #TRANSACCION:  'OBING_BOL_CONT'
  	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		jrivera		
+ 	#AUTOR:		jrivera
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
-    
+
     elsif(p_transaccion='OBING_BOL_CONT')then
 
 		begin
@@ -251,28 +297,51 @@ BEGIN
 					    inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
 					    where  bol.estado_reg = ''activo'' and  ';
-			
-			--Definicion de la respuesta		    
-			v_consulta:=v_consulta||v_parametros.filtro;
 
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			raise notice 'v_consulta %', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
-        
-    /*********************************    
+
+    /*********************************
      #TRANSACCION:  'OBING_PNRBOL_CONT'
  	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		Gonzalo Sarmiento	
+ 	#AUTOR:		Gonzalo Sarmiento
  	#FECHA:		14-07-2017
 	***********************************/
-	
+
     elsif(p_transaccion='OBING_PNRBOL_CONT')then
 
 		begin
 			--Sentencia de la consulta de conteo de registros
             v_consulta:='select count(localizador)
 						from obingresos.vpnr nr
+                        where ';
+
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			raise notice 'v_consulta %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+    /*********************************
+     #TRANSACCION:  'OBING_BOLEMI_CONT'
+ 	#DESCRIPCION:	Conteo de registros boletos emitidos amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		26-09-2017
+	***********************************/
+
+    elsif(p_transaccion='OBING_BOLEMI_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+            v_consulta:='select count(bol.id_boleto)
+						from obingresos.tboleto bol
                         where ';
 			
 			--Definicion de la respuesta		    

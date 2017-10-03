@@ -98,10 +98,10 @@ $body$
       nit,
       razon,
       medio_pago,
-      fare_calc     
+      agente_venta,
+      fare_calc
       ';
-
-        valores:=NEW.id_usuario_reg ||','''||
+		 valores:=NEW.id_usuario_reg ||','''||
                  NEW.fecha_reg||''','''||
                  NEW.estado_reg||''','||
                  NEW.id_boleto||','''||
@@ -114,15 +114,15 @@ $body$
                  NEW.liquido||','||
                  coalesce ( NEW.id_moneda_boleto::text,'NULL')||','||
                  NEW.id_agencia||','||
-                 coalesce ('''' || NEW.moneda || '''','NULL')||','''||
-                 NEW.agt||''','||
+                 coalesce ('''' || NEW.moneda || '''','NULL')||','||
+                 coalesce ('''' || NEW.agt||'''','NULL')||','||
                  coalesce ('''' || NEW.agtnoiata || '''','NULL')||','||
-                 coalesce ('''' || NEW.gds || '''','NULL')||','''||
-                 NEW.tipdoc||''','''||
-                 NEW.retbsp ||''',
+                 coalesce ('''' || NEW.gds || '''','NULL')||','||
+                 coalesce ('''' || NEW.tipdoc || '''','NULL')||','||
+                 coalesce ('''' || NEW.retbsp || '''', 'NULL')||',
   0,'||
                  coalesce ('''' || NEW.ruta || '''','NULL')||','||
-                 NEW.cupones || ','||
+                 coalesce ('''' || NEW.cupones || '''', 'NULL') || ','||
                  coalesce ('''' || NEW.origen || '''','NULL')||','||
                  coalesce ('''' || NEW.destino || '''','NULL')||','||
                  coalesce ('''' || NEW.endoso || '''','NULL')||','||
@@ -138,8 +138,9 @@ $body$
                  coalesce ('''' || NEW.nit || '''','NULL')||','||
                  coalesce ('''' || NEW.razon || '''','NULL')||','||
                  coalesce ('''' || NEW.medio_pago || '''','NULL')||','||
+                 coalesce ('''' || NEW.agente_venta || '''','NULL')||','||
                  coalesce ('''' || NEW.fare_calc || '''','NULL');
-        raise notice '%',valores;
+        raise notice 'valores %',valores;
         consulta='INSERT INTO obingresos.'||nombre_tabla||' (' || campos || ') VALUES ('||valores||');';
 
         EXECUTE(consulta);

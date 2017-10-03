@@ -26,6 +26,10 @@ class ACTBoleto extends ACTbase{
 			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
 		}
 
+		if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+			$this->objParam->addFiltro("bol.id_usuario_cajero = ". $this->objParam->getParametro('id_usuario_cajero'));
+		}
+
 		if ($this->objParam->getParametro('localizador') != '') {
 			$this->objParam->addFiltro("bol.localizador = ''". $this->objParam->getParametro('localizador')."''");
 		}

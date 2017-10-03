@@ -149,6 +149,44 @@ class MODBoleto extends MODbase{
 		return $this->respuesta;
 	}
 
+	function listarBoletosEmitidosAmadeus(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_boleto_sel';
+		$this->transaccion='OBING_BOLEMI_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+
+		//Definicion de la lista del resultado del query
+		$this->captura('id_boleto','integer');
+		$this->captura('localizador','varchar');
+		$this->captura('total','numeric');
+		$this->captura('liquido','numeric');
+		$this->captura('id_moneda_boleto','int4');
+		$this->captura('moneda','varchar');
+		$this->captura('neto','numeric');
+		$this->captura('fecha_emision','date');
+		$this->captura('nro_boleto','varchar');
+		$this->captura('pasajero','varchar');
+		$this->captura('voided','varchar');
+		$this->captura('estado','varchar');
+		$this->captura('agente_venta','varchar');
+		$this->captura('id_forma_pago','int4');
+		$this->captura('forma_pago','varchar');
+		$this->captura('forma_pago_amadeus','varchar');
+		$this->captura('monto_forma_pago','numeric');
+		$this->captura('fp_amadeus_corregido','varchar');
+		$this->captura('id_forma_pago2','int4');
+		$this->captura('forma_pago2','varchar');
+		$this->captura('forma_pago_amadeus2','varchar');
+		$this->captura('monto_forma_pago2','numeric');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//var_dump($this->consulta); exit;
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function listarBoletoAmadeus(){
 		//Definicion de variables para ejecucion del procedimientp
 		$this->procedimiento='obingresos.ft_boleto_amadeus_sel';
@@ -273,7 +311,7 @@ class MODBoleto extends MODbase{
 		$this->procedimiento='obingresos.ft_boleto_ime';
 		$this->transaccion='OBING_BOLVEN_UPD';
 		$this->tipo_procedimiento='IME';
-				
+
 		//Define los parametros para la funcion
 		$this->setParametro('id_boleto','id_boleto','integer');
 		$this->setParametro('id_forma_pago','id_forma_pago','integer');
@@ -290,6 +328,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('estado','estado','varchar');
         $this->setParametro('id_boleto_vuelo','id_boleto_vuelo','integer');
         $this->setParametro('id_punto_venta','id_punto_venta','integer');
+        $this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');
+        $this->setParametro('fp_amadeus_corregido','fp_amadeus_corregido','varchar');
 
         //Ejecuta la instruccion
 		$this->armarConsulta();
@@ -335,7 +375,6 @@ class MODBoleto extends MODbase{
 		$this->procedimiento='obingresos.ft_boleto_ime';
 		$this->transaccion='OBING_MODFPGRUPO_UPD';
 		$this->tipo_procedimiento='IME';
-				
 		//Define los parametros para la funcion
 		$this->setParametro('ids_seleccionados','ids_seleccionados','varchar');
 		$this->setParametro('id_forma_pago','id_forma_pago','integer');
@@ -411,6 +450,7 @@ class MODBoleto extends MODbase{
 
 		//Define los parametros para la funcion
 		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
+		$this->setParametro('id_agencia','id_agencia','integer');//ok
 		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
 		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
 		$this->setParametro('pasajero','pasajero','varchar');//ok
@@ -423,7 +463,7 @@ class MODBoleto extends MODbase{
 		$this->setParametro('moneda','moneda','varchar');//ok
 		$this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');//ok
 		$this->setParametro('voided','voided','varchar');//ok
-
+		$this->setParametro('agente_venta','agente_venta','varchar');
 		$this->setParametro('fp','fp','varchar');
 		$this->setParametro('valor_fp','valor_fp','numeric');
 		$this->setParametro('localizador','localizador','varchar');
@@ -670,6 +710,23 @@ class MODBoleto extends MODbase{
 		$this->transaccion='OBING_BOL_ELI';
 		$this->tipo_procedimiento='IME';
 				
+		//Define los parametros para la funcion
+		$this->setParametro('id_boleto','id_boleto','int4');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function cambiarRevisionBoleto(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_REVBOL_MOD';
+		$this->tipo_procedimiento='IME';
+
 		//Define los parametros para la funcion
 		$this->setParametro('id_boleto','id_boleto','int4');
 

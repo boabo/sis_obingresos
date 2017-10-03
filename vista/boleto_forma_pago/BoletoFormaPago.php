@@ -103,6 +103,7 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 				name: 'forma_pago_amadeus',
 				fieldLabel: 'Forma Pago Amadeus',
 				allowBlank: true,
+				disabled: true,
 				anchor: '80%',
 				gwidth: 150,
 				maxLength:50
@@ -111,7 +112,22 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 
 			id_grupo:1,
 			grid:true,
-			form:false
+			form:true
+		},
+		{
+			config:{
+				name: 'fp_amadeus_corregido',
+				fieldLabel: 'FP Amadeus Corregido',
+				allowBlank: true,
+				anchor: '80%',
+				gwidth: 150,
+				maxLength:50
+			},
+			type:'TextField',
+
+			id_grupo:1,
+			grid:true,
+			form:true
 		},
         {
 			config:{
@@ -290,6 +306,7 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
         {name:'codigo_tarjeta', type: 'string'},
 		{name:'forma_pago', type: 'string'},
 		{name:'forma_pago_amadeus', type: 'string'},
+		{name:'fp_amadeus_corregido', type: 'string'},
 		{name:'codigo_forma_pago', type: 'string'},
 		{name:'id_usuario_ai', type: 'numeric'},
 		{name:'id_usuario_reg', type: 'numeric'},
@@ -397,8 +414,38 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 	},
     round : function(value, decimals) {
     	return Math.ceil(value*100)/100;    	
+	},
+
+	preparaMenu:function(n){
+
+		Phx.vista.BoletoFormaPago.superclass.preparaMenu.call(this,n);
+		var padre = Phx.CP.getPagina(this.idContenedorPadre).nombreVista;
+
+		if(this.maestro.estado ==  'revisado'){
+			this.getBoton('edit').disable();
+			this.getBoton('new').disable();
+			this.getBoton('del').disable();
+		}
+		else{
+			this.getBoton('edit').enable();
+			this.getBoton('new').enable();
+			this.getBoton('del').enable();
+		}
+	},
+
+	liberaMenu: function() {
+		Phx.vista.BoletoFormaPago.superclass.liberaMenu.call(this);
+		if(this.maestro&&(this.maestro.estado !=  'revisado')){
+			this.getBoton('edit').enable();
+			this.getBoton('new').enable();
+			this.getBoton('del').enable();
+		}else{
+			this.getBoton('edit').disable();
+			this.getBoton('new').disable();
+			this.getBoton('del').disable();
+		}
+
 	}
-	
 	
 	}
 )

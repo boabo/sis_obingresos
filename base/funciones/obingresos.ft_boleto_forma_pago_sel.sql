@@ -64,6 +64,7 @@ BEGIN
 						usu2.cuenta as usr_mod,
                         (fp.nombre || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
                         bfp.forma_pago_amadeus,
+                        bfp.fp_amadeus_corregido,
                         fp.codigo as codigo_forma_pago,
                         mon.codigo_internacional as moneda,
                         bfp.codigo_tarjeta
