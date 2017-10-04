@@ -300,6 +300,40 @@ class MODDeposito extends MODbase{
         return $this->respuesta;
     }
 
+    function completarDeposito(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEP_INSE';
+        $this->tipo_procedimiento='IME';
+
+
+        //Define los parametros para la funcion
+        $this->setParametro('estado_reg','estado_reg','varchar');
+        $this->setParametro('nro_deposito','nro_deposito','varchar');
+       // $this->setParametro('agt','agt','varchar');
+        $this->setParametro('monto_deposito','monto_deposito','numeric');
+        $this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
+        //$this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('fecha','fecha','date');
+        $this->setParametro('saldo','saldo','numeric');
+       // $this->setParametro('descripcion','descripcion','varchar');
+       // $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('moneda','moneda','varchar');
+      //  $this->setParametro('tipo','tipo','varchar');
+     //   $this->setParametro('fecha_venta','fecha_venta','date');
+        $this->setParametro('monto_total','monto_total','numeric');
+       /// $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
+        $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 
 }
 ?>
