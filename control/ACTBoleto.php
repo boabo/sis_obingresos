@@ -290,7 +290,11 @@ class ACTBoleto extends ACTbase{
 
 				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
 				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
-				$this->objParam->addParametro('agente_venta', $boleto->bookingAgent->originIdentification->originatorId->__toString());
+				if(!isset($boleto->bookingAgent->originIdentification->originatorId)) {
+					$this->objParam->addParametro('agente_venta', '');
+				}else{
+					$this->objParam->addParametro('agente_venta', $boleto->bookingAgent->originIdentification->originatorId->__toString());
+				}
 				$this->objParam->addParametro('fecha_emision', $fecha);
 				$this->objParam->addParametro('id_agencia', $id_agencia);
 
@@ -355,10 +359,11 @@ class ACTBoleto extends ACTbase{
 					$this->objParam->addParametro('valor_fp', 0);
 				}
 
-				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '' || $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == ' ') {
+				//if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '' || $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == ' ') {
+				if (!isset( $boleto->fopDetails->fopDescription->formOfPayment->type)) {
 					//exception valor forma de pago no definida
 					//throw new Exception(__METHOD__ . 'VALOR FORMA DE PAGO NO DEFINIDO');
-					$this->objParam->addParametro('fp', 'CA');
+					$this->objParam->addParametro('fp', '');
 					$this->objParam->addParametro('valor_fp', 0);
 				}else {
 
@@ -377,6 +382,11 @@ class ACTBoleto extends ACTbase{
 							}
 						}
 						$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
+					}else{
+						if($boleto->fopDetails->fopDescription->formOfPayment->type->__toString()=='' || $boleto->fopDetails->fopDescription->formOfPayment->type->__toString()==' '){
+							$this->objParam->addParametro('fp', '');
+							$this->objParam->addParametro('valor_fp', 0);
+						}
 					}
 				}
 
@@ -438,18 +448,30 @@ class ACTBoleto extends ACTbase{
 
 				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
 				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
-				$this->objParam->addParametro('agente_venta', $boleto->bookingAgent->originIdentification->originatorId->__toString());
+
+				if(!isset($boleto->bookingAgent->originIdentification->originatorId)) {
+					$this->objParam->addParametro('agente_venta', '');
+				}else{
+					$this->objParam->addParametro('agente_venta', $boleto->bookingAgent->originIdentification->originatorId->__toString());
+				}
+
 				$this->objParam->addParametro('fecha_emision', $fecha);
 				$this->objParam->addParametro('id_agencia', $id_agencia);
 
 				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'CANX') {
 					$this->objParam->addParametro('voided', 'si');
 				}
+
+				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'CANN') {
+					$this->objParam->addParametro('voided', 'si');
+				}
+
 				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() == 'TKTT') {
 					$this->objParam->addParametro('voided', 'no');
 				}
 				$this->objParam->addParametro('pasajero', $boleto->passengerName->paxDetails->surname->__toString());
 				foreach ($boleto->monetaryInformation->otherMonetaryDetails as $montoBoleto) {
+					$total=0;
 					if ($montoBoleto->typeQualifier->__toString() == 'T') {
 						$this->objParam->addParametro('total', $montoBoleto->amount->__toString());
 						$this->objParam->addParametro('liquido', $montoBoleto->amount->__toString());
@@ -484,32 +506,43 @@ class ACTBoleto extends ACTbase{
 					$this->objParam->addParametro('valor_fp', 0);
 				}
 
-				if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '' || $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == ' ') {
-					//exception valor forma de pago no definida
-					$this->objParam->addParametro('fp', 'CA');
-					$this->objParam->addParametro('valor_fp', 0);
-				}
+				//if ($boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == '' || $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString() == ' ') {
 
-				if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CC') {
-					if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'VI') {
-						$this->objParam->addParametro('fp', 'CCVI');
-					}else {
-						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
-							$this->objParam->addParametro('fp', 'CCCA');
+				if (!isset( $boleto->fopDetails->fopDescription->formOfPayment->type)) {
+					//exception valor forma de pago no definida
+					$this->objParam->addParametro('fp', '');
+					$this->objParam->addParametro('valor_fp', 0);
+				}else {
+					if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == 'CC') {
+						if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'VI') {
+							$this->objParam->addParametro('fp', 'CCVI');
 						} else {
-							if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
-								$this->objParam->addParametro('fp', 'CCAX');
+							if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'CA') {
+								$this->objParam->addParametro('fp', 'CCCA');
 							} else {
-								$this->objParam->addParametro('fp', '');
+								if ($boleto->fopDetails->fopDescription->formOfPayment->vendorCode->__toString() == 'AX') {
+									$this->objParam->addParametro('fp', 'CCAX');
+								} else {
+									$this->objParam->addParametro('fp', '');
+								}
 							}
 						}
+						$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
+					} else {
+						if ($boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == '' || $boleto->fopDetails->fopDescription->formOfPayment->type->__toString() == ' ') {
+							$this->objParam->addParametro('fp', '');
+							$this->objParam->addParametro('valor_fp', 0);
+						}
 					}
-					$this->objParam->addParametro('valor_fp', $boleto->fopDetails->monetaryInfo->monetaryDetails->amount->__toString());
 				}
 
 				/* fin forma de pago */
 
-				$this->objParam->addParametro('localizador', $boleto->reservationInformation->reservation->controlNumber->__toString());
+				if ($boleto->transactionDataDetails->transactionDetails->code->__toString() != 'CANN') {
+					$this->objParam->addParametro('localizador', $boleto->reservationInformation->reservation->controlNumber->__toString());
+				}else{
+					$this->objParam->addParametro('localizador', ' ');
+				}
 
 				if ($this->objParam->getParametro('id_usuario_cajero') != '') {
 					$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));

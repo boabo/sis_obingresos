@@ -12,13 +12,13 @@ $body$
    DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.tboleto'
  AUTOR: 		 (jrivera)
  FECHA:	        06-01-2016 22:42:25
- COMENTARIOS:	
+ COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
 
- DESCRIPCION:	
- AUTOR:			
- FECHA:		
+ DESCRIPCION:
+ AUTOR:
+ FECHA:
 ***************************************************************************/
 
 DECLARE
@@ -28,21 +28,21 @@ DECLARE
 	v_nombre_funcion   	text;
 	v_resp				varchar;
     v_conexion			varchar;
-			    
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
-	/*********************************    
+	/*********************************
      #TRANSACCION:  'OBING_BOL_SEL'
  	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		jrivera	
+ 	#AUTOR:		jrivera
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
 
     if(p_transaccion='OBING_BOL_SEL')then
-     				
+
     	begin
     		--Sentencia de la consulta
         v_consulta:='with forma_pago_temporal as(
@@ -53,13 +53,13 @@ BEGIN
                                 array_agg(bfp.ctacte) as ctacte,
                                 array_agg(mon.codigo_internacional) as moneda_fp,
                                 sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,''O'',2)) as monto_total_fp
-                                
+
 					        from obingresos.tboleto_forma_pago bfp
 					        inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                             inner join obingresos.tboleto bol on bol.id_boleto = bfp.id_boleto
                             inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                            where ' || v_parametros.filtro || ' 
-					        group by bfp.id_boleto        
+                            where ' || v_parametros.filtro || '
+					        group by bfp.id_boleto
 					    )
             		select
 						bol.id_boleto,
@@ -115,7 +115,7 @@ BEGIN
                         forpa.codigo_tarjeta[1],
                         forpa.ctacte[1],
                         forpa.moneda_fp[1],
-                        
+
                         (case when (forpa.cantidad_forma_pago <> 2) then
                         	0::integer
                         else
@@ -138,10 +138,10 @@ BEGIN
                         forpa.codigo_tarjeta[2] as codigo_tarjeta2,
                         forpa.ctacte[2] as ctacte2,
                         forpa.moneda_fp[2] as moneda_fp2,
-                                                
+
                         bol.tc,
                         bol.moneda_sucursal,
-                        bol.ruta_completa,                        
+                        bol.ruta_completa,
                         bol.voided,
                         forpa.monto_total_fp,
                         bol.mensaje_error,
@@ -156,24 +156,24 @@ BEGIN
 						inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
 				        where bol.estado_reg = ''activo'' and ';
-			
+
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
         v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
         raise notice '%', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
-						
+
 		end;
 
-        
-	/*********************************    
+
+	/*********************************
      #TRANSACCION:  'OBING_PNRBOL_SEL'
  	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		Gonzalo Sarmiento	
+ 	#AUTOR:		Gonzalo Sarmiento
  	#FECHA:		14-07-2017
 	***********************************/
-	
+
     elsif(p_transaccion='OBING_PNRBOL_SEL')then
 
 		begin
@@ -230,19 +230,19 @@ BEGIN
 		begin
 
         	v_consulta:='with forma_pago_temporal as(
-                                          select bfp.id_boleto,
+                                          select bol.id_boleto,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
                                                  array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(bfp.forma_pago_amadeus) as forma_pago_amadeus,
-                                                 array_agg(bfp.importe) as monto_forma_pago,
-                                                 array_agg(bfp.fp_amadeus_corregido) as fp_amadeus_corregido
-                                          from obingresos.tboleto_forma_pago bfp
-                                               inner join obingresos.tforma_pago fp on
-                                                 fp.id_forma_pago = bfp.id_forma_pago
-                                               inner join obingresos.tboleto bol on bol.id_boleto = bfp.id_boleto
-                                               inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto bol
+                                               left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto=bol.id_boleto
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
                                           where ' || v_parametros.filtro || '
-                                          group by bfp.id_boleto)
+                                          group by bol.id_boleto)
                           select nr.id_boleto,
                           		 nr.localizador,
                                  nr.total,
@@ -256,14 +256,16 @@ BEGIN
                                  nr.voided,
                                  nr.estado,
                                  usu.desc_persona::varchar as agente_venta,
+                                 nr.agente_venta as codigo_agente,
+                                 nr.forma_pago as forma_pago_amadeus,
                                  fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
                                  fpo.forma_pago [ 1 ]::varchar as forma_pago,
-                                 fpo.forma_pago_amadeus [1]::varchar as forma_pago_amadeus,
+                                 fpo.codigo_forma_pago [ 1 ]::varchar as codigo_forma_pago,
+                                 fpo.nombre_auxiliar [ 1 ]::varchar as nombre_auxiliar,
                                  fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
-                                 fpo.fp_amadeus_corregido [1]::varchar as fp_amadeus_corregido,
                                  fpo.id_forma_pago [ 2 ]::integer as id_forma_pago2,
                                  fpo.forma_pago [ 2 ]::varchar as forma_pago2,
-                                 fpo.forma_pago_amadeus [2]::varchar as forma_pago_amadeus2,
+                                 fpo.codigo_forma_pago [ 2 ]::varchar as codigo_forma_pago2,
                                  fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2
                           from obingresos.tboleto nr
                           inner join forma_pago_temporal fpo on fpo.id_boleto=nr.id_boleto
@@ -343,19 +345,19 @@ BEGIN
             v_consulta:='select count(bol.id_boleto)
 						from obingresos.tboleto bol
                         where ';
-			
-			--Definicion de la respuesta		    
+
+			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			raise notice 'v_consulta %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
-        
-    /*********************************    
+
+    /*********************************
  	#TRANSACCION:  'OBING_BOLFAC_SEL'
  	#DESCRIPCION:	Reporte de Boleto
- 	#AUTOR:		jrivera	
+ 	#AUTOR:		jrivera
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
 
@@ -371,12 +373,12 @@ BEGIN
         end if;
         	--Sentencia de la consulta de conteo de registros
         v_consulta:='
-    with 
+    with
     origen as (select bv.id_boleto, l.codigo as pais
 				from obingresos.tboleto_vuelo bv
                 inner join obingresos.taeropuerto a on a.id_aeropuerto = bv.id_aeropuerto_origen
                 inner join param.tlugar l on l.id_lugar = param.f_get_id_lugar_pais(a.id_lugar)
-                where bv.id_boleto =  ' || v_parametros.id_boleto|| '  
+                where bv.id_boleto =  ' || v_parametros.id_boleto|| '
                 order by bv.id_boleto_vuelo ASC limit 1 offset 0) ,
     tasas as (select bt.id_boleto, sum(bt.importe) as importe,pxp.list((bt.importe || '' '' || t.codigo)::varchar)::varchar as tasas
             from obingresos.tboleto_impuesto bt
@@ -385,12 +387,12 @@ BEGIN
             group by id_boleto),
 	 sujeto as (
      		select bi.id_boleto, sum(bi.importe) as importe, pxp.list((bi.importe || '' '' || i.codigo)::varchar)::varchar as impuesto
-            from obingresos.tboleto_impuesto bi 
+            from obingresos.tboleto_impuesto bi
             inner join obingresos.timpuesto i on i.id_impuesto = bi.id_impuesto and
                         			i.codigo in (''BO'', ''QM'')
             where bi.id_boleto = ' || v_parametros.id_boleto|| '
             group by id_boleto),
-     
+
      forma_pago as (
      		select bfp.id_boleto, pxp.list((case when fp.codigo = ''CA'' then ''CASH'' else fp.codigo end) || '' '' || fpmon.codigo_internacional || '' '' || bfp.importe)::varchar as forma_pago
             from obingresos.tboleto_forma_pago bfp
@@ -398,15 +400,15 @@ BEGIN
             inner join param.tmoneda fpmon on fpmon.id_moneda = fp.id_moneda
             where bfp.id_boleto = ' || v_parametros.id_boleto|| '
             group by id_boleto
-            )           
-            
-            
+            )
+
+
             select  e.nit,
             			to_char (b.fecha_emision,''DD MON YYYY'')::varchar as fecha_emision,
                         pv.codigo as codigo_pv,
                         pv.nombre as punto_venta,
                         (substr(b.nro_boleto,1,3) || ''-'' || substr(b.nro_boleto,4) ||
-                        	coalesce(''|'' || (	select substr(nro_boleto,12) 
+                        	coalesce(''|'' || (	select substr(nro_boleto,12)
                         						from obingresos.tboleto
                                                 where id_boleto_conjuncion = ' || v_parametros.id_boleto|| '),''''))::varchar as billete ,
                         b.localizador,
@@ -416,7 +418,7 @@ BEGIN
                         (mon.codigo_internacional || '' '' || coalesce(t.importe,0) + coalesce(b.xt,0))::varchar as tasas,
                         (mon.codigo_internacional || '' '' || b.total)::varchar as total,
                         fp.forma_pago,
-                        
+
                         b.pasajero,
                         (case when substr(b.identificacion,1,2) = ''NI'' then
                         	''DNI / NATIONAL ID''
@@ -431,12 +433,12 @@ BEGIN
                         s.direccion,
                         s.telefono,
                         b.fare_calc,
-                        (t.tasas ||  (case when b.xt is null or b.xt = 0 
-                        						then '''' 
+                        (t.tasas ||  (case when b.xt is null or b.xt = 0
+                        						then ''''
                         						else '','' || b.xt || '' XT''
                                                 end))::varchar as detalle_tasas,
                         ''' || v_conexion || '''::varchar as conexion
-                                                
+
                         from  obingresos.tboleto b
                         inner join vef.tpunto_venta pv on b.id_punto_venta = pv.id_punto_venta
                         inner join vef.tsucursal s on s.id_sucursal = pv.id_sucursal
@@ -445,20 +447,20 @@ BEGIN
                         inner join param.tmoneda mon on mon.id_moneda = b.id_moneda_boleto
                         left join sujeto as su on su.id_boleto = b.id_boleto
                         left join tasas t on t.id_boleto = b.id_boleto
-                        left join forma_pago fp on fp.id_boleto = b.id_boleto 
-                        left join origen ori on ori.id_boleto = b.id_boleto                       
+                        left join forma_pago fp on fp.id_boleto = b.id_boleto
+                        left join origen ori on ori.id_boleto = b.id_boleto
                         where b.id_boleto =  ' || v_parametros.id_boleto;
-			
+
         raise notice '%',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
-     
-     /*********************************    
+
+     /*********************************
   #TRANSACCION:  'OBING_BOLFACDET_SEL'
  	#DESCRIPCION:	Detalle de vuelos por boleto
- 	#AUTOR:		jrivera	
+ 	#AUTOR:		jrivera
  	#FECHA:		06-01-2016 22:42:25
 	***********************************/
 
@@ -469,11 +471,11 @@ BEGIN
         v_consulta:='select to_char(bv.fecha_hora_origen,''DDMON'')::varchar as fecha_origen,
         					to_char(bv.fecha_hora_destino,''DDMON'')::varchar as fecha_origen,
                           (bv.linea || bv.vuelo)::varchar,
-                          (lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde, 
+                          (lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde,
                           (ld.nombre || '' ('' || ad.codigo || '')'')::varchar as hacia,
                           to_char(bv.fecha_hora_origen,''HH24MI'')::varchar as hora_origen,
                           to_char(bv.fecha_hora_destino,''HH24MI'')::varchar as hora_destino,
-                          bv.tarifa, 
+                          bv.tarifa,
                           bv.equipaje,
                           bv.clase,
                           bv.cupon,
@@ -490,7 +492,7 @@ BEGIN
                           inner join param.tlugar ld on ld.id_lugar = ad.id_lugar
                           inner join param.tlugar po on po.id_lugar = param.f_get_id_lugar_pais(lo.id_lugar)
                           inner join param.tlugar pd on pd.id_lugar = param.f_get_id_lugar_pais(ld.id_lugar)
-                          where bv.id_boleto = ' || v_parametros.id_boleto|| ' or bv.id_boleto_conjuncion = ' || v_parametros.id_boleto|| ' 
+                          where bv.id_boleto = ' || v_parametros.id_boleto|| ' or bv.id_boleto_conjuncion = ' || v_parametros.id_boleto|| '
                           order by bv.cupon ASC';
 
 
@@ -537,20 +539,20 @@ BEGIN
                             	select bfp.id_boleto,array_to_json(array_agg(bfp.*)) as pagos
                                 from boleto_fp bfp
                                 group by bfp.id_boleto
-                            ) 
-                            
+                            )
+
                             select row_to_json(b.*) as boleto,bv.detalle,bfp.pagos
-                            from boleto b 
+                            from boleto b
                             inner join boleto_vuelo bv on bv.id_boleto = b.id_boleto
                             inner join boleto_fp_2 bfp on bfp.id_boleto = b.id_boleto
                             ';
-			
+
 
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
-					
+
     /*********************************
     #TRANSACCION:  'OBING_REPRESVEW_SEL'
     #DESCRIPCION:	Reporte Deposito
@@ -589,14 +591,14 @@ BEGIN
                                    bfp.numero_tarjeta,
                                    dbw.fecha as fecha,
                                    dbw.importe as monto_resiber,
-                                   b.total as monto_ventas_web,       
+                                   b.total as monto_ventas_web,
                                    dbw.moneda
-                            from obingresos.tdetalle_boletos_web dbw 
-                                 left join obingresos.tboleto b on dbw.billete = b.nro_boleto     
+                            from obingresos.tdetalle_boletos_web dbw
+                                 left join obingresos.tboleto b on dbw.billete = b.nro_boleto
                                  left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
                             where dbw.fecha >= '''||v_parametros.fecha_ini||'''::date and
                                   dbw.fecha < '''||v_parametros.fecha_fin||'''::date and
-                                   b.nro_boleto is null and dbw.medio_pago != ''COMPLETAR-CC'' and 
+                                   b.nro_boleto is null and dbw.medio_pago != ''COMPLETAR-CC'' and
                                   b.estado_reg =''activo''
                             group by b.nro_boleto, fecha, dbw.billete, bfp.numero_tarjeta,
                             dbw.importe, dbw.moneda, b.total, b.moneda
@@ -614,7 +616,7 @@ BEGIN
                                  left join obingresos.tventa_web_modificaciones vwm on vwm.nro_boleto = b.nro_boleto
                             where b.fecha_emision >= '''||v_parametros.fecha_ini||'''::date and
                                   b.fecha_emision < '''||v_parametros.fecha_fin||'''::date and
-                                  voided = ''si''  and  dbw.medio_pago != ''COMPLETAR-CC'' and 
+                                  voided = ''si''  and  dbw.medio_pago != ''COMPLETAR-CC'' and
                                   b.estado_reg =''activo'' and vwm.nro_boleto is null
                             order by fecha';
 	else
@@ -640,15 +642,15 @@ BEGIN
             end if;
         return v_consulta;
       end;
-					     
+
     else
 
       raise exception 'Transaccion inexistente';
-					         
+
 	end if;
-					
+
 EXCEPTION
-					
+
 	WHEN OTHERS THEN
       v_resp='';
       v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);

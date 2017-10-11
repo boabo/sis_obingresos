@@ -38,12 +38,13 @@ class MODBoletoFormaPago extends MODbase{
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
 		$this->captura('forma_pago','varchar');
-		$this->captura('forma_pago_amadeus','varchar');
-		$this->captura('fp_amadeus_corregido','varchar');
+		//$this->captura('forma_pago_amadeus','varchar');
+		//$this->captura('fp_amadeus_corregido','varchar');
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('moneda','varchar');
+		$this->captura('nombre_auxiliar','varchar');
         $this->captura('codigo_tarjeta','varchar');
-		
+
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -102,10 +103,11 @@ class MODBoletoFormaPago extends MODbase{
 		$this->setParametro('id_boleto','id_boleto','int4');
 		$this->setParametro('estado_reg','estado_reg','varchar');
 		$this->setParametro('tarjeta','tarjeta','varchar');
-		$this->setParametro('ctacte','ctacte','varchar');
+		//$this->setParametro('ctacte','ctacte','varchar');
 		$this->setParametro('importe','importe','numeric');
 		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
         $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+        $this->setParametro('id_auxiliar','id_auxiliar','integer');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -128,11 +130,12 @@ class MODBoletoFormaPago extends MODbase{
 		$this->setParametro('id_boleto','id_boleto','int4');
 		$this->setParametro('estado_reg','estado_reg','varchar');
 		$this->setParametro('tarjeta','tarjeta','varchar');
-		$this->setParametro('ctacte','ctacte','varchar');
+		//$this->setParametro('ctacte','ctacte','varchar');
 		$this->setParametro('importe','importe','numeric');
 		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
 		$this->setParametro('fp_amadeus_corregido','fp_amadeus_corregido','varchar');
         $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+		$this->setParametro('id_auxiliar','id_auxiliar','integer');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

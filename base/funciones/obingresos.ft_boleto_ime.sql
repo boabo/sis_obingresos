@@ -81,9 +81,6 @@ DECLARE
 
     v_autorizacion_fp		varchar[];
     v_tarjeta_fp			varchar[];
-    v_estado				varchar;
-    v_id_usuario_cajero		integer;
-    v_total					numeric;
     v_monto_total_fp		numeric;
 
 
@@ -220,9 +217,8 @@ BEGIN
                   numero_tarjeta,
                   codigo_tarjeta,
                   tarjeta,
-                  forma_pago_amadeus,
-                  fp_amadeus_corregido,
-                  id_usuario_fp_amadeus_corregido
+                  id_usuario_fp_corregido,
+                  id_auxiliar
                 )
                 VALUES (
                   p_id_usuario,
@@ -233,9 +229,8 @@ BEGIN
                   v_parametros.numero_tarjeta,
                   v_parametros.codigo_tarjeta,
                   v_codigo_tarjeta,
-                  v_parametros.forma_pago_amadeus,
-                  v_parametros.fp_amadeus_corregido,
-                  p_id_usuario
+                  p_id_usuario,
+                  v_parametros.id_auxiliar
                 );
 
                 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
@@ -1041,7 +1036,6 @@ raise notice 'llega 0';
 	elsif(p_transaccion='OBING_BOLSERVAMA_INS')then
 
         begin
-
             IF NOT EXISTS(SELECT 1
             			  FROM obingresos.tboleto
             			  WHERE nro_boleto=v_parametros.nro_boleto)THEN
@@ -1071,7 +1065,8 @@ raise notice 'llega 0';
                 id_usuario_reg,
                 id_boleto,
                 agente_venta,
-                id_agencia
+                id_agencia,
+                forma_pago
                 )VALUES(v_parametros.nro_boleto::varchar,
                 v_parametros.total::numeric,
                 v_parametros.comision::numeric,
@@ -1090,57 +1085,35 @@ raise notice 'llega 0';
                 p_id_usuario,
                 v_id_boleto,
                 v_parametros.agente_venta,
-                v_parametros.id_agencia
+                v_parametros.id_agencia,
+                v_parametros.forma_pago_amadeus
                 );
-
+     			/*
                 if(trim(v_parametros.fp)='')then
                 	v_forma_pago='CA';
             	else
                 	v_forma_pago=v_parametros.fp;
-                end if;
-
-                SELECT id_forma_pago into v_id_forma_pago
-                FROM obingresos.tforma_pago
-                WHERE codigo=v_forma_pago AND id_moneda=v_id_moneda;
-
-				/*if(trim(v_parametros.fp)='')then
-                	v_valor_forma_pago=0;
-            	else
-                	v_valor_forma_pago=v_parametros.valor_fp;
                 end if;*/
+                raise notice 'v_parametros.fp %', v_parametros.fp;
+                if(trim(v_parametros.fp)!='')then
 
-                INSERT INTO obingresos.tboleto_forma_pago
-                (id_usuario_reg,
-                id_boleto,
-                id_forma_pago,
-                importe,
-                forma_pago_amadeus
-                )
-                VALUES(
-                p_id_usuario,
-                v_id_boleto,
-                v_id_forma_pago,
-                v_parametros.valor_fp,
-                v_parametros.forma_pago_amadeus
-                );
+                    SELECT id_forma_pago into v_id_forma_pago
+                    FROM obingresos.tforma_pago
+                    WHERE codigo=v_parametros.fp AND id_moneda=v_id_moneda;
 
-                IF EXISTS(
-                SELECT 1
-                FROM obingresos.tpnr_forma_pago
-                WHERE pnr=v_parametros.localizador
-                AND id_forma_pago=v_id_forma_pago
-                )THEN
-                	UPDATE
-                    obingresos.tpnr_forma_pago
-                    SET
-                    importe=importe+v_parametros.valor_fp
-                    WHERE pnr=v_parametros.localizador and
-                    id_forma_pago=v_id_forma_pago;
-                ELSE
-                	INSERT INTO obingresos.tpnr_forma_pago
-                    (pnr, id_forma_pago, importe, forma_pago_amadeus)
-                    VALUES(v_parametros.localizador, v_id_forma_pago, v_parametros.valor_fp, v_parametros.forma_pago_amadeus);
-                END IF;
+                    INSERT INTO obingresos.tboleto_forma_pago
+                    (id_usuario_reg,
+                    id_boleto,
+                    id_forma_pago,
+                    importe
+                    )
+                    VALUES(
+                    p_id_usuario,
+                    v_id_boleto,
+                    v_id_forma_pago,
+                    v_parametros.valor_fp
+                    );
+                end if;
 
             	--Definicion de la respuesta
 				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')');
@@ -1273,11 +1246,31 @@ raise notice 'llega 0';
 	elsif(p_transaccion='OBING_REVBOL_MOD')then
 
 		begin
-        	select estado, id_usuario_cajero, total into v_estado, v_id_usuario_cajero, v_total
+        	select * into v_boleto
             from obingresos.tboleto
             where id_boleto=v_parametros.id_boleto;
 
-            IF(v_estado is NULL)THEN
+        	if (pxp.f_get_variable_global('vef_tiene_apertura_cierre') = 'si') then
+                if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
+                  end if;
+
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'Antes de revisar un boleto debe realizar una apertura de caja';
+                  end if;
+            end if;
+
+            IF(v_boleto.estado is NULL)THEN
 
               select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
               from obingresos.tboleto_forma_pago bfp
@@ -1285,7 +1278,7 @@ raise notice 'llega 0';
               inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
               where bfp.id_boleto=v_parametros.id_boleto;
 
-              IF (v_monto_total_fp <>v_total)THEN
+              IF (v_monto_total_fp <>v_boleto.total)THEN
               	raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
               END IF;
 
@@ -1295,7 +1288,7 @@ raise notice 'llega 0';
               id_usuario_cajero=p_id_usuario
               where id_boleto=v_parametros.id_boleto;
             ELSE
-              IF(v_id_usuario_cajero != p_id_usuario)THEN
+              IF(v_boleto.id_usuario_cajero != p_id_usuario)THEN
               	raise exception 'Solo el usuario que reviso puede cambiar el estado del boleto a no revisado';
               END IF;
 

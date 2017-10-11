@@ -169,14 +169,17 @@ class MODBoleto extends MODbase{
 		$this->captura('voided','varchar');
 		$this->captura('estado','varchar');
 		$this->captura('agente_venta','varchar');
+		$this->captura('codigo_agente','varchar');
+		$this->captura('forma_pago_amadeus','varchar');
 		$this->captura('id_forma_pago','int4');
 		$this->captura('forma_pago','varchar');
-		$this->captura('forma_pago_amadeus','varchar');
+		$this->captura('codigo_forma_pago','varchar');
+		$this->captura('nombre_auxiliar','varchar');
 		$this->captura('monto_forma_pago','numeric');
-		$this->captura('fp_amadeus_corregido','varchar');
+		//$this->captura('fp_amadeus_corregido','varchar');
 		$this->captura('id_forma_pago2','int4');
 		$this->captura('forma_pago2','varchar');
-		$this->captura('forma_pago_amadeus2','varchar');
+		$this->captura('codigo_forma_pago2','varchar');
 		$this->captura('monto_forma_pago2','numeric');
 
 		//Ejecuta la instruccion
@@ -328,8 +331,7 @@ class MODBoleto extends MODbase{
 		$this->setParametro('estado','estado','varchar');
         $this->setParametro('id_boleto_vuelo','id_boleto_vuelo','integer');
         $this->setParametro('id_punto_venta','id_punto_venta','integer');
-        $this->setParametro('forma_pago_amadeus','forma_pago_amadeus','varchar');
-        $this->setParametro('fp_amadeus_corregido','fp_amadeus_corregido','varchar');
+        $this->setParametro('id_auxiliar','id_auxiliar','integer');
 
         //Ejecuta la instruccion
 		$this->armarConsulta();

@@ -63,16 +63,16 @@ BEGIN
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
                         (fp.nombre || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
-                        bfp.forma_pago_amadeus,
-                        bfp.fp_amadeus_corregido,
                         fp.codigo as codigo_forma_pago,
                         mon.codigo_internacional as moneda,
+                        aux.nombre_auxiliar,
                         bfp.codigo_tarjeta
 						from obingresos.tboleto_forma_pago bfp
 						inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
 				        inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                         left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                        left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
                         where  ';
 
 			--Definicion de la respuesta
@@ -115,7 +115,6 @@ BEGIN
 						usu2.cuenta as usr_mod,
                         (fp.nombre || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
                         fp.codigo as codigo_forma_pago,
-                        bfp.forma_pago_amadeus,
                         mon.codigo_internacional as moneda,
                         bfp.codigo_tarjeta
 						from obingresos.tboleto_amadeus_forma_pago bfp
