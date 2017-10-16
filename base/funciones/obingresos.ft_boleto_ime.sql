@@ -82,7 +82,7 @@ DECLARE
     v_autorizacion_fp		varchar[];
     v_tarjeta_fp			varchar[];
     v_monto_total_fp		numeric;
-
+	v_identificador_reporte	varchar;
 
 
 BEGIN
@@ -253,7 +253,6 @@ BEGIN
                       importe,
                       id_forma_pago,
                       id_boleto,
-                      ctacte,
                       numero_tarjeta,
                       codigo_tarjeta,
                       tarjeta
@@ -263,7 +262,6 @@ BEGIN
                       v_parametros.monto_forma_pago2,
                       v_parametros.id_forma_pago2,
                       v_parametros.id_boleto,
-                      v_parametros.ctacte2,
                       v_parametros.numero_tarjeta2,
                       v_parametros.codigo_tarjeta2,
                       v_codigo_tarjeta
@@ -1036,6 +1034,7 @@ raise notice 'llega 0';
 	elsif(p_transaccion='OBING_BOLSERVAMA_INS')then
 
         begin
+
             IF NOT EXISTS(SELECT 1
             			  FROM obingresos.tboleto
             			  WHERE nro_boleto=v_parametros.nro_boleto)THEN
@@ -1114,6 +1113,36 @@ raise notice 'llega 0';
                     v_parametros.valor_fp
                     );
                 end if;
+
+            select substring(max(nro_boleto)from 4) into v_identificador_reporte
+            from obingresos.tboleto
+            WHERE id_punto_venta=v_parametros.id_punto_venta
+                        AND fecha_emision=v_parametros.fecha_emision::date
+                        AND moneda=v_parametros.moneda;
+
+        	IF NOT EXISTS(SELECT 1
+            				FROM vef.tpunto_venta_reporte
+                            WHERE id_punto_venta=v_parametros.id_punto_venta
+                            AND fecha=v_parametros.fecha_emision::date
+                            AND moneda=v_parametros.moneda)THEN
+
+            	INSERT INTO vef.tpunto_venta_reporte(
+                id_punto_venta,
+                fecha,
+                moneda,
+                identificador_reporte)VALUES(
+                v_parametros.id_punto_venta,
+                v_parametros.fecha_emision::date,
+                v_parametros.moneda,
+                v_parametros.identificador_reporte);
+            ELSE
+
+            	UPDATE vef.tpunto_venta_reporte
+                SET identificador_reporte=v_identificador_reporte
+                WHERE id_punto_venta=v_parametros.id_punto_venta
+                AND fecha=v_parametros.fecha_emision::date
+                            AND moneda=v_parametros.moneda;
+            END IF;
 
             	--Definicion de la respuesta
 				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito (id_boleto'||v_id_boleto||')');

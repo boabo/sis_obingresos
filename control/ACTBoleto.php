@@ -255,6 +255,8 @@ class ACTBoleto extends ACTbase{
 		if ($this->objParam->getParametro('officeId_agencia') != '') {
 			$officeid = $this->objParam->getParametro('officeId_agencia');
 		}else{
+			$this->objParam->addParametro('fecha', $fecha);
+			$this->objParam->addParametro('moneda', "BOB");
 			$this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
 			$this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
@@ -262,9 +264,10 @@ class ACTBoleto extends ACTbase{
 
 			$officeid = $datos[0]['officeid'];
 			$id_agencia = $datos[0]['id_agencia'];
+			$identificador_reporte = $datos[0]['identificador_reporte'];
 		}
 		//boletos en bolivianos
-		$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
+		$data = array("numberItems"=>"0","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
 		$data_string = json_encode($data);
 		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales';
 		$session = curl_init($request);
@@ -284,11 +287,13 @@ class ACTBoleto extends ACTbase{
 		$xmlRespuesta = new SimpleXMLElement(str_replace("utf-16", "utf-8",$respuesta->Boa_RITRetrieveSalesResult));
 		//var_dump($xmlRespuesta); exit;
 		if(isset($xmlRespuesta->queryReportDataDetails)) {
+			$idReporte = $xmlRespuesta->queryReportDataDetails->actionDetails->lastItemsDetails->lastItemIdentifier->__toString();
 			$moneda = $xmlRespuesta->queryReportDataDetails->currencyInfo->currencyDetails->currencyIsoCode->__toString();
 			//var_dump($moneda); exit;
 			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
 
 				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+				$this->objParam->addParametro('identificador_reporte', $idReporte);
 				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
 				if(!isset($boleto->bookingAgent->originIdentification->originatorId)) {
 					$this->objParam->addParametro('agente_venta', '');
@@ -418,9 +423,19 @@ class ACTBoleto extends ACTbase{
 			}
 		}
 
+		$this->objParam->addParametro('fecha', $fecha);
+		$this->objParam->addParametro('moneda', "USD");
+		$this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
+		$this->res=$this->objFunc->obtenerOfficeID($this->objParam);
+
+		$datos = $this->res->getDatos();
+		//var_dump($datos); exit;
+		$officeid = $datos[0]['officeid'];
+		$id_agencia = $datos[0]['id_agencia'];
+		$identificador_reporte = $datos[0]['identificador_reporte'];
 		////boletos en dolares
 		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
-		$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
+		$data = array("numberItems"=>"0","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
 		$data_string = json_encode($data);
 		//$request =  'http://wservices.obairlines.bo/Dotacion.AppService/SvcDotacion.svc/RevertirDotacionAlmacenes';
 		//$request =  'http://wservices.obairlines.bo/esb/RITISERP.svc/Boa_RITRetrieveSales';
@@ -442,11 +457,13 @@ class ACTBoleto extends ACTbase{
 		$xmlRespuesta = new SimpleXMLElement(str_replace("utf-16", "utf-8",$respuesta->Boa_RITRetrieveSalesResult));
 		//var_dump($xmlRespuesta); exit;
 		if(isset($xmlRespuesta->queryReportDataDetails)) {
+			$idReporte = $xmlRespuesta->queryReportDataDetails->actionDetails->lastItemsDetails->lastItemIdentifier->__toString();
 			$moneda = $xmlRespuesta->queryReportDataDetails->currencyInfo->currencyDetails->currencyIsoCode->__toString();
 
 			foreach ($xmlRespuesta->queryReportDataDetails->queryReportDataOfficeGroup->documentData as $boleto) {
 
 				$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+				$this->objParam->addParametro('identificador_reporte', $idReporte);
 				$this->objParam->addParametro('nro_boleto', $boleto->documentNumber->documentDetails->number->__toString());
 
 				if(!isset($boleto->bookingAgent->originIdentification->originatorId)) {
@@ -636,7 +653,6 @@ class ACTBoleto extends ACTbase{
 				$this->objFunc = $this->create('MODBoleto');
 				$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
 			}
-
 			$this->objFunc=$this->create('MODAgencia');
 			$this->res=$this->objFunc->obtenerOfficeIDsAgencias($this->objParam);
 			$datos = $this->res->getDatos();

@@ -452,6 +452,7 @@ class MODBoleto extends MODbase{
 
 		//Define los parametros para la funcion
 		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
+		$this->setParametro('identificador_reporte','identificador_reporte','varchar');//ok
 		$this->setParametro('id_agencia','id_agencia','integer');//ok
 		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
 		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
