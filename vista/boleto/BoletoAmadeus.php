@@ -566,7 +566,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
-                        maxLength:50
+                        minLength:16,
+                        maxLength:20
                     },
                     type:'TextField',
                     id_grupo:1,
@@ -579,7 +580,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Codigo de Autorización 1',
                         allowBlank: true,
                         anchor: '80%',
-                        maxLength:20
+                        maxLength:6
 
                     },
                     type:'TextField',

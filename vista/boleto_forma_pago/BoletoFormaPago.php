@@ -152,7 +152,8 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 150,
-				maxLength:50
+				minLength:16,
+				maxLength:20
 			},
 				type:'TextField',
 				
@@ -166,7 +167,7 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
                 fieldLabel: 'Codigo de Autorización',
                 allowBlank: true,
                 anchor: '80%',
-                maxLength:20
+                maxLength:6
 
             },
             type:'TextField',
