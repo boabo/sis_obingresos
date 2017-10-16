@@ -1106,12 +1106,7 @@ header("content-type: text/javascript; charset=UTF-8");
             successSinc: function(resp) {
                 Phx.CP.loadingHide();
                 var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-                if (reg.ROOT.error) {
-                    Ext.Msg.alert('Error','Boletos no recuperados: se ha producido un error inesperado. Comuníquese con el Administrador del Sistema.')
-                } else {
-                    Ext.Msg.alert('Mensaje','Boletos Recuperados')
-                    this.reload();
-                }
+                this.reload();
             },
 
         /* preparaCerrarCaja:function(){

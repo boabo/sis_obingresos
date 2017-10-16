@@ -267,7 +267,7 @@ class ACTBoleto extends ACTbase{
 			$identificador_reporte = $datos[0]['identificador_reporte'];
 		}
 		//boletos en bolivianos
-		$data = array("numberItems"=>"0","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
+		$data = array("numberItems"=>"1","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
 		$data_string = json_encode($data);
 		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales';
 		$session = curl_init($request);
@@ -435,7 +435,7 @@ class ACTBoleto extends ACTbase{
 		$identificador_reporte = $datos[0]['identificador_reporte'];
 		////boletos en dolares
 		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
-		$data = array("numberItems"=>"0","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
+		$data = array("numberItems"=>"1","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
 		$data_string = json_encode($data);
 		//$request =  'http://wservices.obairlines.bo/Dotacion.AppService/SvcDotacion.svc/RevertirDotacionAlmacenes';
 		//$request =  'http://wservices.obairlines.bo/esb/RITISERP.svc/Boa_RITRetrieveSales';

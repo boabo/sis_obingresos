@@ -213,7 +213,7 @@ BEGIN
                   importe,
                   id_forma_pago,
                   id_boleto,
-                  ctacte,
+                  --ctacte,
                   numero_tarjeta,
                   codigo_tarjeta,
                   tarjeta,
@@ -225,7 +225,7 @@ BEGIN
                   v_parametros.monto_forma_pago,
                   v_parametros.id_forma_pago,
                   v_parametros.id_boleto,
-                  v_parametros.ctacte,
+                  --v_parametros.ctacte,
                   v_parametros.numero_tarjeta,
                   v_parametros.codigo_tarjeta,
                   v_codigo_tarjeta,
@@ -346,7 +346,7 @@ BEGIN
                       importe,
                       id_forma_pago,
                       id_boleto,
-                      ctacte,
+                      --ctacte,
                       numero_tarjeta,
                       tarjeta
                     )
@@ -355,7 +355,7 @@ BEGIN
                       v_valor,
                       v_parametros.id_forma_pago,
                       v_id_boleto,
-                      v_parametros.ctacte,
+                      --v_parametros.ctacte,
                       v_parametros.numero_tarjeta,
                       v_codigo_tarjeta
                     );
@@ -383,7 +383,7 @@ BEGIN
                       importe,
                       id_forma_pago,
                       id_boleto,
-                      ctacte,
+                      --ctacte,
                       numero_tarjeta,
                       tarjeta
                     )
@@ -392,7 +392,7 @@ BEGIN
                       v_valor,
                       v_parametros.id_forma_pago2,
                       v_id_boleto,
-                      v_parametros.ctacte2,
+                      --v_parametros.ctacte2,
                       v_parametros.numero_tarjeta2,
                       v_codigo_tarjeta
                     );
@@ -493,7 +493,7 @@ BEGIN
                       importe,
                       id_forma_pago,
                       id_boleto,
-                      ctacte,
+                      --ctacte,
                       numero_tarjeta,
                       tarjeta
                     )
@@ -502,7 +502,7 @@ BEGIN
                       v_valor,
                       v_parametros.id_forma_pago,
                       v_id_boleto,
-                      v_parametros.ctacte,
+                      --v_parametros.ctacte,
                       v_parametros.numero_tarjeta,
                       v_codigo_tarjeta
                     );
