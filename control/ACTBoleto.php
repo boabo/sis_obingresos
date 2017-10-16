@@ -586,6 +586,39 @@ class ACTBoleto extends ACTbase{
 
 	}
 
+	function listarBoletosEmitidosAmadeus(){
+
+		if ($this->objParam->getParametro('id_punto_venta') != '') {
+			//$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
+		}
+
+		if ($this->objParam->getParametro('fecha') != '') {
+			$fecha = $this->objParam->getParametro('fecha');
+		}else{
+			$fecha = date("Ymd");
+		}
+
+		$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
+
+		/*if ($this->objParam->getParametro('reporte') == 'reporte') {
+			if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+				$this->objReporte = new Reporte($this->objParam,$this);
+				$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');
+				$this->res->imprimirRespuesta($this->res->generarJson());
+			}else {
+				$this->objFunc = $this->create('MODBoleto');
+				$this->res = $this->objFunc->listarBoletoAmadeus($this->objParam);
+				$this->res->imprimirRespuesta($this->res->generarJson());
+			}
+		}else {*/
+			$this->objFunc=$this->create('MODBoleto');
+			$this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+			$this->res->imprimirRespuesta($this->res->generarJson());
+		//}
+
+	}
+
 	function traerBoletosAgenciaAmadeus(){
 
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){

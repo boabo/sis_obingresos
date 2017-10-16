@@ -32,7 +32,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
                 this.init();
 
-                /*this.addButton('btnBoletos',
+                this.addButton('btnBoletos',
                     {
                         text: 'Traer Boletos',
                         iconCls: 'breload2',
@@ -40,7 +40,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         handler: this.onTraerBoletos,
                         tooltip: 'Traer boletos vendidos'
                     }
-                );*/
+                );
 
                 //this.addButton('cerrar',{grupo:[0],text:'Cerrar Caja',iconCls: 'block',disabled:false,handler:this.preparaCerrarCaja,tooltip: '<b>Cerrar la Caja</b>'});
 
@@ -922,7 +922,7 @@ header("content-type: text/javascript; charset=UTF-8");
             title:'Boleto',
             ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoVenta',
             //ActDel:'../../sis_obingresos/control/Boleto/eliminarBoleto',
-            ActList:'../../sis_obingresos/control/Boleto/traerBoletos',
+            ActList:'../../sis_obingresos/control/Boleto/listarBoletosEmitidosAmadeus',
 
             id_store:'id_boleto',
             fields: [
@@ -1091,55 +1091,78 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
             },
 
-            /* preparaCerrarCaja:function(){
-                Phx.CP.loadWindows('../../../sis_ventas_facturacion/vista/apertura_cierre_caja/FormCierreCaja.php',
-                    'Cerrar Caja',
-                    {
-                        modal:true,
-                        width:1000,
-                        height:400
-                    }, {data:this}, this.idContenedor,'FormCierreCaja',
-                    {
-                        config:[{
-                            event:'beforesave',
-                            delegate: this.cerrarCaja,
-                        }
-                        ],
-                        scope:this
-                    })
-            },
-
-            cerrarCaja:function(wizard,resp){
-                var me=this;
+            onTraerBoletos : function () {
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
-                    url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/insertarAperturaCierreCaja',
-                    params:{
-                        id_apertura_cierre_caja: resp.id_apertura_cierre_caja,
-                        id_sucursal: resp.id_sucursal,
-                        id_punto_venta: resp.id_punto_venta,
-                        obs_cierre: resp.obs_cierre,
-                        arqueo_moneda_local: resp.arqueo_moneda_local,
-                        arqueo_moneda_extranjera: resp.arqueo_moneda_extranjera,
-                        accion :'cerrar',
-                        monto_inicial: resp.monto_inicial,
-                        obs_apertura: resp.obs_apertura,
-                        monto_inicial_moneda_extranjera: resp.monto_inicial_moneda_extranjera
-                    },
-                    argument:{wizard:wizard},
-                    success:this.successWizard,
+                    url:'../../sis_obingresos/control/Boleto/traerBoletos',
+                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC'},
+                    success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
                     scope:this
                 });
-
             },
 
-            successWizard:function(resp){
+            successSinc: function(resp) {
                 Phx.CP.loadingHide();
-                resp.argument.wizard.panel.destroy()
-                this.reload();
-            },*/
+                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                if (reg.ROOT.error) {
+                    Ext.Msg.alert('Error','Boletos no recuperados: se ha producido un error inesperado. Comuníquese con el Administrador del Sistema.')
+                } else {
+                    Ext.Msg.alert('Mensaje','Boletos Recuperados')
+                    this.reload();
+                }
+            },
+
+        /* preparaCerrarCaja:function(){
+            Phx.CP.loadWindows('../../../sis_ventas_facturacion/vista/apertura_cierre_caja/FormCierreCaja.php',
+                'Cerrar Caja',
+                {
+                    modal:true,
+                    width:1000,
+                    height:400
+                }, {data:this}, this.idContenedor,'FormCierreCaja',
+                {
+                    config:[{
+                        event:'beforesave',
+                        delegate: this.cerrarCaja,
+                    }
+                    ],
+                    scope:this
+                })
+        },
+
+        cerrarCaja:function(wizard,resp){
+            var me=this;
+            Phx.CP.loadingShow();
+            Ext.Ajax.request({
+                url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/insertarAperturaCierreCaja',
+                params:{
+                    id_apertura_cierre_caja: resp.id_apertura_cierre_caja,
+                    id_sucursal: resp.id_sucursal,
+                    id_punto_venta: resp.id_punto_venta,
+                    obs_cierre: resp.obs_cierre,
+                    arqueo_moneda_local: resp.arqueo_moneda_local,
+                    arqueo_moneda_extranjera: resp.arqueo_moneda_extranjera,
+                    accion :'cerrar',
+                    monto_inicial: resp.monto_inicial,
+                    obs_apertura: resp.obs_apertura,
+                    monto_inicial_moneda_extranjera: resp.monto_inicial_moneda_extranjera
+                },
+                argument:{wizard:wizard},
+                success:this.successWizard,
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+
+        },
+
+        successWizard:function(resp){
+            Phx.CP.loadingHide();
+            resp.argument.wizard.panel.destroy()
+            this.reload();
+        },*/
 
             onButtonEdit : function () {
                 Phx.vista.BoletoAmadeus.superclass.onButtonEdit.call(this);

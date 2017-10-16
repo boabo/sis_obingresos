@@ -1278,7 +1278,7 @@ raise notice 'llega 0';
               inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
               where bfp.id_boleto=v_parametros.id_boleto;
 
-              IF (v_monto_total_fp <>v_boleto.total)THEN
+              IF (COALESCE(v_monto_total_fp,0) <>v_boleto.total)THEN
               	raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
               END IF;
 

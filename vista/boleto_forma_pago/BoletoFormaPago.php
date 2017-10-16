@@ -463,8 +463,6 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 	preparaMenu:function(n){
 
 		Phx.vista.BoletoFormaPago.superclass.preparaMenu.call(this,n);
-		var padre = Phx.CP.getPagina(this.idContenedorPadre).nombreVista;
-
 		if(this.maestro.estado ==  'revisado'){
 			this.getBoton('edit').disable();
 			this.getBoton('new').disable();
@@ -479,14 +477,19 @@ Phx.vista.BoletoFormaPago=Ext.extend(Phx.gridInterfaz,{
 
 	liberaMenu: function() {
 		Phx.vista.BoletoFormaPago.superclass.liberaMenu.call(this);
-		if(this.maestro&&(this.maestro.estado !=  'revisado')){
-			this.getBoton('edit').enable();
-			this.getBoton('new').enable();
-			this.getBoton('del').enable();
+		if(this.maestro.estado !=  'revisado'){
+			var NumSelect=this.sm.getCount();
+			if(NumSelect != 0) {
+				this.getBoton('edit').enable();
+				this.getBoton('del').enable();
+			}else {
+				this.getBoton('edit').disable();
+				this.getBoton('del').disable();
+			}
 		}else{
-			this.getBoton('edit').disable();
 			this.getBoton('new').disable();
-			this.getBoton('del').disable();
+			this.getBoton('new').disable();
+			this.getBoton('new').disable();
 		}
 
 	}
