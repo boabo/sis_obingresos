@@ -514,7 +514,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',sw_tipo_venta:'boletos'}
+                            baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
