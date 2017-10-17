@@ -42,6 +42,28 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 );
 
+                this.campo_fecha = new Ext.form.DateField({
+                    name: 'fecha_reg',
+                    //grupo: this.grupoDateFin,
+                    fieldLabel: 'Fecha',
+                    allowBlank: false,
+                    anchor: '80%',
+                    gwidth: 100,
+                    format: 'd/m/Y',
+                    hidden : false
+                });
+
+                this.tbar.addField(this.campo_fecha);
+                var datos_respuesta = JSON.parse(response.responseText);
+                var fecha_array = datos_respuesta.datos.fecha.split('/');
+                this.campo_fecha.setValue(new Date(fecha_array[2],parseInt(fecha_array[1]) - 1,fecha_array[0]));
+                this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('Ymd');
+
+                this.campo_fecha.on('select',function(value){
+                    this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('Ymd');
+                    this.load();
+                },this);
+
                 //this.addButton('cerrar',{grupo:[0],text:'Cerrar Caja',iconCls: 'block',disabled:false,handler:this.preparaCerrarCaja,tooltip: '<b>Cerrar la Caja</b>'});
 
                 //this.store.baseParams.estado = 'borrador';
@@ -981,11 +1003,11 @@ header("content-type: text/javascript; charset=UTF-8");
 
             ],
             sortInfo:{
-                field: 'id_boleto',
+                field: 'nro_boleto',
                 direction: 'DESC'
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai',
-                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia'],
+                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto'],
 
             bdel:false,
             bsave:false,
@@ -1096,7 +1118,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletos',
-                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC'},
+                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd')},
                     success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,

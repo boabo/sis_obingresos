@@ -1283,7 +1283,7 @@ raise notice 'llega 0';
                 if (exists(	select 1
                                   from vef.tapertura_cierre_caja acc
                                   where acc.id_usuario_cajero = p_id_usuario and
-                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
                                     acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
                                     acc.id_punto_venta = v_boleto.id_punto_venta)) then
                       raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
@@ -1292,7 +1292,7 @@ raise notice 'llega 0';
                   if (not exists(	select 1
                                   from vef.tapertura_cierre_caja acc
                                   where acc.id_usuario_cajero = p_id_usuario and
-                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
                                     acc.estado_reg = 'activo' and acc.estado = 'abierto' and
                                     acc.id_punto_venta = v_boleto.id_punto_venta)) then
                       raise exception 'Antes de revisar un boleto debe realizar una apertura de caja';

@@ -612,11 +612,11 @@ class ACTBoleto extends ACTbase{
 
 		if ($this->objParam->getParametro('fecha') != '') {
 			$fecha = $this->objParam->getParametro('fecha');
-		}else{
+		}/*else{
 			$fecha = date("Ymd");
-		}
+		}*/
 
-		$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
+		$this->objParam->addFiltro("bol.fecha_emision = ''". $fecha."''");
 
 		/*if ($this->objParam->getParametro('reporte') == 'reporte') {
 			if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
