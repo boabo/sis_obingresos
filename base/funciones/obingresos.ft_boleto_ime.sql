@@ -84,6 +84,30 @@ DECLARE
     v_monto_total_fp		numeric;
 	v_identificador_reporte	varchar;
 
+    v_reporte				varchar;
+    v_moneda				varchar;
+    v_boletos				varchar;
+    v_nro_boleto			varchar;
+    v_data_agencia			varchar;
+    v_agente_venta			varchar;
+    v_voided				varchar;
+    v_pasajero				varchar;
+    v_montos_boletos		varchar;
+    v_tipo					varchar;
+    v_total					varchar;
+    v_tasa					varchar;
+    v_comision				varchar;
+    v_impuestos				varchar;
+    v_tipo_pago_amadeus		varchar;
+    v_monto_pago_amadeus	varchar;
+    v_forma_pago_detalles	varchar;
+    v_pnr					varchar;
+    v_localizador			varchar;
+    v_record_json_boletos	record;
+    v_record_json_data_office record;
+    v_record_json_montos_boletos record;
+    v_record_json_pnr		record;
+
 
 BEGIN
 
@@ -1156,6 +1180,267 @@ raise notice 'llega 0';
             return v_resp;
 
         end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_SERVAMAJS_INS'
+ 	#DESCRIPCION:	Insercion de boletos json desde servicio REST de Amadeus
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		18-10-2016
+	***********************************/
+
+	elsif(p_transaccion='OBING_SERVAMAJS_INS')then
+
+        begin
+        	--raise notice 'v_parametros.boletos %',v_parametros.boletos;
+        	--recuperamos la moneda
+        	v_reporte = v_parametros.boletos :: JSON ->> 'queryReportDataDetails';
+            v_moneda = v_reporte :: JSON ->>'currencyInfo';
+            v_moneda = v_moneda :: JSON ->>'currencyDetails';
+            v_moneda = v_moneda :: JSON ->>'currencyIsoCode';
+
+			--recuperamos los boletos
+            v_data_agencia = v_reporte :: JSON ->>'queryReportDataOfficeGroup';
+            FOR v_record_json_data_office IN (SELECT json_array_elements(v_data_agencia :: JSON)
+            ) LOOP
+                v_boletos = v_record_json_data_office.json_array_elements :: JSON ->> 'documentData';
+            	FOR v_record_json_boletos IN (SELECT json_array_elements(v_boletos :: JSON)
+            	) LOOP
+                  --recuperamos nro boleto
+                  v_nro_boleto = v_record_json_boletos.json_array_elements::JSON ->> 'documentNumber';
+                  v_nro_boleto = v_nro_boleto::JSON ->> 'documentDetails';
+                  v_nro_boleto = v_nro_boleto::JSON ->> 'number';
+                  --recuperamos agente de venta
+                  v_agente_venta = v_record_json_boletos.json_array_elements::json->> 'bookingAgent';
+                  v_agente_venta = v_agente_venta::json->> 'originIdentification';
+                  v_agente_venta = v_agente_venta::json->> 'originatorId';
+                  --recuperamos estado boleto (voided)
+                  v_voided = v_record_json_boletos.json_array_elements::json->> 'transactionDataDetails';
+                  v_voided = v_voided::json->>'transactionDetails';
+                  v_voided = v_voided::json->>'code';
+
+                  if v_voided = 'CANX' then
+                  	 v_voided='si';
+                  elsif v_voided = 'CANN' then
+                     v_voided='si';
+                  elsif v_voided = 'TKTT' then
+                  	 v_voided='no';
+                  end if;
+
+                  --recuperamos pasajero
+                  v_pasajero = v_record_json_boletos.json_array_elements::json->>'passengerName';
+                  v_pasajero = v_pasajero::json->>'paxDetails';
+                  v_pasajero = v_pasajero::json->>'surname';
+
+                  --recuperamos precio del boleto
+                  v_montos_boletos = v_record_json_boletos.json_array_elements::json->>'monetaryInformation';
+                  v_montos_boletos = v_montos_boletos::json->>'otherMonetaryDetails';
+
+                  FOR v_record_json_montos_boletos IN (SELECT json_array_elements(v_montos_boletos :: JSON)
+            	  )LOOP
+                  		v_tipo =v_record_json_montos_boletos.json_array_elements::json->>'typeQualifier';
+
+                  		IF v_tipo = 'T' THEN
+                        	v_total = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                        ELSIF v_tipo = 'TTX' THEN
+                        	v_tasa = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                        ELSIF v_tipo = 'F' THEN
+                        	v_comision = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                        ELSIF v_tipo = 'OB' THEN
+                        	v_impuestos = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                        ELSE
+                        	raise exception 'Tipo monto no definido %', v_tipo;
+                        END IF;
+
+                  END LOOP;
+
+                  v_forma_pago_detalles = v_record_json_boletos.json_array_elements::json->>'fopDetails';
+                  --recuperamos tipo de pago
+                  v_tipo_pago_amadeus = v_forma_pago_detalles::json->>'fopDescription';
+                  v_tipo_pago_amadeus = v_tipo_pago_amadeus::json->>'formOfPayment';
+                  v_tipo_pago_amadeus = v_tipo_pago_amadeus::json->>'type';
+                  --recuperamos monto de pago
+                  v_monto_pago_amadeus = v_forma_pago_detalles::json->>'monetaryInfo';
+                  v_monto_pago_amadeus = v_monto_pago_amadeus::json->>'monetaryDetails';
+                  v_monto_pago_amadeus = v_monto_pago_amadeus::json->>'amount';
+
+                  v_pnr = v_record_json_boletos.json_array_elements::json->>'reservationInformation';
+
+                  FOR v_record_json_pnr IN (SELECT json_array_elements(v_pnr :: JSON)
+            	  )LOOP
+                  		v_localizador =v_record_json_pnr.json_array_elements::json->>'controlNumber';
+                  END LOOP;
+
+                  --insercion de boleto
+                  IF NOT EXISTS(SELECT 1
+                            FROM obingresos.tboleto
+                            WHERE nro_boleto=v_nro_boleto)THEN
+
+                  SELECT id_moneda into v_id_moneda
+                  FROM param.tmoneda
+                  WHERE codigo_internacional=v_moneda;
+
+                  select nextval('obingresos.tboleto_id_boleto_seq'::regclass) into v_id_boleto;
+
+
+                  raise notice 'v_nro_boleto % v_total % v_comision %', v_nro_boleto, v_total, v_comision;
+                  raise notice 'v_moneda % v_voided % v_parametros.id_punto_venta %', v_moneda, v_voided, v_parametros.id_punto_venta;
+                  raise notice 'v_localizador % v_parametros.fecha_emision % v_id_moneda %', v_localizador, v_parametros.fecha_emision, v_id_moneda;
+                  raise notice 'v_pasajero % v_total % v_id_boleto %', v_pasajero, v_total, v_id_boleto;
+                  raise notice 'v_agente_venta % v_parametros.id_agencia % v_tipo_pago_amadeus %', v_agente_venta, v_parametros.id_agencia, v_tipo_pago_amadeus;
+                  raise notice 'v_id_boleto % p_id_usuario % v_tipo_pago_amadeus %', v_id_boleto, p_id_usuario, v_tipo_pago_amadeus;
+                  v_resp= 'INSERT INTO obingresos.tboleto
+                  (nro_boleto,
+                  total,
+                  comision,
+                  moneda,
+                  voided,
+                  estado,
+                  id_punto_venta,
+                  localizador,
+                  fecha_emision,
+                  id_moneda_boleto,
+                  pasajero,
+                  liquido,
+                  neto,
+                  xt,
+                  monto_pagado_moneda_boleto,
+                  id_usuario_reg,
+                  id_boleto,
+                  agente_venta,
+                  id_agencia,
+                  forma_pago
+                  )VALUES('''||v_nro_boleto||'''::varchar,
+                  coalesce('||v_total||',0)::numeric,
+                  coalesce('||v_comision||',0)::numeric,
+                  '''||v_moneda||'''::varchar,
+                  '''||v_voided||'''::varchar,
+                  ''borrador'',
+                  '||v_parametros.id_punto_venta||'::integer,
+                  '''||v_localizador||'''::varchar,
+                  '''||v_parametros.fecha_emision||'''::date,
+                  '||v_id_moneda||'::integer,
+                  '''||v_pasajero||'''::varchar,
+                  coalesce('||v_total||',0)::numeric,
+                  coalesce('||v_total||',0)::numeric,
+                  0,
+                  0.00,
+                  '||p_id_usuario||'::INTEGER,
+                  '||v_id_boleto||'::integer,
+                  '''||v_agente_venta||'''::varchar,
+                  '||v_parametros.id_agencia||'::integer,
+                  '''||v_tipo_pago_amadeus||'''::varchar
+                  )';
+
+                  INSERT INTO obingresos.tboleto
+                  (nro_boleto,
+                  total,
+                  comision,
+                  moneda,
+                  voided,
+                  estado,
+                  id_punto_venta,
+                  localizador,
+                  fecha_emision,
+                  id_moneda_boleto,
+                  pasajero,
+                  liquido,
+                  neto,
+                  xt,
+                  monto_pagado_moneda_boleto,
+                  id_usuario_reg,
+                  id_boleto,
+                  agente_venta,
+                  id_agencia,
+                  forma_pago
+                  )VALUES(v_nro_boleto::varchar,
+                  v_total::numeric,
+                  v_comision::numeric,
+                  v_moneda::varchar,
+                  v_voided::varchar,
+                  'borrador',
+                  v_parametros.id_punto_venta::integer,
+                  v_localizador::varchar,
+                  v_parametros.fecha_emision::date,
+                  v_id_moneda::integer,
+                  v_pasajero::varchar,
+                  v_total::numeric,
+                  v_total::numeric,
+                  0,
+                  0.00,
+                  p_id_usuario,
+                  v_id_boleto,
+                  v_agente_venta::varchar,
+                  v_parametros.id_agencia::integer,
+                  v_tipo_pago_amadeus::varchar
+                  );
+
+                  if(trim(v_tipo_pago_amadeus)!='')then
+
+                      SELECT id_forma_pago into v_id_forma_pago
+                      FROM obingresos.tforma_pago
+                      WHERE codigo=v_tipo_pago_amadeus AND id_moneda=v_id_moneda;
+
+                      IF v_id_forma_pago IS NOT NULL THEN
+                        INSERT INTO obingresos.tboleto_forma_pago
+                        (id_usuario_reg,
+                        id_boleto,
+                        id_forma_pago,
+                        importe
+                        )
+                        VALUES(
+                        p_id_usuario,
+                        v_id_boleto,
+                        v_id_forma_pago,
+                        v_monto_pago_amadeus::numeric
+                        );
+                      END IF;
+
+                  end if;
+
+                  select substring(max(nro_boleto)from 4) into v_identificador_reporte
+                  from obingresos.tboleto
+                  WHERE id_punto_venta=v_parametros.id_punto_venta
+                              AND fecha_emision=v_parametros.fecha_emision::date
+                              AND moneda=v_moneda;
+
+                  IF NOT EXISTS(SELECT 1
+                                  FROM vef.tpunto_venta_reporte
+                                  WHERE id_punto_venta=v_parametros.id_punto_venta
+                                  AND fecha=v_parametros.fecha_emision::date
+                                  AND moneda=v_moneda)THEN
+
+                      INSERT INTO vef.tpunto_venta_reporte(
+                      id_punto_venta,
+                      fecha,
+                      moneda,
+                      identificador_reporte)VALUES(
+                      v_parametros.id_punto_venta,
+                      v_parametros.fecha_emision::date,
+                      v_parametros.moneda,
+                      v_identificador_reporte);
+                  ELSE
+
+                      UPDATE vef.tpunto_venta_reporte
+                      SET identificador_reporte=v_identificador_reporte
+                      WHERE id_punto_venta=v_parametros.id_punto_venta
+                      AND fecha=v_parametros.fecha_emision::date
+                                  AND moneda=v_moneda;
+                  END IF;
+
+                  END IF;
+
+                END LOOP;
+            END LOOP;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_id_boleto::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+        end;
+
 
 	/*********************************
  	#TRANSACCION:  'OBING_ACTBOLAMA_INS'

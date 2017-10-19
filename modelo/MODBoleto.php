@@ -477,6 +477,25 @@ class MODBoleto extends MODbase{
 		return $this->respuesta;
 	}
 
+	function insertarBoletoServicioAmadeusJSon(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_SERVAMAJS_INS';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
+		$this->setParametro('fecha_emision','fecha_emision','date');//ok
+		$this->setParametro('id_agencia','id_agencia','integer');//ok
+		$this->setParametro('boletos','boletos','text');//ok
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		//var_dump($this->consulta); exit;
+		$this->ejecutarConsulta();
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function insertarBoletoReporteServicioAmadeus(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_amadeus_ime';
