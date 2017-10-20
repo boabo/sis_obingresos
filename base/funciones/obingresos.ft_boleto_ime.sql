@@ -1197,7 +1197,7 @@ raise notice 'llega 0';
             v_moneda = v_reporte :: JSON ->>'currencyInfo';
             v_moneda = v_moneda :: JSON ->>'currencyDetails';
             v_moneda = v_moneda :: JSON ->>'currencyIsoCode';
-
+			raise notice 'v_moneda %',v_moneda;
 			--recuperamos los boletos
             v_data_agencia = v_reporte :: JSON ->>'queryReportDataOfficeGroup';
             FOR v_record_json_data_office IN (SELECT json_array_elements(v_data_agencia :: JSON)
@@ -1209,10 +1209,12 @@ raise notice 'llega 0';
                   v_nro_boleto = v_record_json_boletos.json_array_elements::JSON ->> 'documentNumber';
                   v_nro_boleto = v_nro_boleto::JSON ->> 'documentDetails';
                   v_nro_boleto = v_nro_boleto::JSON ->> 'number';
+                  raise notice 'v_nro_boleto %',v_nro_boleto;
                   --recuperamos agente de venta
                   v_agente_venta = v_record_json_boletos.json_array_elements::json->> 'bookingAgent';
                   v_agente_venta = v_agente_venta::json->> 'originIdentification';
                   v_agente_venta = v_agente_venta::json->> 'originatorId';
+                  raise notice 'v_agente_venta %',v_agente_venta;
                   --recuperamos estado boleto (voided)
                   v_voided = v_record_json_boletos.json_array_elements::json->> 'transactionDataDetails';
                   v_voided = v_voided::json->>'transactionDetails';
@@ -1225,12 +1227,12 @@ raise notice 'llega 0';
                   elsif v_voided = 'TKTT' then
                   	 v_voided='no';
                   end if;
-
+				  raise notice 'v_voided %',v_voided;
                   --recuperamos pasajero
                   v_pasajero = v_record_json_boletos.json_array_elements::json->>'passengerName';
                   v_pasajero = v_pasajero::json->>'paxDetails';
                   v_pasajero = v_pasajero::json->>'surname';
-
+				  raise notice 'v_pasajero %', v_pasajero;
                   --recuperamos precio del boleto
                   v_montos_boletos = v_record_json_boletos.json_array_elements::json->>'monetaryInformation';
                   v_montos_boletos = v_montos_boletos::json->>'otherMonetaryDetails';
@@ -1252,17 +1254,20 @@ raise notice 'llega 0';
                         END IF;
 
                   END LOOP;
-
+				  raise notice 'v_total %', v_total;
+                  raise notice 'v_tasa %', v_tasa;
+                  raise notice 'v_comision %', v_comision;
                   v_forma_pago_detalles = v_record_json_boletos.json_array_elements::json->>'fopDetails';
                   --recuperamos tipo de pago
                   v_tipo_pago_amadeus = v_forma_pago_detalles::json->>'fopDescription';
                   v_tipo_pago_amadeus = v_tipo_pago_amadeus::json->>'formOfPayment';
                   v_tipo_pago_amadeus = v_tipo_pago_amadeus::json->>'type';
+                  raise notice 'v_tipo_pago_amadeus %', v_tipo_pago_amadeus;
                   --recuperamos monto de pago
                   v_monto_pago_amadeus = v_forma_pago_detalles::json->>'monetaryInfo';
                   v_monto_pago_amadeus = v_monto_pago_amadeus::json->>'monetaryDetails';
                   v_monto_pago_amadeus = v_monto_pago_amadeus::json->>'amount';
-
+				  raise notice 'v_monto_pago_amadeus %', v_monto_pago_amadeus;
                   v_pnr = v_record_json_boletos.json_array_elements::json->>'reservationInformation';
 
                   FOR v_record_json_pnr IN (SELECT json_array_elements(v_pnr :: JSON)
@@ -1374,7 +1379,7 @@ raise notice 'llega 0';
                   v_tipo_pago_amadeus::varchar
                   );
 
-                  if(trim(v_tipo_pago_amadeus)!='')then
+                  if(trim(v_tipo_pago_amadeus)='CA')then
 
                       SELECT id_forma_pago into v_id_forma_pago
                       FROM obingresos.tforma_pago
@@ -1416,7 +1421,7 @@ raise notice 'llega 0';
                       identificador_reporte)VALUES(
                       v_parametros.id_punto_venta,
                       v_parametros.fecha_emision::date,
-                      v_parametros.moneda,
+                      v_moneda,
                       v_identificador_reporte);
                   ELSE
 
@@ -1609,7 +1614,7 @@ raise notice 'llega 0';
               update obingresos.tboleto
               set
               estado = NULL,
-              id_usuario_cajero=p_id_usuario
+              id_usuario_cajero=NULL
               where id_boleto=v_parametros.id_boleto;
 
             END IF;
