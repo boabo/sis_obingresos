@@ -542,7 +542,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre',
                         gdisplayField: 'forma_pago',
                         hiddenName: 'id_forma_pago',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Codigo:{codigo}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -712,14 +712,14 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',fp_ventas:'si'}
+                            baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',sw_tipo_venta:'boletos'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
                         gdisplayField: 'forma_pago2',
                         hiddenName: 'id_forma_pago',
                         anchor: '90%',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Codigo:{codigo}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -800,6 +800,50 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:false,
                     form:true
                 },*/
+                {
+                    config: {
+                        name: 'id_auxiliar2',
+                        fieldLabel: 'Cuenta Corriente',
+                        allowBlank: true,
+                        emptyText: 'Cuenta Corriente...',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_contabilidad/control/Auxiliar/listarAuxiliar',
+                            id: 'id_auxiliar',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'codigo_auxiliar',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_auxiliar', 'codigo_auxiliar','nombre_auxiliar'],
+                            remoteSort: true,
+                            baseParams: {par_filtro: 'auxcta.codigo_auxiliar#auxcta.nombre_auxiliar',corriente:'si'}
+                        }),
+                        valueField: 'id_auxiliar',
+                        displayField: 'nombre_auxiliar',
+                        gdisplayField: 'codigo_auxiliar',
+                        hiddenName: 'id_auxiliar',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
+                        gwidth: 150,
+                        listWidth:350,
+                        resizable:true,
+                        minChars: 2,
+                        renderer : function(value, p, record) {
+                            return String.format('{0}', record.data['nombre_auxiliar']);
+                        }
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 1,
+                    grid: true,
+                    form: true
+                },
                 {
                     config:{
                         name: 'fecha_emision',
@@ -1315,7 +1359,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.numero_tarjeta.allowBlank = true;
                     this.Cmp.codigo_tarjeta.allowBlank = true;
-                    //this.Cmp.ctacte.allowBlank = true;
+                    this.Cmp.id_auxiliar.allowBlank = true;
                 } else {
                     this.Cmp.id_forma_pago.setDisabled(false);
                     this.Cmp.monto_forma_pago.setDisabled(false);
@@ -1328,7 +1372,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.mostrarComponente(this.Cmp.codigo_tarjeta);
                         this.Cmp.numero_tarjeta.allowBlank = false;
                         this.Cmp.codigo_tarjeta.allowBlank = false;
-                        //this.Cmp.ctacte.allowBlank = true;
+                        this.Cmp.id_auxiliar.allowBlank = true;
                         //tarjeta de credito
                     } else if (codigo_fp1.startsWith("CT")) {
                         //cuenta corriente
@@ -1340,7 +1384,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         //this.mostrarComponente(this.Cmp.ctacte);
                         this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
-                        //this.Cmp.ctacte.allowBlank = false;
+                        this.Cmp.id_auxiliar.allowBlank = false;
                     } else {
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
@@ -1352,7 +1396,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         //this.Cmp.ctacte.reset();
                         this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
-                        //this.Cmp.ctacte.allowBlank = true;
+                        this.Cmp.id_auxiliar.allowBlank = true;
                     }
                 }
             },
@@ -1367,10 +1411,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         //this.ocultarComponente(this.Cmp.ctacte2);
                         this.Cmp.numero_tarjeta2.allowBlank = true;
                         this.Cmp.codigo_tarjeta2.allowBlank = true;
-                        //this.Cmp.ctacte2.allowBlank = true;
+                        this.Cmp.id_auxiliar2.allowBlank = true;
                         this.Cmp.numero_tarjeta2.reset();
                         this.Cmp.codigo_tarjeta2.reset();
-                        //this.Cmp.ctacte2.reset();
+                        this.Cmp.id_auxiliar2.reset();
                     } else {
                         this.Cmp.id_forma_pago2.setDisabled(false);
                         this.Cmp.monto_forma_pago2.setDisabled(false);
@@ -1378,12 +1422,12 @@ header("content-type: text/javascript; charset=UTF-8");
                             codigo_fp2.startsWith("SF")) {
                             //tarjeta de credito
                             //this.ocultarComponente(this.Cmp.ctacte2);
-                            //this.Cmp.ctacte2.reset();
+                            this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
                             this.Cmp.numero_tarjeta2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
-                            //this.Cmp.ctacte2.allowBlank = true;
+                            this.Cmp.id_auxiliar2.allowBlank = true;
 
                         } else if (codigo_fp2.startsWith("CT")) {
                             //cuenta corriente
@@ -1394,17 +1438,17 @@ header("content-type: text/javascript; charset=UTF-8");
                             //this.mostrarComponente(this.Cmp.ctacte2);
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
-                            //this.Cmp.ctacte2.allowBlank = false;
+                            this.Cmp.id_auxiliar2.allowBlank = false;
                         } else {
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             //this.ocultarComponente(this.Cmp.ctacte2);
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
-                            //this.Cmp.ctacte2.allowBlank = true;
+                            this.Cmp.id_auxiliar2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.codigo_tarjeta2.reset();
-                            //this.Cmp.ctacte2.reset();
+                            this.Cmp.id_auxiliar2.reset();
                         }
                     }
                 } else {
@@ -1413,7 +1457,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     //this.ocultarComponente(this.Cmp.ctacte2);
                     this.Cmp.numero_tarjeta2.allowBlank = true;
                     this.Cmp.codigo_tarjeta2.allowBlank = true;
-                    //this.Cmp.ctacte2.allowBlank = true;
+                    this.Cmp.id_auxiliar2.allowBlank = true;
                     this.Cmp.id_forma_pago2.setDisabled(true);
                     this.Cmp.monto_forma_pago2.setDisabled(true);
                 }
