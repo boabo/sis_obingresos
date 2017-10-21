@@ -1283,6 +1283,12 @@ class ACTBoleto extends ACTbase{
 
 	}
 
+	function anularBoleto(){
+		$this->objFunc=$this->create('MODBoleto');
+		$this->res=$this->objFunc->anularBoleto($this->objParam);
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
 	function traerBoletosJson(){
 
 		if ($this->objParam->getParametro('id_punto_venta') != '') {

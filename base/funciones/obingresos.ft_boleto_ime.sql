@@ -207,6 +207,10 @@ BEGIN
 
             end if;
 
+			if (v_parametros.estado = 'revisado') then
+            	raise exception 'El boleto ya fue revisado, no puede modificarse';
+            end if;
+
             update obingresos.tboleto set comision = v_parametros.comision
             where id_boleto = v_parametros.id_boleto;
 
@@ -1446,6 +1450,66 @@ raise notice 'llega 0';
 
         end;
 
+	/*********************************
+ 	#TRANSACCION:  'OBING_ANUBOL_UPD'
+ 	#DESCRIPCION:	Anulacion de Boletos
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		21-10-2017
+	***********************************/
+
+	elsif(p_transaccion='OBING_ANUBOL_UPD')then
+
+        begin
+
+        	select * into v_boleto
+            from obingresos.tboleto
+            where id_boleto=v_parametros.id_boleto;
+
+            IF EXISTS(SELECT 1
+            			  FROM obingresos.tboleto
+            			  WHERE id_boleto=v_parametros.id_boleto)THEN
+
+				if (pxp.f_get_variable_global('vef_tiene_apertura_cierre') = 'si') then
+
+                if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder anular el boleto';
+                  end if;
+
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                                    acc.id_punto_venta = v_boleto.id_punto_venta)) then
+                      raise exception 'Antes de anular un boleto debe realizar una apertura de caja';
+                  end if;
+            	end if;
+
+            	IF (v_boleto.voided = 'si')THEN
+                  UPDATE obingresos.tboleto
+                  SET voided='no'
+                  WHERE id_boleto=v_parametros.id_boleto;
+                ELSE
+                  UPDATE obingresos.tboleto
+                  SET voided='si'
+                  WHERE id_boleto=v_parametros.id_boleto;
+                END IF;
+
+            	--Definicion de la respuesta
+				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos anulado con exito');
+            	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto',v_parametros.id_boleto::varchar);
+
+            END IF;
+
+            --Devuelve la respuesta
+            return v_resp;
+
+        end;
 
 	/*********************************
  	#TRANSACCION:  'OBING_ACTBOLAMA_INS'

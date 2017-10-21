@@ -33,6 +33,17 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.store.baseParams.pes_estado = 'no_revisados';
                 this.init();
 
+                this.addButton('btnAnularBoleto',
+                    {
+                        //text: 'Anular Boleto',
+                        //iconCls: 'block',
+                        text: '<i class="fa fa-file-excel-o fa-3x"></i> Anular', /*iconCls:'' ,*/
+                        disabled: true,
+                        handler: this.anularBoleto,
+                        tooltip: '<b>Anular</b><br/>Anular Boleto'
+                    }
+                );
+
                 this.addButton('btnBoletos',
                     {
                         text: 'Traer Boletos',
@@ -1226,6 +1237,45 @@ header("content-type: text/javascript; charset=UTF-8");
                 if(!reg.ROOT.error){
                     this.reload();
                 }
+            },
+
+            anularBoleto:function(){
+                Phx.CP.loadingShow();
+                var d = this.sm.getSelected().data;
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/Boleto/anularBoleto',
+                    params:{id_boleto:d.id_boleto},
+                    success:this.successAnularBoleto,
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+
+            },
+
+            successAnularBoleto:function(resp){
+                Phx.CP.loadingHide();
+                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                if(!reg.ROOT.error){
+                    this.reload();
+                }
+            },
+
+            preparaMenu:function(tb){
+                Phx.vista.BoletoAmadeus.superclass.preparaMenu.call(this,tb)
+
+                var data = this.getSelectedData();
+                if(data['voided']== 'no'){
+                    this.getBoton('btnAnularBoleto').setDisabled(false);
+                }
+                else{
+                    this.getBoton('btnAnularBoleto').setDisabled(false);
+                }
+            },
+
+            liberaMenu:function(tb){
+                Phx.vista.BoletoAmadeus.superclass.liberaMenu.call(this,tb);
+                this.getBoton('btnAnularBoleto').setDisabled(true);
             },
 
             tabsouth:[{
