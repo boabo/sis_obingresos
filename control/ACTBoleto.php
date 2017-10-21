@@ -1373,7 +1373,7 @@ class ACTBoleto extends ACTbase{
 		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
 		$data = array("numberItems"=>"5","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
 		$data_string = json_encode($data);
-		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales';
+		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales_JS';
 		$session = curl_init($request);
 		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
