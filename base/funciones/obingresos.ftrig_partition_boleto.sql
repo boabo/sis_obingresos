@@ -51,29 +51,29 @@ $body$
   				) INHERITS ("obingresos"."tboleto");
                 CREATE UNIQUE INDEX "'||nombre_tabla||'_nro_idx" ON "obingresos"."'||nombre_tabla||'"
   				USING btree ("nro_boleto")
-                WHERE estado_reg = ''activo'';               
+                WHERE estado_reg = ''activo'';
                 CREATE INDEX "'||nombre_tabla||'_fecha_idx" ON "obingresos"."'||nombre_tabla||'"
   				USING btree ("fecha_emision");
                 CREATE INDEX "'||nombre_tabla||'_localizador_idx" ON "obingresos"."'||nombre_tabla||'"
-  				USING btree ("localizador");                
+  				USING btree ("localizador");
                 ';
 
           execute(crear_tabla);
 
         end if;
         campos = '
-      id_usuario_reg,  
-      fecha_reg,  
-      estado_reg,  
+      id_usuario_reg,
+      fecha_reg,
+      estado_reg,
       id_boleto,
       nro_boleto,
       pasajero,
       fecha_emision,
-      total, 
+      total,
       neto,
       comision,
-      liquido,      
-      id_moneda_boleto,  
+      liquido,
+      id_moneda_boleto,
       id_agencia,
       moneda,
       agt,
@@ -95,6 +95,7 @@ $body$
       identificacion,
       tipopax,
       voided,
+      estado,
       nit,
       razon,
       medio_pago,
@@ -136,6 +137,7 @@ $body$
                  coalesce ('''' || NEW.tipopax || '''','NULL')||','||
 
                  coalesce ('''' || NEW.voided || '''','NULL')||','||
+                 coalesce ('''' || NEW.estado || '''','NULL')||','||
                  coalesce ('''' || NEW.nit || '''','NULL')||','||
                  coalesce ('''' || NEW.razon || '''','NULL')||','||
                  coalesce ('''' || NEW.medio_pago || '''','NULL')||','||

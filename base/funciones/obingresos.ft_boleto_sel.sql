@@ -228,12 +228,15 @@ BEGIN
     elsif(p_transaccion='OBING_BOLEMI_SEL')then
 
 		begin
-
+        --raise exception 'id: %',v_parametros.filtro;
         	v_consulta:='with forma_pago_temporal as(
                                           select bol.id_boleto,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
                                                  array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
                                                  array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
                                                  array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
                                                  array_agg(bfp.importe) as monto_forma_pago
                                           from obingresos.tboleto bol
@@ -261,11 +264,18 @@ BEGIN
                                  fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
                                  fpo.forma_pago [ 1 ]::varchar as forma_pago,
                                  fpo.codigo_forma_pago [ 1 ]::varchar as codigo_forma_pago,
+                                 fpo.numero_tarjeta [ 1 ]::varchar as numero_tarjeta,
+                                 fpo.codigo_tarjeta [ 1 ]::varchar as codigo_tarjeta,
+                                 fpo.id_auxiliar [ 1 ]::integer as id_auxiliar,
                                  fpo.nombre_auxiliar [ 1 ]::varchar as nombre_auxiliar,
                                  fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
                                  fpo.id_forma_pago [ 2 ]::integer as id_forma_pago2,
                                  fpo.forma_pago [ 2 ]::varchar as forma_pago2,
                                  fpo.codigo_forma_pago [ 2 ]::varchar as codigo_forma_pago2,
+                                 fpo.numero_tarjeta [ 2 ]::varchar as numero_tarjeta2,
+                                 fpo.codigo_tarjeta [ 2 ]::varchar as codigo_tarjeta2,
+                                 fpo.id_auxiliar [ 2 ]::integer as id_auxiliar2,
+                                 fpo.nombre_auxiliar [ 2 ]::varchar as nombre_auxiliar2,
                                  fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2
                           from obingresos.tboleto nr
                           inner join forma_pago_temporal fpo on fpo.id_boleto=nr.id_boleto

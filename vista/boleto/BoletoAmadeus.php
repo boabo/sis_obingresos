@@ -30,6 +30,7 @@ header("content-type: text/javascript; charset=UTF-8");
             successGetVariables : function (response,request) {
                 //llama al constructor de la clase padre
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
+                this.store.baseParams.pes_estado = 'no_revisados';
                 this.init();
 
                 this.addButton('btnBoletos',
@@ -44,7 +45,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.campo_fecha = new Ext.form.DateField({
                     name: 'fecha_reg',
-                    //grupo: this.grupoDateFin,
+                    grupo: this.grupoDateFin,
                     fieldLabel: 'Fecha',
                     allowBlank: false,
                     anchor: '80%',
@@ -89,6 +90,7 @@ header("content-type: text/javascript; charset=UTF-8");
             bactGroups:  [0,1],
             btestGroups: [0],
             bexcelGroups: [0,1],
+            grupoDateFin: [0,1],
 
             seleccionarPuntoVentaSucursal : function () {
 
@@ -522,21 +524,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     id_grupo:0,
                     form:true
                 },
-                /*{
-                    config:{
-                        name: 'fp_amadeus_corregido',
-                        fieldLabel: 'FP Amadeus Corregido',
-                        allowBlank: true,
-                        anchor: '80%',
-                        gwidth: 150,
-                        maxLength:50
-                    },
-                    type:'TextField',
-
-                    id_grupo:1,
-                    grid:true,
-                    form:true
-                },*/
                 {
                     config: {
                         name: 'id_forma_pago',
@@ -602,7 +589,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'numero_tarjeta',
-                        fieldLabel: 'No Tarjeta 1',
+                        fieldLabel: 'No Tarjeta',
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
@@ -611,7 +598,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     type:'TextField',
                     id_grupo:1,
-                    grid:false,
+                    grid:true,
                     form:true
                 },
                 {
@@ -625,23 +612,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     type:'TextField',
                     id_grupo:1,
-                    grid:false,
+                    grid:true,
                     form:true
                 },
-                /*{
-                    config:{
-                        name: 'ctacte',
-                        fieldLabel: 'Cta. Corriente 1',
-                        allowBlank: true,
-                        anchor: '80%',
-                        gwidth: 150,
-                        maxLength:20
-                    },
-                    type:'TextField',
-                    id_grupo:1,
-                    grid:false,
-                    form:true
-                },*/
                 {
                     config: {
                         name: 'id_auxiliar',
@@ -686,33 +659,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid: true,
                     form: true
                 },
-                {
-                    config:{
-                        name: 'forma_pago_amadeus2',
-                        fieldLabel: 'Pago Amadeus 2',
-                        gwidth: 100,
-                        readOnly:true
-                    },
-                    type:'TextField',
-                    filters:{pfiltro:'bol.forma_pago_amadeus2',type:'string'},
-                    grid:true,
-                    id_grupo:1,
-                    form:false
-                },
-                /*{
-                    config:{
-                        name: 'fp_amadeus_corregido2',
-                        fieldLabel: 'FP Amadeus Corregido2',
-                        allowBlank: true,
-                        anchor: '80%',
-                        gwidth: 150,
-                        maxLength:50
-                    },
-                    type:'TextField',
-                    id_grupo:1,
-                    grid:true,
-                    form:true
-                },*/
                 {
                     config: {
                         name: 'id_forma_pago2',
@@ -804,20 +750,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:false,
                     form:true
                 },
-                /*{
-                    config:{
-                        name: 'ctacte2',
-                        fieldLabel: 'Cta. Corriente 2',
-                        allowBlank: true,
-                        anchor: '80%',
-                        gwidth: 150,
-                        maxLength:20
-                    },
-                    type:'TextField',
-                    id_grupo:1,
-                    grid:false,
-                    form:true
-                },*/
                 {
                     config: {
                         name: 'id_auxiliar2',
@@ -839,7 +771,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         }),
                         valueField: 'id_auxiliar',
                         displayField: 'nombre_auxiliar',
-                        gdisplayField: 'codigo_auxiliar',
+                        gdisplayField: 'nombre_auxiliar2',
                         hiddenName: 'id_auxiliar',
                         tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
                         forceSelection: true,
@@ -854,7 +786,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         resizable:true,
                         minChars: 2,
                         renderer : function(value, p, record) {
-                            return String.format('{0}', record.data['nombre_auxiliar']);
+                            return String.format('{0}', record.data['nombre_auxiliar2']);
                         }
                     },
                     type: 'ComboBox',
@@ -1041,19 +973,17 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'codigo_forma_pago', type: 'string'},
                 {name:'forma_pago_amadeus', type: 'string'},
                 {name:'numero_tarjeta', type: 'string'},
-                //{name:'ctacte', type: 'string'},
-                {name:'codigo_forma_pago', type: 'string'},
+                {name:'codigo_tarjeta', type: 'string'},
+                {name:'id_auxiliar', type: 'numeric'},
                 {name:'nombre_auxiliar', type: 'string'},
                 {name:'monto_forma_pago', type: 'numeric'},
-                //{name:'fp_amadeus_corregido', type: 'string'},
                 {name:'id_forma_pago2', type: 'numeric'},
                 {name:'forma_pago2', type: 'string'},
                 {name:'codigo_forma_pago2', type: 'string'},
-                {name:'forma_pago_amadeus2', type: 'string'},
                 {name:'numero_tarjeta2', type: 'string'},
-                //{name:'ctacte2', type: 'string'},
-                {name:'codigo_forma_pago2', type: 'string'},
                 {name:'codigo_tarjeta2', type: 'string'},
+                {name:'id_auxiliar2', type: 'numeric'},
+                {name:'nombre_auxiliar2', type: 'string'},
                 {name:'monto_forma_pago2', type: 'numeric'},
                 {name:'pais', type: 'string'},
                 {name:'agente_venta', type: 'string'},
@@ -1373,7 +1303,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago.setDisabled(true);
                     this.ocultarComponente(this.Cmp.numero_tarjeta);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                    //this.ocultarComponente(this.Cmp.ctacte);
                     this.ocultarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.numero_tarjeta.allowBlank = true;
                     this.Cmp.codigo_tarjeta.allowBlank = true;
@@ -1383,9 +1312,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago.setDisabled(false);
                     if (codigo_fp1.startsWith("CC") ||
                         codigo_fp1.startsWith("SF")) {
-                        //this.ocultarComponente(this.Cmp.ctacte);
                         this.ocultarComponente(this.Cmp.id_auxiliar);
-                        //this.Cmp.ctacte.reset();
+                        this.Cmp.id_auxiliar.reset();
                         this.mostrarComponente(this.Cmp.numero_tarjeta);
                         this.mostrarComponente(this.Cmp.codigo_tarjeta);
                         this.Cmp.numero_tarjeta.allowBlank = false;
@@ -1399,19 +1327,16 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.mostrarComponente(this.Cmp.id_auxiliar);
                         this.Cmp.numero_tarjeta.reset();
                         this.Cmp.codigo_tarjeta.reset();
-                        //this.mostrarComponente(this.Cmp.ctacte);
                         this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = false;
                     } else {
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                        //this.ocultarComponente(this.Cmp.ctacte);
                         this.ocultarComponente(this.Cmp.id_auxiliar);
                         this.Cmp.numero_tarjeta.reset();
                         this.Cmp.codigo_tarjeta.reset();
                         this.Cmp.id_auxiliar.reset();
-                        //this.Cmp.ctacte.reset();
                         this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = true;
@@ -1426,7 +1351,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.monto_forma_pago2.setDisabled(true);
                         this.ocultarComponente(this.Cmp.numero_tarjeta2);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-                        //this.ocultarComponente(this.Cmp.ctacte2);
+                        this.ocultarComponente(this.Cmp.id_auxiliar2);
                         this.Cmp.numero_tarjeta2.allowBlank = true;
                         this.Cmp.codigo_tarjeta2.allowBlank = true;
                         this.Cmp.id_auxiliar2.allowBlank = true;
@@ -1439,10 +1364,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         if (codigo_fp2.startsWith("CC") ||
                             codigo_fp2.startsWith("SF")) {
                             //tarjeta de credito
-                            //this.ocultarComponente(this.Cmp.ctacte2);
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
+                            this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.numero_tarjeta2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
                             this.Cmp.id_auxiliar2.allowBlank = true;
@@ -1450,17 +1375,17 @@ header("content-type: text/javascript; charset=UTF-8");
                         } else if (codigo_fp2.startsWith("CT")) {
                             //cuenta corriente
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
-                            //this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                            this.mostrarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.reset();
-                            //this.mostrarComponente(this.Cmp.ctacte2);
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = false;
                         } else {
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-                            //this.ocultarComponente(this.Cmp.ctacte2);
+                            this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
@@ -1472,7 +1397,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 } else {
                     this.ocultarComponente(this.Cmp.numero_tarjeta2);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-                    //this.ocultarComponente(this.Cmp.ctacte2);
+                    this.ocultarComponente(this.Cmp.id_auxiliar2);
                     this.Cmp.numero_tarjeta2.allowBlank = true;
                     this.Cmp.codigo_tarjeta2.allowBlank = true;
                     this.Cmp.id_auxiliar2.allowBlank = true;

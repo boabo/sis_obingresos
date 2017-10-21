@@ -605,7 +605,7 @@ class ACTBoleto extends ACTbase{
 			if ($this->objParam->getParametro('pes_estado') == 'revisados') {
 				$this->objParam->addFiltro(" bol.estado = ''revisado'' ");
 			}else{
-				$this->objParam->addFiltro(" bol.estado is null ");
+				$this->objParam->addFiltro(" bol.estado = ''borrador'' ");
 			}
 		}
 

@@ -1589,7 +1589,7 @@ raise notice 'llega 0';
                   end if;
             end if;
 
-            IF(v_boleto.estado is NULL)THEN
+            IF(v_boleto.estado='borrador')THEN
 
               select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
               from obingresos.tboleto_forma_pago bfp
@@ -1613,7 +1613,7 @@ raise notice 'llega 0';
 
               update obingresos.tboleto
               set
-              estado = NULL,
+              estado = 'borrador',
               id_usuario_cajero=NULL
               where id_boleto=v_parametros.id_boleto;
 
