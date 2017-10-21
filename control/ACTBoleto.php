@@ -601,6 +601,14 @@ class ACTBoleto extends ACTbase{
 
 	function listarBoletosEmitidosAmadeus(){
 
+		if ($this->objParam->getParametro('pes_estado') != '') {
+			if ($this->objParam->getParametro('pes_estado') == 'revisados') {
+				$this->objParam->addFiltro(" bol.estado = ''revisado'' ");
+			}else{
+				$this->objParam->addFiltro(" bol.estado is null ");
+			}
+		}
+
 		if ($this->objParam->getParametro('id_punto_venta') != '') {
 			//$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
 			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));

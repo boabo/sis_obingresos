@@ -68,9 +68,27 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 //this.store.baseParams.estado = 'borrador';
                 this.iniciarEventos();
+                this.finCons = true;
                 this.seleccionarPuntoVentaSucursal();
                 this.grid.addListener('cellclick', this.oncellclick,this);
             },
+
+            gruposBarraTareas:[{name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:0,height:0},
+                {name:'revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> Revisados</h1>',grupo:1,height:0}
+            ],
+
+            actualizarSegunTab: function(name, indice){
+                if(this.finCons){
+                    this.store.baseParams.pes_estado = name;
+                    this.load({params:{start:0, limit:this.tam_pag}});
+                }
+            },
+
+            beditGroups: [0],
+            bdelGroups:  [0],
+            bactGroups:  [0,1],
+            btestGroups: [0],
+            bexcelGroups: [0,1],
 
             seleccionarPuntoVentaSucursal : function () {
 
