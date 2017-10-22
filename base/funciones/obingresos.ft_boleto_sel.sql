@@ -252,8 +252,11 @@ BEGIN
                                  nr.liquido,
                                  nr.id_moneda_boleto,
                                  nr.moneda,
+                                 mon.codigo_internacional as moneda_sucursal,
+                                 nr.tc,
                                  nr.neto,
                                  nr.fecha_emision,
+                                 nr.tipo_comision,
                                  substring(nr.nro_boleto from 4)::varchar as nro_boleto,
                                  nr.pasajero,
                                  nr.voided,
@@ -278,6 +281,9 @@ BEGIN
                                  fpo.nombre_auxiliar [ 2 ]::varchar as nombre_auxiliar2,
                                  fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2
                           from obingresos.tboleto nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
+                          inner join param.tmoneda  mon on mon.id_moneda=suc.id_moneda
                           inner join forma_pago_temporal fpo on fpo.id_boleto=nr.id_boleto
                           left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
                           left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario ';

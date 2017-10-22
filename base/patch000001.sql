@@ -1042,3 +1042,13 @@ CREATE TRIGGER tdeposito_tr
   EXECUTE PROCEDURE obingresos.f_tr_deposito();
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-12/09/2017********************************************/
+
+/********************************************I-SCP-GSS-OBINGRESOS-0-22/10/2017********************************************/
+
+ALTER TABLE obingresos.tboleto
+  ADD COLUMN tipo_comision VARCHAR(13);
+
+ALTER TABLE obingresos.tboleto
+  ALTER COLUMN tipo_comision SET DEFAULT 'ninguno';
+
+/********************************************F-SCP-GSS-OBINGRESOS-0-22/10/2017********************************************/

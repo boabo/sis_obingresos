@@ -77,7 +77,8 @@ DECLARE
     v_id_boleto_vuelo		integer;
 
     v_valor_forma_pago		numeric;
-
+	v_tipo_moneda			varchar;
+    v_tipo_cambio			numeric;
 
     v_autorizacion_fp		varchar[];
     v_tarjeta_fp			varchar[];
@@ -211,7 +212,8 @@ BEGIN
             	raise exception 'El boleto ya fue revisado, no puede modificarse';
             end if;
 
-            update obingresos.tboleto set comision = v_parametros.comision
+            update obingresos.tboleto set comision = v_parametros.comision,
+            tipo_comision=v_parametros.tipo_comision
             where id_boleto = v_parametros.id_boleto;
 
             if (v_parametros.id_forma_pago is not null and v_parametros.id_forma_pago != 0) then
@@ -430,7 +432,7 @@ BEGIN
 
                update obingresos.tboleto
                set id_usuario_cajero = p_id_usuario,
-               estado = 'pagado'
+               estado = 'revisado'
                where id_boleto=v_id_boleto;
 
                select * into v_boleto
@@ -578,7 +580,7 @@ BEGIN
 raise notice 'llega 0';
                update obingresos.tboleto
                set id_usuario_cajero = p_id_usuario,
-               estado = 'pagado'
+               estado = 'revisado'
                where id_boleto=v_id_boleto;
                raise notice 'llega 1';
                select * into v_boleto
@@ -1284,9 +1286,18 @@ raise notice 'llega 0';
                             FROM obingresos.tboleto
                             WHERE nro_boleto=v_nro_boleto)THEN
 
-                  SELECT id_moneda into v_id_moneda
+                  SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
                   FROM param.tmoneda
                   WHERE codigo_internacional=v_moneda;
+
+                  IF(v_tipo_moneda='base')THEN
+                    select oficial into v_tipo_cambio
+                    from param.ttipo_cambio
+                    where id_moneda =(select id_moneda from param.tmoneda where tipo_moneda='ref')
+                    and fecha=v_parametros.fecha_emision;
+                  ELSE
+                  	v_tipo_cambio = 1;
+                  END IF;
 
                   select nextval('obingresos.tboleto_id_boleto_seq'::regclass) into v_id_boleto;
 
@@ -1308,6 +1319,7 @@ raise notice 'llega 0';
                   localizador,
                   fecha_emision,
                   id_moneda_boleto,
+                  tc,
                   pasajero,
                   liquido,
                   neto,
@@ -1328,6 +1340,7 @@ raise notice 'llega 0';
                   '''||v_localizador||'''::varchar,
                   '''||v_parametros.fecha_emision||'''::date,
                   '||v_id_moneda||'::integer,
+                  '||v_tipo_cambio||'::numeric,
                   '''||v_pasajero||'''::varchar,
                   coalesce('||v_total||',0)::numeric,
                   coalesce('||v_total||',0)::numeric,
@@ -1351,6 +1364,7 @@ raise notice 'llega 0';
                   localizador,
                   fecha_emision,
                   id_moneda_boleto,
+                  tc,
                   pasajero,
                   liquido,
                   neto,
@@ -1371,6 +1385,7 @@ raise notice 'llega 0';
                   v_localizador::varchar,
                   v_parametros.fecha_emision::date,
                   v_id_moneda::integer,
+                  v_tipo_cambio::numeric,
                   v_pasajero::varchar,
                   v_total::numeric,
                   v_total::numeric,

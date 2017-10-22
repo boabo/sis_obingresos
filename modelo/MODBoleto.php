@@ -162,8 +162,11 @@ class MODBoleto extends MODbase{
 		$this->captura('liquido','numeric');
 		$this->captura('id_moneda_boleto','int4');
 		$this->captura('moneda','varchar');
+		$this->captura('moneda_sucursal','varchar');
+		$this->captura('tc','numeric');
 		$this->captura('neto','numeric');
 		$this->captura('fecha_emision','date');
+		$this->captura('tipo_comision','varchar');
 		$this->captura('nro_boleto','varchar');
 		$this->captura('pasajero','varchar');
 		$this->captura('voided','varchar');
@@ -353,6 +356,7 @@ class MODBoleto extends MODbase{
         $this->setParametro('codigo_tarjeta2','codigo_tarjeta2','varchar');
 		$this->setParametro('ctacte2','ctacte2','varchar');
 		$this->setParametro('comision','comision','numeric');	
+		$this->setParametro('tipo_comision','tipo_comision','varchar');
 		$this->setParametro('estado','estado','varchar');
         $this->setParametro('id_boleto_vuelo','id_boleto_vuelo','integer');
         $this->setParametro('id_punto_venta','id_punto_venta','integer');
