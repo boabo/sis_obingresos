@@ -538,17 +538,14 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'comision',
                         fieldLabel: 'Comisión AGT',
                         allowBlank:true,
-                        anchor: '80%',
-                        allowDecimals:true,
-                        decimalPrecision:2,
-                        allowNegative : false,
+                        anchor: '90%',
                         disabled:true,
-                        gwidth: 125
+                        gwidth: 40
                     },
                     type:'NumberField',
                     valor_inicial:0,
                     id_grupo:0,
-                    grid:false,
+                    grid:true,
                     form:true
                 },
                 {
@@ -1058,6 +1055,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'monto_pagado_moneda_boleto', type: 'numeric'},
                 {name:'monto_total_fp', type: 'numeric'},
                 {name:'liquido', type: 'numeric'},
+                {name:'comision', type: 'numeric'},
                 {name:'nro_boleto', type: 'string'},
                 {name:'id_usuario_ai', type: 'numeric'},
                 {name:'id_usuario_reg', type: 'numeric'},

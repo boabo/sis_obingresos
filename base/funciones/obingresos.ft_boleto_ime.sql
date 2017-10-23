@@ -297,6 +297,21 @@ BEGIN
                       v_codigo_tarjeta
                     );
                 end if;
+
+                select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                from obingresos.tboleto_forma_pago bfp
+                inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
+                where bfp.id_boleto=v_parametros.id_boleto;
+
+                IF (COALESCE(v_monto_total_fp,0) = (v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
+                  update obingresos.tboleto
+                  set
+                  estado = 'revisado',
+                  id_usuario_cajero=p_id_usuario
+                  where id_boleto=v_parametros.id_boleto;
+                END IF;
+
             end if;
 
             update obingresos.tboleto_vuelo
@@ -1676,7 +1691,7 @@ raise notice 'llega 0';
               inner join obingresos.tboleto bol on bol.id_boleto=bfp.id_boleto
               where bfp.id_boleto=v_parametros.id_boleto;
 
-              IF (COALESCE(v_monto_total_fp,0) <>v_boleto.total)THEN
+              IF (COALESCE(v_monto_total_fp,0) <>(v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
               	raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
               END IF;
 

@@ -255,6 +255,7 @@ BEGIN
                                  mon.codigo_internacional as moneda_sucursal,
                                  nr.tc,
                                  nr.neto,
+                                 nr.comision,
                                  nr.fecha_emision,
                                  nr.tipo_comision,
                                  substring(nr.nro_boleto from 4)::varchar as nro_boleto,

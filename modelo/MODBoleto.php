@@ -165,6 +165,7 @@ class MODBoleto extends MODbase{
 		$this->captura('moneda_sucursal','varchar');
 		$this->captura('tc','numeric');
 		$this->captura('neto','numeric');
+		$this->captura('comision','numeric');
 		$this->captura('fecha_emision','date');
 		$this->captura('tipo_comision','varchar');
 		$this->captura('nro_boleto','varchar');
