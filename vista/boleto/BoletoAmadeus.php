@@ -593,6 +593,32 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true
                 },
                 {
+                    config:{
+                        name: 'tipo_comision',
+                        fieldLabel: 'Tipo Comision',
+                        qtip: 'Si tiene comision',
+                        allowBlank: false,
+                        emptyText: 'Tipo...',
+                        typeAhead: true,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'local',
+                        gwidth: 100,
+                        anchor: '100%',
+                        store: ['ninguno','nacional','internacional']
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 1,
+                    filters:{
+                        type: 'list',
+                        pfiltro:'bol.tipo_comision',
+                        options: ['ninguno','nacional','internacional'],
+                    },
+                    valorInicial: 'ninguno',
+                    grid:true,
+                    form:true
+                },
+                {
                     config: {
                         name: 'id_forma_pago',
                         fieldLabel: 'Forma de Pago',
@@ -875,32 +901,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'DateField',
                     filters:{pfiltro:'bol.fecha_emision',type:'date'},
                     id_grupo:0,
-                    grid:true,
-                    form:true
-                },
-                {
-                    config:{
-                        name: 'tipo_comision',
-                        fieldLabel: 'Tipo Comision',
-                        qtip: 'Si tiene comision',
-                        allowBlank: false,
-                        emptyText: 'Tipo...',
-                        typeAhead: true,
-                        triggerAction: 'all',
-                        lazyRender: true,
-                        mode: 'local',
-                        gwidth: 100,
-                        anchor: '100%',
-                        store: ['ninguno','nacional','internacional']
-                    },
-                    type: 'ComboBox',
-                    id_grupo: 0,
-                    filters:{
-                        type: 'list',
-                        pfiltro:'bol.tipo_comision',
-                        options: ['ninguno','nacional','internacional'],
-                    },
-                    valorInicial: 'ninguno',
                     grid:true,
                     form:true
                 },
@@ -1426,10 +1426,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 for (var i = 0 ; i< seleccionados.length;i++) {
                     if (i == 0) {
                         this.Cmp.ids_seleccionados.setValue(seleccionados[i].data.id_boleto);
-                        this.Cmp.boletos.setValue('930'+seleccionados[i].data.nro_boleto);
+                        this.Cmp.boletos.setValue('930'+seleccionados[i].data.nro_boleto + ' ('+ seleccionados[i].data.total +' '+seleccionados[i].data.moneda+')');
                     } else {
                         this.Cmp.ids_seleccionados.setValue(this.Cmp.ids_seleccionados.getValue() + ',' + seleccionados[i].data.id_boleto);
-                        this.Cmp.boletos.setValue(this.Cmp.boletos.getValue() + ', 930' + seleccionados[i].data.nro_boleto);
+                        this.Cmp.boletos.setValue(this.Cmp.boletos.getValue() + ', 930' + seleccionados[i].data.nro_boleto + ' ('+ seleccionados[i].data.total +' '+seleccionados[i].data.moneda+')');
                     }
                     if (seleccionados[i].data.moneda_sucursal == seleccionados[i].data.moneda) {
                         this.total_grupo[seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
