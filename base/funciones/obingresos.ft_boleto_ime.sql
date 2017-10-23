@@ -96,9 +96,9 @@ DECLARE
     v_montos_boletos		varchar;
     v_tipo					varchar;
     v_total					varchar;
-    v_tasa					varchar;
-    v_comision				varchar;
     v_impuestos				varchar;
+    v_comision				varchar;
+    v_impuestos_ob			varchar;
     v_tipo_pago_amadeus		varchar;
     v_monto_pago_amadeus	varchar;
     v_forma_pago_detalles	varchar;
@@ -1250,18 +1250,18 @@ raise notice 'llega 0';
                   		IF v_tipo = 'T' THEN
                         	v_total = v_record_json_montos_boletos.json_array_elements::json->>'amount';
                         ELSIF v_tipo = 'TTX' THEN
-                        	v_tasa = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                        	v_impuestos = v_record_json_montos_boletos.json_array_elements::json->>'amount';
                         ELSIF v_tipo = 'F' THEN
                         	v_comision = v_record_json_montos_boletos.json_array_elements::json->>'amount';
                         ELSIF v_tipo = 'OB' THEN
-                        	v_impuestos = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                        	v_impuestos_ob = v_record_json_montos_boletos.json_array_elements::json->>'amount';
                         ELSE
                         	raise exception 'Tipo monto no definido %', v_tipo;
                         END IF;
 
                   END LOOP;
 				  raise notice 'v_total %', v_total;
-                  raise notice 'v_tasa %', v_tasa;
+                  raise notice 'v_impuestos %', v_impuestos;
                   raise notice 'v_comision %', v_comision;
                   v_forma_pago_detalles = v_record_json_boletos.json_array_elements::json->>'fopDetails';
                   --recuperamos tipo de pago
@@ -1343,7 +1343,7 @@ raise notice 'llega 0';
                   '||v_tipo_cambio||'::numeric,
                   '''||v_pasajero||'''::varchar,
                   coalesce('||v_total||',0)::numeric,
-                  coalesce('||v_total||',0)::numeric,
+                  coalesce('||v_total::numeric-v_impuestos::numeric||',0)::numeric,
                   0,
                   0.00,
                   '||p_id_usuario||'::INTEGER,
@@ -1388,7 +1388,7 @@ raise notice 'llega 0';
                   v_tipo_cambio::numeric,
                   v_pasajero::varchar,
                   v_total::numeric,
-                  v_total::numeric,
+                  v_total::numeric-v_impuestos::numeric,
                   0,
                   0.00,
                   p_id_usuario,
