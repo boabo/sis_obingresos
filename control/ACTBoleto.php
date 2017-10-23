@@ -1318,10 +1318,17 @@ class ACTBoleto extends ACTbase{
 
 			$officeid = $datos[0]['officeid'];
 			$id_agencia = $datos[0]['id_agencia'];
-			$identificador_reporte = $datos[0]['identificador_reporte'];
+
+			if($this->objParam->getParametro('todos')=='no') {
+				$numberItems = 5;
+				$identificador_reporte = $datos[0]['identificador_reporte'];
+			}else{
+				$numberItems = 0;
+				$identificador_reporte = 0;
+			}
 		}
 		//boletos en bolivianos
-		$data = array("numberItems"=>"5","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
+		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
 		$data_string = json_encode($data);
 		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales_JS';
 		$session = curl_init($request);
@@ -1375,9 +1382,17 @@ class ACTBoleto extends ACTbase{
 		$officeid = $datos[0]['officeid'];
 		$id_agencia = $datos[0]['id_agencia'];
 		$identificador_reporte = $datos[0]['identificador_reporte'];
+
+		if($this->objParam->getParametro('todos')=='no') {
+			$numberItems = 5;
+			$identificador_reporte = $datos[0]['identificador_reporte'];
+		}else{
+			$numberItems = 0;
+			$identificador_reporte = 0;
+		}
 		////boletos en dolares
 		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
-		$data = array("numberItems"=>"5","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
+		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
 		$data_string = json_encode($data);
 		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales_JS';
 		$session = curl_init($request);

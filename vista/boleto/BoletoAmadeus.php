@@ -64,6 +64,16 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 );
 
+                this.addButton('btnBoletosTodos',
+                    {
+                        text: 'Traer Todos Boletos',
+                        iconCls: 'breload2',
+                        disabled: false,
+                        handler: this.onTraerBoletosTodos,
+                        tooltip: 'Traer todos boletos vendidos'
+                    }
+                );
+
                 this.campo_fecha = new Ext.form.DateField({
                     name: 'fecha_reg',
                     grupo: this.grupoDateFin,
@@ -359,23 +369,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
-                        name: 'comision',
-                        fieldLabel: 'Comisión AGT',
-                        allowBlank:true,
-                        anchor: '80%',
-                        allowDecimals:true,
-                        decimalPrecision:2,
-                        allowNegative : false,
-                        disabled:true,
-                        gwidth: 125
-                    },
-                    type:'NumberField',
-                    id_grupo:3,
-                    grid:false,
-                    form:true
-                },
-                {
-                    config:{
                         name: 'voided',
                         fieldLabel: 'Anulado',
                         anchor: '60%',
@@ -538,6 +531,24 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'NumberField',
                     filters:{pfiltro:'bol.neto',type:'numeric'},
                     grid:true,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'comision',
+                        fieldLabel: 'Comisión AGT',
+                        allowBlank:true,
+                        anchor: '80%',
+                        allowDecimals:true,
+                        decimalPrecision:2,
+                        allowNegative : false,
+                        disabled:true,
+                        gwidth: 125
+                    },
+                    type:'NumberField',
+                    valor_inicial:0,
+                    id_grupo:0,
+                    grid:false,
                     form:true
                 },
                 {
@@ -1179,6 +1190,21 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },this);
 
+                this.Cmp.tipo_comision.on('select', function (combo,record) {
+                    if(record['json'][0]=='nacional'){
+                        this.Cmp.comision.setValue(this.Cmp.neto.getValue()*0.1);
+                        this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue()-this.Cmp.comision.getValue());
+                    }else{
+                        if(record['json'][0]=='internacional'){
+                            this.Cmp.comision.setValue(this.Cmp.neto.getValue()*0.6);
+                            this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue()-this.Cmp.comision.getValue());
+                        }else{
+                            this.Cmp.comision.setValue(0);
+                            this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue()-this.Cmp.comision.getValue());
+                        }
+                    }
+                },this);
+
 
             },
             //devuelve el monto en la moenda del boleto
@@ -1205,7 +1231,19 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
-                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd')},
+                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'no'},
+                    success:this.successSinc,
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+            },
+
+            onTraerBoletosTodos : function () {
+                Phx.CP.loadingShow();
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
+                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
                     success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
