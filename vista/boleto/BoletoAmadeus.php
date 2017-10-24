@@ -431,6 +431,32 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
+                        name: 'monto_total_neto',
+                        fieldLabel: 'Monto Neto',
+                        anchor: '100%',
+                        gwidth: 80,
+                        readOnly:true
+                    },
+                    type:'TextField',
+                    id_grupo:2,
+                    grid:false,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'monto_total_comision',
+                        fieldLabel: 'Monto Comision',
+                        anchor: '100%',
+                        gwidth: 80,
+                        readOnly:true
+                    },
+                    type:'TextField',
+                    id_grupo:2,
+                    grid:false,
+                    form:true
+                },
+                {
+                    config:{
                         name: 'localizador',
                         fieldLabel: 'Pnr',
                         anchor: '80%',
@@ -507,6 +533,21 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
+                        name: 'forma_pago_amadeus',
+                        fieldLabel: 'Pago Amadeus',
+                        gwidth: 120,
+                        anchor: '90%',
+                        disabled: true,
+                        readOnly:true
+                    },
+                    type:'TextField',
+                    filters:{pfiltro:'bol.forma_pago_amadeus',type:'string'},
+                    grid:true,
+                    id_grupo:0,
+                    form:true
+                },
+                {
+                    config:{
                         name: 'total',
                         fieldLabel: 'Total',
                         disabled: true,
@@ -554,14 +595,13 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Agente Venta',
                         disabled: true,
                         anchor: '100%',
-                        gwidth: 160
+                        gwidth: 170
                     },
                     type:'TextField',
                     filters:{pfiltro:'nr.agente_venta',type:'string'},
                     id_grupo:0,
                     grid:true,
-                    form:true,
-                    bottom_filter: true
+                    form:true
                 },
                 {
                     config:{
@@ -575,21 +615,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     filters:{pfiltro:'nr.agente_venta',type:'string'},
                     id_grupo:0,
                     grid:true,
-                    form:true
-                },
-                {
-                    config:{
-                        name: 'forma_pago_amadeus',
-                        fieldLabel: 'Pago Amadeus',
-                        gwidth: 100,
-                        anchor: '90%',
-                        disabled: true,
-                        readOnly:true
-                    },
-                    type:'TextField',
-                    filters:{pfiltro:'bol.forma_pago_amadeus',type:'string'},
-                    grid:true,
-                    id_grupo:0,
                     form:true
                 },
                 {
@@ -615,7 +640,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         options: ['ninguno','nacional','internacional'],
                     },
                     valorInicial: 'ninguno',
-                    grid:true,
+                    grid:false,
                     form:true
                 },
                 {
@@ -911,7 +936,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         gwidth: 100
                     },
                     type:'TextField',
-                    grid:true,
+                    grid:false,
                     form:false
                 },
                 {
@@ -921,7 +946,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         gwidth: 120
                     },
                     type:'TextField',
-                    grid:true,
+                    grid:false,
                     form:false
                 },
                 {
@@ -1094,10 +1119,10 @@ header("content-type: text/javascript; charset=UTF-8");
             ],
             sortInfo:{
                 field: 'nro_boleto',
-                direction: 'DESC'
+                direction: 'ASC'
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai',
-                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto'],
+                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision'],
 
             bdel:false,
             bsave:false,
@@ -1189,16 +1214,31 @@ header("content-type: text/javascript; charset=UTF-8");
                 },this);
 
                 this.Cmp.tipo_comision.on('select', function (combo,record) {
-                    if(record['json'][0]=='nacional'){
-                        this.Cmp.comision.setValue(this.Cmp.neto.getValue()*0.1);
-                        this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue()-this.Cmp.comision.getValue());
+                    if(this.grupo=='no') {
+                        if (record['json'][0] == 'nacional') {
+                            this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.1).toFixed(2));
+                            this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue());
+                        } else {
+                            if (record['json'][0] == 'internacional') {
+                                this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue());
+                            } else {
+                                this.Cmp.comision.setValue(0);
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue());
+                            }
+                        }
                     }else{
-                        if(record['json'][0]=='internacional'){
-                            this.Cmp.comision.setValue(this.Cmp.neto.getValue()*0.6);
-                            this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue()-this.Cmp.comision.getValue());
-                        }else{
-                            this.Cmp.comision.setValue(0);
-                            this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue()-this.Cmp.comision.getValue());
+                        if (record['json'][0] == 'nacional') {
+                            this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.1).toFixed(2));
+                            this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
+                        } else {
+                            if (record['json'][0] == 'internacional') {
+                                this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.06).toFixed(2));
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
+                            } else {
+                                this.Cmp.monto_total_comision.setValue(0);
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_total_neto.getValue() - this.Cmp.monto_total_comision.getValue());
+                            }
                         }
                     }
                 },this);
@@ -1420,8 +1460,14 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.grupo = 'si';
                 var seleccionados = this.sm.getSelections();
                 this.total_grupo = new Object;
-                this.total_grupo['USD'] = 0;
-                this.total_grupo[seleccionados[0].data.moneda_sucursal] = 0;
+                //this.total_grupo['USD'] = 0;
+                //this.total_grupo[seleccionados[0].data.moneda_sucursal] = 0;
+                this.total_grupo['total_boletos_USD'] = 0;
+                this.total_grupo['total_neto_USD'] = 0;
+                this.total_grupo['total_comision_USD'] = 0;
+                this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] = 0;
+                this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal] = 0;
+                this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] = 0;
 
                 for (var i = 0 ; i< seleccionados.length;i++) {
                     if (i == 0) {
@@ -1432,15 +1478,25 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.boletos.setValue(this.Cmp.boletos.getValue() + ', 930' + seleccionados[i].data.nro_boleto + ' ('+ seleccionados[i].data.total +' '+seleccionados[i].data.moneda+')');
                     }
                     if (seleccionados[i].data.moneda_sucursal == seleccionados[i].data.moneda) {
-                        this.total_grupo[seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
-                        this.total_grupo['USD'] += this.round(seleccionados[i].data.total / seleccionados[i].data.tc , 2);
+                        this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
+                        this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.neto);
+                        this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.comision);
+                        this.total_grupo['total_boletos_USD'] += this.round(seleccionados[i].data.total / seleccionados[i].data.tc , 2);
+                        this.total_grupo['total_neto_USD'] += this.round(seleccionados[i].data.neto / seleccionados[i].data.tc , 2);
+                        this.total_grupo['total_comision_USD'] += this.round(seleccionados[i].data.comision / seleccionados[i].data.tc , 2);
                         this.Cmp.moneda_boletos.setValue(seleccionados[i].data.moneda);
-                        this.Cmp.monto_total_boletos.setValue(this.total_grupo[seleccionados[0].data.moneda_sucursal].toFixed(2));
+                        this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                        this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                        this.Cmp.monto_total_comision.setValue(this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
                     } else if (seleccionados[i].data.moneda == 'USD') {
                         this.total_grupo[seleccionados[0].data.moneda_sucursal] += this.round(seleccionados[i].data.total * seleccionados[i].data.tc , 2);
-                        this.total_grupo['USD'] += parseFloat(seleccionados[i].data.total);
+                        this.total_grupo['total_boletos_USD'] += parseFloat(seleccionados[i].data.total);
+                        this.total_grupo['total_neto_USD'] += parseFloat(seleccionados[i].data.neto);
+                        this.total_grupo['total_comision_USD'] += parseFloat(seleccionados[i].data.comision);
                         this.Cmp.moneda_boletos.setValue('USD');
-                        this.Cmp.monto_total_boletos.setValue(this.total_grupo['USD'].toFixed(2));
+                        this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_USD'].toFixed(2));
+                        this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_USD'].toFixed(2));
+                        this.Cmp.monto_total_comision.setValue(this.total_grupo['total_comision_USD'].toFixed(2));
                     } else {
                         alert('No se puede calcular la forma de pago ya que la moneda de un boleto no es la moneda de la sucursal ni dolares americanos');
                         return;

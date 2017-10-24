@@ -189,6 +189,11 @@ BEGIN
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
 
+            update obingresos.tboleto
+            set comision = v_parametros.comision,
+            tipo_comision=v_parametros.tipo_comision
+            where id_boleto = v_parametros.id_boleto;
+
             select * into v_boleto
             from obingresos.tboleto
             where id_boleto = v_parametros.id_boleto;
@@ -211,10 +216,6 @@ BEGIN
 			if (v_parametros.estado = 'revisado') then
             	raise exception 'El boleto ya fue revisado, no puede modificarse';
             end if;
-
-            update obingresos.tboleto set comision = v_parametros.comision,
-            tipo_comision=v_parametros.tipo_comision
-            where id_boleto = v_parametros.id_boleto;
 
             if (v_parametros.id_forma_pago is not null and v_parametros.id_forma_pago != 0) then
                 delete from obingresos.tboleto_forma_pago
@@ -311,7 +312,6 @@ BEGIN
                   id_usuario_cajero=p_id_usuario
                   where id_boleto=v_parametros.id_boleto;
                 END IF;
-
             end if;
 
             update obingresos.tboleto_vuelo
@@ -363,6 +363,22 @@ BEGIN
             v_ids = string_to_array(v_parametros.ids_seleccionados,',');
             FOREACH v_id_boleto IN ARRAY v_ids
             LOOP
+               if (pxp.f_existe_parametro(p_tabla,'tipo_comision') = TRUE) then
+               	IF(v_parametros.tipo_comision = 'nacional')THEN
+                	UPDATE obingresos.tboleto
+                	SET comision=neto*0.1
+                    WHERE id_boleto=v_id_boleto;
+                ELSIF(v_parametros.tipo_comision='internacional')THEN
+                	UPDATE obingresos.tboleto
+                	SET comision=neto*0.06
+                    WHERE id_boleto=v_id_boleto;
+                ELSE
+                	UPDATE obingresos.tboleto
+                	SET comision=0
+                    WHERE id_boleto=v_id_boleto;
+                END IF;
+               end if;
+
               delete from obingresos.tboleto_forma_pago
               where id_boleto = v_id_boleto;
 

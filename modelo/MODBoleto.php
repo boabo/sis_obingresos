@@ -417,7 +417,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
 		$this->setParametro('numero_tarjeta2','numero_tarjeta2','varchar');
 		$this->setParametro('ctacte2','ctacte2','varchar');
-				
+		$this->setParametro('tipo_comision','tipo_comision','varchar');
+
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
