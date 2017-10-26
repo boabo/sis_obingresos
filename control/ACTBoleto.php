@@ -184,6 +184,26 @@ class ACTBoleto extends ACTbase{
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
+	function modificarBoletoAmadeusVenta(){
+		$this->objParam->defecto('ordenacion','id_boleto_amadeus');
+		$this->objParam->defecto('dir_ordenacion','desc');
+		$this->objParam->defecto('puntero','0');
+		$this->objParam->defecto('cantidad','1');
+
+		if($this->objParam->insertar('ids_seleccionados')) {
+			//$this->objParamAux = $this->objParam;
+			//Se realiza la modificacion normal despues de registra la conjuncion
+			//$this->objParam = $this->objParamAux;
+			$this->objFunc=$this->create('MODBoleto');
+			$this->res=$this->objFunc->modificarBoletoAmadeusVenta($this->objParam);
+		} else {
+			$this->objFunc=$this->create('MODBoleto');
+			$this->res=$this->objFunc->modificarAmadeusFpGrupo($this->objParam);
+		}
+
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
 	function getBoletoServicio(){
 		$this->objParam->defecto('ordenacion','id_boleto');
 		$this->objParam->defecto('dir_ordenacion','desc');
@@ -614,13 +634,17 @@ class ACTBoleto extends ACTbase{
 			$this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
 		}
 
+		if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+			$this->objParam->addFiltro("bol.id_usuario_cajero = ". $this->objParam->getParametro('id_usuario_cajero'));
+		}
+
 		if ($this->objParam->getParametro('fecha') != '') {
 			$fecha = $this->objParam->getParametro('fecha');
 		}/*else{
 			$fecha = date("Ymd");
 		}*/
 
-		$this->objParam->addFiltro("bol.fecha_emision = ''". $fecha."''");
+		//$this->objParam->addFiltro("bol.fecha_emision = ''". $fecha."''");
 
 		/*if ($this->objParam->getParametro('reporte') == 'reporte') {
 			if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
@@ -1297,13 +1321,13 @@ class ACTBoleto extends ACTbase{
 
 		if ($this->objParam->getParametro('fecha') != '') {
 			$fecha = $this->objParam->getParametro('fecha');
+			$this->objParam->addFiltro("bol.fecha_emision = ''". date($fecha)."''");
+			//$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
 		}
-
-		$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
 
 		if ($this->objParam->getParametro('reporte') == 'reporte') {
 			$this->objFunc = $this->create('MODBoleto');
-			$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
+			//$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
 		}
 
 		if ($this->objParam->getParametro('officeId_agencia') != '') {
@@ -1355,11 +1379,11 @@ class ACTBoleto extends ACTbase{
 			if ($this->objParam->getParametro('id_usuario_cajero') != '') {
 				$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
 				$this->objFunc = $this->create('MODBoleto');
-				$this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
+				//$this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
 			} else {
 				if ($this->objParam->getParametro('reporte') == 'reporte') {
 					$this->objFunc = $this->create('MODBoleto');
-					$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
+					//$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
 				} else {
 					$this->objFunc = $this->create('MODBoleto');
 					$this->res = $this->objFunc->insertarBoletoServicioAmadeusJSon($this->objParam);
@@ -1447,6 +1471,13 @@ class ACTBoleto extends ACTbase{
 				$this->res->imprimirRespuesta($this->res->generarJson());
 			}
 		}else {
+			if ($this->objParam->getParametro('pes_estado') != '') {
+				if ($this->objParam->getParametro('pes_estado') == 'revisados') {
+					$this->objParam->addFiltro(" bol.estado = ''revisado'' ");
+				}else{
+					$this->objParam->addFiltro(" bol.estado = ''borrador'' ");
+				}
+			}
 			$this->objFunc=$this->create('MODBoleto');
 			$this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
 			$this->res->imprimirRespuesta($this->res->generarJson());

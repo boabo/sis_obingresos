@@ -230,7 +230,7 @@ BEGIN
 		begin
         --raise exception 'id: %',v_parametros.filtro;
         	v_consulta:='with forma_pago_temporal as(
-                                          select bol.id_boleto,
+                                          select bol.id_boleto_amadeus,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
                                                  array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
                                                  array_agg(fp.codigo) as codigo_forma_pago,
@@ -239,14 +239,14 @@ BEGIN
                                                  array_agg(bfp.id_auxiliar) as id_auxiliar,
                                                  array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
                                                  array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto bol
-                                               left join obingresos.tboleto_forma_pago bfp on bfp.id_boleto=bol.id_boleto
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
                                                left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                                                left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
                                                left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
                                           where ' || v_parametros.filtro || '
-                                          group by bol.id_boleto)
-                          select nr.id_boleto,
+                                          group by bol.id_boleto_amadeus)
+                          select nr.id_boleto_amadeus,
                           		 nr.localizador,
                                  nr.total,
                                  nr.liquido,
@@ -281,11 +281,11 @@ BEGIN
                                  fpo.id_auxiliar [ 2 ]::integer as id_auxiliar2,
                                  fpo.nombre_auxiliar [ 2 ]::varchar as nombre_auxiliar2,
                                  fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2
-                          from obingresos.tboleto nr
+                          from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
                           inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
                           inner join param.tmoneda  mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto=nr.id_boleto
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
                           left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
                           left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario ';
 
@@ -359,8 +359,8 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-            v_consulta:='select count(bol.id_boleto)
-						from obingresos.tboleto bol
+            v_consulta:='select count(bol.id_boleto_amadeus)
+						from obingresos.tboleto_amadeus bol
                         where ';
 
 			--Definicion de la respuesta

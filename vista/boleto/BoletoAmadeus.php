@@ -31,6 +31,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 //llama al constructor de la clase padre
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
                 this.store.baseParams.pes_estado = 'no_revisados';
+                this.store.baseParams.todos = 'no';
                 this.init();
 
                 this.addButton('btnAnularBoleto',
@@ -54,7 +55,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 );
 
-                this.addButton('btnBoletos',
+/*                this.addButton('btnBoletos',
                     {
                         text: 'Traer Boletos',
                         iconCls: 'breload2',
@@ -62,7 +63,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         handler: this.onTraerBoletos,
                         tooltip: 'Traer boletos vendidos'
                     }
-                );
+                );*/
 
                 this.addButton('btnBoletosTodos',
                     {
@@ -228,7 +229,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     config:{
                         labelSeparator:'',
                         inputType:'hidden',
-                        name: 'id_boleto'
+                        name: 'id_boleto_amadeus'
                     },
                     type:'Field',
                     form:true
@@ -691,7 +692,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'monto_forma_pago',
-                        fieldLabel: 'Monto a Pagar',
+                        fieldLabel: 'Monto Forma Pago',
                         allowBlank:false,
                         anchor: '80%',
                         allowDecimals:true,
@@ -827,7 +828,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'monto_forma_pago2',
-                        fieldLabel: 'Monto a Pagar 2',
+                        fieldLabel: 'Monto Forma de Pago 2',
                         allowBlank:true,
                         anchor: '80%',
                         allowDecimals:true,
@@ -1058,13 +1059,13 @@ header("content-type: text/javascript; charset=UTF-8");
             tam_pag:50,
             fwidth: '70%',
             title:'Boleto',
-            ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoVenta',
+            ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVenta',
             //ActDel:'../../sis_obingresos/control/Boleto/eliminarBoleto',
-            ActList:'../../sis_obingresos/control/Boleto/listarBoletosEmitidosAmadeus',
+            ActList:'../../sis_obingresos/control/Boleto/traerBoletosJson',
 
-            id_store:'id_boleto',
+            id_store:'id_boleto_amadeus',
             fields: [
-                {name:'id_boleto', type: 'numeric'},
+                {name:'id_boleto_amadeus', type: 'numeric'},
                 {name:'fecha_emision', type: 'date',dateFormat:'Y-m-d'},
                 {name:'tipo_comision', type: 'string'},
                 {name:'estado', type: 'string'},
@@ -1264,24 +1265,24 @@ header("content-type: text/javascript; charset=UTF-8");
                     return -1;
                 }
             },
-
+            /*
             onTraerBoletos : function () {
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
-                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'no'},
+                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'no'},
                     success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
                     scope:this
                 });
-            },
+            },*/
 
             onTraerBoletosTodos : function () {
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
-                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
+                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
                     success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
@@ -1385,7 +1386,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 var d = record.data
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/cambiarRevisionBoleto',
-                    params:{ id_boleto: d.id_boleto},
+                    params:{ id_boleto_amadeus: d.id_boleto_amadeus},
                     success: this.successRevision,
                     failure: this.conexionFailure,
                     timeout: this.timeout,
@@ -1406,7 +1407,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 var d = this.sm.getSelected().data;
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/anularBoleto',
-                    params:{id_boleto:d.id_boleto},
+                    params:{id_boleto_amadeus:d.id_boleto_amadeus},
                     success:this.successAnularBoleto,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
@@ -1471,10 +1472,10 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 for (var i = 0 ; i< seleccionados.length;i++) {
                     if (i == 0) {
-                        this.Cmp.ids_seleccionados.setValue(seleccionados[i].data.id_boleto);
+                        this.Cmp.ids_seleccionados.setValue(seleccionados[i].data.id_boleto_amadeus);
                         this.Cmp.boletos.setValue('930'+seleccionados[i].data.nro_boleto + ' ('+ seleccionados[i].data.total +' '+seleccionados[i].data.moneda+')');
                     } else {
-                        this.Cmp.ids_seleccionados.setValue(this.Cmp.ids_seleccionados.getValue() + ',' + seleccionados[i].data.id_boleto);
+                        this.Cmp.ids_seleccionados.setValue(this.Cmp.ids_seleccionados.getValue() + ',' + seleccionados[i].data.id_boleto_amadeus);
                         this.Cmp.boletos.setValue(this.Cmp.boletos.getValue() + ', 930' + seleccionados[i].data.nro_boleto + ' ('+ seleccionados[i].data.total +' '+seleccionados[i].data.moneda+')');
                     }
                     if (seleccionados[i].data.moneda_sucursal == seleccionados[i].data.moneda) {
@@ -1536,10 +1537,10 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             tabsouth:[{
-                url:'../../../sis_obingresos/vista/boleto_forma_pago/BoletoFormaPago.php',
+                url:'../../../sis_obingresos/vista/boleto_amadeus_forma_pago/BoletoAmadeusFormaPago.php',
                 title:'Formas de Pago',
                 height:'40%',
-                cls:'BoletoFormaPago'
+                cls:'BoletoAmadeusFormaPago'
             }],
 
             Grupos:[{

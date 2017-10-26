@@ -156,7 +156,7 @@ class MODBoleto extends MODbase{
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
 
 		//Definicion de la lista del resultado del query
-		$this->captura('id_boleto','integer');
+		$this->captura('id_boleto_amadeus','integer');
 		$this->captura('localizador','varchar');
 		$this->captura('total','numeric');
 		$this->captura('liquido','numeric');
@@ -328,7 +328,7 @@ class MODBoleto extends MODbase{
 		$this->tipo_procedimiento='IME';
 
 		//Define los parametros para la funcion
-		$this->setParametro('id_boleto','id_boleto','int4');
+		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -371,6 +371,38 @@ class MODBoleto extends MODbase{
 		return $this->respuesta;
 	}
 
+	function modificarBoletoAmadeusVenta(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_BOLAMAVEN_UPD';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','integer');
+		$this->setParametro('id_forma_pago','id_forma_pago','integer');
+		$this->setParametro('monto_forma_pago','monto_forma_pago','numeric');
+		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+		$this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+		$this->setParametro('ctacte','ctacte','varchar');
+		$this->setParametro('id_forma_pago2','id_forma_pago2','integer');
+		$this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
+		$this->setParametro('numero_tarjeta2','numero_tarjeta2','varchar');
+		$this->setParametro('codigo_tarjeta2','codigo_tarjeta2','varchar');
+		$this->setParametro('ctacte2','ctacte2','varchar');
+		$this->setParametro('comision','comision','numeric');
+		$this->setParametro('tipo_comision','tipo_comision','varchar');
+		$this->setParametro('estado','estado','varchar');
+		$this->setParametro('id_punto_venta','id_punto_venta','integer');
+		$this->setParametro('id_auxiliar','id_auxiliar','integer');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function modificarFpPNRBoleto(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_ime';
@@ -406,6 +438,32 @@ class MODBoleto extends MODbase{
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_ime';
 		$this->transaccion='OBING_MODFPGRUPO_UPD';
+		$this->tipo_procedimiento='IME';
+		//Define los parametros para la funcion
+		$this->setParametro('ids_seleccionados','ids_seleccionados','varchar');
+		$this->setParametro('id_forma_pago','id_forma_pago','integer');
+		$this->setParametro('monto_forma_pago','monto_forma_pago','numeric');
+		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+		$this->setParametro('ctacte','ctacte','varchar');
+		$this->setParametro('id_forma_pago2','id_forma_pago2','integer');
+		$this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
+		$this->setParametro('numero_tarjeta2','numero_tarjeta2','varchar');
+		$this->setParametro('ctacte2','ctacte2','varchar');
+		$this->setParametro('tipo_comision','tipo_comision','varchar');
+
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+	function modificarAmadeusFpGrupo(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_ime';
+		$this->transaccion='OBING_MODAMAFPGR_UPD';
 		$this->tipo_procedimiento='IME';
 		//Define los parametros para la funcion
 		$this->setParametro('ids_seleccionados','ids_seleccionados','varchar');
@@ -781,7 +839,7 @@ class MODBoleto extends MODbase{
 		$this->tipo_procedimiento='IME';
 
 		//Define los parametros para la funcion
-		$this->setParametro('id_boleto','id_boleto','int4');
+		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

@@ -16,9 +16,7 @@ class ACTDeposito extends ACTbase{
 		$this->objParam->defecto('ordenacion','id_deposito');
 
 		$this->objParam->defecto('dir_ordenacion','desc');
-        if($this->objParam->getParametro('id_apertura_cierre_caja') != '') {
-            $this->objParam->addFiltro(" dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja'));
-        }
+
 		if ($this->objParam->getParametro('id_agencia') != '') {
 			$this->objParam->addFiltro("dep.id_agencia = ". $this->objParam->getParametro('id_agencia'));
 		}
@@ -33,6 +31,9 @@ class ACTDeposito extends ACTbase{
 
         if ($this->objParam->getParametro('estado') != '') {
             $this->objParam->addFiltro("dep.estado = ''". $this->objParam->getParametro('estado')."''");
+        }
+         if($this->objParam->getParametro('id_apertura_cierre_caja') != '') {
+            $this->objParam->addFiltro(" dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja'));
         }
 
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){

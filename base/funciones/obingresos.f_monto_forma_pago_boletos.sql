@@ -9,8 +9,8 @@ DECLARE
   v_monto_total		numeric;
 BEGIN
    	select coalesce(sum(bfp.importe),0) into v_monto_total
- 	from obingresos.tboleto bol
- 	inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto=bol.id_boleto
+ 	from obingresos.tboleto_amadeus bol
+ 	inner join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
  	inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
  	inner join param.tmoneda mon on mon.id_moneda=bol.id_moneda_boleto
  	where bol.id_usuario_cajero = p_id_usuario_cajero
