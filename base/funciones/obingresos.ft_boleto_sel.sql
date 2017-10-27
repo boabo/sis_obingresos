@@ -249,6 +249,8 @@ BEGIN
                           select nr.id_boleto_amadeus,
                           		 nr.localizador,
                                  nr.total,
+                                 case when nr.id_moneda_boleto=suc.id_moneda then round(nr.total/nr.tc,2)
+                                 else nr.total end as total_moneda_extranjera,
                                  nr.liquido,
                                  nr.id_moneda_boleto,
                                  nr.moneda,

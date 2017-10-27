@@ -53,6 +53,21 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'Field',
                     form:true
                 },
+                /*{
+                 config:{
+                 name: 'forma_pago_amadeus',
+                 fieldLabel: 'Forma Pago Amadeus',
+                 allowBlank: true,
+                 disabled: true,
+                 anchor: '80%',
+                 gwidth: 150,
+                 maxLength:50
+                 },
+                 type:'TextField',
+                 id_grupo:1,
+                 grid:true,
+                 form:false
+                 },*/
                 {
                     config: {
                         name: 'id_forma_pago',
@@ -70,7 +85,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',fp_ventas:'si'}
+                            baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',sw_tipo_venta:'boletos'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
@@ -98,21 +113,21 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid: true,
                     form: true
                 },
-                {
-                    config:{
-                        name: 'forma_pago_amadeus',
-                        fieldLabel: 'Forma Pago Amadeus',
-                        allowBlank: true,
-                        anchor: '80%',
-                        gwidth: 150,
-                        maxLength:50
-                    },
-                    type:'TextField',
+                /*{
+                 config:{
+                 name: 'fp_amadeus_corregido',
+                 fieldLabel: 'FP Amadeus Corregido',
+                 allowBlank: true,
+                 anchor: '80%',
+                 gwidth: 150,
+                 maxLength:50
+                 },
+                 type:'TextField',
 
-                    id_grupo:1,
-                    grid:true,
-                    form:true
-                },
+                 id_grupo:1,
+                 grid:true,
+                 form:true
+                 },*/
                 {
                     config:{
                         name: 'importe',
@@ -137,7 +152,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
-                        maxLength:50
+                        minLength:16,
+                        maxLength:20
                     },
                     type:'TextField',
 
@@ -151,7 +167,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Codigo de Autorización',
                         allowBlank: true,
                         anchor: '80%',
-                        maxLength:20
+                        maxLength:6
 
                     },
                     type:'TextField',
@@ -160,22 +176,64 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true
                 },
                 {
-                    config:{
-                        name: 'ctacte',
-                        fieldLabel: 'Cta. Corriente',
+                    config: {
+                        name: 'id_auxiliar',
+                        fieldLabel: 'Cuenta Corriente',
                         allowBlank: true,
-                        anchor: '80%',
+                        emptyText: 'Cuenta Corriente...',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_contabilidad/control/Auxiliar/listarAuxiliar',
+                            id: 'id_auxiliar',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'codigo_auxiliar',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_auxiliar', 'codigo_auxiliar','nombre_auxiliar'],
+                            remoteSort: true,
+                            baseParams: {par_filtro: 'auxcta.codigo_auxiliar#auxcta.nombre_auxiliar',corriente:'si'}
+                        }),
+                        valueField: 'id_auxiliar',
+                        displayField: 'nombre_auxiliar',
+                        gdisplayField: 'codigo_auxiliar',
+                        hiddenName: 'id_auxiliar',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
                         gwidth: 150,
-                        maxLength:20
+                        listWidth:350,
+                        resizable:true,
+                        minChars: 2,
+                        renderer : function(value, p, record) {
+                            return String.format('{0}', record.data['nombre_auxiliar']);
+                        }
                     },
-                    type:'TextField',
-
-                    id_grupo:1,
-                    grid:true,
-                    form:true
+                    type: 'ComboBox',
+                    id_grupo: 2,
+                    grid: true,
+                    form: true
                 },
+                /*{
+                 config:{
+                 name: 'ctacte',
+                 fieldLabel: 'Cta. Corriente',
+                 allowBlank: true,
+                 anchor: '80%',
+                 gwidth: 150,
+                 maxLength:20
+                 },
+                 type:'TextField',
 
-
+                 id_grupo:1,
+                 grid:false,
+                 form:true
+                 },*/
                 {
                     config:{
                         name: 'id_usuario_ai',
@@ -273,6 +331,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 'fecha_reg','fecha_mod','usr_reg','usr_mod'],
             tam_pag:50,
             title:'Forma de Pago',
+            ActSave:'../../sis_obingresos/control/BoletoFormaPago/insertarBoletoAmadeusFormaPago',
+            ActDel:'../../sis_obingresos/control/BoletoFormaPago/eliminarBoletoAmadeusFormaPago',
             ActList:'../../sis_obingresos/control/BoletoFormaPago/listarBoletoAmadeusFormaPago',
             id_store:'id_boleto_amadeus_forma_pago',
             fields: [
@@ -282,12 +342,14 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'id_boleto_amadeus', type: 'numeric'},
                 {name:'estado_reg', type: 'string'},
                 {name:'tarjeta', type: 'string'},
-                {name:'ctacte', type: 'string'},
+                //{name:'ctacte', type: 'string'},
                 {name:'importe', type: 'numeric'},
                 {name:'numero_tarjeta', type: 'string'},
                 {name:'codigo_tarjeta', type: 'string'},
                 {name:'forma_pago', type: 'string'},
-                {name:'forma_pago_amadeus', type: 'string'},
+                {name:'nombre_auxiliar', type: 'string'},
+                //{name:'forma_pago_amadeus', type: 'string'},
+                //{name:'fp_amadeus_corregido', type: 'string'},
                 {name:'codigo_forma_pago', type: 'string'},
                 {name:'id_usuario_ai', type: 'numeric'},
                 {name:'id_usuario_reg', type: 'numeric'},
@@ -304,10 +366,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 field: 'id_boleto_amadeus_forma_pago',
                 direction: 'ASC'
             },
-            bdel:false,
+            bdel:true,
             bsave:false,
-            bedit:false,
-            bnew:false,
+            bedit:true,
             iniciarEventos : function () {
                 this.Cmp.id_forma_pago.on('select', function (combo,record,index){
 
@@ -337,13 +398,14 @@ header("content-type: text/javascript; charset=UTF-8");
                 if (codigoFp.startsWith("CC") ||
                     codigoFp.startsWith("SF")) {
 
-                    this.ocultarComponente(this.Cmp.ctacte);
-                    this.Cmp.ctacte.reset();
+                    //this.ocultarComponente(this.Cmp.ctacte);
+                    //this.Cmp.ctacte.reset();
                     this.mostrarComponente(this.Cmp.numero_tarjeta);
                     this.mostrarComponente(this.Cmp.codigo_tarjeta);
+                    this.ocultarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.numero_tarjeta.allowBlank = false;
                     this.Cmp.codigo_tarjeta.allowBlank = false;
-                    this.Cmp.ctacte.allowBlank = true;
+                    //this.Cmp.ctacte.allowBlank = true;
                     //tarjeta de credito
                 } else if (codigoFp.startsWith("CT")) {
                     //cuenta corriente
@@ -351,21 +413,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.codigo_tarjeta);
                     this.Cmp.numero_tarjeta.reset();
                     this.Cmp.codigo_tarjeta.reset();
-                    this.mostrarComponente(this.Cmp.ctacte);
+                    //this.ocultarComponente(this.Cmp.ctacte);
+                    this.mostrarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.numero_tarjeta.allowBlank = true;
                     this.Cmp.codigo_tarjeta.allowBlank = true;
-                    this.Cmp.ctacte.allowBlank = false;
+                    //this.Cmp.ctacte.allowBlank = false;
                 } else {
                     this.ocultarComponente(this.Cmp.numero_tarjeta);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                    this.ocultarComponente(this.Cmp.ctacte);
+                    //this.ocultarComponente(this.Cmp.ctacte);
+                    this.ocultarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.numero_tarjeta.reset();
                     this.Cmp.codigo_tarjeta.reset();
-                    this.Cmp.ctacte.reset();
+                    //this.Cmp.ctacte.reset();
                     this.Cmp.numero_tarjeta.allowBlank = true;
                     this.Cmp.codigo_tarjeta.allowBlank = true;
-                    this.Cmp.ctacte.allowBlank = true;
-
+                    //this.Cmp.ctacte.allowBlank = true;
                 }
             },
             loadValoresIniciales:function(){
@@ -376,7 +439,6 @@ header("content-type: text/javascript; charset=UTF-8");
             onReloadPage:function(m){
                 this.Cmp.id_forma_pago.store.baseParams.id_punto_venta = Phx.CP.getPagina(this.idContenedorPadre).id_punto_venta;
                 this.maestro=m;
-                console.log(this.maestro);
                 this.store.baseParams.id_boleto_amadeus = this.maestro.id_boleto_amadeus;
                 this.load({params:{start:0, limit:50}});
 
@@ -397,10 +459,42 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             round : function(value, decimals) {
                 return Math.ceil(value*100)/100;
-            }
+            },
 
+            preparaMenu:function(n){
+
+                Phx.vista.BoletoAmadeusFormaPago.superclass.preparaMenu.call(this,n);
+                if(this.maestro.estado ==  'revisado'){
+                    this.getBoton('edit').disable();
+                    this.getBoton('new').disable();
+                    this.getBoton('del').disable();
+                }
+                else{
+                    this.getBoton('edit').enable();
+                    this.getBoton('new').enable();
+                    this.getBoton('del').enable();
+                }
+            },
+
+            liberaMenu: function() {
+                Phx.vista.BoletoAmadeusFormaPago.superclass.liberaMenu.call(this);
+                if(this.maestro.estado !=  'revisado'){
+                    var NumSelect=this.sm.getCount();
+                    if(NumSelect != 0) {
+                        this.getBoton('edit').enable();
+                        this.getBoton('del').enable();
+                    }else {
+                        this.getBoton('edit').disable();
+                        this.getBoton('del').disable();
+                    }
+                }else{
+                    this.getBoton('new').disable();
+                    this.getBoton('new').disable();
+                    this.getBoton('new').disable();
+                }
+
+            }
 
         }
     )
 </script>
-

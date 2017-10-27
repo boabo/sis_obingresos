@@ -657,9 +657,15 @@ class ACTBoleto extends ACTbase{
 				$this->res->imprimirRespuesta($this->res->generarJson());
 			}
 		}else {*/
-			$this->objFunc=$this->create('MODBoleto');
-			$this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletosEmitidosAmadeus');
 			$this->res->imprimirRespuesta($this->res->generarJson());
+		}else {
+			$this->objFunc = $this->create('MODBoleto');
+			$this->res = $this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+			$this->res->imprimirRespuesta($this->res->generarJson());
+		}
 		//}
 
 	}

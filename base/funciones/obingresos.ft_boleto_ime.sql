@@ -1640,15 +1640,21 @@ raise notice 'llega 0';
                   SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
                   FROM param.tmoneda
                   WHERE codigo_internacional=v_moneda;
-
+                  /*
                   IF(v_tipo_moneda='base')THEN
-                    select oficial into v_tipo_cambio
-                    from param.ttipo_cambio
-                    where id_moneda =(select id_moneda from param.tmoneda where tipo_moneda='ref')
-                    and fecha=v_parametros.fecha_emision;
-                  ELSE
                   	v_tipo_cambio = 1;
+                  ELSE
+                  	select oficial into v_tipo_cambio
+                    from param.ttipo_cambio
+                    where id_moneda =(select id_moneda from param.tmoneda where codigo_internacional=v_moneda)
+                    and fecha=v_parametros.fecha_emision;
                   END IF;
+                  */
+                  select oficial into v_tipo_cambio
+                  from param.ttipo_cambio tc
+                  inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
+                  where mon.tipo_moneda='ref'
+                  and fecha = v_parametros.fecha_emision;
 
                   select nextval('obingresos.tboleto_amadeus_id_boleto_amadeus_seq'::regclass) into v_id_boleto;
 
@@ -1754,6 +1760,15 @@ raise notice 'llega 0';
                       SELECT id_forma_pago into v_id_forma_pago
                       FROM obingresos.tforma_pago
                       WHERE codigo=v_tipo_pago_amadeus AND id_moneda=v_id_moneda;
+
+                      SELECT id_forma_pago into v_id_forma_pago
+                      FROM obingresos.tforma_pago
+                      WHERE codigo = v_tipo_pago_amadeus AND
+                            id_moneda = v_id_moneda AND
+                            id_lugar = param.f_obtener_padre_id_lugar((select suc.id_lugar
+                                       from vef.tpunto_venta pv
+                                       inner join vef.tsucursal suc on suc.id_sucursal=pv.id_sucursal
+                                       where pv.id_punto_venta=v_parametros.id_punto_venta),'pais');
 
                       IF v_id_forma_pago IS NOT NULL THEN
                         INSERT INTO obingresos.tboleto_amadeus_forma_pago

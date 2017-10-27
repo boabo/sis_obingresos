@@ -116,6 +116,32 @@ class MODBoletoFormaPago extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+
+	function insertarBoletoAmadeusFormaPago(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_forma_pago_ime';
+		$this->transaccion='OBING_BFPAMA_INS';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('tipo','tipo','varchar');
+		$this->setParametro('id_forma_pago','id_forma_pago','int4');
+		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
+		$this->setParametro('estado_reg','estado_reg','varchar');
+		$this->setParametro('tarjeta','tarjeta','varchar');
+		//$this->setParametro('ctacte','ctacte','varchar');
+		$this->setParametro('importe','importe','numeric');
+		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+		$this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+		$this->setParametro('id_auxiliar','id_auxiliar','integer');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
 			
 	function modificarBoletoFormaPago(){
 		//Definicion de variables para ejecucion del procedimiento
@@ -144,7 +170,35 @@ class MODBoletoFormaPago extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
-			
+
+	function modificarBoletoAmadeusFormaPago(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_forma_pago_ime';
+		$this->transaccion='OBING_BFPAMA_MOD';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_boleto_amadeus_forma_pago','id_boleto_amadeus_forma_pago','int4');
+		$this->setParametro('tipo','tipo','varchar');
+		$this->setParametro('id_forma_pago','id_forma_pago','int4');
+		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
+		$this->setParametro('estado_reg','estado_reg','varchar');
+		$this->setParametro('tarjeta','tarjeta','varchar');
+		//$this->setParametro('ctacte','ctacte','varchar');
+		$this->setParametro('importe','importe','numeric');
+		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+		$this->setParametro('fp_amadeus_corregido','fp_amadeus_corregido','varchar');
+		$this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+		$this->setParametro('id_auxiliar','id_auxiliar','integer');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function eliminarBoletoFormaPago(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_forma_pago_ime';
@@ -161,6 +215,22 @@ class MODBoletoFormaPago extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
-			
+
+	function eliminarBoletoAmadeusFormaPago(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_boleto_forma_pago_ime';
+		$this->transaccion='OBING_BFPAMA_ELI';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_boleto_amadeus_forma_pago','id_boleto_amadeus_forma_pago','int4');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
 }
 ?>

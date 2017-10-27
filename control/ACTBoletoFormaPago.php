@@ -54,10 +54,26 @@ class ACTBoletoFormaPago extends ACTbase{
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
-						
+
+	function insertarBoletoAmadeusFormaPago(){
+		$this->objFunc=$this->create('MODBoletoFormaPago');
+		if($this->objParam->insertar('id_boleto_amadeus_forma_pago')){
+			$this->res=$this->objFunc->insertarBoletoAmadeusFormaPago($this->objParam);
+		} else{
+			$this->res=$this->objFunc->modificarBoletoAmadeusFormaPago($this->objParam);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
 	function eliminarBoletoFormaPago(){
-			$this->objFunc=$this->create('MODBoletoFormaPago');	
+			$this->objFunc=$this->create('MODBoletoFormaPago');
 		$this->res=$this->objFunc->eliminarBoletoFormaPago($this->objParam);
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
+	function eliminarBoletoAmadeusFormaPago(){
+		$this->objFunc=$this->create('MODBoletoFormaPago');
+		$this->res=$this->objFunc->eliminarBoletoAmadeusFormaPago($this->objParam);
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 			

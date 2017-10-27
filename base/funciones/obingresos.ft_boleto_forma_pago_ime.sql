@@ -110,6 +110,75 @@ BEGIN
 		end;
 
 	/*********************************
+ 	#TRANSACCION:  'OBING_BFPAMA_INS'
+ 	#DESCRIPCION:	Insercion de registros
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		27-10-2017 20:42:15
+	***********************************/
+
+	elsif(p_transaccion='OBING_BFPAMA_INS')then
+
+        begin
+        	select fp.codigo into v_codigo_fp
+        	from obingresos.tforma_pago fp
+        	where fp.id_forma_pago = v_parametros.id_forma_pago;
+
+            select localizador into v_localizador
+            from obingresos.tboleto_amadeus
+            where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
+        	--Sentencia de la insercion
+        	insert into obingresos.tboleto_amadeus_forma_pago(
+			id_forma_pago,
+			id_boleto_amadeus,
+			estado_reg,
+			tarjeta,
+			importe,
+			numero_tarjeta,
+            codigo_tarjeta,
+            id_auxiliar,
+			id_usuario_ai,
+			id_usuario_reg,
+			usuario_ai,
+			fecha_reg,
+			id_usuario_mod,
+			fecha_mod
+          	) values(
+
+			v_parametros.id_forma_pago,
+			v_parametros.id_boleto_amadeus,
+			'activo',
+			(case when v_codigo_fp like 'CC%' or v_codigo_fp like 'SF%' then
+					substring(v_codigo_fp from 3 for 2)
+				else
+					NULL
+			end),
+			v_parametros.importe,
+			v_parametros.numero_tarjeta,
+            v_parametros.codigo_tarjeta,
+            v_parametros.id_auxiliar,
+			v_parametros._id_usuario_ai,
+			p_id_usuario,
+			v_parametros._nombre_usuario_ai,
+			now(),
+			null,
+			null
+
+
+
+			)RETURNING id_boleto_amadeus_forma_pago into v_id_boleto_forma_pago;
+
+
+			--Definicion de la respuesta
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago almacenado(a) con exito (id_boleto_amadeus_forma_pago'||v_id_boleto_forma_pago||')');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus_forma_pago',v_id_boleto_forma_pago::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+	/*********************************
  	#TRANSACCION:  'OBING_BFP_MOD'
  	#DESCRIPCION:	Modificacion de registros
  	#AUTOR:		jrivera
@@ -169,6 +238,65 @@ BEGIN
 		end;
 
 	/*********************************
+ 	#TRANSACCION:  'OBING_BFPAMA_MOD'
+ 	#DESCRIPCION:	Modificacion de registros
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		27-10-2017 20:42:15
+	***********************************/
+
+	elsif(p_transaccion='OBING_BFPAMA_MOD')then
+
+		begin
+
+        	IF EXISTS(select 1
+            		  from obingresos.tboleto_amadeus_forma_pago bfp
+                      inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                      where bfp.id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago
+                      and bol.estado='revisado')THEN
+            	raise exception 'No es posible modificar la forma de pago de un boleto revisado';
+            END IF;
+
+			select fp.codigo into v_codigo_fp
+        	from obingresos.tforma_pago fp
+        	where fp.id_forma_pago = v_parametros.id_forma_pago;
+
+
+			--Sentencia de la modificacion
+			update obingresos.tboleto_amadeus_forma_pago set
+			id_forma_pago = v_parametros.id_forma_pago,
+			id_boleto_amadeus = v_parametros.id_boleto_amadeus,
+			tarjeta = (case when v_codigo_fp like 'CC%' or v_codigo_fp like 'SF%' then
+								substring(v_codigo_fp from 3 for 2)
+							else
+								NULL
+						end),
+			importe = v_parametros.importe,
+			numero_tarjeta = v_parametros.numero_tarjeta,
+            codigo_tarjeta = v_parametros.codigo_tarjeta,
+            id_auxiliar = v_parametros.id_auxiliar,
+			id_usuario_mod = p_id_usuario,
+			fecha_mod = now(),
+			id_usuario_ai = v_parametros._id_usuario_ai,
+			usuario_ai = v_parametros._nombre_usuario_ai
+			where id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago;
+            /*
+            if (pxp.f_existe_parametro(p_tabla,'fp_amadeus_corregido')) then
+            	UPDATE obingresos.tboleto_forma_pago set
+                fp_amadeus_corregido = v_parametros.fp_amadeus_corregido,
+                id_usuario_fp_amadeus_corregido = p_id_usuario
+                where id_boleto_forma_pago=v_parametros.id_boleto_forma_pago;
+            end if;*/
+
+			--Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago modificado(a)');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus_forma_pago',v_parametros.id_boleto_amadeus_forma_pago::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+	/*********************************
  	#TRANSACCION:  'OBING_BFP_ELI'
  	#DESCRIPCION:	Eliminacion de registros
  	#AUTOR:		jrivera
@@ -196,6 +324,36 @@ BEGIN
             return v_resp;
 
 		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_BFPAMA_ELI'
+ 	#DESCRIPCION:	Eliminacion de registros
+ 	#AUTOR:		Gonzalo Sarmiento Sejas
+ 	#FECHA:		27-10-2017 20:42:15
+	***********************************/
+
+	elsif(p_transaccion='OBING_BFPAMA_ELI')then
+
+		begin
+        	select bol.localizador, bfp.id_forma_pago, bfp.importe
+            into v_localizador, v_id_forma_pago, v_importe
+            from obingresos.tboleto_amadeus_forma_pago bfp
+            inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+            where bfp.id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago;
+
+			--Sentencia de la eliminacion
+			delete from obingresos.tboleto_amadeus_forma_pago
+            where id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago eliminado(a)');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus_forma_pago',v_parametros.id_boleto_amadeus_forma_pago::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
 
 	else
 

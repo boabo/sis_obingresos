@@ -159,6 +159,7 @@ class MODBoleto extends MODbase{
 		$this->captura('id_boleto_amadeus','integer');
 		$this->captura('localizador','varchar');
 		$this->captura('total','numeric');
+		$this->captura('total_moneda_extranjera','numeric');
 		$this->captura('liquido','numeric');
 		$this->captura('id_moneda_boleto','int4');
 		$this->captura('moneda','varchar');
