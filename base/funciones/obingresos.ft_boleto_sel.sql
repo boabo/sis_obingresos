@@ -232,6 +232,7 @@ BEGIN
         	v_consulta:='with forma_pago_temporal as(
                                           select bol.id_boleto_amadeus,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
                                                  array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
                                                  array_agg(fp.codigo) as codigo_forma_pago,
                                                  array_agg(bfp.numero_tarjeta) as numero_tarjeta,
@@ -268,6 +269,7 @@ BEGIN
                                  nr.agente_venta as codigo_agente,
                                  nr.forma_pago as forma_pago_amadeus,
                                  fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp1,
                                  fpo.forma_pago [ 1 ]::varchar as forma_pago,
                                  fpo.codigo_forma_pago [ 1 ]::varchar as codigo_forma_pago,
                                  fpo.numero_tarjeta [ 1 ]::varchar as numero_tarjeta,
@@ -276,6 +278,7 @@ BEGIN
                                  fpo.nombre_auxiliar [ 1 ]::varchar as nombre_auxiliar,
                                  fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
                                  fpo.id_forma_pago [ 2 ]::integer as id_forma_pago2,
+                                 fpo.moneda_fp [ 2 ]::varchar as moneda_fp2,
                                  fpo.forma_pago [ 2 ]::varchar as forma_pago2,
                                  fpo.codigo_forma_pago [ 2 ]::varchar as codigo_forma_pago2,
                                  fpo.numero_tarjeta [ 2 ]::varchar as numero_tarjeta2,
