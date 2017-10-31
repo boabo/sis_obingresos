@@ -450,9 +450,9 @@ header("content-type: text/javascript; charset=UTF-8");
                         readOnly:true
                     },
                     type:'TextField',
-                    id_grupo:2,
+                    id_grupo:3,
                     grid:false,
-                    form:false
+                    form:true
                 },
                 {
                     config:{
