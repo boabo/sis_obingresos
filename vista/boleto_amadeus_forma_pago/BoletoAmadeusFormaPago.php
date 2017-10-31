@@ -455,7 +455,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     //Si hay mas de un registro el monto_fp es el saldo a pagar del padre
                     this.monto_fp =  (this.maestro.total - this.maestro.comision) - this.maestro.monto_total_fp;
                 }
-
+                this.ocultarComponente(this.Cmp.numero_tarjeta);
+                this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                this.ocultarComponente(this.Cmp.id_auxiliar);
             },
             round : function(value, decimals) {
                 return Math.ceil(value*100)/100;
