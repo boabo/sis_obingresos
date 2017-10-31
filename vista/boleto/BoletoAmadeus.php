@@ -445,13 +445,14 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'monto_total_neto',
                         fieldLabel: 'Monto Neto',
                         anchor: '100%',
+                        disabled : true,
                         gwidth: 80,
                         readOnly:true
                     },
                     type:'TextField',
                     id_grupo:2,
                     grid:false,
-                    form:true
+                    form:false
                 },
                 {
                     config:{
@@ -584,7 +585,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'NumberField',
                     filters:{pfiltro:'bol.total',type:'numeric'},
                     id_grupo:0,
-                    grid:true,
+                    grid:false,
                     form:true
                 },
                 {
@@ -596,6 +597,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         gwidth: 70
                     },
                     type:'NumberField',
+                    id_grupo: 3,
                     filters:{pfiltro:'bol.neto',type:'numeric'},
                     grid:true,
                     form:true
@@ -627,7 +629,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'NumberField',
                     valor_inicial:0,
                     id_grupo:0,
-                    grid:true,
+                    grid:false,
                     form:true
                 },
                 {
@@ -654,7 +656,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     type:'TextField',
                     filters:{pfiltro:'nr.agente_venta',type:'string'},
-                    id_grupo:0,
+                    id_grupo:3,
                     grid:true,
                     form:true
                 },
@@ -1218,6 +1220,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.monto_recibido_forma_pago.on('change',function(field,newValue,oldValue){
                     if(this.grupo=='no') {
                         if (this.Cmp.moneda.getValue() == this.Cmp.moneda_fp1.getValue()) {
+                            console.log('monto_recibido, misma moneda de boleto, moneda forma de pago');
                             if (newValue > (this.Cmp.total.getValue() - this.Cmp.comision.getValue())) {
                                 this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue());
                                 this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
@@ -1226,6 +1229,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 this.Cmp.cambio.setValue(0);
                             }
                         } else if(this.Cmp.moneda.getValue() == 'USD' && this.Cmp.moneda_fp1.getValue() == this.Cmp.moneda_sucursal.getValue()){
+                            console.log('monto_recibido, misma moneda sucursal y moneda forma de pago, boleto en usd');
                             if (newValue > (this.Cmp.total_moneda_extranjera.getValue() - this.Cmp.comision_moneda_extranjera.getValue())) {
                                 this.Cmp.monto_forma_pago.setValue((this.Cmp.total_moneda_extranjera.getValue() - this.Cmp.comision_moneda_extranjera.getValue()) * this.Cmp.tc.getValue());
                                 this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
@@ -1235,8 +1239,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             }
                         }
                         else if(this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp1.getValue() == 'USD'){
+                            console.log('monto_recibido, misma moneda sucursal y moneda boleto, moneda forma de pago en usd');
                             if (newValue > (this.Cmp.total_moneda_extranjera.getValue() - this.Cmp.comision_moneda_extranjera.getValue())) {
-                                this.Cmp.monto_forma_pago.setValue((this.Cmp.total_moneda_extranjera.getValue() - this.Cmp.comision_moneda_extranjera.getValue())/ this.Cmp.tc.getValue());
+                                this.Cmp.monto_forma_pago.setValue((this.Cmp.total.getValue() - this.Cmp.comision.getValue())/ this.Cmp.tc.getValue());
                                 this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(newValue);
@@ -1247,7 +1252,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.monto_forma_pago.setValue(0);
                             this.Cmp.cambio.setValue(0);
                         }
-                        //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
                     }else{
                         if (this.Cmp.moneda_fp1.getValue() !== 'USD') {
                             if (newValue > (this.total_grupo['total_boletos_'+this.Cmp.moneda_fp1.getValue()] - this.total_grupo['total_comision_'+this.Cmp.moneda_fp1.getValue()])) {
@@ -1269,6 +1274,12 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
                     }
                 },this);
+                /*
+                this.Cmp.monto_forma_pago2.on('blur',function(field){
+                    console.log(this);
+                    console.log(this.Cmp);
+                    this.Cmp.cambio.setValue((this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue()) - newValue);
+                });*/
 
                 this.Cmp.id_forma_pago.on('select', function (combo,record){
                     if (record) {
@@ -1284,14 +1295,14 @@ header("content-type: text/javascript; charset=UTF-8");
                         if (monto_pagado_fp2 > -1) {
                             //Si la forma de pago y el boleto estan en la misma moneda
                             if (this.Cmp.moneda.getValue() == this.Cmp.moneda_fp1.getValue()) {
-                                console.log('misma moneda de boleto, forma de pago');
+                                console.log('id_forma_pago, misma moneda de boleto, moneda forma de pago');
                                 this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2);
                                 this.Cmp.monto_recibido_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2);
                                 //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
                             }
                             //Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
                             else if (this.Cmp.moneda.getValue() == 'USD' && this.Cmp.moneda_fp1.getValue() == this.Cmp.moneda_sucursal.getValue()) {
-                                console.log('misma moneda sucursal y forma de pago, boleto en usd');
+                                console.log('id_forma_pago, misma moneda sucursal y moneda forma de pago, boleto en usd');
                                 //convertir de  dolares a moneda sucursal(multiplicar)
                                 //convertir de  moneda sucursal a dolares(dividir)
                                 this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
@@ -1300,7 +1311,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                                 //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
                             } else if (this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp1.getValue() == 'USD') {
-                                console.log('misma moneda sucursal y boleto, forma de pago en usd');
+                                console.log('id_forma_pago, misma moneda sucursal y moneda boleto, moneda forma de pago en usd');
                                 this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
                                 this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
                                 //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
@@ -1327,7 +1338,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                     if (this.grupo == 'no') {
                         var monto_pagado_fp1 = this.getMontoMonBol(this.Cmp.monto_forma_pago.getValue(), this.Cmp.moneda_fp1.getValue());
-
+                        console.log(monto_pagado_fp1);
                         if (monto_pagado_fp1 > -1) {
                             //Si la forma de pago y el boleto estan en la misma moneda
                             if (this.Cmp.moneda.getValue() == this.Cmp.moneda_fp2.getValue()) {
@@ -1411,11 +1422,13 @@ header("content-type: text/javascript; charset=UTF-8");
                 } //Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
                 else if (this.Cmp.moneda.getValue() == 'USD' && moneda_fp == this.Cmp.moneda_sucursal.getValue()) {
                     //convertir a dolares(dividir)
-                    return this.roundMenor(monto/this.Cmp.tc.getValue(),2);
+                    return (monto/this.Cmp.tc.getValue()).toFixed(2);
+                    //return this.roundMenor(monto/this.Cmp.tc.getValue(),2);
                     //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
                 } else if (this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && moneda_fp == 'USD') {
                     //convertir a moneda sucursal(mutiplicar)
-                    return this.roundMenor(monto*this.Cmp.tc.getValue(),2);
+                    return (monto*this.Cmp.tc.getValue()).toFixed(2);
+                    //return this.roundMenor(monto*this.Cmp.tc.getValue(),2);
                 } else {
                     return -1;
                 }
