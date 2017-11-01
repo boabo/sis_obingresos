@@ -720,7 +720,7 @@ BEGIN
                     );
             	end if;
                 if (v_saldo_fp2 > 0) then
-              		v_valor = obingresos.f_monto_pagar_boleto(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2 );
+              		v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2 );
              		v_saldo_fp2 = v_saldo_fp2 - v_valor;
                     select fp.codigo into v_codigo_tarjeta
                     from obingresos.tforma_pago fp
