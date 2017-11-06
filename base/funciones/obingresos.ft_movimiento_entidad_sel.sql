@@ -92,7 +92,7 @@ BEGIN
                             end)
                         else
                         	0
-                        end)::numeric as credito,
+                        end)::numeric as credito_mb,
                         (case when moe.tipo = ''debito'' then 
                         	(case when moe.id_moneda = ' || v_id_moneda_base || ' then
                             	moe.monto
@@ -101,12 +101,12 @@ BEGIN
                             end)
                         else
                         	0
-                        end)::numeric as debito,
+                        end)::numeric as debito_mb,
                         (case when moe.id_moneda = ' || v_id_moneda_base || ' then
                             1
                         else
                             param.f_get_tipo_cambio(' || v_id_moneda_usd ||  ',moe.fecha,''O'')
-                        end)::numeric as tipo_cambio	
+                        end)::numeric as tipo_cambio,moe.monto	
 						from obingresos.tmovimiento_entidad moe
 						inner join segu.tusuario usu1 on usu1.id_usuario = moe.id_usuario_reg
 						inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
@@ -168,7 +168,11 @@ BEGIN
                         else
                         	0
                         end) as debito,
-                        sum(moe.monto_total)
+                        sum(moe.monto_total),
+                        coalesce((select sum(coalesce (pva.monto_mb,0) +
+                                    param.f_convertir_moneda(' || v_id_moneda_usd || ',' || v_id_moneda_base || ',COALESCE(pva.monto_usd,0),now()::date,''O'',2))
+                        from obingresos.tperiodo_venta_agencia pva
+                        where pva.id_agencia = ' || v_parametros.id_agencia || ' and pva.estado= ''abierto''),0) as deudas
 					    from obingresos.tmovimiento_entidad moe
                         inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
 					    inner join segu.tusuario usu1 on usu1.id_usuario = moe.id_usuario_reg

@@ -99,6 +99,7 @@ BEGIN
                 	v_fecha_fin = v_fecha_ultimo_dia_mes;
                 end if;
             elsif (v_tipo_periodo.tiempo = 'bsp') then
+            	
             	if (to_char (v_fecha_ini,'DD') = '01') then
                 	v_fecha_fin = ('08/' || to_char (v_fecha_ini,'MM/YYYY'))::date;
                 elsif (to_char (v_fecha_ini,'DD') = '09') then
@@ -212,10 +213,10 @@ BEGIN
                
                 with temp_bol as (
                     select dbw.numero_autorizacion,dbw.fecha,dbw.moneda,sum(dbw.importe) as importe
-                    from obingresos.tboleto_retweb b
+                    from obingresos.tboleto b
                     inner join obingresos.tdetalle_boletos_web dbw on dbw.billete = b.nro_boleto 
                     where b.estado_reg = 'activo' and dbw.origen = 'portal' and 
-                    	b.estado = '1' and b.fecha_emision <= v_fecha_fin
+                    	b.voided = 'no' and b.fecha_emision <= v_fecha_fin
                     group by dbw.numero_autorizacion,dbw.fecha,dbw.moneda
                 )
                 update obingresos.tmovimiento_entidad m
@@ -227,11 +228,17 @@ BEGIN
                 m.fecha > v_fecha_max_boleto and m.estado_reg = 'activo' and 
                 m.id_periodo_venta is null  and
                 m.monto_total = dbw.importe;
-                               
-                --actualizar los creditos y los debitos de tipo ajuste
+                
+                --actualizar los creditos,  se toman en cuenta creditos incluso posteriores
                 update obingresos.tmovimiento_entidad m
                 set id_periodo_venta = v_id_periodo_venta
-                where ((m.tipo = 'debito' and ajuste = 'si') or m.tipo = 'credito') and 
+                where (m.tipo = 'credito') and 
+                m.id_periodo_venta is null and m.estado_reg = 'activo';
+                               
+                --actualizar los debitos de tipo ajuste
+                update obingresos.tmovimiento_entidad m
+                set id_periodo_venta = v_id_periodo_venta
+                where (m.tipo = 'debito' and ajuste = 'si') and 
                 m.id_periodo_venta is null and m.fecha <= v_fecha_fin and m.estado_reg = 'activo';
             
            -- si el tipo de periodo es 
@@ -677,14 +684,13 @@ BEGIN
                                         else
                                         	0
                                         end) 
-                                    END) as monto_comision_mb,                               
-                                c.moneda_restrictiva 
+                                    END) as monto_comision_mb
             					from obingresos.tmovimiento_entidad me
                                 inner join obingresos.tperiodo_venta pv on me.id_periodo_venta = pv.id_periodo_venta
                                 inner join leg.tcontrato c on c.id_agencia = me.id_agencia and 
                                 			c.fecha_fin >= v_fecha_ini and c.fecha_inicio <= v_fecha_ini --and c.estado = 'finalizado'
                                 inner join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
-                                where me.id_periodo_venta = v_id_periodo_venta and c.moneda_restrictiva = 'no' and me.estado_reg = 'activo'
+                                where me.id_periodo_venta = v_id_periodo_venta and (c.moneda_restrictiva = 'no' or c.moneda_restrictiva is null) and me.estado_reg = 'activo'
                                 group by me.id_agencia,c.moneda_restrictiva )loop
             	
             	--si la moneda no es restrictiva registrar los saldos por pagar en periodo_venta_agencia
@@ -855,7 +861,7 @@ BEGIN
               		  	 v_parametros._nombre_usuario_ai,
                         'credito',
                         NULL,
-                        now()::date,
+                        (v_fecha_fin + interval '1 day')::date,
                         NULL,
                         v_registros.monto,                        
                         v_registros.id_moneda,

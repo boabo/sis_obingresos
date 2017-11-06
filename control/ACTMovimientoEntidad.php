@@ -18,12 +18,17 @@ class ACTMovimientoEntidad extends ACTbase{
             $this->objParam->addFiltro("moe.id_agencia = ". $this->objParam->getParametro('id_entidad'));
         }
 		
+		if ($this->objParam->getParametro('fecha_inicio') != '' && $this->objParam->getParametro('fecha_fin') != '') {
+            $this->objParam->addFiltro("moe.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and 
+            							moe.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
+			$this->objParam->addFiltro("moe.cierre_periodo = ''no'' and moe.garantia = ''no'' ");
+        } else if ($this->objParam->getParametro('id_periodo_venta') == '') {
+        	$this->objParam->addFiltro("moe.id_periodo_venta is null ");
+        }
+		
 		if ($this->objParam->getParametro('id_periodo_venta') != '') {
             $this->objParam->addFiltro("moe.id_periodo_venta = ". $this->objParam->getParametro('id_periodo_venta') . " and moe.garantia = ''no'' ");
-        } else {
-        	$this->objParam->addFiltro("moe.id_periodo_venta is null ");
-        }	
-
+        }
 
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);
@@ -36,6 +41,7 @@ class ACTMovimientoEntidad extends ACTbase{
 			$temp['credito_mb'] = $this->res->extraData['total_credito'];
 			$temp['debito_mb'] = $this->res->extraData['total_debito'];	
 			$temp['monto_total'] = $this->res->extraData['monto_total'];
+			$temp['deudas'] = $this->res->extraData['deudas'];
 
 			$temp['tipo_reg'] = 'summary';
 			$temp['id_movimiento_entidad'] = 0;

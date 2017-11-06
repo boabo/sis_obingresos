@@ -171,11 +171,13 @@ header("content-type: text/javascript; charset=UTF-8");
                     minChars: 2,
                     renderer: function (value, p, record) {
                         return String.format('{0}', record.data['nombre_agencia']);
-                    }
+                    },
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p>Officeid: <strong>{codigo_int}</strong> </div></tpl>'
                 },
                 type: 'ComboBox',
                 id_grupo: 1,
-                filters: {pfiltro: 'age.nombre', type: 'string'},
+                filters: {pfiltro: 'age.nombre#age.codigo_int', type: 'string'},                
+                bottom_filter: true,
                 grid: true,
                 form: true
             },
@@ -222,9 +224,15 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldLabel: 'Moneda Deposito',
                     gdisplayField: 'desc_moneda',//mapea al store del grid
                     gwidth: 100,
-                    renderer: function (value, p, record) {
-                        return String.format('{0}', record.data['desc_moneda']);
-                    }
+                    renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', record.data['desc_moneda']);
+						}
+						else{
+							return '<b><p align="right">Total: &nbsp;&nbsp; </p></b>';
+						}
+					}   
+                    
                 },
                 type: 'ComboRec',
                 id_grupo: 1,
@@ -243,7 +251,15 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: false,
                     anchor: '80%',
                     gwidth: 150,
-                    maxLength: 1179650
+                    maxLength: 1179650,
+                    renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', value);
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.total_deposito,'0,000.00'));
+						}
+					} 
                 },
                 type: 'NumberField',
                 filters: {pfiltro: 'dep.monto_deposito', type: 'numeric'},
@@ -424,9 +440,11 @@ header("content-type: text/javascript; charset=UTF-8");
             {name: 'estado_reg', type: 'string'},
             {name: 'nro_deposito', type: 'string'},
             {name: 'desc_moneda', type: 'string'},
+            {name: 'tipo_reg', type: 'string'},
             {name: 'desc_periodo', type: 'string'},
             {name: 'medio_pago', type: 'string'},
             {name: 'monto_deposito', type: 'numeric'},
+            {name: 'total_deposito', type: 'numeric'},
             {name: 'id_moneda_deposito', type: 'numeric'},
             {name: 'id_agencia', type: 'numeric'},
             {name: 'nombre_agencia', type: 'numeric'},
@@ -453,6 +471,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
         },
         bdel: true,
+        beditGroups:[0,1],
         bsave: false,
         preparaMenu: function () {
             var rec = this.sm.getSelected();
@@ -473,6 +492,44 @@ header("content-type: text/javascript; charset=UTF-8");
             Phx.vista.DepositoPortal.superclass.liberaMenu.call(this);
             this.getBoton('btnValidar').disable();
 
+        },
+        onButtonDel : function () {
+        	Ext.MessageBox.prompt('Observaciones','Ingrese las observaciones para la agencia',
+		        function (option,value) { 
+		        	if (option == 'ok') {
+			        	this.argumentExtraSubmit = { 
+	                        'observaciones':value};
+	                	Phx.vista.DepositoPortal.superclass.onButtonDel.call(this);
+	                }
+			    } ,this);
+        	
+        },
+        onButtonNew : function () {
+        	this.Cmp.id_agencia.enable();
+    		this.Cmp.monto_deposito.enable();
+    		this.Cmp.id_moneda_deposito.enable();
+    		this.Cmp.id_periodo_venta.enable();
+        	Phx.vista.DepositoPortal.superclass.onButtonNew.call(this);
+        	
+        },
+        onButtonEdit : function () {
+        	
+        	var rec = this.sm.getSelected();
+        	if (rec.data.estado == 'validado') {
+        		this.Cmp.id_agencia.disable();
+        		this.Cmp.monto_deposito.disable();
+        		this.Cmp.id_moneda_deposito.disable();
+        		this.Cmp.id_periodo_venta.disable();
+        	} else {
+        		this.Cmp.id_agencia.enable();
+        		this.Cmp.monto_deposito.enable();
+        		this.Cmp.id_moneda_deposito.enable();
+        		this.Cmp.id_periodo_venta.enable();
+        	}
+        	Phx.vista.DepositoPortal.superclass.onButtonEdit.call(this);
+        	this.Cmp.tipo.setValue('agencia');
+        	
+        	
         }
     })
 </script>

@@ -637,9 +637,10 @@ class ACTBoleto extends ACTbase{
 		if ($this->objParam->getParametro('id_usuario_cajero') != '') {
 			$this->objParam->addFiltro("bol.id_usuario_cajero = ". $this->objParam->getParametro('id_usuario_cajero'));
 		}
-
+		//var_dump($this->objParam->getParametro('fecha')); exit;
 		if ($this->objParam->getParametro('fecha') != '') {
 			$fecha = $this->objParam->getParametro('fecha');
+			$this->objParam->addFiltro("bol.fecha_emision = ''". $fecha."''");
 		}/*else{
 			$fecha = date("Ymd");
 		}*/

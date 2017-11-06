@@ -27,9 +27,9 @@ BEGIN
         				'01'
         			when v_dia = '09' then
                     	'02'
-                    when v_dia = '17' then
+                    when v_dia = '16' then
                     	'03'
-                    when v_dia = '25' then
+                    when v_dia = '24' then
                     	'04'
                     END);
 

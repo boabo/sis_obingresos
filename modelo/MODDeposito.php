@@ -18,6 +18,8 @@ class MODDeposito extends MODbase{
 		$this->procedimiento='obingresos.ft_deposito_sel';
 		$this->transaccion='OBING_DEP_SEL';
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
+		
+		$this->capturaCount('total_deposito','numeric');
 				
 		//Definicion de la lista del resultado del query
 		$this->captura('id_deposito','int4');

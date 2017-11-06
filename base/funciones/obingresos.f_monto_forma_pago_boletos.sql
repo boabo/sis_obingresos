@@ -12,7 +12,7 @@ BEGIN
  	from obingresos.tboleto_amadeus bol
  	inner join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
  	inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
- 	inner join param.tmoneda mon on mon.id_moneda=bol.id_moneda_boleto
+ 	inner join param.tmoneda mon on mon.id_moneda=fp.id_moneda
  	where bol.id_usuario_cajero = p_id_usuario_cajero
     and bol.estado='revisado'
  	and bol.fecha_emision=p_fecha

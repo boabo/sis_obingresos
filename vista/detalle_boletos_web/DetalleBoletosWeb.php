@@ -55,6 +55,22 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 		},	
 		{
 			config:{
+				name: 'pnr',
+				fieldLabel: 'PNR',
+				allowBlank: false,
+				anchor: '80%',
+				gwidth: 110,
+				maxLength:15
+			},
+				type:'TextField',
+				filters:{pfiltro:'me.pnr',type:'string'},
+				id_grupo:1,
+				grid:true,
+				form:false,
+            	bottom_filter: true
+		},	
+		{
+			config:{
 				name: 'fecha',
 				fieldLabel: 'Fecha Emision',
 				allowBlank: false,
@@ -76,7 +92,15 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
-				maxLength:3
+				maxLength:3,
+				renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', value);
+						}
+						else{
+							return '<b><p align="right">Total: &nbsp;&nbsp; </p></b>';
+						}
+					} 
 			},
 				type:'TextField',
 				filters:{pfiltro:'detbol.moneda',type:'string'},
@@ -91,7 +115,15 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
-				maxLength:1179650
+				maxLength:1179650,
+                renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(value,'0,000.00'));
+						}
+					}
 			},
 				type:'NumberField',
 				filters:{pfiltro:'detbol.importe',type:'numeric'},
@@ -107,7 +139,15 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 100,
-				maxLength:1179650
+				maxLength:1179650,
+                renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(value,'0,000.00'));
+						}
+					}
 			},
 				type:'NumberField',
 				filters:{pfiltro:'detbol.neto',type:'numeric'},
@@ -123,7 +163,15 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 100,
-				maxLength:1179650
+				maxLength:1179650,
+                renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(value,'0,000.00'));
+						}
+					}
 			},
 				type:'NumberField',
 				filters:{pfiltro:'detbol.comision',type:'numeric'},
@@ -146,6 +194,7 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				grid:true,
 				form:true
 		}
+		
 	],
 	tam_pag:50,	
 	title:'Detalle Boletos',	
@@ -174,6 +223,7 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 		{name:'razon_ingresos', type: 'string'},
 		{name:'origen', type: 'string'},
 		{name:'nit_ingresos', type: 'string'},
+		{name:'tipo_reg', type: 'string'},
 		{name:'endoso', type: 'string'},
 		{name:'conjuncion', type: 'string'},
 		{name:'numero_autorizacion', type: 'string'},
@@ -185,6 +235,7 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 		{name:'fecha_mod', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
+		{name:'pnr', type: 'string'},
 		
 	],
 	sortInfo:{

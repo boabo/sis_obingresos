@@ -88,8 +88,10 @@ $body$
 						detbol.id_usuario_mod,
 						detbol.fecha_mod,
 						usu1.cuenta as usr_reg,
-						usu2.cuenta as usr_mod	
+						usu2.cuenta as usr_mod,
+                        me.pnr	
 						from obingresos.tdetalle_boletos_web detbol
+                        left join obingresos.tmovimiento_entidad me on detbol.numero_autorizacion = me.autorizacion__nro_deposito
 						inner join segu.tusuario usu1 on usu1.id_usuario = detbol.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = detbol.id_usuario_mod
 				        where  ';
@@ -114,10 +116,14 @@ $body$
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_detalle_boletos_web)
+			v_consulta:='select count(id_detalle_boletos_web),
+            			sum(detbol.importe) as importe,
+                        sum(detbol.neto) as neto,
+                        sum(detbol.comision) as comision
 					    from obingresos.tdetalle_boletos_web detbol
 					    inner join segu.tusuario usu1 on usu1.id_usuario = detbol.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = detbol.id_usuario_mod
+						left join obingresos.tmovimiento_entidad me on detbol.numero_autorizacion = me.autorizacion__nro_deposito
+                        left join segu.tusuario usu2 on usu2.id_usuario = detbol.id_usuario_mod
 					    where ';
 			
 			--Definicion de la respuesta		    

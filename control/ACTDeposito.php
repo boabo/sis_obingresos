@@ -41,8 +41,16 @@ class ACTDeposito extends ACTbase{
 			$this->res = $this->objReporte->generarReporteListado('MODDeposito','listarDeposito');
 		} else{
 			$this->objFunc=$this->create('MODDeposito');
-			
-			$this->res=$this->objFunc->listarDeposito($this->objParam);
+			if ($this->objParam->getParametro('tipo') == 'agencia') {
+				$this->res=$this->objFunc->listarDeposito($this->objParam);
+				$temp = Array();
+				$temp['total_deposito'] = $this->res->extraData['total_deposito'];
+				$temp['tipo_reg'] = 'summary';
+				$temp['id_deposito'] = 0;
+				
+				$this->res->total++;			
+				$this->res->addLastRecDatos($temp);
+			}
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
@@ -78,13 +86,13 @@ class ACTDeposito extends ACTbase{
 
             $netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
             $netOBRestClient->setHeaders(array('Content-Type: json;'));
-
- 
+			$arreglo_parametros = $this->objParam->getParametro(0); 			
 
                 $res = $netOBRestClient->doPost('ModificarEstadoDeposito',
                     array(
                         "idDepositoERP"=> $datos['id_deposito'],
-                        "estadoDeposito"=> 'eliminado'
+                        "estadoDeposito"=> 'eliminado',
+                        "observacion"=>$arreglo_parametros['observaciones']
                     ));
 				$bdlog=new MODLogError('LOG_TRANSACCION','Respuesta servicio ModificarEstadoDeposito','respuesta: '.$res);
 				$bdlog->guardarLogError();
