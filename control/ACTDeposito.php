@@ -33,6 +33,7 @@ class ACTDeposito extends ACTbase{
             $this->objParam->addFiltro("dep.estado = ''". $this->objParam->getParametro('estado')."''");
         }
          if($this->objParam->getParametro('id_apertura_cierre_caja') != '') {
+		    //filto ventas
             $this->objParam->addFiltro(" dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja'));
         }
 
