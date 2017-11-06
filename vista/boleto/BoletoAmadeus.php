@@ -1919,7 +1919,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.numero_tarjeta.allowBlank = false;
                     this.Cmp.codigo_tarjeta.allowBlank = true;
                     this.Cmp.id_auxiliar.allowBlank = true;
-                else {
+                }else {
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
                         this.ocultarComponente(this.Cmp.id_auxiliar);
@@ -1980,7 +1980,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.numero_tarjeta2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
-                        else {
+                        }else {
                                 this.ocultarComponente(this.Cmp.numero_tarjeta2);
                                 this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                                 this.ocultarComponente(this.Cmp.id_auxiliar2);
