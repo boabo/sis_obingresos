@@ -8,9 +8,17 @@
 */
 
 class MODDeposito extends MODbase{
+
+    var $cone;
+    var $informix;
+    var $tabla_deposito_informix;
 	
 	function __construct(CTParametro $pParam){
 		parent::__construct($pParam);
+        $this->cone = new conexion();
+        $this->informix = $this->cone->conectarPDOInformix();
+
+        $this->tabla_deposito_informix = $_SESSION['tabla_deposito_informix'];
 	}
 			
 	function listarDeposito(){
@@ -308,34 +316,103 @@ class MODDeposito extends MODbase{
         $this->transaccion='OBING_DEP_INSE';
         $this->tipo_procedimiento='IME';
 
-
         //Define los parametros para la funcion
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('nro_deposito','nro_deposito','varchar');
-       // $this->setParametro('agt','agt','varchar');
         $this->setParametro('monto_deposito','monto_deposito','numeric');
         $this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
-        //$this->setParametro('id_agencia','id_agencia','int4');
         $this->setParametro('fecha','fecha','date');
         $this->setParametro('saldo','saldo','numeric');
-       // $this->setParametro('descripcion','descripcion','varchar');
-       // $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('moneda','moneda','varchar');
-      //  $this->setParametro('tipo','tipo','varchar');
-     //   $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');
-       /// $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
         $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
-
 
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
-
-        //Devuelve la respuesta
+       // $this->insertatDepositoInformix();
         return $this->respuesta;
     }
 
+    /*function insertatDepositoInformix (){
+        try {
 
+            $fechaventa =  $this->aParam->getParametro('fecha_venta');
+
+            $this->informix->beginTransaction();
+           $sql_in = "INSERT INTO ingresos:deposito_pru ( pais,
+                                                          estacion,
+                                                          agt,             
+                                                          fecini,
+                                                          fecfin,
+                                                          tcambio,
+                                                          montoitf,
+                                                          observa,
+                                                          fechareg,
+                                                          horareg            
+                                                         ) 
+                                                         VALUES
+                                                         (
+                                                         '".$this->aParam->getParametro('codigo_padre')."',
+                                                         '".$this->aParam->getParametro('estacion')."' ,
+                                                         '".$this->aParam->getParametro('codigo')."' ,
+                                                         '".$fechaventa."',
+                                                         '".$fechaventa."',
+                                                         '".$this->aParam->getParametro('tipo_cambio')."',
+                                                         0,
+                                                         'ERP BOA',
+                                                         TODAY,
+                                                         null )";
+            $info_nota_ins = $this->informix->prepare($sql_in);
+            $info_nota_ins->execute();
+            $this->informix->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->informix->rollBack();
+        }
+    }
+    function insertarBoletaDeposito (){
+        try{
+            $this->informix->beginTransaction();
+            $sql_in = "INSERT INTO ingresos:deposito_boleta_pru(
+					  pais,
+					  estacion,
+					  agt, 
+					  fecini,
+					  fecfin,
+					  nroboleta,
+					  fecha,
+					  ctabanco,
+					  moneda,
+					  monto,
+					  usuario,
+					  tipdoc,
+					  documento
+					 ) 
+					 VALUES
+					 (
+					 g_pais ,
+					 g_estacion ,
+					 g_pvagt,
+					 g_fecha_venta ,
+					 g_fecha_venta ,
+					 g_nro_dep_usd ,
+					 g_fecha_dep_usd ,
+					 g_nro_cuenta_banco_usd ,
+					 'USD',
+					 g_arqueo_usd,
+					 g_idboa,
+					 'DPENDE',
+					 '0' 
+					 )";
+            $info_nota_ins = $this->informix->prepare($sql_in);
+            $info_nota_ins->execute();
+            $this->informix->commit();
+            return true;
+        }catch (Exception $e){
+            $this->informix->rollBack();
+        }
+
+    }*/
 }
 ?>
