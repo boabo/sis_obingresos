@@ -51,9 +51,11 @@ class ACTDeposito extends ACTbase{
 				
 				$this->res->total++;			
 				$this->res->addLastRecDatos($temp);
-			}
+			}else{
+                $this->res=$this->objFunc->listarDeposito($this->objParam);
+                $this->res->imprimirRespuesta($this->res->generarJson());
+            }
 		}
-		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 				
 	function insertarDeposito(){
