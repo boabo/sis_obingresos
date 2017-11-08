@@ -104,6 +104,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.finCons = true;
             this.seleccionarPuntoVentaSucursal();
             this.grid.addListener('cellclick', this.oncellclick,this);
+            this.bloquearOrdenamientoGrid();
         },
 
         gruposBarraTareas:[{name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:0,height:0},
@@ -430,7 +431,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     name: 'monto_total_boletos',
-                    fieldLabel: 'Monto Total',
+                    fieldLabel: 'Importe Total',
                     anchor: '100%',
                     gwidth: 80,
                     readOnly:true
@@ -443,7 +444,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     name: 'monto_total_neto',
-                    fieldLabel: 'Monto Neto',
+                    fieldLabel: 'Importe Neto',
                     anchor: '100%',
                     disabled : true,
                     gwidth: 80,
@@ -457,7 +458,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     name: 'monto_total_comision',
-                    fieldLabel: 'Monto Comision',
+                    fieldLabel: 'Importe Comision',
                     anchor: '100%',
                     gwidth: 80,
                     readOnly:true
@@ -476,7 +477,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     gwidth: 60
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.localizador',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -504,7 +504,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.nro_boleto',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -521,7 +520,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     readOnly:true
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.pasajero',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -537,24 +535,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     readOnly:true
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.forma_pago_amadeus',type:'string'},
                 grid:true,
                 id_grupo:0,
-                form:true
-            },
-            {
-                config:{
-                    name: 'total',
-                    fieldLabel: 'Total',
-                    disabled: true,
-                    anchor: '90%',
-                    gwidth: 70	,
-                    readOnly:true
-                },
-                type:'NumberField',
-                filters:{pfiltro:'bol.total',type:'numeric'},
-                id_grupo:0,
-                grid:true,
                 form:true
             },
             {
@@ -568,22 +550,48 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.moneda',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true
             },
             {
                 config:{
-                    name: 'total_moneda_extranjera',
-                    fieldLabel: 'Total Moneda Extranjera',
+                    name: 'total',
+                    fieldLabel: 'Total M/L',
                     disabled: true,
                     anchor: '90%',
                     gwidth: 70	,
                     readOnly:true
                 },
                 type:'NumberField',
-                filters:{pfiltro:'bol.total',type:'numeric'},
+                id_grupo:0,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    name: 'comision',
+                    fieldLabel: 'Comision',
+                    disabled: true,
+                    anchor: '90%',
+                    gwidth: 70	,
+                    readOnly:true
+                },
+                type:'NumberField',
+                id_grupo:0,
+                grid:true,
+                form:false
+            },
+            {
+                config:{
+                    name: 'total_moneda_extranjera',
+                    fieldLabel: 'Total M/E',
+                    disabled: true,
+                    anchor: '90%',
+                    gwidth: 70	,
+                    readOnly:true
+                },
+                type:'NumberField',
                 id_grupo:0,
                 grid:false,
                 form:true
@@ -598,14 +606,13 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 type:'NumberField',
                 id_grupo: 3,
-                filters:{pfiltro:'bol.neto',type:'numeric'},
                 grid:true,
                 form:true
             },
             {
                 config:{
                     name: 'comision',
-                    fieldLabel: 'Comisión AGT',
+                    fieldLabel: 'Comisión AGT M/L',
                     allowBlank:true,
                     anchor: '90%',
                     disabled:true,
@@ -620,7 +627,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     name: 'comision_moneda_extranjera',
-                    fieldLabel: 'Comisión AGT Moneda Extranjera',
+                    fieldLabel: 'Comisión AGT M/E',
                     allowBlank:true,
                     anchor: '90%',
                     disabled:true,
@@ -638,10 +645,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldLabel: 'Agente Venta',
                     disabled: true,
                     anchor: '100%',
-                    gwidth: 170
+                    gwidth: 270
                 },
                 type:'TextField',
-                filters:{pfiltro:'nr.agente_venta',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true
@@ -655,7 +661,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     gwidth: 100
                 },
                 type:'TextField',
-                filters:{pfiltro:'nr.agente_venta',type:'string'},
                 id_grupo:3,
                 grid:true,
                 form:true
@@ -733,15 +738,52 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             {
                 config:{
+                    name: 'cambio',
+                    fieldLabel: 'Cambio M/L',
+                    allowBlank:true,
+                    anchor: '80%',
+                    allowDecimals:true,
+                    decimalPrecision:2,
+                    allowNegative : false,
+                    disabled:true,
+                    gwidth: 110,
+                    style: 'background-color: #f2f23c;  background-image: none;'
+                },
+                type:'NumberField',
+                id_grupo:1,
+                grid:false,
+                form:true
+            },
+            {
+                config:{
+                    name: 'cambio_moneda_extranjera',
+                    fieldLabel: 'Cambio M/E',
+                    allowBlank:true,
+                    anchor: '80%',
+                    allowDecimals:true,
+                    decimalPrecision:2,
+                    allowNegative : false,
+                    disabled:true,
+                    gwidth: 110,
+                    style: 'background-color: #f2f23c; background-image: none;'
+                },
+                type:'NumberField',
+                id_grupo:1,
+                grid:false,
+                form:true
+            },
+            {
+                config:{
                     name: 'monto_recibido_forma_pago',
-                    fieldLabel: 'Monto Recibido Forma Pago',
+                    fieldLabel: 'Importe Recibido Forma Pago',
                     allowBlank:false,
                     anchor: '80%',
                     allowDecimals:true,
                     decimalPrecision:2,
                     allowNegative : false,
                     disabled:false,
-                    gwidth: 110
+                    gwidth: 110,
+                    style: 'background-color: #f2f23c;  background-image: none;'
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -751,7 +793,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     name: 'monto_forma_pago',
-                    fieldLabel: 'Monto Forma Pago',
+                    fieldLabel: 'Importe Forma Pago',
                     allowBlank:false,
                     anchor: '80%',
                     allowDecimals:true,
@@ -887,14 +929,15 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     name: 'monto_forma_pago2',
-                    fieldLabel: 'Monto Forma de Pago 2',
+                    fieldLabel: 'Importe Forma de Pago 2',
                     allowBlank:true,
                     anchor: '80%',
                     allowDecimals:true,
                     decimalPrecision:2,
                     allowNegative : false,
                     disabled:true,
-                    gwidth: 125
+                    gwidth: 125,
+                    style: 'background-color: #f2f23c;  background-image: none;'
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -975,40 +1018,6 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             {
                 config:{
-                    name: 'cambio',
-                    fieldLabel: 'Cambio',
-                    allowBlank:true,
-                    anchor: '80%',
-                    allowDecimals:true,
-                    decimalPrecision:2,
-                    allowNegative : false,
-                    disabled:true,
-                    gwidth: 110
-                },
-                type:'NumberField',
-                id_grupo:1,
-                grid:false,
-                form:true
-            },
-            {
-                config:{
-                    name: 'cambio_moneda_extranjera',
-                    fieldLabel: 'Cambio Moneda Extranjera',
-                    allowBlank:true,
-                    anchor: '80%',
-                    allowDecimals:true,
-                    decimalPrecision:2,
-                    allowNegative : false,
-                    disabled:true,
-                    gwidth: 110
-                },
-                type:'NumberField',
-                id_grupo:1,
-                grid:false,
-                form:true
-            },
-            {
-                config:{
                     name: 'fecha_emision',
                     fieldLabel: 'Fecha Emision',
                     anchor: '80%',
@@ -1018,7 +1027,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
                 },
                 type:'DateField',
-                filters:{pfiltro:'bol.fecha_emision',type:'date'},
                 id_grupo:0,
                 grid:true,
                 form:true
@@ -1053,7 +1061,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     maxLength:10
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.estado_reg',type:'string'},
                 id_grupo:1,
                 grid:true,
                 form:false
@@ -1069,7 +1076,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     maxLength:4
                 },
                 type:'Field',
-                filters:{pfiltro:'bol.id_usuario_ai',type:'numeric'},
                 id_grupo:1,
                 grid:false,
                 form:false
@@ -1099,7 +1105,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y H:i:s'):''}
                 },
                 type:'DateField',
-                filters:{pfiltro:'bol.fecha_reg',type:'date'},
                 id_grupo:1,
                 grid:true,
                 form:false
@@ -1114,7 +1119,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     maxLength:300
                 },
                 type:'TextField',
-                filters:{pfiltro:'bol.usuario_ai',type:'string'},
                 id_grupo:1,
                 grid:true,
                 form:false

@@ -640,6 +640,7 @@ class ACTBoleto extends ACTbase{
 
 		if ($this->objParam->getParametro('fecha') != '') {
 			$fecha = $this->objParam->getParametro('fecha');
+			$this->objParam->addFiltro("bol.fecha_emision = ''". $fecha."''");
 		}/*else{
 			$fecha = date("Ymd");
 		}*/
@@ -1358,9 +1359,9 @@ class ACTBoleto extends ACTbase{
 			}
 		}
 		//boletos en bolivianos
-		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
+		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"");
 		$data_string = json_encode($data);
-		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales_JS';
+		$request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
 		$session = curl_init($request);
 		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
@@ -1422,9 +1423,9 @@ class ACTBoleto extends ACTbase{
 		}
 		////boletos en dolares
 		//$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
-		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD");
+		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD","statusVoid"=>"");
 		$data_string = json_encode($data);
-		$request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales_JS';
+		$request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
 		$session = curl_init($request);
 		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
@@ -1480,6 +1481,10 @@ class ACTBoleto extends ACTbase{
 			if ($this->objParam->getParametro('pes_estado') != '') {
 				if ($this->objParam->getParametro('pes_estado') == 'revisados') {
 					$this->objParam->addFiltro(" bol.estado = ''revisado'' ");
+					$this->objParam->addFiltro("(bol.id_usuario_cajero = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
+																												from segu.tusuario_rol
+																												where id_rol = 1 and estado_reg = ''activo'' and
+																												id_usuario = ". $_SESSION["ss_id_usuario"] . " ))");
 				}else{
 					$this->objParam->addFiltro(" bol.estado = ''borrador'' ");
 				}
