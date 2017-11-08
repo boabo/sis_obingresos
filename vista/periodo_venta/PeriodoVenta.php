@@ -397,16 +397,23 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
 	},
     onGenerarPeriodo : function () {
         var rec = this.sm.getSelected();
-        Phx.CP.loadingShow();
-        Ext.Ajax.request({
-            url:'../../sis_obingresos/control/PeriodoVenta/insertarPeriodoVenta',
-            params: {'id_tipo_periodo':this.combo_tipo.getValue(),
-                'id_gestion':this.combo_gestion.getValue()},
-            success:this.successSave,
-            failure: this.conexionFailure,
-            timeout:this.timeout,
-            scope:this
-        });
+        Ext.MessageBox.prompt('Cuidado!!!','Para generar un periodo desde la interfaz ingrese el codigo secreto',
+        function (option,value) { 
+        	if (value == '666') {
+        		
+        		
+	        	Phx.CP.loadingShow();
+		        Ext.Ajax.request({
+		            url:'../../sis_obingresos/control/PeriodoVenta/insertarPeriodoVenta',
+		            params: {'id_tipo_periodo':this.combo_tipo.getValue(),
+		                'id_gestion':this.combo_gestion.getValue()},
+		            success:this.successSave,
+		            failure: this.conexionFailure,
+		            timeout:this.timeout,
+		            scope:this
+		        });
+		    }
+	    } ,this);        
 
     },
     preparaMenu:function()

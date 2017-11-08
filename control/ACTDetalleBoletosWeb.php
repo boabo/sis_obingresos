@@ -21,10 +21,22 @@ class ACTDetalleBoletosWeb extends ACTbase{
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);
 			$this->res = $this->objReporte->generarReporteListado('MODDetalleBoletosWeb','listarDetalleBoletosWeb');
+			
 		} else{
 			$this->objFunc=$this->create('MODDetalleBoletosWeb');
 			
 			$this->res=$this->objFunc->listarDetalleBoletosWeb($this->objParam);
+			$temp = Array();
+			$temp['importe'] = $this->res->extraData['importe'];
+			$temp['neto'] = $this->res->extraData['neto'];	
+			$temp['comision'] = $this->res->extraData['comision'];			
+
+			$temp['tipo_reg'] = 'summary';
+			$temp['id_detalle_boletos_web'] = 0;
+			
+			$this->res->total++;
+			
+			$this->res->addLastRecDatos($temp);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}

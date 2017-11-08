@@ -9,6 +9,11 @@ class  MODDetalleBoletosWeb extends MODbase{
 		$this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
 		$this->transaccion='OBING_DETBOL_SEL';
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
+		
+		$this->capturaCount('importe','numeric');
+		$this->capturaCount('neto','numeric');
+		$this->capturaCount('comision','numeric');
+		
 				
 		//Definicion de la lista del resultado del query
 		$this->captura('id_detalle_boletos_web','int4');
@@ -44,6 +49,7 @@ class  MODDetalleBoletosWeb extends MODbase{
 		$this->captura('fecha_mod','timestamp');
 		$this->captura('usr_reg','varchar');
 		$this->captura('usr_mod','varchar');
+		$this->captura('pnr','varchar');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();

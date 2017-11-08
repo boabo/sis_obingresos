@@ -1052,3 +1052,18 @@ ALTER TABLE obingresos.tboleto
   ALTER COLUMN tipo_comision SET DEFAULT 'ninguno';
 
 /********************************************F-SCP-GSS-OBINGRESOS-0-22/10/2017********************************************/
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-30/10/2017********************************************/
+
+CREATE UNIQUE INDEX tdeposito_nro_deposito_agencia ON obingresos.tdeposito
+  USING btree (nro_deposito COLLATE pg_catalog."default", id_agencia)
+  WHERE tipo='agencia';
+  
+CREATE INDEX tdetalle_boletos_web_idx ON obingresos.tdetalle_boletos_web
+  USING btree (fecha);
+  
+CREATE INDEX tdetalle_boletos_web_idx1 ON obingresos.tdetalle_boletos_web
+  USING btree (numero_autorizacion COLLATE pg_catalog."default")
+  WHERE origen = 'portal';
+  
+/********************************************F-SCP-JRR-OBINGRESOS-0-30/10/2017********************************************/

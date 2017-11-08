@@ -69,7 +69,7 @@ BEGIN
                         dep.agt,
                         dep.fecha_venta,
                         dep.monto_total,
-                        age.nombre as nombre_agencia,
+                        (age.codigo_int || '' - '' || age.nombre)::varchar as nombre_agencia,
                         (to_char(pv.fecha_ini,''DD/MM/YYYY'') || ''-'' || to_char(pv.fecha_fin,''DD/MM/YYYY'') || '' '' ||
                         tp.tipo_cc)::text as desc_periodo,
                         dep.estado,
@@ -160,7 +160,7 @@ BEGIN
                     inner join param.tmoneda m on m.id_moneda = fp.id_moneda
                     where b.fecha_emision >= (''' || v_parametros.fecha_ini || '''::date - interval ''10 days'') and b.fecha_emision <=(''' || v_parametros.fecha_fin || '''::date + interval ''10 days'') and 
                     b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo like ''CC%'' and bfp.numero_tarjeta not like ''%00005555'' and 
-                    a.codigo_int in (''56991266'',''57991334'',''78495104'',''91993436'',''55995671'')),
+                    a.codigo_int in (''56991266'',''57991334'',''78495104'',''91993436'',''55995671'',''CBBOB08AA'')),
                     depositos as (SELECT pxp.list(d.nro_deposito) as nro_deposito,pxp.list(to_char(d.fecha,''DD/MM/YYYY'')) as fecha_deposito,
                                                     sum(d.monto_deposito) as monto_deposito,                                            
                                                     pxp.list(d.moneda) as moneda,
@@ -210,12 +210,13 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_deposito)
+			v_consulta:='select count(id_deposito),sum(dep.monto_deposito)
 					    from obingresos.tdeposito dep
 					    inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
 						inner join param.tmoneda mon on mon.id_moneda = dep.id_moneda_deposito
 					    left join obingresos.tperiodo_venta pv on pv.id_periodo_venta = dep.id_periodo_venta
+                        left join obingresos.tagencia age on age.id_agencia = dep.id_agencia
                         left join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
                         where ';
 

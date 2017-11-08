@@ -18,12 +18,38 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
     	//llama al constructor de la clase padre
 		Phx.vista.MovimientoEntidad.superclass.constructor.call(this,config);
 		this.init();
+		this.addButton('archivo', {
+                grupo: [0,1],
+                argument: {imprimir: 'archivo'},
+                text: 'Respaldos',
+                iconCls:'blist' ,
+                disabled: false,
+                handler: this.archivo
+            });
         this.store.baseParams.id_entidad = this.maestro.id_agencia;
         if('id_periodo_venta' in this.maestro){
 		    this.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
 		}
 		this.load({params:{start:0, limit:this.tam_pag}})
 	},
+	nombreVista: 'MovimientoEntidad',
+	archivo : function (){
+            var rec = this.getSelectedData();
+
+            //enviamos el id seleccionado para cual el archivo se deba subir
+            rec.datos_extras_id = rec.id_movimiento_entidad;
+            //enviamos el nombre de la tabla
+            rec.datos_extras_tabla = 'obingresos.tmovimiento_entidad';
+            //enviamos el codigo ya que una tabla puede tener varios archivos diferentes como ci,pasaporte,contrato,slider,fotos,etc
+            rec.datos_extras_codigo = 'ESCANMOVRESP';
+
+            Phx.CP.loadWindows('../../../sis_parametros/vista/archivo/Archivo.php',
+                'Archivo',
+                {
+                    width: 900,
+                    height: 400
+                }, rec, this.idContenedor, 'Archivo');
+        },
 			
 	Atributos:[
 		{
@@ -81,7 +107,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 emptyText:'Tipo...',
                 triggerAction: 'all',
                 lazyRender:true,
-                width:135,
+                gwidth:80,
                 readOnly:true
             },
             type:'ComboBox',
@@ -107,7 +133,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 emptyText:'Tipo...',
                 triggerAction: 'all',
                 lazyRender:true,
-                width:135
+                gwidth:80
             },
             type:'ComboBox',
             filters:{
@@ -127,7 +153,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 fieldLabel: 'Fecha',
                 allowBlank: false,
                 anchor: '80%',
-                gwidth: 100,
+                gwidth: 85,
                 format: 'd/m/Y',
                 renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
             },
@@ -135,7 +161,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
             filters:{pfiltro:'moe.fecha',type:'date'},
             id_grupo:1,
             grid:true,
-            form:false
+            form:true
         },
         {
             config:{
@@ -212,14 +238,14 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 fieldLabel: 'Pnr',
                 allowBlank: true,
                 anchor: '80%',
-                gwidth: 100,
+                gwidth: 80,
                 maxLength:8,
                 renderer:function (value,p,record){
                     if(record.data.tipo_reg != 'summary'){
                         return  String.format('{0}', value);
                     }
                     else{
-                        return '<b><p align="right">Saldo: &nbsp;&nbsp; </p></b>';
+                        return '<b><p align="right">Deudas: &nbsp;&nbsp; </p></b>';
                     }
                 }
             },
@@ -235,16 +261,19 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 fieldLabel: 'Apellido',
                 allowBlank: true,
                 anchor: '80%',
-                gwidth: 200,
+                gwidth: 120,
                 maxLength:200,
-                renderer:function (value,p,record){
-                    if(record.data.tipo_reg != 'summary'){
+                renderer:function (value,p,record){                	
+                    if(record.data.tipo_reg != 'summary') {
                         return  String.format('{0}', value);
+                    } else if (record.data.deudas*-1 > 0) {
+                    	return  String.format('<p align="right"><b><font size=2 color="red">{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
                     }
                     else{
-                        return  String.format('<p align="right"><b><font size=2 >{0}</font><b></p>', Ext.util.Format.number(record.data.credito_mb - record.data.debito_mb,'0,000.00'));
+                        return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
                     }
-                }
+                },
+                scope:this
             },
             type:'TextField',
             filters:{pfiltro:'moe.apellido',type:'string'},
@@ -282,7 +311,6 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
 						if(record.data.tipo_reg != 'summary'){
 							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
 						}
-
 					}
             },
             type:'NumberField',            
@@ -302,7 +330,9 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 renderer:function (value,p,record){
 						if(record.data.tipo_reg != 'summary'){
 							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
-						}
+						} else{
+	                    	return '<b><p align="right">Saldo: &nbsp;&nbsp; </p></b>';
+	                    }
 					}
             },
             type:'NumberField',            
@@ -324,11 +354,11 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 galign: 'right',
                 renderer:function (value,p,record){
 						if(record.data.tipo_reg != 'summary'){
-							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
-						}
-						else{
-							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(value,'0,000.00'));
-						}
+                        return  String.format('{0}', value);
+	                    }
+	                    else{
+	                        return  String.format('<p align="right"><b><font size=2 >{0}</font><b></p>', Ext.util.Format.number((record.data.credito_mb - record.data.debito_mb - (record.data.deudas*-1)) ,'0,000.00'));
+	                    }
 					}
             },
             type:'NumberField',
@@ -487,6 +517,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
 		{name:'debito', type: 'numeric'},
 		{name:'credito_mb', type: 'numeric'},
 		{name:'debito_mb', type: 'numeric'},
+		{name:'deudas', type: 'numeric'},
 		{name:'ajuste', type: 'string'},
 		{name:'fecha', type: 'date',dateFormat:'Y-m-d'},
 		{name:'pnr', type: 'string'},
@@ -500,13 +531,23 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
 		{name:'id_usuario_mod', type: 'numeric'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
+		{name:'monto', type: 'numeric'},
 		
 	],
+	preparaMenu: function () {        
+        Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
+        this.getBoton('archivo').enable(); 
+    },
+
+    liberaMenu: function () {        
+        this.getBoton('archivo').disable();
+        Phx.vista.MovimientoEntidad.superclass.liberaMenu.call(this);  
+    },
 	arrayDefaultColumHidden:[
-	'fecha_mod','usr_reg','estado_reg','fecha_reg','usr_mod','usuario_ai'],
+	'fecha_mod','usr_reg','estado_reg','usr_mod','usuario_ai'],
 	
 	sortInfo:{
-		field: 'fecha',
+		field: 'fecha,id_movimiento_entidad',
 		direction: 'ASC'
 	},
 	bdel:false,

@@ -105,7 +105,7 @@ BEGIN
 			'activo',
 			v_parametros.monto,
 			'si',
-			now()::date,
+			v_parametros.fecha::date,
 			NULL,
 			NULL,
 			p_id_usuario,
@@ -169,7 +169,7 @@ BEGIN
 			autorizacion__nro_deposito = v_parametros.autorizacion__nro_deposito,
 			monto = v_parametros.monto,
 			ajuste = 'si',
-			fecha = now()::date,
+			fecha = v_parametros.fecha::date,
 			pnr = NULL,
 			apellido = NULL,
 			fecha_mod = now(),
@@ -243,9 +243,11 @@ BEGIN
                 	if (not exists (
                     	select 1
                         from obingresos.tdetalle_boletos_web dbw
-                    	where dbw.billete = v_parametros.billete ))then
-                    	raise exception 'El boleto %, no ha sido reportado por el Portal corporativo',v_parametros.billete;
+                    	where dbw.billete = v_parametros.billete and void = 'no' ))then
+                    	raise exception 'El boleto %, no ha sido reportado por el Portal corporativo o ya ha sido anulado',v_parametros.billete;
                     end if;
+                    
+                   
                     
                     --raise exception 'llega%,%',v_id_movimiento_entidad,v_parametros.billete;
                 	update obingresos.tmovimiento_entidad

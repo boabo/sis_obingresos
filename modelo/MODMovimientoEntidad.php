@@ -19,11 +19,14 @@ class MODMovimientoEntidad extends MODbase{
 		$this->transaccion='OBING_MOE_SEL';
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
 		
+		$this->setParametro('id_agencia','id_entidad','int4');
+		
 		$this->capturaCount('total_credito','numeric');
 		$this->capturaCount('total_debito','numeric');
 		$this->capturaCount('total_credito_moneda','numeric');
 		$this->capturaCount('total_debito_moneda','numeric');
 		$this->capturaCount('monto_total','numeric');
+		$this->capturaCount('deudas','numeric');
 		
 				
 		//Definicion de la lista del resultado del query
@@ -54,6 +57,7 @@ class MODMovimientoEntidad extends MODbase{
 		$this->captura('credito_mb','numeric');
 		$this->captura('debito_mb','numeric');
         $this->captura('tipo_cambio','numeric');
+		$this->captura('monto','numeric');
 		
 		//Ejecuta la instruccion
 		$this->armarConsulta();

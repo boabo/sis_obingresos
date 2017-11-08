@@ -26,11 +26,21 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.addButton('btnMovimientos',
                 {
-                    text: 'Movimientos',
+                    text: 'Movimientos Per. Vigente',
                     iconCls: 'blist',
                     disabled: true,
                     handler: this.onMovimientos,
-                    tooltip: 'Movimientos de la agencia corporativa'
+                    tooltip: 'Movimientos de la agencia corporativa para el periodo vigente'
+                }
+            );
+            
+            this.addButton('btnMovimientosSP',
+                {
+                    text: 'Rep Movimientos',
+                    iconCls: 'blist',
+                    disabled: true,
+                    handler: this.onMovimientosSP,
+                    tooltip: 'Movimientos de la agencia corporativa para un rango de fechas'
                 }
             );
             
@@ -45,13 +55,28 @@ header("content-type: text/javascript; charset=UTF-8");
             );
 
         },
+        onMovimientosSP : function () {
+            var rec = {maestro: this.sm.getSelected().data};
+
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/movimiento_entidad/MovimientoEntidadSinPeriodo.php',
+                'Movimientos de agencia corporativa',
+                {
+                    width:'90%',
+                    height:'90%'
+                },
+                rec,
+                this.idContenedor,
+                'MovimientoEntidadSinPeriodo');
+
+        },
+        
         onMovimientos : function () {
             var rec = {maestro: this.sm.getSelected().data};
 
             Phx.CP.loadWindows('../../../sis_obingresos/vista/movimiento_entidad/MovimientoEntidad.php',
                 'Movimientos de agencia corporativa',
                 {
-                    width:800,
+                    width:'90%',
                     height:'90%'
                 },
                 rec,
@@ -79,6 +104,8 @@ header("content-type: text/javascript; charset=UTF-8");
         {	var rec = this.sm.getSelected();
             Phx.vista.AgenciaPortal.superclass.preparaMenu.call(this);
             this.getBoton('btnMovimientos').enable();
+            this.getBoton('btnMovimientosSP').enable();
+            
             this.getBoton('btnTkt').enable();
 
         },
@@ -87,6 +114,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             Phx.vista.AgenciaPortal.superclass.liberaMenu.call(this);
             this.getBoton('btnMovimientos').disable();
+            this.getBoton('btnMovimientosSP').disable();
             this.getBoton('btnTkt').disable();
         },
 

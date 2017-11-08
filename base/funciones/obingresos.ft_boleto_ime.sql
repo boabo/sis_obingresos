@@ -1599,12 +1599,21 @@ raise notice 'llega 0';
 
                   		IF v_tipo = 'T' THEN
                         	v_total = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                            IF(v_total='' or v_total=' ')THEN
+                            	v_total=0.00;
+                            END IF;
                         ELSIF v_tipo = 'TTX' THEN
                         	v_impuestos = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                            IF(v_impuestos='' or v_impuestos=' ')THEN
+                            	v_impuestos=0.00;
+                            END IF;
                         ELSIF v_tipo = 'F' THEN
-                        	v_comision = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                            	v_comision=0.00;
                         ELSIF v_tipo = 'OB' THEN
                         	v_impuestos_ob = v_record_json_montos_boletos.json_array_elements::json->>'amount';
+                            IF(v_impuestos_ob='' or v_impuestos_ob=' ')THEN
+                            	v_impuestos_ob=0.00;
+                            END IF;
                         ELSE
                         	raise exception 'Tipo monto no definido %', v_tipo;
                         END IF;
@@ -1640,16 +1649,7 @@ raise notice 'llega 0';
                   SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
                   FROM param.tmoneda
                   WHERE codigo_internacional=v_moneda;
-                  /*
-                  IF(v_tipo_moneda='base')THEN
-                  	v_tipo_cambio = 1;
-                  ELSE
-                  	select oficial into v_tipo_cambio
-                    from param.ttipo_cambio
-                    where id_moneda =(select id_moneda from param.tmoneda where codigo_internacional=v_moneda)
-                    and fecha=v_parametros.fecha_emision;
-                  END IF;
-                  */
+                  
                   select oficial into v_tipo_cambio
                   from param.ttipo_cambio tc
                   inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
@@ -1711,7 +1711,7 @@ raise notice 'llega 0';
                   '||v_parametros.id_agencia||'::integer,
                   '''||v_tipo_pago_amadeus||'''::varchar
                   )';*/
-
+				  
                   INSERT INTO obingresos.tboleto_amadeus
                   (nro_boleto,
                   total,
@@ -1818,7 +1818,6 @@ raise notice 'llega 0';
                   END IF;
 
                   END IF;
-
                 END LOOP;
             END LOOP;
 

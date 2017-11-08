@@ -38,6 +38,7 @@ DECLARE
     v_id_alarma				integer;
     v_monto_total			numeric;
     v_moneda				varchar;
+    v_deposito				record;
 
 
 BEGIN
@@ -203,13 +204,17 @@ BEGIN
 
 		begin
         	if (v_parametros.tipo = 'agencia') then
-            	SELECT estado into v_estado
+            	SELECT * into v_deposito
                 from obingresos.tdeposito
                 where id_deposito = v_parametros.id_deposito;
+                --raise exception '%,%,%,%',v_deposito.id_agencia,v_deposito.nro_deposito,v_deposito.fecha,v_deposito.monto_deposito;
                 
-                if (v_estado != 'borrador') then
-                	raise exception 'No es posible modificar depositos validados';
-                end if;
+                update obingresos.tmovimiento_entidad
+                set  fecha =  v_parametros.fecha,
+                autorizacion__nro_deposito =  v_parametros.nro_deposito
+                where id_agencia = v_deposito.id_agencia and   autorizacion__nro_deposito = v_deposito.nro_deposito
+                and estado_reg = 'activo' and  fecha = v_deposito.fecha and monto = v_deposito.monto_deposito and tipo = 'credito';
+                
                 
             end if;
             
@@ -278,8 +283,12 @@ BEGIN
    			begin
             
             if (trim(both ' ' from v_parametros.estado) = 'Payment requested') then 
-            	v_parametros.pnr = substring(v_parametros.pnr from 1 for 5);
-                
+            	
+            	if (to_date(v_parametros.fecha,'DD/MM/YYYY')>'09/09/2017') then
+                	v_parametros.pnr = substring(v_parametros.pnr from 1 for 6);
+                else
+            		v_parametros.pnr = substring(v_parametros.pnr from 1 for 5);
+                end if;
                 select id_moneda into v_id_moneda
                 from param.tmoneda m
                 where m.codigo_internacional = trim(both ' ' from v_parametros.moneda);
@@ -342,8 +351,12 @@ BEGIN
    			begin
             
             if (trim(both ' ' from v_parametros.estado) in ('SETTLED','CAPTURED')) then 
-            	v_pnr = substring(v_parametros.order_code from 1 for 5);
-                
+            	
+                if (to_date(v_parametros.fecha,'YYYY.MM.DD')>'09/09/2017') then
+                	v_pnr = substring(v_parametros.order_code from 1 for 6);
+                else
+            		v_pnr = substring(v_parametros.order_code from 1 for 5);
+                end if;
                 select id_moneda into v_id_moneda
                 from param.tmoneda m
                 where m.codigo_internacional = trim(both ' ' from v_parametros.moneda);
@@ -435,7 +448,7 @@ BEGIN
             return v_resp;
 
 		end;
-    /*********************************
+     /*********************************
  	#TRANSACCION:  'OBING_DEP_INSE'
  	#DESCRIPCION:	Insercion de registros
  	#AUTOR:		MMV
@@ -459,7 +472,6 @@ BEGIN
                 monto_deposito,
                 id_moneda_deposito,
                 fecha,
-               -- agt,
                 id_usuario_reg,
                 fecha_reg,
                 id_usuario_ai,
@@ -467,8 +479,6 @@ BEGIN
                 id_usuario_mod,
                 fecha_mod,
                 tipo,
-                --fecha_venta,
-               -- monto_total,
                 id_apertura_cierre_caja,
                 monto_total
                 ) values(
@@ -477,7 +487,6 @@ BEGIN
                 v_parametros.monto_deposito,
                 v_id_moneda,               
                 v_parametros.fecha,                
-               -- v_parametros.agt,
                 p_id_usuario,
                 now(),
                 v_parametros._id_usuario_ai,
@@ -485,25 +494,12 @@ BEGIN
                 null,
                 null,
                 'completar_deposito',
-               -- v_parametros.fecha_venta,
-               -- v_parametros.monto_total,
                 v_parametros.id_apertura_cierre_caja,
                 v_parametros.monto_deposito
                 )RETURNING id_deposito into v_id_deposito;
                 
                 
-                /*select sum(d.monto_deposito)
-                
-                into 
-                v_monto_total
-                from obingresos.tdeposito d
-                where d.id_apertura_cierre_caja = v_parametros.id_apertura_cierre_caja and d.id_moneda_deposito = v_id_moneda;
-                
-                
-                
-                update obingresos.tdeposito set
-                monto_total = v_monto_total
-                where id_deposito = v_id_deposito;*/
+            
                 
                 --Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos almacenado(a) con exito (id_deposito'||v_id_deposito||')');
