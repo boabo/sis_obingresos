@@ -745,7 +745,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowDecimals:true,
                     decimalPrecision:2,
                     allowNegative : false,
-                    disabled:true,
+                    readOnly:true,
                     gwidth: 110,
                     style: 'background-color: #f2f23c;  background-image: none;'
                 },
@@ -763,7 +763,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowDecimals:true,
                     decimalPrecision:2,
                     allowNegative : false,
-                    disabled:true,
+                    readOnly:true,
                     gwidth: 110,
                     style: 'background-color: #f2f23c; background-image: none;'
                 },
@@ -1682,26 +1682,32 @@ header("content-type: text/javascript; charset=UTF-8");
         calculoFp1Grupo : function (record) {
             this.moneda_grupo_fp1 = record.data.desc_moneda;
             if (this.moneda_grupo_fp2 == '') {
+                console.log('moneda grupo 2 vacio');
                 this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda]);
             } else if (this.moneda_grupo_fp2 == this.moneda_grupo_fp1) {
+                console.log('moneda grupo 2 igual moneda grupo 1');
                 this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.Cmp.monto_forma_pago2.getValue());
             } else {
                 if (this.moneda_grupo_fp2 == 'USD') {
+                    console.log('monedas distintas grupo 2 usd');
                     this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
                 } else {
+                    console.log('monedas distintas grupo 2 bob');
                     this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
                 }
             }
 
         },
         calculoFp2Grupo : function (record) {
-            console.log('forma de pago2 grupo');
             this.moneda_grupo_fp2 = record.data.desc_moneda;
             if (this.moneda_grupo_fp1 == '') {
+                console.log('sin moneda fp 1');
                 this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda]);
             } else if (this.moneda_grupo_fp2 == this.moneda_grupo_fp1) {
+                console.log('con misma moneda grupos');
                 this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.Cmp.monto_forma_pago.getValue());
             } else {
+                console.log('moneda grupos diferentes');
                 if (this.moneda_grupo_fp1 == 'USD') {
                     this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo , 2));
                 } else {
@@ -1731,30 +1737,50 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.ids_seleccionados.setValue(this.Cmp.ids_seleccionados.getValue() + ',' + seleccionados[i].data.id_boleto_amadeus);
                     this.Cmp.boletos.setValue(this.Cmp.boletos.getValue() + ', 930' + seleccionados[i].data.nro_boleto + ' ('+ seleccionados[i].data.total +' '+seleccionados[i].data.moneda+')');
                 }
-                if (seleccionados[i].data.moneda_sucursal == seleccionados[i].data.moneda) {
-                    this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
+                if (seleccionados[i].data.moneda_sucursal == 'USD') {
+                    /*this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
                     this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.neto);
-                    this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.comision);
-                    this.total_grupo['total_boletos_USD'] += this.round(seleccionados[i].data.total / seleccionados[i].data.tc , 2);
-                    this.total_grupo['total_neto_USD'] += this.round(seleccionados[i].data.neto / seleccionados[i].data.tc , 2);
-                    this.total_grupo['total_comision_USD'] += this.round(seleccionados[i].data.comision / seleccionados[i].data.tc , 2);
+                    this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.comision);*/
+                    this.total_grupo['total_boletos_USD'] += this.round(seleccionados[i].data.total , 2);
+                    this.total_grupo['total_neto_USD'] += this.round(seleccionados[i].data.neto , 2);
+                    this.total_grupo['total_comision_USD'] += this.round(seleccionados[i].data.comision , 2);
                     this.Cmp.moneda_boletos.setValue(seleccionados[i].data.moneda);
-                    this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
-                    this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
-                    this.Cmp.monto_total_comision.setValue(this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_USD']);// +seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_USD']); //+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_total_comision.setValue(this.total_grupo['total_comision_USD']); //+seleccionados[0].data.moneda_sucursal].toFixed(2));
 
-                    this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
-                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_USD']); //+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_USD']); //+seleccionados[0].data.moneda_sucursal].toFixed(2));
                 } else if (seleccionados[i].data.moneda == 'USD') {
-                    this.total_grupo[seleccionados[0].data.moneda_sucursal] += this.round(seleccionados[i].data.total * seleccionados[i].data.tc , 2);
+                    this.Cmp.moneda_boletos.setValue(seleccionados[i].data.moneda);
+                    this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total * seleccionados[i].data.tc);
+                    this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.neto * seleccionados[i].data.tc);
+                    this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.comision * seleccionados[i].data.tc);
+                    //this.total_grupo['total_boletos_' + seleccionados[0].data.moneda_sucursal] += this.round(seleccionados[i].data.total * seleccionados[i].data.tc , 2);
                     this.total_grupo['total_boletos_USD'] += parseFloat(seleccionados[i].data.total);
                     this.total_grupo['total_neto_USD'] += parseFloat(seleccionados[i].data.neto);
                     this.total_grupo['total_comision_USD'] += parseFloat(seleccionados[i].data.comision);
-                    this.Cmp.moneda_boletos.setValue('USD');
+
                     this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_USD'].toFixed(2));
                     this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_USD'].toFixed(2));
                     this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_USD'].toFixed(2));
-                } else {
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_USD'].toFixed(2));
+                } else if (seleccionados[i].data.moneda !== 'USD') {
+                    this.Cmp.moneda_boletos.setValue(seleccionados[i].data.moneda);
+                    //this.total_grupo['total_boletos_USD'] += this.round(seleccionados[i].data.total / seleccionados[i].data.tc , 2);
+                    this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
+                    this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.neto);
+                    this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.comision * seleccionados[i].data.tc);
+                    this.total_grupo['total_boletos_USD'] += parseFloat(seleccionados[i].data.total / seleccionados[i].data.tc);
+                    this.total_grupo['total_neto_USD'] += parseFloat(seleccionados[i].data.neto / seleccionados[i].data.tc);
+                    this.total_grupo['total_comision_USD'] += parseFloat(seleccionados[i].data.comision / seleccionados[i].data.tc);
+
+                    this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_total_comision.setValue(this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal].toFixed(2));
+                }else {
                     alert('No se puede calcular la forma de pago ya que la moneda de un boleto no es la moneda de la sucursal ni dolares americanos');
                     return;
                 }
@@ -1773,7 +1799,6 @@ header("content-type: text/javascript; charset=UTF-8");
             this.moneda_grupo_fp1 = '';
             this.moneda_grupo_fp2 = '';
             this.tc_grupo = seleccionados[0].data.tc;
-            //this.Cmp.id_forma_pago.fireEvent('select', {   combo:this.Cmp.id_forma_pago});
 
         },
 
