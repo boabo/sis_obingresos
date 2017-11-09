@@ -49,7 +49,7 @@ BEGIN
     from obingresos.tboleto_forma_pago bfp
     inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
     inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-    where id_boleto = p_id_boleto;
+    where bfp.id_boleto = p_id_boleto;
     
     select fp.*,m.codigo_internacional as moneda into v_forma_pago
     from obingresos.tforma_pago fp
