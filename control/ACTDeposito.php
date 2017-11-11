@@ -377,11 +377,6 @@ class ACTDeposito extends ACTbase{
         exit;
 
     }
-    function completarDeposito(){
-        $this->objFunc=$this->create('MODDeposito');
-        $this->res=$this->objFunc->completarDeposito($this->objParam);
-        $this->res->imprimirRespuesta($this->res->generarJson());
-    }
 }
 
 ?>
