@@ -104,21 +104,21 @@ BEGIN
 
     ELSIF(p_transaccion= 'OBING_DEREP_SEL')then
 		begin
-        
+
         	if (v_parametros.por = 'boleto') then
             	v_consulta = 'with boletos as (
                     select b.id_boleto,b.fecha_emision,b.localizador,bfp.importe, m.codigo_internacional as moneda,b.nro_boleto,bfp.numero_tarjeta,a.codigo_int as agencia
-                    
+
                     from obingresos.tboleto b
                     inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
                     inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                     inner join obingresos.tagencia a on a.id_agencia = b.id_agencia
                     inner join param.tmoneda m on m.id_moneda = fp.id_moneda
-                    where b.fecha_emision >= ''' || v_parametros.fecha_ini || '''::date and b.fecha_emision <=''' || v_parametros.fecha_fin || '''::date and 
-                    b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo like ''CC%'' and bfp.numero_tarjeta not like ''%00005555'' and 
+                    where b.fecha_emision >= ''' || v_parametros.fecha_ini || '''::date and b.fecha_emision <=''' || v_parametros.fecha_fin || '''::date and
+                    b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo like ''CC%'' and bfp.numero_tarjeta not like ''%00005555'' and
                     a.codigo_int in (''56991266'',''57991334'',''78495104'',''91993436'',''55995671'')),
                     depositos as (SELECT pxp.list(d.nro_deposito) as nro_deposito,pxp.list(to_char(d.fecha,''DD/MM/YYYY'')) as fecha_deposito,
-                                                    sum(d.monto_deposito) as monto_deposito,                                            
+                                                    sum(d.monto_deposito) as monto_deposito,
                                                     pxp.list(d.moneda) as moneda,
                                                     pxp.list(d.observaciones) as numero_tarjeta_deposito,
                                                     d.pnr
@@ -127,42 +127,42 @@ BEGIN
                                             d.fecha <= (''' || v_parametros.fecha_fin || '''::date + interval ''5 days'') and d.tipo = ''' || v_parametros.tipo_deposito || '''
                                         group by d.pnr)
                     SELECT d.nro_deposito::varchar,d.fecha_deposito::varchar,d.pnr::varchar,
-                                                    d.monto_deposito,                                            
+                                                    d.monto_deposito,
                                                     d.moneda::varchar,
                                                     d.numero_tarjeta_deposito::varchar,
-                                                    
+
                                                     sum(b.importe) as total_boletos,
                                                     pxp.list(b.nro_boleto) as nro_boletos,
                                                      pxp.list(to_char(b.fecha_emision,''DD/MM/YYYY'')) as fecha_boletos,
                                                      pxp.list(b.numero_tarjeta) as numero_tarjeta,
                                                      pxp.list(b.nro_boleto || ''|'' || to_char(b.fecha_emision,''DD/MM/YYYY'') ||
                                                         ''|'' || b.importe || ''|'' || b.moneda || ''|'' || b.agencia || ''|'' || b.localizador || ''|'' || b.numero_tarjeta ORDER BY b.fecha_emision ASC) as detalle_boletos
-                                                     
+
 
                                             FROM boletos b
-                                            LEFT  JOIN depositos d on upper(d.pnr) = upper(b.localizador)                         	     	
+                                            LEFT  JOIN depositos d on upper(d.pnr) = upper(b.localizador)
                                             group by d.nro_deposito,d.fecha_deposito,
-                                                    d.monto_deposito,                                            
+                                                    d.monto_deposito,
                                                     d.moneda,
                                                     d.pnr,
                                                     d.numero_tarjeta_deposito
                                             having sum(b.importe) != d.monto_deposito or d.monto_deposito is null
-                                            order by d.nro_deposito';            
-                    
+                                            order by d.nro_deposito';
+
             else
             	v_consulta = 'with boletos as (
                     select b.id_boleto,b.fecha_emision,b.localizador,bfp.importe, m.codigo_internacional as moneda,b.nro_boleto,bfp.numero_tarjeta,a.codigo_int as agencia
-                    
+
                     from obingresos.tboleto b
                     inner join obingresos.tboleto_forma_pago bfp on bfp.id_boleto = b.id_boleto
                     inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                     inner join obingresos.tagencia a on a.id_agencia = b.id_agencia
                     inner join param.tmoneda m on m.id_moneda = fp.id_moneda
-                    where b.fecha_emision >= (''' || v_parametros.fecha_ini || '''::date - interval ''10 days'') and b.fecha_emision <=(''' || v_parametros.fecha_fin || '''::date + interval ''10 days'') and 
-                    b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo like ''CC%'' and bfp.numero_tarjeta not like ''%00005555'' and 
+                    where b.fecha_emision >= (''' || v_parametros.fecha_ini || '''::date - interval ''10 days'') and b.fecha_emision <=(''' || v_parametros.fecha_fin || '''::date + interval ''10 days'') and
+                    b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo like ''CC%'' and bfp.numero_tarjeta not like ''%00005555'' and
                     a.codigo_int in (''56991266'',''57991334'',''78495104'',''91993436'',''55995671'',''CBBOB08AA'')),
                     depositos as (SELECT pxp.list(d.nro_deposito) as nro_deposito,pxp.list(to_char(d.fecha,''DD/MM/YYYY'')) as fecha_deposito,
-                                                    sum(d.monto_deposito) as monto_deposito,                                            
+                                                    sum(d.monto_deposito) as monto_deposito,
                                                     pxp.list(d.moneda) as moneda,
                                                     pxp.list(d.observaciones) as numero_tarjeta_deposito,
                                                     d.pnr
@@ -171,7 +171,7 @@ BEGIN
                                             d.fecha <= ''' || v_parametros.fecha_fin || '''::date and d.tipo = ''' || v_parametros.tipo_deposito || '''
                                         group by d.pnr)
                     SELECT d.nro_deposito::varchar,d.fecha_deposito::varchar,d.pnr::varchar,
-                                                    d.monto_deposito,                                            
+                                                    d.monto_deposito,
                                                     d.moneda::varchar,
                                                      d.numero_tarjeta_deposito::varchar,
                                                     sum(b.importe) as total_boletos,
@@ -179,22 +179,22 @@ BEGIN
                                                      pxp.list(to_char(b.fecha_emision,''DD/MM/YYYY'')) as fecha_boletos,
                                                      pxp.list(b.numero_tarjeta) as numero_tarjeta,
                                                      ''''::text
-                                                     
+
 
                                             FROM depositos d
-                                            LEFT  JOIN boletos b on upper(d.pnr) = upper(b.localizador)                           	     	
+                                            LEFT  JOIN boletos b on upper(d.pnr) = upper(b.localizador)
                                             group by d.nro_deposito,d.fecha_deposito,
-                                                    d.monto_deposito,                                            
+                                                    d.monto_deposito,
                                                     d.moneda,
                                                     d.pnr,
                                                     d.numero_tarjeta_deposito
                                             having sum(b.importe) != d.monto_deposito or sum(b.importe) is null
                                             order by d.nro_deposito';
-            
-            end if;        
-        	
+
+            end if;
+
             raise notice '%',v_consulta;
- 
+
 		 --Devuelve la respuesta
 			return v_consulta;
 
@@ -239,14 +239,14 @@ BEGIN
 		begin
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select to_char(dep.fecha_venta,''DD/MM/YYYY'')::varchar, dep.agt,sum(dep.monto_deposito)
-					    from obingresos.tdeposito dep                    
-					    
-					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and 
+					    from obingresos.tdeposito dep
+
+					    where dep.tipo = ''banca'' and dep.estado_reg = ''activo'' and
                         dep.fecha_venta >= ''' || v_parametros.fecha_ini || ''' and dep.fecha_venta <= ''' || v_parametros.fecha_fin || ''' and
                         dep.id_moneda_deposito = '||v_parametros.id_moneda || '
                         group by to_char(dep.fecha_venta,''DD/MM/YYYY''),dep.agt
                         order by 1,2';
-			
+
 
 			--Devuelve la respuesta
 			return v_consulta;
@@ -266,15 +266,15 @@ BEGIN
 			v_consulta:='select to_char(a.fecha,''DD/MM/YYYY'')::varchar, a.banco,sum(ad.total_amount)
 					    from obingresos.tskybiz_archivo_detalle ad
                         inner join obingresos.tskybiz_archivo a on a.id_skybiz_archivo = ad.id_skybiz_archivo
-                        inner join param.tmoneda m on m.codigo_internacional = a.moneda             
-					    
-					    where  ad.estado_reg = ''activo'' and 
+                        inner join param.tmoneda m on m.codigo_internacional = a.moneda
+
+					    where  ad.estado_reg = ''activo'' and
                         a.fecha >= ''' || v_parametros.fecha_ini || ''' and a.fecha <= ''' || v_parametros.fecha_fin || ''' and
                         m.id_moneda = '||v_parametros.id_moneda || '
                         group by a.fecha,a.banco
                         order by 1,2';
-			
-			
+
+
 			--Devuelve la respuesta
 			return v_consulta;
 
