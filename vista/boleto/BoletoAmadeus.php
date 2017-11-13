@@ -897,7 +897,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                         remoteSort: true,
-                        baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',sw_tipo_venta:'boletos'}
+                        baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos'}
                     }),
                     valueField: 'id_forma_pago',
                     displayField: 'nombre',
@@ -1219,7 +1219,7 @@ header("content-type: text/javascript; charset=UTF-8");
         ],
         sortInfo:{
             field: 'nro_boleto',
-            direction: 'ASC'
+            direction: 'DESC'
         },
         arrayDefaultColumHidden:['estado_reg','usuario_ai',
             'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision'],
