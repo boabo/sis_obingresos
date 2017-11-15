@@ -355,7 +355,7 @@ BEGIN
         	select fp.codigo into v_codigo_fp
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
-
+		
             update obingresos.tboleto_amadeus
             set comision = v_parametros.comision,
             tipo_comision=v_parametros.tipo_comision
@@ -756,7 +756,7 @@ BEGIN
                       v_codigo_tarjeta
                     );
             	end if;
-                select obingresos.f_valida_boleto_fp(v_id_boleto) into v_res;
+                select obingresos.f_valida_boleto_amadeus_fp(v_id_boleto) into v_res;
 
 
                update obingresos.tboleto_amadeus
@@ -1608,7 +1608,7 @@ raise notice 'llega 0';
                             	v_impuestos=0.00;
                             END IF;
                         ELSIF v_tipo = 'F' THEN
-                            	v_comision=0.00;
+                        	v_comision=0.00;
                         ELSIF v_tipo = 'OB' THEN
                         	v_impuestos_ob = v_record_json_montos_boletos.json_array_elements::json->>'amount';
                             IF(v_impuestos_ob='' or v_impuestos_ob=' ')THEN
@@ -2058,6 +2058,8 @@ raise notice 'llega 0';
               update obingresos.tboleto_amadeus
               set
               estado = 'borrador',
+              comision = 0.00,
+              tipo_comision = 'ninguno',
               id_usuario_cajero=NULL
               where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
 

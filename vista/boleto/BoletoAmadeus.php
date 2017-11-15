@@ -747,7 +747,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowNegative : false,
                     readOnly:true,
                     gwidth: 110,
-                    style: 'background-color: #f2f23c;  background-image: none;'
+                    style: 'background-color: #3cf251;  background-image: none;'
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -765,7 +765,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowNegative : false,
                     readOnly:true,
                     gwidth: 110,
-                    style: 'background-color: #f2f23c; background-image: none;'
+                    style: 'background-color: #3cf251; background-image: none;'
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -897,7 +897,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                         remoteSort: true,
-                        baseParams: {par_filtro: 'forpa.nombre#mon.codigo_internacional',sw_tipo_venta:'boletos'}
+                        baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos'}
                     }),
                     valueField: 'id_forma_pago',
                     displayField: 'nombre',
@@ -1219,7 +1219,7 @@ header("content-type: text/javascript; charset=UTF-8");
         ],
         sortInfo:{
             field: 'nro_boleto',
-            direction: 'ASC'
+            direction: 'DESC'
         },
         arrayDefaultColumHidden:['estado_reg','usuario_ai',
             'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision'],
@@ -1790,12 +1790,16 @@ header("content-type: text/javascript; charset=UTF-8");
             this.ocultarGrupo(0);
             this.ocultarGrupo(3);
             this.mostrarGrupo(2);
-            //console.log(this.Cmp.id_forma_pago);
+
             this.Cmp.id_forma_pago.setDisabled(false);
-            //console.log(this.Cmp.id_forma_pago);
+            
             this.Cmp.monto_forma_pago.setDisabled(true);
             //this.Cmp.monto_forma_pago.reset();
             this.Cmp.nro_boleto.allowBlank = true;
+            this.Cmp.numero_tarjeta.allowBlank = true;
+            this.Cmp.codigo_tarjeta.allowBlank = true;
+            this.ocultarComponente(this.Cmp.numero_tarjeta);
+            this.ocultarComponente(this.Cmp.codigo_tarjeta);
             this.moneda_grupo_fp1 = '';
             this.moneda_grupo_fp2 = '';
             this.tc_grupo = seleccionados[0].data.tc;
