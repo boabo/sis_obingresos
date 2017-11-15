@@ -747,7 +747,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowNegative : false,
                     readOnly:true,
                     gwidth: 110,
-                    style: 'background-color: #f2f23c;  background-image: none;'
+                    style: 'background-color: #3cf251;  background-image: none;'
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -765,7 +765,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowNegative : false,
                     readOnly:true,
                     gwidth: 110,
-                    style: 'background-color: #f2f23c; background-image: none;'
+                    style: 'background-color: #3cf251; background-image: none;'
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -1790,12 +1790,16 @@ header("content-type: text/javascript; charset=UTF-8");
             this.ocultarGrupo(0);
             this.ocultarGrupo(3);
             this.mostrarGrupo(2);
-            //console.log(this.Cmp.id_forma_pago);
+
             this.Cmp.id_forma_pago.setDisabled(false);
-            //console.log(this.Cmp.id_forma_pago);
+            
             this.Cmp.monto_forma_pago.setDisabled(true);
             //this.Cmp.monto_forma_pago.reset();
             this.Cmp.nro_boleto.allowBlank = true;
+            this.Cmp.numero_tarjeta.allowBlank = true;
+            this.Cmp.codigo_tarjeta.allowBlank = true;
+            this.ocultarComponente(this.Cmp.numero_tarjeta);
+            this.ocultarComponente(this.Cmp.codigo_tarjeta);
             this.moneda_grupo_fp1 = '';
             this.moneda_grupo_fp2 = '';
             this.tc_grupo = seleccionados[0].data.tc;
