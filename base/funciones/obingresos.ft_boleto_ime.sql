@@ -108,7 +108,14 @@ DECLARE
     v_record_json_data_office record;
     v_record_json_montos_boletos record;
     v_record_json_pnr		record;
-
+	v_importe_comision		numeric;
+    v_comision_total		numeric;
+    v_boletos_anulados_amadeus		text[];
+    v_boletos_anulados_erp			record;
+    v_boleto_anulado_amadeus		varchar;
+    v_boletos_no_anulados_amadeus 	varchar[];
+    v_boletos_no_anulados_erp		varchar[];
+    v_boleto_voided			varchar;
 
 BEGIN
 
@@ -355,7 +362,7 @@ BEGIN
         	select fp.codigo into v_codigo_fp
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
-		
+
             update obingresos.tboleto_amadeus
             set comision = v_parametros.comision,
             tipo_comision=v_parametros.tipo_comision
@@ -651,6 +658,7 @@ BEGIN
 	elsif(p_transaccion='OBING_MODAMAFPGR_UPD')then
 
         begin
+        	v_comision_total = 0;
         	v_saldo_fp1 = v_parametros.monto_forma_pago;
             v_saldo_fp2 = 	(case when v_parametros.monto_forma_pago2 is null then
             					0
@@ -676,6 +684,12 @@ BEGIN
                     WHERE id_boleto_amadeus=v_id_boleto;
                 END IF;
                end if;
+
+               select comision into v_importe_comision
+               from obingresos.tboleto_amadeus
+               where id_boleto_amadeus=v_id_boleto;
+
+               v_comision_total = v_comision_total + v_importe_comision;
 
               delete from obingresos.tboleto_amadeus_forma_pago
               where id_boleto_amadeus = v_id_boleto;
@@ -773,7 +787,7 @@ BEGIN
                   if (exists(	select 1
                                   from vef.tapertura_cierre_caja acc
                                   where acc.id_usuario_cajero = p_id_usuario and
-                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
                                     acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
                                     acc.id_punto_venta = v_boleto.id_punto_venta)) then
                       raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
@@ -782,7 +796,7 @@ BEGIN
                   if (not exists(	select 1
                                   from vef.tapertura_cierre_caja acc
                                   where acc.id_usuario_cajero = p_id_usuario and
-                                  	acc.fecha_apertura_cierre = v_boleto.fecha_reg::date and
+                                  	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
                                     acc.estado_reg = 'activo' and acc.estado = 'abierto' and
                                     acc.id_punto_venta = v_boleto.id_punto_venta)) then
                       raise exception 'Antes de emitir un boleto debe realizar una apertura de caja';
@@ -790,7 +804,7 @@ BEGIN
 
             END LOOP;
 
-            if (v_saldo_fp1 > 0 or v_saldo_fp2 > 0) then
+            if (v_saldo_fp1 - v_comision_total > 0 or v_saldo_fp2 - v_comision_total > 0) then
             	raise exception 'El monto total de las formas de pago es superior al monto de los boletos seleccionados:%,%',v_saldo_fp1,v_saldo_fp2;
             end if;
 
@@ -813,7 +827,6 @@ BEGIN
 	elsif(p_transaccion='OBING_MODFPPNR_UPD')then
 
         begin
-        	raise notice 'llega 000';
         	v_saldo_fp1 = v_parametros.monto_forma_pago;
             /*v_saldo_fp2 = 	(case when v_parametros.monto_forma_pago2 is null then
             					0
@@ -904,18 +917,17 @@ BEGIN
                     );
             	end if;
                 */
-                	raise notice 'llega 2';
                 select obingresos.f_valida_boleto_fp(v_id_boleto) into v_res;
-raise notice 'llega 0';
+
                update obingresos.tboleto
                set id_usuario_cajero = p_id_usuario,
                estado = 'revisado'
                where id_boleto=v_id_boleto;
-               raise notice 'llega 1';
+
                select * into v_boleto
                from obingresos.tboleto
                where id_boleto = v_id_boleto;
-               raise notice 'llega 2';
+
                 --Si el usuario que cambia el estado del boleto a estado pagado no es cajero
                   --lanzamos excepcion
                   if (exists(	select 1
@@ -1452,7 +1464,7 @@ raise notice 'llega 0';
             	else
                 	v_forma_pago=v_parametros.fp;
                 end if;*/
-                raise notice 'v_parametros.fp %', v_parametros.fp;
+
                 if(trim(v_parametros.fp)!='')then
 
                     SELECT id_forma_pago into v_id_forma_pago
@@ -1649,7 +1661,7 @@ raise notice 'llega 0';
                   SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
                   FROM param.tmoneda
                   WHERE codigo_internacional=v_moneda;
-                  
+
                   select oficial into v_tipo_cambio
                   from param.ttipo_cambio tc
                   inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
@@ -1711,7 +1723,7 @@ raise notice 'llega 0';
                   '||v_parametros.id_agencia||'::integer,
                   '''||v_tipo_pago_amadeus||'''::varchar
                   )';*/
-				  
+
                   INSERT INTO obingresos.tboleto_amadeus
                   (nro_boleto,
                   total,
@@ -1870,13 +1882,16 @@ raise notice 'llega 0';
                   end if;
             	end if;
 
+
             	IF (v_boleto.voided = 'si')THEN
                   UPDATE obingresos.tboleto_amadeus
-                  SET voided='no'
+                  SET voided='no',
+                  id_usuario_cajero = p_id_usuario
                   WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
                 ELSE
                   UPDATE obingresos.tboleto_amadeus
-                  SET voided='si'
+                  SET voided='si',
+                  id_usuario_cajero = p_id_usuario
                   WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
                 END IF;
 
@@ -1935,6 +1950,60 @@ raise notice 'llega 0';
                 END IF;
             END IF;
 
+            --Devuelve la respuesta
+            return v_resp;
+
+        end;
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_BOLAMAERP_INS'
+ 	#DESCRIPCION:	Comparacion de boletos de Amadeus contra boletos ERP
+ 	#AUTOR:		Gonzalo Sarmiento
+ 	#FECHA:		22-11-2017
+	***********************************/
+
+	elsif(p_transaccion='OBING_BOLAMAERP_INS')then
+
+        begin
+        	v_boletos_anulados_amadeus = string_to_array(v_parametros.boletos, ',');
+
+			FOR v_boletos_anulados_erp IN (select bol.nro_boleto
+                                        from obingresos.tboleto_amadeus bol
+                                        where bol.id_punto_venta=v_parametros.id_punto_venta
+                                        and bol.fecha_emision=v_parametros.fecha_emision::date
+                                        and bol.id_usuario_cajero=v_parametros.id_usuario_cajero
+                                        and bol.voided='si'
+                                        order by bol.nro_boleto)LOOP
+
+                IF v_boletos_anulados_amadeus @> ARRAY[v_boletos_anulados_erp.nro_boleto]::text[] != true THEN
+                    v_boletos_no_anulados_amadeus =  array_append(v_boletos_no_anulados_amadeus, v_boletos_anulados_erp.nro_boleto);
+                END IF;
+            END LOOP;
+
+            FOREACH v_boleto_anulado_amadeus IN ARRAY v_boletos_anulados_amadeus
+            LOOP
+            	select bol.voided into v_boleto_voided
+                from obingresos.tboleto_amadeus bol
+                where bol.nro_boleto= v_boleto_anulado_amadeus
+                and bol.id_usuario_cajero=v_parametros.id_usuario_cajero
+                and bol.estado='revisado';
+
+                IF v_boleto_voided='no' THEN
+                	v_boletos_no_anulados_erp =  array_append(v_boletos_no_anulados_erp, v_boleto_anulado_amadeus);
+                END IF;
+
+            END LOOP;
+
+            IF array_length(v_boletos_no_anulados_amadeus,1) > 0 THEN
+            	raise exception 'Boletos no anulados en Amadeus pero si en el ERP %',v_boletos_no_anulados_amadeus;
+            END IF;
+
+            IF array_length(v_boletos_no_anulados_erp,1) > 0 THEN
+            	raise exception 'Boletos no anulados en ERP pero si en Amadeus %',v_boletos_no_anulados_erp;
+            END IF;
+
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Los boletos anulados en Amadeus son los mismos boletos anulados en el ERP');
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje_respuesta','Los boletos anulados en Amadeus son los mismos boletos anulados en el ERP');
             --Devuelve la respuesta
             return v_resp;
 
@@ -2062,6 +2131,16 @@ raise notice 'llega 0';
               tipo_comision = 'ninguno',
               id_usuario_cajero=NULL
               where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
+              IF (v_boleto.forma_pago = 'CC') THEN
+              	DELETE
+                FROM obingresos.tboleto_amadeus_forma_pago
+                WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
+                --INSERT INTO ()VALUES()
+
+
+              END IF;
 
             END IF;
 

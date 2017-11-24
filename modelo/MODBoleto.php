@@ -646,33 +646,20 @@ class MODBoleto extends MODbase{
 		return $this->respuesta;
 	}
 
-	function actualizaBoletoServicioAmadeus(){
+	function compararBoletosServicioAmadeusERP(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_boleto_ime';
-		$this->transaccion='OBING_ACTBOLAMA_INS';
+		$this->transaccion='OBING_BOLAMAERP_INS';
 		$this->tipo_procedimiento='IME';
 
 		//Define los parametros para la funcion
 		$this->setParametro('id_punto_venta','id_punto_venta','integer');//ok
 		$this->setParametro('id_usuario_cajero','id_usuario_cajero','integer');//ok
-		$this->setParametro('nro_boleto','nro_boleto','varchar');//ok
+		$this->setParametro('boletos','boletos','varchar');//ok
 		$this->setParametro('fecha_emision','fecha_emision','varchar');//ok
-		//$this->setParametro('pasajero','pasajero','varchar');//ok
-		//$this->setParametro('total','total','numeric');//ok
-		//$this->setParametro('liquido','liquido','numeric');//ok
-		//$this->setParametro('neto','neto','numeric');//ok
-		//$this->setParametro('tasas','tasas','varchar');//ok
-		//$this->setParametro('comision','comision','numeric');//ok
-		//$this->setParametro('carrier_fees','carrier_fees','varchar');//ok
-		//$this->setParametro('moneda','moneda','varchar');//ok
-		$this->setParametro('voided','voided','varchar');//ok
-		//$this->setParametro('fp','fp','varchar');
-		//$this->setParametro('valor_fp','valor_fp','numeric');
-		$this->setParametro('localizador','localizador','varchar');
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
-
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}

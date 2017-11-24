@@ -1440,9 +1440,7 @@ class ACTBoleto extends ACTbase{
 
 		$respuesta = json_decode($result);
 
-		$xmlRespuesta = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
-
-		if(isset($xmlRespuesta->queryReportDataDetails)) {
+		if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
 			$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
 			$this->objParam->addParametro('boletos', $respuesta->Boa_RITRetrieveSales_JSResult);
@@ -1494,6 +1492,113 @@ class ACTBoleto extends ACTbase{
 			$this->res->imprimirRespuesta($this->res->generarJson());
 		}
 
+	}
+
+	function traerBoletosJsonAnulados(){
+
+		if ($this->objParam->getParametro('fecha') != '') {
+			$fecha = $this->objParam->getParametro('fecha');
+		}
+
+		$this->objParam->addParametro('fecha', $fecha);
+		$this->objParam->addParametro('moneda', "BOB");
+		$this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
+		$this->res=$this->objFunc->obtenerOfficeID($this->objParam);
+
+		$datos = $this->res->getDatos();
+
+		$officeid = $datos[0]['officeid'];
+
+		$numberItems = 0;
+		$identificador_reporte = 0;
+
+		//boletos en bolivianos
+		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"V");
+		$data_string = json_encode($data);
+		$request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
+		$session = curl_init($request);
+		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($session, CURLOPT_HTTPHEADER, array(
+						'Content-Type: application/json',
+						'Content-Length: ' . strlen($data_string))
+		);
+
+		$result = curl_exec($session);
+		curl_close($session);
+
+		$respuesta = json_decode($result);
+
+		$boletos_anulados = array();
+
+		if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
+			if(json_decode($respuesta->Boa_RITRetrieveSales_JSResult)->queryReportDataDetails != NULL) {
+				$boletos = json_decode($respuesta->Boa_RITRetrieveSales_JSResult)->queryReportDataDetails->queryReportDataOfficeGroup[0]->documentData;
+
+				foreach ($boletos as $boleto) {
+					array_push($boletos_anulados, $boleto->documentNumber->documentDetails->number);
+				}
+			}
+		}
+
+		$this->objParam->addParametro('fecha', $fecha);
+		$this->objParam->addParametro('moneda', "USD");
+		$this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
+		$this->res=$this->objFunc->obtenerOfficeID($this->objParam);
+
+		$datos = $this->res->getDatos();
+
+		$officeid = $datos[0]['officeid'];
+		$numberItems = 0;
+		$identificador_reporte = 0;
+
+		////boletos en dolares
+		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD","statusVoid"=>"V");
+		$data_string = json_encode($data);
+		$request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
+		$session = curl_init($request);
+		curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($session, CURLOPT_HTTPHEADER, array(
+						'Content-Type: application/json',
+						'Content-Length: ' . strlen($data_string))
+		);
+
+		$result = curl_exec($session);
+		curl_close($session);
+
+		$respuesta = json_decode($result);
+
+		if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
+
+			if(json_decode($respuesta->Boa_RITRetrieveSales_JSResult)->queryReportDataDetails != NULL) {
+				$boletos = json_decode($respuesta->Boa_RITRetrieveSales_JSResult)->queryReportDataDetails->queryReportDataOfficeGroup[0]->documentData;
+
+				foreach ($boletos as $boleto) {
+					array_push($boletos_anulados, $boleto->documentNumber->documentDetails->number);
+				}
+			}
+		}
+
+		asort($boletos_anulados);
+		$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+		$this->objParam->addParametro('boletos', implode($boletos_anulados,','));
+		$this->objParam->addParametro('fecha_emision', $fecha);
+
+		if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+			$this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
+			$this->objFunc = $this->create('MODBoleto');
+			$this->res = $this->objFunc->compararBoletosServicioAmadeusERP($this->objParam);
+		}
+
+		if ($this->res->getTipo() == 'ERROR') {
+			$this->res->imprimirRespuesta($this->res->generarJson());
+			exit;
+		}
+
+		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
     function reporteBoletoBRPDF() {
