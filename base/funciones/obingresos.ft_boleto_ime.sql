@@ -736,6 +736,7 @@ BEGIN
                       v_parametros.id_auxiliar,
                       v_codigo_tarjeta
                     );
+
             	end if;
                 if (v_saldo_fp2 > 0) then
               		v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2 );
@@ -773,11 +774,12 @@ BEGIN
                       v_id_boleto,
                       --v_parametros.ctacte2,
                       v_parametros.numero_tarjeta2,
-                      codigo_tarjeta2,
+                      v_parametros.codigo_tarjeta2,
                       v_parametros.id_auxiliar2,
                       v_codigo_tarjeta
                     );
             	end if;
+
                 select obingresos.f_valida_boleto_amadeus_fp(v_id_boleto) into v_res;
 
 

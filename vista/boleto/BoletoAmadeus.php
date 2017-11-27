@@ -81,13 +81,26 @@ header("content-type: text/javascript; charset=UTF-8");
                     grupo: this.grupoDateFin,
                     fieldLabel: 'Fecha',
                     allowBlank: false,
-                    anchor: '80%',
+                    anchor: '60%',
                     gwidth: 100,
                     format: 'd/m/Y',
                     hidden : false
                 });
 
+                this.punto_venta = new Ext.form.Label({
+                    name: 'punto_venta',
+                    grupo: this.grupoDateFin,
+                    fieldLabel: 'P.V.',
+                    readOnly:true,
+                    anchor: '150%',
+                    gwidth: 150,
+                    format: 'd/m/Y',
+                    hidden : false,
+                    style: 'font-size: 170%; font-weight: bold; background-image: none;'
+                });
+
                 this.tbar.addField(this.campo_fecha);
+                this.tbar.addField(this.punto_venta);
                 var datos_respuesta = JSON.parse(response.responseText);
                 var fecha_array = datos_respuesta.datos.fecha.split('/');
                 this.campo_fecha.setValue(new Date(fecha_array[2],parseInt(fecha_array[1]) - 1,fecha_array[0]));
@@ -150,6 +163,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.store.baseParams.id_punto_venta = r[0].data.id_punto_venta;
                             this.Cmp.id_forma_pago.store.baseParams.id_punto_venta = this.id_punto_venta;
                             this.Cmp.id_forma_pago2.store.baseParams.id_punto_venta = this.id_punto_venta;
+                            this.punto_venta.setText(r[0].data.nombre);
                             //this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('d/m/Y');
                             this.argumentExtraSubmit.id_punto_venta = this.id_punto_venta;
                             this.load({params:{start:0, limit:this.tam_pag}});
@@ -200,6 +214,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                                 this.Cmp.id_forma_pago2.store.baseParams.id_punto_venta = this.id_punto_venta;
                                                 this.store.baseParams.id_punto_venta = combo2.getValue();
                                                 this.argumentExtraSubmit.id_punto_venta = this.id_punto_venta;
+                                                this.punto_venta.setText(combo2.lastSelectionText)
                                                 this.load({params:{start:0, limit:this.tam_pag}});
                                             }
                                         },
