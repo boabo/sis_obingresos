@@ -721,6 +721,8 @@ BEGIN
                       id_boleto_amadeus,
                       --ctacte,
                       numero_tarjeta,
+                      codigo_tarjeta,
+                      id_auxiliar,
                       tarjeta
                     )
                     VALUES (
@@ -730,6 +732,8 @@ BEGIN
                       v_id_boleto,
                       --v_parametros.ctacte,
                       v_parametros.numero_tarjeta,
+                      v_parametros.codigo_tarjeta,
+                      v_parametros.id_auxiliar,
                       v_codigo_tarjeta
                     );
             	end if;
@@ -758,6 +762,8 @@ BEGIN
                       id_boleto_amadeus,
                       --ctacte,
                       numero_tarjeta,
+                      codigo_tarjeta,
+                      id_auxiliar,
                       tarjeta
                     )
                     VALUES (
@@ -767,6 +773,8 @@ BEGIN
                       v_id_boleto,
                       --v_parametros.ctacte2,
                       v_parametros.numero_tarjeta2,
+                      codigo_tarjeta2,
+                      v_parametros.id_auxiliar2,
                       v_codigo_tarjeta
                     );
             	end if;

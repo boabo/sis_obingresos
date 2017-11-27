@@ -473,11 +473,15 @@ class MODBoleto extends MODbase{
 		$this->setParametro('id_forma_pago','id_forma_pago','integer');
 		$this->setParametro('monto_forma_pago','monto_forma_pago','numeric');
 		$this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
+		$this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
 		$this->setParametro('ctacte','ctacte','varchar');
+		$this->setParametro('id_auxiliar','id_auxiliar','integer');
 		$this->setParametro('id_forma_pago2','id_forma_pago2','integer');
 		$this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
 		$this->setParametro('numero_tarjeta2','numero_tarjeta2','varchar');
+		$this->setParametro('codigo_tarjeta2','codigo_tarjeta2','varchar');
 		$this->setParametro('ctacte2','ctacte2','varchar');
+		$this->setParametro('id_auxiliar2','id_auxiliar2','integer');
 		$this->setParametro('tipo_comision','tipo_comision','varchar');
 
 
