@@ -80,7 +80,7 @@ class MODBoletoFormaPago extends MODbase{
 		$this->captura('forma_pago','varchar');
 		$this->captura('forma_pago_amadeus','varchar');
 		$this->captura('codigo_forma_pago','varchar');
-		$this->captura('moneda','varchar');
+		$this->captura('nombre_auxiliar','varchar');
 		$this->captura('codigo_tarjeta','varchar');
 
 		//Ejecuta la instruccion

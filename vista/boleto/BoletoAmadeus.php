@@ -39,6 +39,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         //text: 'Anular Boleto',
                         //iconCls: 'block',
                         text: '<i class="fa fa-file-excel-o fa-3x"></i> Anular', /*iconCls:'' ,*/
+                        grupo: this.grupoDateFin,
                         disabled: true,
                         handler: this.anularBoleto,
                         tooltip: '<b>Anular</b><br/>Anular Boleto'
