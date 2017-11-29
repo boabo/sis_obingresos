@@ -1482,7 +1482,14 @@ class ACTBoleto extends ACTbase{
 					$this->objParam->addFiltro("(bol.id_usuario_cajero = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
 																												from segu.tusuario_rol
 																												where id_rol = 1 and estado_reg = ''activo'' and
-																												id_usuario = ". $_SESSION["ss_id_usuario"] . " ))");
+																												id_usuario = ". $_SESSION["ss_id_usuario"] . " )
+																											or exists (
+																													 select 1
+																													 from vef.tsucursal_usuario
+																													 where id_punto_venta=16
+																													 and id_usuario=48
+																													 and tipo_usuario=''administrador''
+																											))");
 				}else{
 					$this->objParam->addFiltro(" bol.estado = ''borrador'' ");
 				}
