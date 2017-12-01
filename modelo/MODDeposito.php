@@ -92,6 +92,7 @@ class MODDeposito extends MODbase{
 		$this->ejecutarConsulta();
 
 		if($this->aParam->getParametro('tipo') == 'venta_propia'){
+
             $this->insertatDepositoInformix();
         }
 		//Devuelve la respuesta
@@ -139,8 +140,6 @@ class MODDeposito extends MODbase{
 				
 		//Define los parametros para la funcion
 		$this->setParametro('id_deposito','id_deposito','int4');
-		//var_dump($this->aParam->getParametro('id_deposito'));exit;
-        //var_dump($this->recuperarDeposito());exit;
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -156,6 +155,7 @@ class MODDeposito extends MODbase{
         $this->tipo_procedimiento='IME';
 
         //Define los parametros para la funcion
+        //var_dump($this->aParam->getParametro('id_deposito'));exit;
         $this->setParametro('id_deposito','id_deposito','int4');
 
         //Ejecuta la instruccion
@@ -444,7 +444,6 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
         try {
 
             $fecha = str_replace('/','-',$this->aParam->getParametro('fecha'));
-
             $sql = " UPDATE ingresos:deposito_boleta
               SET
                   nroboleta =  '".$this->aParam->getParametro('nro_deposito')."' ,
@@ -452,22 +451,46 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
                   moneda = '".$this->tipoMoneda()."',
                   monto =  '" . $this->aParam->getParametro('monto_deposito') . "'                  
               WHERE               
-                  nroboleta =  '".$this->recuperarNumberDeposito()."'";
-
+                  
+                  nroboleta =  '".$this->recuperarNumberDeposito()."'                  
+                  ";
             $info_nota_ins = $this->informix->prepare($sql);
+            //var_dump($info_nota_ins);exit;
             $info_nota_ins->execute();
             $this->informix->commit();
             return true;
         }catch (Exception $e){
             $this->informix->rollBack();
         }
+    }
+    function eliminar(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEP_MI';
+        $this->tipo_procedimiento='IME';
 
+        //Define los parametros para la funcion
+
+        $this->setParametro('nro_deposito','nro_deposito','varchar');
+        $this->setParametro('codigo','codigo','varchar');
+        $this->setParametro('fecha_venta','fecha_venta','date');
+        $this->setParametro('monto_deposito','monto_deposito','numeric');
+        $this->setParametro('desc_moneda','desc_moneda','varchar');
+
+        $this->eliminarDepositoInformix();
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
     }
     function eliminarDepositoInformix (){
         $this->informix->beginTransaction();
         try {
-            $sql = "DELETE FROM ingresos:deposito_boleta 
-                    WHERE  nroboleta = '".$this->aParam->getParametro('nro_deposito')."' ";
+            $sql = "DELETE FROM ingresos:deposito_boleta
+                    WHERE  agt = '".$this->aParam->getParametro('codigo')."' AND  fecini = '".$this->aParam->getParametro('fecha_venta')."' AND fecfin = '".$this->aParam->getParametro('fecha_venta')."'
+                    AND nroboleta = '".$this->aParam->getParametro('nro_deposito')."' AND moneda = '".$this->aParam->getParametro('desc_moneda')."' AND monto = '".$this->aParam->getParametro('monto_deposito')."' AND tipdoc = 'DPENDE'";
             $info_nota_ins = $this->informix->prepare($sql);
             $info_nota_ins->execute();
             $this->informix->commit();

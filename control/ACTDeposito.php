@@ -378,6 +378,11 @@ class ACTDeposito extends ACTbase{
         exit;
 
     }
+    function eliminar(){
+        $this->objFunc=$this->create('MODDeposito');
+        $this->res=$this->objFunc->eliminar($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 }
 
 ?>
