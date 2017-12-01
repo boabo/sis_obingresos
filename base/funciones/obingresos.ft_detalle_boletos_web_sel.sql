@@ -497,7 +497,7 @@ $body$
         where p.id_periodo = v_parametros.id_periodo;
         --Sentencia de la consulta
         v_consulta:='
-        	(select ''boletos''::varchar,b.medio_pago::varchar, m.codigo_internacional::varchar,sum(b.total),NULL::numeric
+        	(select ''boletos''::varchar,substring(b.medio_pago from 1 for 3)::varchar, m.codigo_internacional::varchar,sum(b.total),NULL::numeric
             from obingresos.tboleto b
             inner join param.tmoneda m on m.id_moneda = b.id_moneda_boleto
             where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMY'') and

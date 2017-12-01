@@ -99,5 +99,12 @@ select pxp.f_insert_testructura_gui ('CONBANIRES', 'CBANXIN');
 select pxp.f_insert_tgui ('Control Facturas Agencias', 'Control Facturas Agencias', 'CONFACAG', 'si', 3, 'sis_obingresos/vista/total_comision_mes/TotalComisionMes.php', 3, '', 'TotalComisionMes', 'OBINGRESOS');
 select pxp.f_insert_testructura_gui ('CONFACAG', 'CONPORCOR');
 
-/************************************F-DAT-JRR-OBINGRESOS-0-17/08/2017*************************************************/
+/************************************F-DAT-JRR-OBINGRESOS-0-10/11/2017*************************************************/
 
+/************************************I-DAT-JRR-OBINGRESOS-0-17/08/2017*************************************************/
+select pxp.f_insert_tgui ('Reportes', 'Reportes', 'REPORCOR', 'si', 5, '', 3, '', '', 'OBINGRESOS');
+select pxp.f_insert_tgui ('Reporte Ventas Corporativas', 'Reporte Ventas Corporativas', 'REVENCOR', 'si', 1, 'sis_obingresos/vista/detalle_boletos_web/FormReporteVentasCorporativas.php', 4, '', 'FormReporteVentasCorporativas', 'OBINGRESOS');
+select pxp.f_insert_testructura_gui ('REPORCOR', 'CONPORCOR');
+select pxp.f_insert_testructura_gui ('REVENCOR', 'REPORCOR');
+
+/************************************F-DAT-JRR-OBINGRESOS-0-10/11/2017*************************************************/

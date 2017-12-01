@@ -26,6 +26,17 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
                 tooltip: 'Detalle de ventas agencia por periodo'
             }
         );
+        
+        this.addButton('btnTkt',
+                {
+                    text: 'Tkts',
+                    iconCls: 'blist',
+                    disabled: true,
+                    handler: this.onTkts,
+                    tooltip: 'Billetes emitidos de la agencia corporativa'
+                }
+            );
+        
 		this.iniciarEventos();
 		this.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
 		this.load({params:{start:0, limit:this.tam_pag}});
@@ -45,7 +56,21 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
                     this.idContenedor,
                     'MovimientoEntidad'
         )
-    },        
+    },  
+    onTkts : function () {
+            var rec = {maestro: this.sm.getSelected().data};
+
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/detalle_boletos_web/DetalleBoletosWeb.php',
+                'Boletos',
+                {
+                    width:800,
+                    height:'90%'
+                },
+                rec,
+                this.idContenedor,
+                'DetalleBoletosWeb');
+
+    },      
 			
 	Atributos:[
 		{
@@ -54,6 +79,26 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
 					labelSeparator:'',
 					inputType:'hidden',
 					name: 'id_periodo_venta_agencia'
+			},
+			type:'Field',
+			form:true 
+		},
+		{
+			//configuracion del componente
+			config:{
+					labelSeparator:'',
+					inputType:'hidden',
+					name: 'id_periodo_venta'
+			},
+			type:'Field',
+			form:true 
+		},
+		{
+			//configuracion del componente
+			config:{
+					labelSeparator:'',
+					inputType:'hidden',
+					name: 'id_agencia'
 			},
 			type:'Field',
 			form:true 
@@ -210,6 +255,44 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
         },
         {
             config:{
+                name: 'monto_mb',
+                fieldLabel: 'Saldo a pagar MB',
+                gwidth: 130,
+                galign:'right',
+                renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number((value*-1),'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number((value*-1),'0,000.00'));
+						}
+					}
+            },
+            type:'NumberField',
+            grid:true,
+            form:false
+        },
+        {
+            config:{
+                name: 'monto_usd',
+                fieldLabel: 'Saldo a pagar USD',
+                gwidth: 130,
+                galign:'right',
+                renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number((value*-1),'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number((value*-1),'0,000.00'));
+						}
+					}
+            },
+            type:'NumberField',
+            grid:true,
+            form:false
+        },
+        {
+            config:{
                 name: 'total_boletos_mb',
                 fieldLabel: 'Total Boletos MB',
                 gwidth: 130,
@@ -307,7 +390,9 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
 		{name:'total_boletos_mb', type: 'numeric'},
 		{name:'total_boletos_usd', type: 'numeric'},
 		{name:'total_comision_mb', type: 'numeric'},
-		{name:'total_comision_usd', type: 'numeric'}		
+		{name:'total_comision_usd', type: 'numeric'},
+		{name:'monto_mb', type: 'numeric'},
+		{name:'monto_usd', type: 'numeric'}		
 		
 	],
 	sortInfo:{
@@ -319,8 +404,10 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
         Phx.vista.PeriodoVentaAgencia.superclass.preparaMenu.call(this); 
         if (rec.data.tipo_reg != 'summary') {
         	this.getBoton('btnDetalle').enable();
+        	this.getBoton('btnTkt').enable();
         } else {
         	this.getBoton('btnDetalle').disable(); 
+        	this.getBoton('btnTkt').disable();
         }  
     },
     liberaMenu:function()
@@ -328,6 +415,7 @@ Phx.vista.PeriodoVentaAgencia=Ext.extend(Phx.gridInterfaz,{
                
         Phx.vista.PeriodoVentaAgencia.superclass.liberaMenu.call(this);
         this.getBoton('btnDetalle').disable();  
+        this.getBoton('btnTkt').disable();
     },
 	bdel:false,
 	bsave:false,

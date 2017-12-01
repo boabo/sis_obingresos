@@ -13,6 +13,17 @@ class ACTDetalleBoletosWeb extends ACTbase{
 			$this->objParam->addFiltro(" detbol.id_agencia = ".$this->objParam->getParametro('id_agencia'));			
 		}
 		
+		if($this->objParam->getParametro('id_periodo_venta') != ''){
+			$this->objParam->addFiltro(" me.id_periodo_venta = ".$this->objParam->getParametro('id_periodo_venta'));	
+			$this->objParam->addFiltro(" detbol.void = ''no''");
+		}
+		
+		if ($this->objParam->getParametro('fecha_inicio') != '' && $this->objParam->getParametro('fecha_fin') != '') {
+            $this->objParam->addFiltro("detbol.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and 
+            							detbol.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
+			
+        }
+		
 		if($this->objParam->getParametro('numero_autorizacion') != ''){
 			$this->objParam->addFiltro(" detbol.numero_autorizacion = ''".$this->objParam->getParametro('numero_autorizacion')."''");			
 		}
@@ -33,6 +44,53 @@ class ACTDetalleBoletosWeb extends ACTbase{
 
 			$temp['tipo_reg'] = 'summary';
 			$temp['id_detalle_boletos_web'] = 0;
+			
+			$this->res->total++;
+			
+			$this->res->addLastRecDatos($temp);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+
+	function reporteVentasCorporativas(){
+		$this->objParam->defecto('ordenacion','nombre');
+		$this->objParam->defecto('dir_ordenacion','asc');
+		
+		if($this->objParam->getParametro('fecha_ini') != '' && $this->objParam->getParametro('fecha_fin') != '') {
+			$this->objParam->addFiltro(" dbw.fecha >= ''" . $this->objParam->getParametro('fecha_ini') . "'' AND dbw.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");			
+		}
+		
+		if($this->objParam->getParametro('id_moneda') != ''){
+			$this->objParam->addFiltro(" dbw.id_moneda = ".$this->objParam->getParametro('id_moneda'));			
+		}
+		
+		
+		if($this->objParam->getParametro('id_lugar') != ''){
+			$this->objParam->addFiltro(" a.id_lugar IN ( ".$this->objParam->getParametro('id_lugar').")");			
+		}
+		
+		if($this->objParam->getParametro('tipo_agencia') != '' && $this->objParam->getParametro('tipo_agencia') != 'todas'){
+			$this->objParam->addFiltro(" a.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");			
+		}
+		
+		if($this->objParam->getParametro('forma_pago') != '' && $this->objParam->getParametro('forma_pago') != 'todas'){
+			$this->objParam->addFiltro("''" . $this->objParam->getParametro('forma_pago') . "''  = ANY(con.formas_pago)");			
+		}
+		
+		$this->objParam->addFiltro(" dbw.void = ''no'' and dbw.origen = ''portal''");
+		
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODDetalleBoletosWeb','reporteVentasCorporativas');
+			
+		} else{
+			$this->objFunc=$this->create('MODDetalleBoletosWeb');
+			
+			$this->res=$this->objFunc->reporteVentasCorporativas($this->objParam);
+			$temp = Array();
+			$temp['monto_total'] = $this->res->extraData['monto_total'];
+			$temp['tipo_reg'] = 'summary';
+			$temp['id_agencia'] = 0;
 			
 			$this->res->total++;
 			
@@ -102,6 +160,7 @@ class ACTDetalleBoletosWeb extends ACTbase{
     function conciliacionBancaInterRes(){
         $this->objFunc = $this->create('MODDetalleBoletosWeb');
         $this->res = $this->objFunc->listarConciliacionResumen($this->objParam);
+		
         //var_dump( $this->res);exit;
         //obtener titulo de reporte
         $titulo = 'Reporte Conciliacion Resumen';

@@ -58,6 +58,34 @@ class  MODDetalleBoletosWeb extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+
+	function reporteVentasCorporativas(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+		$this->transaccion='OBING_REPCENCOR_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+		
+		$this->capturaCount('monto_total','numeric');		
+				
+		//Definicion de la lista del resultado del query
+		$this->captura('id_agencia','int4');
+		$this->captura('nombre','varchar');
+		$this->captura('codigo_int','varchar');
+		$this->captura('tipo_agencia','varchar');
+		$this->captura('formas_pago','varchar');
+		$this->captura('codigo_ciudad','varchar');
+		$this->captura('monto_total','numeric');		
+		
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		
+				
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
+
     function listarReporteNitRazon(){
         //Definicion de variables para ejecucion del procedimientp
             $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
@@ -161,9 +189,7 @@ class  MODDetalleBoletosWeb extends MODbase{
         //Ejecuta la instruccion
         $this->armarConsulta();
 
-
-
-        $this->ejecutarConsulta();
+		$this->ejecutarConsulta();
 
         return $this->respuesta;
     }
