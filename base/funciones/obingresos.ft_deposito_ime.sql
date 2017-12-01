@@ -543,6 +543,52 @@ BEGIN
             return v_resp;
 
 		end;
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEP_MI'
+ 	#DESCRIPCION:	Recuperar datos
+ 	#AUTOR:		jrivera
+ 	#FECHA:		06-01-2016 22:42:28
+	***********************************/
+
+	elsif(p_transaccion='OBING_DEP_MI')then
+
+		begin
+
+
+        IF  pxp.f_existe_parametro(p_tabla,'nro_deposito') THEN
+           if v_parametros.nro_deposito = null or v_parametros.nro_deposito = '' then
+           raise exception 'error';
+           end if;
+        END IF;
+          IF  pxp.f_existe_parametro(p_tabla,'codigo') THEN
+           if v_parametros.codigo = null or v_parametros.codigo = '' then
+           raise exception 'error';
+           end if;
+        END IF;
+         IF  pxp.f_existe_parametro(p_tabla,'fecha_venta') THEN
+           if v_parametros.fecha_venta = null then
+           raise exception 'error';
+           end if;
+        END IF;
+          IF  pxp.f_existe_parametro(p_tabla,'monto_deposito') THEN
+           if v_parametros.monto_deposito = null  then
+           raise exception 'error';
+           end if;
+        END IF;
+         IF  pxp.f_existe_parametro(p_tabla,'desc_moneda') THEN
+           if v_parametros.desc_moneda = null  or v_parametros.desc_moneda = '' then
+           raise exception 'error';
+           end if;
+        END IF;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos eliminado(a)');
+            v_resp = pxp.f_agrega_clave(v_resp,'nro_deposito',v_parametros.nro_deposito::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
 	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;
