@@ -399,8 +399,7 @@ Phx.vista.PeriodoVenta=Ext.extend(Phx.gridInterfaz,{
         var rec = this.sm.getSelected();
         Ext.MessageBox.prompt('Cuidado!!!','Para generar un periodo desde la interfaz ingrese el codigo secreto',
         function (option,value) { 
-        	if (value == '666') {
-        		
+        	if (value == '666' && option == 'ok') {        		
         		
 	        	Phx.CP.loadingShow();
 		        Ext.Ajax.request({

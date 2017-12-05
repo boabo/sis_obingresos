@@ -168,6 +168,8 @@ class MODPeriodoVenta extends MODbase{
         $this->captura('total_debito_usd','numeric');
         $this->captura('total_neto_mb','numeric');
         $this->captura('total_neto_usd','numeric');
+		$this->captura('monto_mb','numeric');
+        $this->captura('monto_usd','numeric');
         $this->captura('billetes','text');
 		
 

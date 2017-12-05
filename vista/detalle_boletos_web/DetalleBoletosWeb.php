@@ -14,17 +14,43 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 
 	constructor:function(config){
 		this.maestro=config.maestro;
+		if (this.maestro) {
+			if('id_agencia' in this.maestro){			    
+			    this.initButtons=[this.fecha_ini,this.fecha_fin];
+			}
+		}
+		
     	//llama al constructor de la clase padre
 		Phx.vista.DetalleBoletosWeb.superclass.constructor.call(this,config);
 		this.init();
+		
 		if (this.maestro) {
 			if('id_agencia' in this.maestro){
 			    this.store.baseParams.id_agencia = this.maestro.id_agencia;
+			    
+			    if('id_periodo_venta' in this.maestro) { 
+			    	this.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
+			    }
 			    this.load({params:{start:0, limit:this.tam_pag}});
+			    this.initButtons=[this.fecha_ini,this.fecha_fin];
+			    this.iniciarEventos();
 			}
 		}
 		
 	},
+	primeraCarga : true,
+	fecha_ini : new Ext.form.DateField({
+        format: 'd/m/Y',
+        fieldLabel: 'Fecha Ini',
+        width:125,
+        emptyText:'Fecha Ini...'
+    }), 
+    fecha_fin : new Ext.form.DateField({
+        format: 'd/m/Y',
+        fieldLabel: 'Fecha Fin',
+        width:125,
+        emptyText:'Fecha Fin...'
+    }),  
 			
 	Atributos:[
 		{
@@ -53,22 +79,7 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 				form:false,
             	bottom_filter: true
 		},	
-		{
-			config:{
-				name: 'pnr',
-				fieldLabel: 'PNR',
-				allowBlank: false,
-				anchor: '80%',
-				gwidth: 110,
-				maxLength:15
-			},
-				type:'TextField',
-				filters:{pfiltro:'me.pnr',type:'string'},
-				id_grupo:1,
-				grid:true,
-				form:false,
-            	bottom_filter: true
-		},	
+		
 		{
 			config:{
 				name: 'fecha',
@@ -181,12 +192,44 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 		},
 		{
 			config:{
+				name: 'pnr',
+				fieldLabel: 'PNR',
+				allowBlank: false,
+				anchor: '80%',
+				gwidth: 110,
+				maxLength:15,
+				renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', value);
+						}
+						else{
+							return '<b><p align="right">Total Debitos: &nbsp;&nbsp; </p></b>';
+						}
+					} 
+			},
+				type:'TextField',
+				filters:{pfiltro:'me.pnr',type:'string'},
+				id_grupo:1,
+				grid:true,
+				form:false,
+            	bottom_filter: true
+		},	
+		{
+			config:{
 				name: 'void',
 				fieldLabel: 'Void',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
-				maxLength:3
+				maxLength:3,
+				renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', value);
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number((record.data.importe-record.data.comision),'0,000.00'));
+						}
+					} 
 			},
 				type:'TextField',
 				filters:{pfiltro:'detbol.void',type:'string'},
@@ -254,6 +297,28 @@ Phx.vista.DetalleBoletosWeb=Ext.extend(Phx.gridInterfaz,{
 
 
 	},
+	iniciarEventos : function () {
+    	this.fecha_ini.on('change',function (field, newValue, oldValue) {
+    		this.store.baseParams.fecha_inicio = newValue.dateFormat('d/m/Y');
+    		if (this.fecha_fin.getValue() && this.primeraCarga)  {
+    			this.primeraCarga = false;
+    			this.load({params:{start:0, limit:this.tam_pag}});
+    		} else if (this.fecha_fin.getValue() && !this.primeraCarga) {
+    			this.onButtonAct();
+    		}
+    		
+    	},this);
+    	this.fecha_fin.on('change',function (field, newValue, oldValue) {
+    		this.store.baseParams.fecha_fin = newValue.dateFormat('d/m/Y');
+    		if (this.fecha_ini.getValue() && this.primeraCarga) {
+    			this.primeraCarga = false;
+    			this.load({params:{start:0, limit:this.tam_pag}})
+    		} else if (this.fecha_ini.getValue() && !this.primeraCarga) {
+    			this.onButtonAct();
+    		}
+    		
+    	},this);
+    },
 	 
 	bdel:false,
 	bedit:false,

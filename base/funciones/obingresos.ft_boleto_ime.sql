@@ -116,6 +116,7 @@ DECLARE
     v_boletos_no_anulados_amadeus 	varchar[];
     v_boletos_no_anulados_erp		varchar[];
     v_boleto_voided			varchar;
+    v_id_usuario			integer;
 
 BEGIN
 
@@ -736,7 +737,6 @@ BEGIN
                       v_parametros.id_auxiliar,
                       v_codigo_tarjeta
                     );
-
             	end if;
                 if (v_saldo_fp2 > 0) then
               		v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2 );
@@ -779,7 +779,6 @@ BEGIN
                       v_codigo_tarjeta
                     );
             	end if;
-
                 select obingresos.f_valida_boleto_amadeus_fp(v_id_boleto) into v_res;
 
 
@@ -1549,7 +1548,14 @@ BEGIN
 
         begin
         	if (pxp.f_get_variable_global('vef_tiene_apertura_cierre') = 'si') then
-            	IF p_administrador !=1 THEN
+            	
+            	select id_usuario into v_id_usuario
+                from vef.tsucursal_usuario
+                where id_punto_venta=v_parametros.id_punto_venta
+                and id_usuario=p_id_usuario
+                and tipo_usuario='administrador';
+                
+            	IF p_administrador !=1 AND v_id_usuario IS NULL THEN
                   if (exists(	select 1
                                     from vef.tapertura_cierre_caja acc
                                     where acc.id_usuario_cajero = p_id_usuario and

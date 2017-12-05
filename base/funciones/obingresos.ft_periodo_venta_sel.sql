@@ -1,10 +1,11 @@
-CREATE OR REPLACE FUNCTION obingresos.ft_periodo_venta_sel(
-    p_administrador integer,
-    p_id_usuario integer,
-    p_tabla character varying,
-    p_transaccion character varying)
-  RETURNS character varying AS
-$BODY$
+CREATE OR REPLACE FUNCTION obingresos.ft_periodo_venta_sel (
+  p_administrador integer,
+  p_id_usuario integer,
+  p_tabla varchar,
+  p_transaccion varchar
+)
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_periodo_venta_sel
@@ -133,6 +134,8 @@ BEGIN
                                     pva.monto_debito_usd,
 									pva.monto_neto_mb,
                                     pva.monto_neto_usd,
+                                    pva.monto_mb,
+                                    pva.monto_usd,
                                     string_agg(dbw.billete, '','')::text
                                     from obingresos.tperiodo_venta pv
                                     inner join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
@@ -528,6 +531,9 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
-$BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
+COST 100;
