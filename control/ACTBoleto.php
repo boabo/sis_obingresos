@@ -1486,8 +1486,8 @@ class ACTBoleto extends ACTbase{
 																											or exists (
 																													 select 1
 																													 from vef.tsucursal_usuario
-																													 where id_punto_venta=16
-																													 and id_usuario=48
+																													 where id_punto_venta=". $this->objParam->getParametro('id_punto_venta') . "
+																													 and id_usuario=". $_SESSION["ss_id_usuario"] . "
 																													 and tipo_usuario=''administrador''
 																											))");
 				}else{
