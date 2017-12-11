@@ -230,7 +230,74 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
             },
             grid:true,
             form:true
-          }
+         },
+         
+         {
+			config:{
+				name: 'bloquear_emision',
+				fieldLabel: 'Bloquear emisión',
+				allowBlank:false,
+				emptyText:'Tipo...',
+	       		typeAhead: true,
+	       		triggerAction: 'all',
+	       		lazyRender:true,
+	       		mode: 'local',
+				gwidth: 150,
+				store:['si','no']
+			},
+				type:'ComboBox',
+				filters:{	
+	       		         type: 'list',
+	       				 options: ['si','no'],	
+	       		 	},
+				id_grupo:1,
+				grid:true,
+				form:true
+		},
+		{
+			config:{
+				name: 'validar_boleta',
+				fieldLabel: 'Validar boleta',
+				allowBlank:false,
+				emptyText:'Tipo...',
+	       		typeAhead: true,
+	       		triggerAction: 'all',
+	       		lazyRender:true,
+	       		mode: 'local',
+				gwidth: 150,
+				store:['si','no']
+			},
+				type:'ComboBox',
+				filters:{	
+	       		         type: 'list',
+	       				 options: ['si','no'],	
+	       		 	},
+				id_grupo:1,
+				grid:true,
+				form:true
+		},
+		{
+			config:{
+				name: 'controlar_periodos_pago',
+				fieldLabel: 'Controlar periodos de pago',
+				allowBlank:false,
+				emptyText:'Tipo...',
+	       		typeAhead: true,
+	       		triggerAction: 'all',
+	       		lazyRender:true,
+	       		mode: 'local',
+				gwidth: 150,
+				store:['si','no']
+			},
+				type:'ComboBox',
+				filters:{	
+	       		         type: 'list',
+	       				 options: ['si','no'],	
+	       		 	},
+				id_grupo:1,
+				grid:true,
+				form:true
+		}
 		
 		
 		
@@ -255,6 +322,10 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		{name:'tipo_agencia', type: 'string'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
+		
+		{name:'bloquear_emision', type: 'string'},
+		{name:'validar_boleta', type: 'string'},
+		{name:'controlar_periodos_pago', type: 'string'},
 		
 	],
 	sortInfo:{
