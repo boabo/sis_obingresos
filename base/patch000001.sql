@@ -1067,3 +1067,17 @@ CREATE INDEX tdetalle_boletos_web_idx1 ON obingresos.tdetalle_boletos_web
   WHERE origen = 'portal';
   
 /********************************************F-SCP-JRR-OBINGRESOS-0-30/10/2017********************************************/
+
+
+/********************************************I-SCP-JRR-OBINGRESOS-0-11/12/2017********************************************/
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN controlar_periodos_pago VARCHAR(2) NOT NULL DEFAULT 'si';
+  
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN validar_boleta VARCHAR(2) NOT NULL DEFAULT 'si';
+  
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN bloquear_emision VARCHAR(2) NOT NULL DEFAULT 'no';
+
+
+/********************************************F-SCP-JRR-OBINGRESOS-0-11/12/2017********************************************/

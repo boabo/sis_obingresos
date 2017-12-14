@@ -35,6 +35,11 @@ class MODAgencia extends MODbase{
 		$this->captura('usr_mod','varchar');
 		$this->captura('desc_moneda','varchar');
 		
+		$this->captura('bloquear_emision','varchar');
+		$this->captura('validar_boleta','varchar');
+		$this->captura('controlar_periodos_pago','varchar');
+		
+		
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -328,6 +333,10 @@ class MODAgencia extends MODbase{
 		$this->setParametro('codigo_int','codigo_int','varchar');
 		$this->setParametro('codigo','codigo','varchar');
 		$this->setParametro('tipo_agencia','tipo_agencia','varchar');
+		
+		$this->setParametro('bloquear_emision','bloquear_emision','varchar');
+		$this->setParametro('validar_boleta','validar_boleta','varchar');
+		$this->setParametro('controlar_periodos_pago','controlar_periodos_pago','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

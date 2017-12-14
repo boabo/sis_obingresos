@@ -58,7 +58,10 @@ BEGIN
 						age.tipo_agencia,
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod	,
-						mon.codigo_internacional as desc_moneda
+						mon.codigo_internacional as desc_moneda,
+                        age.bloquear_emision,
+                        age.validar_boleta,
+                        age.controlar_periodos_pago
 						from obingresos.tagencia age
 						inner join segu.tusuario usu1 on usu1.id_usuario = age.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = age.id_usuario_mod

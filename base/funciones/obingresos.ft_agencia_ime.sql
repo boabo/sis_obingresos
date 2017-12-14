@@ -191,15 +191,16 @@ BEGIN
 					
         begin
         	--verificar que la agencia tenga contrato vigente con la forma de pago indicada
-            select c.* into v_contrato
+            select c.*,a.controlar_periodos_pago,a.validar_boleta,a.bloquear_emision into v_contrato
                 from leg.tcontrato c
+                inner join obingresos.tagencia a on a.id_agencia = c.id_agencia
                 where c.id_agencia = v_parametros.id_agencia and c.estado = 'finalizado' and
                 c.fecha_inicio <= now()::date and c.fecha_fin >= now()::date;
             if (v_contrato.id_contrato is null) then
             	raise exception 'La agencia no tiene un contrato activo';    
             end if;
             --verificar que la boleta de garantia este vigente si es postpago
-        	if ('postpago' = ANY(v_contrato.formas_pago)) then
+        	if ('postpago' = ANY(v_contrato.formas_pago) and v_contrato.validar_boleta = 'si') then
             	if (not exists (
                 	select 1 
                     from leg.tanexo a
@@ -214,9 +215,13 @@ BEGIN
             			from obingresos.tperiodo_venta_agencia pva 
                         inner join obingresos.tperiodo_venta pv on pv.id_periodo_venta = pva.id_periodo_venta
                         where pv.fecha_pago is not null and fecha_pago < now()::date and pva.id_agencia = v_parametros.id_agencia
-                        and (pva.monto_mb < 0 or pva.monto_usd < 0))) then
+                        and (pva.monto_mb < 0 or pva.monto_usd < 0)) and v_contrato.controlar_periodos_pago = 'si') then
             	raise exception 'La agencia tiene periodos adeudados vencidos. Verifique su estado de cuenta!!!';            
         	end if;
+            
+            if (v_contrato.bloquear_emision = 'si') then
+            	raise exception 'La emision para esta agencia ha sido bloqueada por el administrador, consulte con el area de ingresos';
+            end if;
             
             select po_autorizacion, po_saldo into v_codigo_auto ,v_saldo 
             from obingresos.f_verificar_saldo_agencia(v_parametros.id_agencia,
@@ -636,7 +641,10 @@ BEGIN
 			fecha_mod = now(),
 			id_usuario_mod = p_id_usuario,
 			id_usuario_ai = v_parametros._id_usuario_ai,
-			usuario_ai = v_parametros._nombre_usuario_ai
+			usuario_ai = v_parametros._nombre_usuario_ai,
+            bloquear_emision = v_parametros.bloquear_emision,
+            validar_boleta = v_parametros.validar_boleta,
+            controlar_periodos_pago = v_parametros.controlar_periodos_pago
 			where id_agencia=v_parametros.id_agencia;
                
 			--Definicion de la respuesta
