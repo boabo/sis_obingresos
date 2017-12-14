@@ -579,6 +579,81 @@ $body$
         return v_consulta;
 
       end;
+      
+    /*********************************
+     #TRANSACCION:  'OBING_REPCENCOR_SEL'
+     #DESCRIPCION:	Listado 
+     #AUTOR:		JRR
+     #FECHA:		18-11-2016
+    ***********************************/
+
+    elsif(p_transaccion='OBING_REPCENCOR_SEL')then
+
+      begin
+      	v_consulta = 'with contrato as(
+        				select 
+							max(id_contrato) as ultimo_contrato,
+            				id_agencia 
+						from leg.tcontrato c 
+						where id_agencia is not null and c.estado = ''finalizado''
+    					group by id_agencia )
+					select a.id_agencia,a.nombre ,a.codigo_int, a.tipo_agencia,
+                    		array_to_string(con.formas_pago, '','')::varchar as formas_pago,l.codigo,sum(dbw.importe-dbw.comision) as monto
+					from obingresos.tdetalle_boletos_web dbw 
+					inner join obingresos.tagencia a on a.id_agencia = dbw.id_agencia
+					inner join contrato c on c.id_agencia = a.id_agencia
+					inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
+					inner join param.tlugar l on l.id_lugar = a.id_lugar
+					where  ' ||v_parametros.filtro  || ' 
+                    
+                    group by a.id_agencia,a.nombre,a.codigo_int, a.tipo_agencia,con.formas_pago,l.codigo';
+        
+		v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+
+                      
+                     
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+    /*********************************
+     #TRANSACCION:  'OBING_REPCENCOR_CONT'
+     #DESCRIPCION:	Listado 
+     #AUTOR:		JRR
+     #FECHA:		18-11-2016
+    ***********************************/
+
+    elsif(p_transaccion='OBING_REPCENCOR_CONT')then
+
+      begin
+      	v_consulta = 'with contrato as(
+        				select 
+							max(id_contrato) as ultimo_contrato,
+            				id_agencia 
+						from leg.tcontrato c 
+						where id_agencia is not null and c.estado = ''finalizado''
+    					group by id_agencia ),
+					 detalle as (
+                        select a.id_agencia,sum(dbw.importe-dbw.comision) as monto
+                        from obingresos.tdetalle_boletos_web dbw 
+                        inner join obingresos.tagencia a on a.id_agencia = dbw.id_agencia
+                        inner join contrato c on c.id_agencia = a.id_agencia
+                        inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
+                        inner join param.tlugar l on l.id_lugar = a.id_lugar
+					where  ' ||v_parametros.filtro  || ' 
+                    
+                    group by a.id_agencia,a.nombre,a.codigo_int, a.tipo_agencia,con.formas_pago,l.codigo)
+                    select count(id_agencia), sum(monto)
+                     from detalle';
+        
+		            
+                     
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
     else
 
       raise exception 'Transaccion inexistente';
