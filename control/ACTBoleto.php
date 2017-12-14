@@ -1375,7 +1375,7 @@ class ACTBoleto extends ACTbase{
 		curl_close($session);
 
 		$respuesta = json_decode($result);
-
+        //var_dump($respuesta);exit;
 		if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
 			$this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
@@ -1465,8 +1465,11 @@ class ACTBoleto extends ACTbase{
 				exit;
 			}
 		}
-		if ($this->objParam->getParametro('reporte') == 'reporte') {
+        //var_dump($this->objParam->getParametro('tipoReporte'));exit;
+		if ($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid') {
+
 			if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+
 				$this->objReporte = new Reporte($this->objParam,$this);
 				$this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');
 				$this->res->imprimirRespuesta($this->res->generarJson());
@@ -1787,6 +1790,62 @@ class ACTBoleto extends ACTbase{
         //inserta periodo de venta cuenta corriente
         $this->res->imprimirRespuesta($this->res->generarJson());
 
+    }
+    function viajeroFrecuente()
+    {
+         if ($this->objParam->getParametro('ffid')== null)
+         {
+             throw new Exception('Registre el FFID');
+         }
+        if ($this->objParam->getParametro('voucherCode')== null)
+        {
+            throw new Exception('Registre Voucher Code');
+        }
+
+        $data = array("FFID" => $this->objParam->getParametro('ffid'),
+            "PNR" => $this->objParam->getParametro('pnr'),
+            "TicketNumber" => $this->objParam->getParametro('ticketNumber'),
+            "VoucherCode" => $this->objParam->getParametro('voucherCode'));
+        $data_string = json_encode($data);
+        $request = 'http://172.17.59.75/LoyaltyServer/wsBoA.ServiceLibrary.Amadeus.LTY.Services.LoyaltyRestService.svc/Loyalty/ValidateVoucher/';
+        $session = curl_init($request);
+        curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($session, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($data_string))
+        );
+        $result = curl_exec($session);
+        curl_close($session);
+        $respuesta = json_decode($result,true);
+      //  var_dump($respuesta["Status"]);exit;
+        if ($respuesta["HasErrors"]== true) {
+
+            throw new Exception('Error en el servicio Voucher.'.$respuesta["Message"]);
+
+        } else {
+
+            if ($respuesta["FFId"] ==  null and  $respuesta["FullName"] == null) {
+                throw new Exception('No cumple los requisitos de viajero frecuente');
+            }
+            if ($respuesta["Message"] == null ) {
+               $mjs = 'no';
+            }else{
+                $mjs = $respuesta["Message"];
+            }
+
+            $this->objParam->addParametro('id_pasajero_frecuente', $respuesta["FFId"]);
+            $this->objParam->addParametro('nombre_completo',$respuesta["FullName"]);
+            $this->objParam->addParametro('mensaje', $mjs);
+            $this->objParam->addParametro('status', $respuesta["Status"]);
+            $this->objFunc = $this->create('MODBoleto');
+
+         if ($this->objParam->insertar('id_viajero_frecuente')) {
+            $this->res = $this->objFunc->viajeroFrecuente($this->objParam);
+         }
+         $this->res->imprimirRespuesta($this->res->generarJson());
+        }
     }
 
 }
