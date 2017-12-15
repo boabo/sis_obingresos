@@ -236,6 +236,7 @@ BEGIN
                                                  array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
                                                  array_agg(fp.codigo) as codigo_forma_pago,
                                                  array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
                                                  array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
                                                  array_agg(bfp.id_auxiliar) as id_auxiliar,
                                                  array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
@@ -274,6 +275,7 @@ BEGIN
                                  fpo.codigo_forma_pago [ 1 ]::varchar as codigo_forma_pago,
                                  fpo.numero_tarjeta [ 1 ]::varchar as numero_tarjeta,
                                  fpo.codigo_tarjeta [ 1 ]::varchar as codigo_tarjeta,
+                                 fpo.mco [ 1 ]::varchar as mco,
                                  fpo.id_auxiliar [ 1 ]::integer as id_auxiliar,
                                  fpo.nombre_auxiliar [ 1 ]::varchar as nombre_auxiliar,
                                  fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
@@ -283,16 +285,20 @@ BEGIN
                                  fpo.codigo_forma_pago [ 2 ]::varchar as codigo_forma_pago2,
                                  fpo.numero_tarjeta [ 2 ]::varchar as numero_tarjeta2,
                                  fpo.codigo_tarjeta [ 2 ]::varchar as codigo_tarjeta2,
+                                 fpo.mco [ 2 ]::varchar as mco2,
                                  fpo.id_auxiliar [ 2 ]::integer as id_auxiliar2,
                                  fpo.nombre_auxiliar [ 2 ]::varchar as nombre_auxiliar2,
-                                 fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2
+                                 fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2,
+                                  v.ffid,
+                                 v.voucher_code
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
                           inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
                           inner join param.tmoneda  mon on mon.id_moneda=suc.id_moneda
                           inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
                           left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario ';
+                          left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario
+                          left join obingresos.tviajero_frecuente v on v.id_boleto_amadeus = nr.id_boleto_amadeus ';
 
             --Definicion de la respuesta
 			--v_consulta:=v_consulta||v_parametros.filtro;

@@ -182,6 +182,7 @@ class MODBoleto extends MODbase{
 		$this->captura('codigo_forma_pago','varchar');
 		$this->captura('numero_tarjeta','varchar');
 		$this->captura('codigo_tarjeta','varchar');
+		$this->captura('mco','varchar');
 		$this->captura('id_auxiliar','int4');
 		$this->captura('nombre_auxiliar','varchar');
 		$this->captura('monto_forma_pago','numeric');
@@ -192,10 +193,12 @@ class MODBoleto extends MODbase{
 		$this->captura('codigo_forma_pago2','varchar');
 		$this->captura('numero_tarjeta2','varchar');
 		$this->captura('codigo_tarjeta2','varchar');
+        $this->captura('mco2','varchar');
 		$this->captura('id_auxiliar2','int4');
 		$this->captura('nombre_auxiliar2','varchar');
 		$this->captura('monto_forma_pago2','numeric');
-
+        $this->captura('ffid','varchar');
+        $this->captura('voucher_code','varchar');
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -397,6 +400,9 @@ class MODBoleto extends MODbase{
 		$this->setParametro('estado','estado','varchar');
 		$this->setParametro('id_punto_venta','id_punto_venta','integer');
 		$this->setParametro('id_auxiliar','id_auxiliar','integer');
+        $this->setParametro('id_auxiliar2','id_auxiliar2','integer');
+        $this->setParametro('mco','mco','varchar');
+        $this->setParametro('mco2','mco2','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -993,5 +999,28 @@ class MODBoleto extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+    function viajeroFrecuente(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_BOWEBFEC_VEF';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
+        $this->setParametro('ffid','ffid','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('ticketNumber','ticketNumber','varchar');
+        $this->setParametro('voucherCode','voucherCode','varchar');
+        $this->setParametro('id_pasajero_frecuente','id_pasajero_frecuente','int4');
+        $this->setParametro('nombre_completo','nombre_completo','varchar');
+        $this->setParametro('mensaje','mensaje','varchar');
+        $this->setParametro('status','status','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 }
 ?>

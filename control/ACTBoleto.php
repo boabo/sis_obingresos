@@ -1805,7 +1805,7 @@ class ACTBoleto extends ACTbase{
         $data = array("FFID" => $this->objParam->getParametro('ffid'),
             "PNR" => $this->objParam->getParametro('pnr'),
             "TicketNumber" => $this->objParam->getParametro('ticketNumber'),
-            "VoucherCode" => $this->objParam->getParametro('voucherCode'));
+            "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucherCode'));
         $data_string = json_encode($data);
         $request = 'http://172.17.59.75/LoyaltyServer/wsBoA.ServiceLibrary.Amadeus.LTY.Services.LoyaltyRestService.svc/Loyalty/ValidateVoucher/';
         $session = curl_init($request);
@@ -1826,18 +1826,12 @@ class ACTBoleto extends ACTbase{
 
         } else {
 
-            if ($respuesta["FFId"] ==  null and  $respuesta["FullName"] == null) {
-                throw new Exception('No cumple los requisitos de viajero frecuente');
+            if ($respuesta["Status"] == 'NOK') {
+                throw new Exception($respuesta["Message"]);
             }
-            if ($respuesta["Message"] == null ) {
-               $mjs = 'no';
-            }else{
-                $mjs = $respuesta["Message"];
-            }
-
             $this->objParam->addParametro('id_pasajero_frecuente', $respuesta["FFId"]);
             $this->objParam->addParametro('nombre_completo',$respuesta["FullName"]);
-            $this->objParam->addParametro('mensaje', $mjs);
+            $this->objParam->addParametro('mensaje', $respuesta["Message"]);
             $this->objParam->addParametro('status', $respuesta["Status"]);
             $this->objFunc = $this->create('MODBoleto');
 
