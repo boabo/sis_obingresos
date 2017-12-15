@@ -56,16 +56,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 );
 
-                /*                this.addButton('btnBoletos',
-                 {
-                 text: 'Traer Boletos',
-                 iconCls: 'breload2',
-                 disabled: false,
-                 handler: this.onTraerBoletos,
-                 tooltip: 'Traer boletos vendidos'
-                 }
-                 );*/
-
                 this.addButton('btnBoletosTodos',
                     {
                         text: 'Traer Todos Boletos',
@@ -99,6 +89,17 @@ header("content-type: text/javascript; charset=UTF-8");
                     style: 'font-size: 170%; font-weight: bold; background-image: none;'
                 });
 
+                this.addButton('btnVoucherCode',
+                    {
+                        grupo: [1],
+                        text: 'Voucher Code',
+                        iconCls: 'bdocuments',
+                        disabled: true,
+                        handler: this.onButtonVoucherCode,
+                        tooltip: 'Voucher Code'
+                    }
+                );
+                this.getBoton('btnVoucherCode').setVisible(false);
                 this.tbar.addField(this.campo_fecha);
                 this.tbar.addField(this.punto_venta);
                 var datos_respuesta = JSON.parse(response.responseText);
@@ -322,6 +323,26 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true
                 },
                 {
+                    //configuracion del componente
+                    config:{
+                        labelSeparator:'',
+                        inputType:'hidden',
+                        name: 'ffid'
+                    },
+                    type:'Field',
+                    form:true
+                },
+                {
+                    //configuracion del componente
+                    config:{
+                        labelSeparator:'',
+                        inputType:'hidden',
+                        name: 'voucher_code'
+                    },
+                    type:'Field',
+                    form:true
+                },
+                {
                     config: {
                         name: 'id_boleto_vuelo',
                         fieldLabel: 'Vuelo Ini Retorno',
@@ -509,11 +530,12 @@ header("content-type: text/javascript; charset=UTF-8");
                         minLength:10,
                         enableKeyEvents:true,
                         renderer : function(value, p, record) {
-                            if (record.data['mensaje_error'] != '') {
-                                return String.format('<div title="Error"><b><font color="red">{0}</font></b></div>', value);
 
-                            } else {
-                                return String.format('{0}', value);
+                           if (record.data['liquido'] == 100 && record.data['moneda'] == 'BOB' || record.data['liquido'] == 40  && record.data['moneda'] == 'USD' ){
+                                return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
+                               }else{
+                               return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
+
                             }
 
 
@@ -823,10 +845,27 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:true
                 },
+                ///modificado
                 {
                     config:{
                         name: 'numero_tarjeta',
-                        fieldLabel: 'No Tarjeta/MCO',
+                        fieldLabel: 'No Tarjeta',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        minLength:15,
+                        maxLength:20
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+                ///nuevo
+                {
+                    config:{
+                        name: 'mco',
+                        fieldLabel: 'MCO',
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
@@ -961,10 +1000,11 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:true
                 },
+                //modifcado
                 {
                     config:{
                         name: 'numero_tarjeta2',
-                        fieldLabel: 'No Tarjeta 2/MCO',
+                        fieldLabel: 'No Tarjeta 2',
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
@@ -973,6 +1013,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'TextField',
                     id_grupo:1,
                     grid:false,
+                    form:true
+                },
+                ///nuevo
+                {
+                    config:{
+                        name: 'mco2',
+                        fieldLabel: 'MCO 2',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        minLength:15,
+                        maxLength:20
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
                     form:true
                 },
                 {
@@ -1231,7 +1287,11 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'moneda_sucursal', type: 'string'},
                 {name:'moneda_fp1', type: 'string'},
                 {name:'moneda_fp2', type: 'string'},
-                {name:'voided', type: 'string'}
+                {name:'voided', type: 'string'},
+                {name:'ffid', type: 'string'},
+                {name:'voucher_code', type: 'string'},
+                {name:'mco', type: 'string'},
+                {name:'mco2', type: 'string'}
 
             ],
             sortInfo:{
@@ -1642,16 +1702,28 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(false);
                 }
 
+              if ( this.sm.getSelected().data['estado'] == 'borrador' && this.sm.getSelected().data['ffid'] == '' && this.sm.getSelected().data['voucher_code'] == '' && this.sm.getSelected().data['total']  > 607.00) {
+                   this.formFormual();
+               }
+
             },
+
 
             oncellclick : function(grid, rowIndex, columnIndex, e) {
                 var record = this.store.getAt(rowIndex),
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
                 if(fieldName == 'estado') {
-                    if(record.data.tipo_reg != 'summary'){
-                        this.cambiarRevision(record);
+                    if ( this.sm.getSelected().data['estado'] == 'borrador' && this.sm.getSelected().data['ffid'] == '' && this.sm.getSelected().data['voucher_code'] == '' && this.sm.getSelected().data['total']  > 100) {
+                        this.formViajeroFrecuente();
+
+                    }else {
+                        if(record.data.tipo_reg != 'summary'){
+                            this.cambiarRevision(record);
+                        }
                     }
+
+
                 }
                 if(fieldName == 'nro_boleto') {
                     if(record.data.tipo_reg != 'summary'){
@@ -1661,8 +1733,9 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             cambiarRevision: function(record){
+
                 Phx.CP.loadingShow();
-                var d = record.data
+                var d = record.data;
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/cambiarRevisionBoleto',
                     params:{ id_boleto_amadeus: d.id_boleto_amadeus},
@@ -1671,14 +1744,18 @@ header("content-type: text/javascript; charset=UTF-8");
                     timeout: this.timeout,
                     scope: this
                 });
+
+
             },
 
             successRevision: function(resp){
-                Phx.CP.loadingHide();
-                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-                if(!reg.ROOT.error){
-                    this.reload();
-                }
+
+                    Phx.CP.loadingHide();
+                    var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                    if (!reg.ROOT.error) {
+                        this.reload();
+                    }
+
             },
 
             anularBoleto:function(){
@@ -1829,7 +1906,7 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             preparaMenu:function(tb){
-                Phx.vista.BoletoAmadeus.superclass.preparaMenu.call(this,tb)
+                Phx.vista.BoletoAmadeus.superclass.preparaMenu.call(this,tb);
                 this.getBoton('btnPagarGrupo').enable();
                 var data = this.getSelectedData();
                 if(data['voided']== 'no'){
@@ -1838,12 +1915,19 @@ header("content-type: text/javascript; charset=UTF-8");
                 else{
                     this.getBoton('btnAnularBoleto').setDisabled(false);
                 }
+               /* if (data['ffid'] != '' && data['voucher_code'] != '' ){
+                    this.getBoton('btnVoucherCode').enable();
+                }else{
+                    this.getBoton('btnVoucherCode').disable();
+                }*/
+
             },
 
             liberaMenu:function(tb){
                 Phx.vista.BoletoAmadeus.superclass.liberaMenu.call(this,tb);
                 this.getBoton('btnPagarGrupo').disable();
                 this.getBoton('btnAnularBoleto').setDisabled(true);
+
             },
 
             tabsouth:[{
@@ -1938,9 +2022,11 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago.setDisabled(true);
                     this.ocultarComponente(this.Cmp.numero_tarjeta);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                    this.ocultarComponente(this.Cmp.mco);
                     this.ocultarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.numero_tarjeta.allowBlank = true;
-                    this.Cmp.codigo_tarjeta.allowBlank = true;
+                    this.Cmp.numero_tarjeta.allowBlank = true;
+                    this.Cmp.mco.allowBlank = true;
                     this.Cmp.id_auxiliar.allowBlank = true;
                 } else {
                     this.Cmp.id_forma_pago.setDisabled(false);
@@ -1948,40 +2034,48 @@ header("content-type: text/javascript; charset=UTF-8");
                     if (codigo_fp1.startsWith("CC") ||
                         codigo_fp1.startsWith("SF")) {
                         this.ocultarComponente(this.Cmp.id_auxiliar);
+                        this.ocultarComponente(this.Cmp.mco);
                         this.Cmp.id_auxiliar.reset();
                         this.mostrarComponente(this.Cmp.numero_tarjeta);
                         this.mostrarComponente(this.Cmp.codigo_tarjeta);
                         this.Cmp.numero_tarjeta.allowBlank = false;
                         this.Cmp.codigo_tarjeta.allowBlank = false;
                         this.Cmp.id_auxiliar.allowBlank = true;
+                        this.Cmp.mco.allowBlank = true;
                         //tarjeta de credito
                     } else if (codigo_fp1.startsWith("CT")) {
                         //cuenta corriente
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
+                        this.ocultarComponente(this.Cmp.mco);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
                         this.mostrarComponente(this.Cmp.id_auxiliar);
                         this.Cmp.numero_tarjeta.reset();
                         this.Cmp.codigo_tarjeta.reset();
                         this.Cmp.numero_tarjeta.allowBlank = true;
+                        this.Cmp.mco2.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = false;
                     } else if (codigo_fp1.startsWith("MCO")) {
                         //mco
+                        this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.id_auxiliar);
                         this.Cmp.id_auxiliar.reset();
-                        this.mostrarComponente(this.Cmp.numero_tarjeta);
+                        this.mostrarComponente(this.Cmp.mco);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                        this.Cmp.numero_tarjeta.allowBlank = false;
+                        this.Cmp.mco.allowBlank = false;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = true;
+                        this.Cmp.numero_tarjeta.allowBlank = true;
                     }else {
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
+                        this.ocultarComponente(this.Cmp.mco);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
                         this.ocultarComponente(this.Cmp.id_auxiliar);
                         this.Cmp.numero_tarjeta.reset();
                         this.Cmp.codigo_tarjeta.reset();
                         this.Cmp.id_auxiliar.reset();
                         this.Cmp.numero_tarjeta.allowBlank = true;
+                        this.Cmp.mco.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = true;
                     }
@@ -1994,9 +2088,11 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.id_forma_pago2.setDisabled(true);
                         this.Cmp.monto_forma_pago2.setDisabled(true);
                         this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                        this.ocultarComponente(this.Cmp.mco2);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                         this.ocultarComponente(this.Cmp.id_auxiliar2);
                         this.Cmp.numero_tarjeta2.allowBlank = true;
+                        this.Cmp.mco2.allowBlank = true;
                         this.Cmp.codigo_tarjeta2.allowBlank = true;
                         this.Cmp.id_auxiliar2.allowBlank = true;
                         this.Cmp.numero_tarjeta2.reset();
@@ -2012,34 +2108,42 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.ocultarComponente(this.Cmp.mco2);
                             this.Cmp.numero_tarjeta2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
                             this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
 
                         } else if (codigo_fp2.startsWith("CT")) {
                             //cuenta corriente
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.mostrarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = false;
                         } else if (codigo_fp2.startsWith("MCO")) {
                             //mco
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.Cmp.id_auxiliar2.reset();
-                            this.mostrarComponente(this.Cmp.numero_tarjeta2);
+                            this.mostrarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-                            this.Cmp.numero_tarjeta2.allowBlank = false;
+                            this.Cmp.mco2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.numero_tarjeta2.allowBlank = true;
                         }else {
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.numero_tarjeta2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.reset();
@@ -2049,15 +2153,159 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 } else {
                     this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                    this.ocultarComponente(this.Cmp.mco2);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
                     this.Cmp.numero_tarjeta2.allowBlank = true;
+                    this.Cmp.mco2.allowBlank = true;
                     this.Cmp.codigo_tarjeta2.allowBlank = true;
                     this.Cmp.id_auxiliar2.allowBlank = true;
                     this.Cmp.id_forma_pago2.setDisabled(true);
                     this.Cmp.monto_forma_pago2.setDisabled(true);
                 }
 
+            },
+        formViajeroFrecuente: function () {
+
+            var dato = this.sm.getSelected().data;
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/boleto/FormViajeroFrecuente.php',
+                'Formulario Viajero Frecuente',
+                {
+                    modal:true,
+                    width:300,
+                    height:200
+                },
+                dato,
+                this.idContenedor,
+                'FormViajeroFrecuente'
+            );
+        },
+        onButtonVoucherCode:function() {
+            var rec=this.sm.getSelected();
+            console.log ('Data',rec.data);
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/boleto/ViajeroFrecuente.php',
+                'Voucher Code',
+                {
+                    width:'50%',
+                    height:'50%'
+                },
+                rec.data,
+                this.idContenedor,
+                'ViajeroFrecuente');
+        },
+        formFormual: function () {
+
+                    var ffid = new Ext.form.TextField(
+                        {
+                                name: 'ffid',
+                                msgTarget: 'title',
+                                fieldLabel: 'FFID',
+                                allowBlank: false,
+                                anchor: '90%',
+                                style: 'background-color:#9BF592 ; background-image: none;',
+                                maxLength:50
+                        });
+
+                    var voucherCoide = new Ext.form.TextField(
+                        {
+                            name: 'voucherCode',
+                            msgTarget: 'title',
+                            fieldLabel: 'Voucher Code',
+                            allowBlank: false,
+                            anchor: '90%',
+                            style: 'background-color: #9BF592; background-image: none;',
+                            maxLength:50
+                        });
+                    var ticketNumber = new Ext.form.TextField(
+                        {
+                            name: 'ticketNumber',
+                            msgTarget: 'title',
+                            fieldLabel: 'Ticket Number',
+                            allowBlank: true,
+                            readOnly :true,
+                            anchor: '90%',
+                            style: 'background-color: #E1F590; background-image: none;',
+                            value: this.sm.getSelected().data['nro_boleto'] ,
+                            maxLength:50
+                        });
+                    var pnr = new Ext.form.TextField(
+                        {
+                            name: 'pnr',
+                            msgTarget: 'title',
+                            fieldLabel: 'PNR',
+                            allowBlank: true,
+                            readOnly :true,
+                            anchor: '90%',
+                            style: 'background-color: #E1F590; background-image: none;',
+                            value: this.sm.getSelected().data['localizador'] ,
+                            maxLength:50
+                        });
+
+                    var formularioInicio = new Ext.form.FormPanel({
+                        items: [ffid,voucherCoide,ticketNumber,pnr],
+                        padding: true,
+                        bodyStyle:'padding:5px 5px 0',
+                        border: false,
+                        frame: false
+
+                    });
+
+                    var VentanaInicio = new Ext.Window({
+                        title: 'Formulario Viajero Frecuente',
+                        modal: true,
+                        width: 300,
+                        height: 200,
+                        bodyStyle: 'padding:5px;',
+                        layout: 'fit',
+                        hidden: true,
+                        buttons: [
+                            {
+                                text: '<i class="fa fa-check"></i> Aceptar',
+                                handler: function () {
+                                    if (formularioInicio.getForm().isValid()) {
+                                        validado = true;
+                                        this.ffid = ffid.getValue();
+                                        this.voucher = voucherCoide.getValue();
+                                        this.ticket = ticketNumber.getValue();
+                                        this.pnr  = pnr.getValue();
+                                        VentanaInicio.close();
+                                        m = this;
+                                        Ext.Ajax.request({
+                                            url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
+                                            params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
+                                                    ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
+                                                    pnr:this.pnr },
+                                            success:function(resp){
+                                                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                                console.log('id',reg);
+                                            },
+                                            failure: this.conexionFailure,
+                                            timeout:this.timeout,
+                                            scope:this
+                                        });
+
+
+
+
+                                    }
+                                },
+                                scope: this
+                            },
+                            {
+                                text: '<i class="fa fa-check"></i> Declinar',
+                                handler : function() {
+                                    //refresh source grid
+                                    console.log(formularioInicio.getForm());
+                                    formularioInicio.getForm().reset();
+                                },
+                                scope: this
+                            }
+                            ],
+                        items: formularioInicio,
+                        autoDestroy: true,
+                        closeAction: 'close'
+                    });
+                    VentanaInicio.show();
             }
 
         }
