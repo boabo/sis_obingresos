@@ -120,6 +120,7 @@ DECLARE
 	v_id_fp_modo					integer;
     v_id_fpago				integer;
     v_id_viajero_frecuente integer;
+    v_importe 				numeric;
 
 BEGIN
 
@@ -395,19 +396,30 @@ BEGIN
             	raise exception 'El boleto ya fue revisado, no puede modificarse';
             end if;
 
+            if (left (v_parametros.mco,3)  <> '930' and v_parametros.mco <> '')then
+            raise exception 'El numero del MCO tiene que empezar con 930';
+            end if;
+
+          	if (char_length(v_parametros.mco::varchar) <> 15 and v_parametros.mco <> '' ) then
+            raise exception 'El numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
+            end if;
 
 
             if (v_parametros.id_forma_pago is not null and v_parametros.id_forma_pago != 0) then
-            	 	select a.id_forma_pago into v_id_fpago
+            	 	select 	a.id_forma_pago,
+                    		a.importe
+                    into
+                    v_id_fpago,
+                    v_importe
                     from obingresos.tboleto_amadeus_forma_pago a
                     inner join vef.tforma_pago f on f.id_forma_pago = a.id_forma_pago
                     where a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
 
-                    if v_id_fpago <> v_parametros.id_forma_pago then
-                        select obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
-            													v_parametros.numero_tarjeta::varchar,v_parametros.id_auxiliar,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
-                                                                 v_parametros.mco)
+                    if v_id_fpago = v_parametros.id_forma_pago and v_importe <> v_parametros.monto_forma_pago or v_id_fpago <> v_parametros.id_forma_pago then
+                        select obingresos.f_forma_pago_amadeus_mod(	v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
+            														v_parametros.numero_tarjeta::varchar,v_parametros.id_auxiliar,
+                                                                	p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
+                                                                 	v_parametros.mco)
                         into
                         v_id_fp_modo;
                     end if;
@@ -430,6 +442,8 @@ BEGIN
                 		v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
                 	end if;
                 end if;
+
+
                  --raise exception 'llega';
                 INSERT INTO
                   obingresos.tboleto_amadeus_forma_pago
@@ -461,14 +475,25 @@ BEGIN
                   1,
                   v_parametros.mco
                 );
+
+                if (left (v_parametros.mco2::varchar,3)<> '930' and v_parametros.mco2 <> '' )then
+                    raise exception 'Segunda forma de pago el numero del MCO tiene que empezar con 390';
+                    end if;
+
+                    if (char_length(v_parametros.mco2::varchar) <> 15 and v_parametros.mco2 <> '') then
+                    raise exception 'Segunda forma de pago el numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
+                    end if;
 				 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
 
-                 select a.id_forma_pago into v_id_fpago
+                 select a.id_forma_pago,
+                 		a.importe
+                  into v_id_fpago,
+                  		v_importe
                     from obingresos.tboleto_amadeus_forma_pago a
                     inner join vef.tforma_pago f on f.id_forma_pago = a.id_forma_pago
                     where a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
 
-                    if v_id_fpago <> v_parametros.id_forma_pago2 or  v_parametros.id_forma_pago2 is not null then
+                    if v_id_fpago <> v_parametros.id_forma_pago2  or  v_parametros.id_forma_pago2 is not null or v_id_fpago = v_parametros.id_forma_pago2 and v_importe <> v_parametros.monto_forma_pago2 then
 
                         select obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,

@@ -1804,17 +1804,24 @@ class ACTBoleto extends ACTbase{
 
         $data = array("FFID" => $this->objParam->getParametro('ffid'),
             "PNR" => $this->objParam->getParametro('pnr'),
-            "TicketNumber" => $this->objParam->getParametro('ticketNumber'),
+            "TicketNumber" => '930'.$this->objParam->getParametro('ticketNumber'),
             "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucherCode'));
         $data_string = json_encode($data);
-        $request = 'http://172.17.59.75/LoyaltyServer/wsBoA.ServiceLibrary.Amadeus.LTY.Services.LoyaltyRestService.svc/Loyalty/ValidateVoucher/';
+        $request = 'http://172.17.45.127/LoyaltyRestService/Api/LoyaltyRest/ValidateVoucher';
+		
+		$user_id = '1';
+		$passwd = 'F6C66224B072D38B5C2E3859179CED04';
+		
         $session = curl_init($request);
         curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+		
         curl_setopt($session, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($data_string))
+                'Content-Length: ' . strlen($data_string),
+				'LoyaltyAuthorization: ' .  strtoupper(md5($user_id . $passwd)),
+				'UserId: ' . $user_id)
         );
         $result = curl_exec($session);
         curl_close($session);
@@ -1829,11 +1836,11 @@ class ACTBoleto extends ACTbase{
             if ($respuesta["Status"] == 'NOK') {
                 throw new Exception($respuesta["Message"]);
             }
-            $this->objParam->addParametro('id_pasajero_frecuente', $respuesta["FFId"]);
-            $this->objParam->addParametro('nombre_completo',$respuesta["FullName"]);
-            $this->objParam->addParametro('mensaje', $respuesta["Message"]);
-            $this->objParam->addParametro('status', $respuesta["Status"]);
-            $this->objFunc = $this->create('MODBoleto');
+                $this->objParam->addParametro('id_pasajero_frecuente', $respuesta["FFId"]);
+                $this->objParam->addParametro('nombre_completo', $respuesta["FullName"]);
+                $this->objParam->addParametro('mensaje', 'yes');
+                $this->objParam->addParametro('status', $respuesta["Status"]);
+                $this->objFunc = $this->create('MODBoleto');
 
          if ($this->objParam->insertar('id_viajero_frecuente')) {
             $this->res = $this->objFunc->viajeroFrecuente($this->objParam);

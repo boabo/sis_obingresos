@@ -89,7 +89,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     style: 'font-size: 170%; font-weight: bold; background-image: none;'
                 });
 
-                /*this.addButton('btnVoucherCode',
+                this.addButton('btnVoucherCode',
                     {
                         grupo: [1],
                         text: 'Voucher Code',
@@ -99,7 +99,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         tooltip: 'Voucher Code'
                     }
                 );
-                this.getBoton('btnVoucherCode').setVisible(false);*/
+                this.getBoton('btnVoucherCode').setVisible(false);
                 this.tbar.addField(this.campo_fecha);
                 this.tbar.addField(this.punto_venta);
                 var datos_respuesta = JSON.parse(response.responseText);
@@ -530,27 +530,13 @@ header("content-type: text/javascript; charset=UTF-8");
                         minLength:10,
                         enableKeyEvents:true,
                         renderer : function(value, p, record) {
-                           /* if (record.data['mensaje_error'] != '') {
-                                return String.format('<div title="Error"><b><font color="red">{0}</font></b></div>', value);
 
-                            }*/
-                           /*  if (record.data['total'] > 600){
-                                return String.format('<div title="Voucher"><b><font color="blue">{0}</font></b></div>', value);
-                            }
-                            else {
-                                 return String.format('<div title="Error"><b><font color="red">{0}</font></b></div>', value);
-                                //return String.format('{0}', value);
-                            }*/
-                           /* if (record.data['liquido'] == 100 && record.data['moneda'] == 'BOB' || record.data['liquido'] == 40  && record.data['moneda'] == 'USD' ){
+                            if (record.data['total'] = 30 && record.data['moneda'] == 'BOB' || record.data['total_moneda_extranjera'] == 40 && record.data['moneda'] == 'USD'
+                                || record.data['total_moneda_extranjera'] == 70 && record.data['moneda'] == 'USD'){
                                 return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
                                }else{
                                return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
 
-                            }*/
-                            if (record.data['mensaje_error'] != '') {
-                                return String.format('<div title="Error"><b><font color="red">{0}</font></b></div>', value);
-                            } else {
-                                return String.format('{0}', value);
                             }
 
 
@@ -1717,9 +1703,10 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(false);
                 }
 
-              /* if ( this.sm.getSelected().data['estado'] == 'borrador' && this.sm.getSelected().data['ffid'] == '' && this.sm.getSelected().data['voucher_code'] == '' && this.sm.getSelected().data['total']  > 607.00) {
+                if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['total'] = 30 && this.sm.getSelected().data['estado'] == 'borrador'
+                    || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['total'] == 40 && this.sm.getSelected().data['estado'] == 'borrador') {
                    this.formFormual();
-               }*/
+               }
 
             },
 
@@ -1729,17 +1716,16 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
                 if(fieldName == 'estado') {
-                   /* if ( this.sm.getSelected().data['estado'] == 'borrador' && this.sm.getSelected().data['ffid'] == '' && this.sm.getSelected().data['voucher_code'] == '' && this.sm.getSelected().data['total']  > 100) {
+                   if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['total'] = 30 && this.sm.getSelected().data['estado'] == 'borrador'
+                       || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['total'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ) {
                         this.formViajeroFrecuente();
 
                     }else {
                         if(record.data.tipo_reg != 'summary'){
                             this.cambiarRevision(record);
                         }
-                    }*/
-                    if(record.data.tipo_reg != 'summary'){
-                        this.cambiarRevision(record);
                     }
+
 
                 }
                 if(fieldName == 'nro_boleto') {
@@ -1932,11 +1918,11 @@ header("content-type: text/javascript; charset=UTF-8");
                 else{
                     this.getBoton('btnAnularBoleto').setDisabled(false);
                 }
-               /* if (data['ffid'] != '' && data['voucher_code'] != '' ){
+               if (data['ffid'] != '' && data['voucher_code'] != '' ){
                     this.getBoton('btnVoucherCode').enable();
                 }else{
                     this.getBoton('btnVoucherCode').disable();
-                }*/
+                }
 
             },
 
@@ -2181,7 +2167,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(true);
                 }
 
-            }/*,
+            },
         formViajeroFrecuente: function () {
 
             var dato = this.sm.getSelected().data;
@@ -2323,7 +2309,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         closeAction: 'close'
                     });
                     VentanaInicio.show();
-            }*/
+            }
 
         }
     )
