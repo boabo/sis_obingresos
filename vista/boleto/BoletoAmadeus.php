@@ -531,7 +531,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         enableKeyEvents:true,
                         renderer : function(value, p, record) {
 
-                            if (record.data['total'] = 30 && record.data['moneda'] == 'BOB' || record.data['total_moneda_extranjera'] == 40 && record.data['moneda'] == 'USD'
+                            if (record.data['total'] == 30 && record.data['moneda'] == 'BOB' || record.data['total_moneda_extranjera'] == 40 && record.data['moneda'] == 'USD'
                                 || record.data['total_moneda_extranjera'] == 70 && record.data['moneda'] == 'USD'){
                                 return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
                                }else{
@@ -1703,8 +1703,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(false);
                 }
 
-                if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['total'] = 30 && this.sm.getSelected().data['estado'] == 'borrador'
-                    || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['total'] == 40 && this.sm.getSelected().data['estado'] == 'borrador') {
+              if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['total'] == 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
+                        this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['total'] == 40 && this.sm.getSelected().data['estado'] == 'borrador') {
                    this.formFormual();
                }
 
@@ -1716,7 +1716,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
                 if(fieldName == 'estado') {
-                   if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['total'] = 30 && this.sm.getSelected().data['estado'] == 'borrador'
+                   if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['total'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'
                        || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['total'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ) {
                         this.formViajeroFrecuente();
 
