@@ -532,7 +532,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         renderer : function(value, p, record) {
 
                             if (record.data['neto'] == 30 && record.data['moneda'] == 'BOB' || record.data['neto'] == 40 && record.data['moneda'] == 'USD'
-                                || record.data['neto'] == 70 && record.data['moneda'] == 'USD'){
+                                || record.data['neto'] == 70 && record.data['moneda'] == 'USD' || record.data['codigo_agente'] == '9998WS' ){
                                 return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
                                }else{
                                return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
@@ -1704,7 +1704,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
 
               if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
-                        this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador') {
+                        this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS') {
                    this.formFormual();
                }
 
@@ -1717,7 +1717,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 if(fieldName == 'estado') {
                    if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'
-                       || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ) {
+                       || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS' ) {
                         this.formViajeroFrecuente();
 
                     }else {
