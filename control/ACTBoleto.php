@@ -1807,7 +1807,7 @@ class ACTBoleto extends ACTbase{
             "TicketNumber" => '930'.$this->objParam->getParametro('ticketNumber'),
             "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucherCode'));
         $data_string = json_encode($data);
-        $request = 'http://172.17.45.127/LoyaltyRestService/Api/LoyaltyRest/ValidateVoucher';
+        $request = 'https://elevate.boa.bo/LoyaltyRestService';
 		
 		$user_id = '1';
 		$passwd = 'F6C66224B072D38B5C2E3859179CED04';
