@@ -32,7 +32,7 @@ class ACTViajeroFrecuente extends ACTbase{
         $data = array("FFID" => $this->objParam->getParametro('ffid'),
             "PNR" => '',
             "TicketNumber" => '',
-            "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucherCode'));
+            "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucher_code'));
         $data_string = json_encode($data);
         $request = 'https://elevate.boa.bo/LoyaltyRestService/Api/LoyaltyRest/ValidateVoucher';
         $user_id = '1';
