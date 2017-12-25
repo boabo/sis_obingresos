@@ -1703,10 +1703,10 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(false);
                 }
 
-              if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
+              /*if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
                         this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS') {
                    this.formFormual();
-               }
+               }*/
 
             },
 
@@ -1716,7 +1716,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
                 if(fieldName == 'estado') {
-                   if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'
+                   /*if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'
                        || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS' ) {
                         this.formViajeroFrecuente();
 
@@ -1724,6 +1724,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         if(record.data.tipo_reg != 'summary'){
                             this.cambiarRevision(record);
                         }
+                    }*/
+
+                    if(record.data.tipo_reg != 'summary'){
+                        this.cambiarRevision(record);
                     }
 
 
