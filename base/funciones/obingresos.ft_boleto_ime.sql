@@ -121,6 +121,8 @@ DECLARE
     v_id_fpago				integer;
     v_id_viajero_frecuente integer;
     v_importe 				numeric;
+	v_datos					record;
+    v_cont 				integer;
 
 BEGIN
 
@@ -406,16 +408,31 @@ BEGIN
 
 
             if (v_parametros.id_forma_pago is not null and v_parametros.id_forma_pago != 0) then
-            	 	select 	a.id_forma_pago,
-                    		a.importe
+
+            delete from obingresos.tmod_forma_pago m
+             where 	m.billete = v_boleto.nro_boleto::numeric;
+
+        		   select 		a.id_forma_pago,
+            			a.importe
                     into
                     v_id_fpago,
                     v_importe
                     from obingresos.tboleto_amadeus_forma_pago a
                     inner join vef.tforma_pago f on f.id_forma_pago = a.id_forma_pago
-                    where a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+                    where f.id_forma_pago = v_parametros.id_forma_pago;
 
-                    if v_id_fpago = v_parametros.id_forma_pago and v_importe <> v_parametros.monto_forma_pago or v_id_fpago <> v_parametros.id_forma_pago then
+
+           			select  count(a.id_boleto_amadeus)
+                    into
+        			v_cont
+               		from obingresos.tboleto_amadeus_forma_pago a
+               		where a.id_forma_pago = v_parametros.id_forma_pago and
+                    a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+
+                    if ((v_cont = 0 or v_id_fpago is null)  or
+                     	(v_id_fpago = v_parametros.id_forma_pago and v_importe <> v_parametros.monto_forma_pago ))then
+
                         select obingresos.f_forma_pago_amadeus_mod(	v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
             														v_parametros.numero_tarjeta::varchar,v_parametros.id_auxiliar,
                                                                 	p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
@@ -485,15 +502,23 @@ BEGIN
                     end if;
 				 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
 
-                 select a.id_forma_pago,
+                select a.id_forma_pago,
                  		a.importe
                   into v_id_fpago,
                   		v_importe
                     from obingresos.tboleto_amadeus_forma_pago a
                     inner join vef.tforma_pago f on f.id_forma_pago = a.id_forma_pago
-                    where a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+                     where f.id_forma_pago = v_parametros.id_forma_pago2;
 
-                    if v_id_fpago <> v_parametros.id_forma_pago2  or  v_parametros.id_forma_pago2 is not null or v_id_fpago = v_parametros.id_forma_pago2 and v_importe <> v_parametros.monto_forma_pago2 then
+                     select  count(a.id_boleto_amadeus)
+                    		into
+        					v_cont
+               				from obingresos.tboleto_amadeus_forma_pago a
+               				where a.id_forma_pago = v_parametros.id_forma_pago2 and
+                            a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+                    if ((v_cont = 0 or v_id_fpago is null)  or
+                     	(v_id_fpago = v_parametros.id_forma_pago2 and v_importe <> v_parametros.monto_forma_pago2 ))then
 
                         select obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,
@@ -1721,6 +1746,8 @@ BEGIN
                      v_voided='si';
                   elsif v_voided = 'TKTT' then
                   	 v_voided='no';
+                  elsif v_voided = 'EMDS' then
+                  	 v_voided='no';
                   end if;
 				  --raise notice 'v_voided %',v_voided;
                   --recuperamos pasajero
@@ -2400,6 +2427,63 @@ BEGIN
 
 		end;
 
+     /*********************************
+ 	#TRANSACCION:  'OBING_BOWEBFEC_VEF'
+ 	#DESCRIPCION:	viajero frecuente
+ 	#AUTOR:		mmv
+ 	#FECHA:
+	***********************************/
+
+	elsif(p_transaccion='OBING_BOWEBFEC_VEF')then
+
+		begin
+   -- raise exception 'id %',v_parametros.id_boleto_amadeus;
+    INSERT INTO   obingresos.tviajero_frecuente
+              (
+              id_usuario_reg,
+              id_usuario_mod,
+              fecha_reg,
+              fecha_mod,
+              estado_reg,
+              id_usuario_ai,
+              usuario_ai,
+              id_boleto_amadeus,
+              ffid,
+              pnr,
+              ticket_number,
+              voucher_code,
+              id_pasajero_frecuente,
+              nombre_completo,
+              mensaje,
+              status
+              )
+              VALUES (
+              p_id_usuario,
+              null,
+              now(),
+              null,
+              'activo',
+              v_parametros._id_usuario_ai,
+              v_parametros._nombre_usuario_ai,
+              v_parametros.id_boleto_amadeus,
+              v_parametros.ffid,
+              v_parametros.pnr,
+              v_parametros.ticketNumber,
+              'OB.FF.VO'||v_parametros.voucherCode,
+              v_parametros.id_pasajero_frecuente,
+              v_parametros.nombre_completo,
+              v_parametros.mensaje,
+              v_parametros.status
+              )RETURNING id_viajero_frecuente into v_id_viajero_frecuente;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_viajero_frecuente',v_id_viajero_frecuente::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
 
 	else
 

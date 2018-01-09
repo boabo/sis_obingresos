@@ -1022,5 +1022,26 @@ class MODBoleto extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+    function logViajeroFrecuente () {
+
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_LOG_VEF';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
+        $this->setParametro('tickert_number','tickert_number','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('moneda','moneda','varchar');
+        $this->setParametro('importe','importe','numeric');
+
+
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+
+    }
 }
 ?>

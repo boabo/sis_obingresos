@@ -531,13 +531,14 @@ header("content-type: text/javascript; charset=UTF-8");
                         enableKeyEvents:true,
                         renderer : function(value, p, record) {
 
-                            if (record.data['neto'] == 30 && record.data['moneda'] == 'BOB' || record.data['neto'] == 40 && record.data['moneda'] == 'USD'
+                            /*if (record.data['neto'] == 30 && record.data['moneda'] == 'BOB' || record.data['neto'] == 40 && record.data['moneda'] == 'USD'
                                 || record.data['neto'] == 70 && record.data['moneda'] == 'USD' || record.data['codigo_agente'] == '9998WS' ){
                                 return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
                                }else{
                                return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
 
-                            }
+                            }*/
+                            return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
 
 
                         }
@@ -753,7 +754,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre',
                         gdisplayField: 'forma_pago',
                         hiddenName: 'id_forma_pago',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Codigo:{codigo}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -762,7 +763,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         pageSize: 15,
                         queryDelay: 1000,
                         gwidth: 150,
-                        listWidth:450,
+                        listWidth:250,
                         resizable:true,
                         minChars: 2,
                         disabled:true,
@@ -960,8 +961,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre',
                         gdisplayField: 'forma_pago2',
                         hiddenName: 'id_forma_pago',
-                        anchor: '90%',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre}</p><p>Codigo:{codigo}</p><p>Moneda:{desc_moneda}</p> </div></tpl>',
+                        anchor: '100%',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -970,7 +971,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         pageSize: 15,
                         queryDelay: 1000,
                         gwidth: 150,
-                        listWidth:450,
+                        listWidth:350,
                         resizable:true,
                         minChars: 2,
                         disabled:true,
@@ -979,7 +980,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         }
                     },
                     type: 'ComboBox',
-                    id_grupo: 1,
+                    id_grupo: 4,
                     grid: true,
                     form: true
                 },
@@ -997,7 +998,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         style: 'background-color: #f2f23c;  background-image: none;'
                     },
                     type:'NumberField',
-                    id_grupo:1,
+                    id_grupo:4,
                     grid:true,
                     form:true
                 },
@@ -1012,7 +1013,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         maxLength:50
                     },
                     type:'TextField',
-                    id_grupo:1,
+                    id_grupo:4,
                     grid:false,
                     form:true
                 },
@@ -1028,7 +1029,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         maxLength:20
                     },
                     type:'TextField',
-                    id_grupo:1,
+                    id_grupo:4,
                     grid:true,
                     form:true
                 },
@@ -1042,7 +1043,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                     },
                     type:'TextField',
-                    id_grupo:1,
+                    id_grupo:4,
                     grid:false,
                     form:true
                 },
@@ -1086,7 +1087,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         }
                     },
                     type: 'ComboBox',
-                    id_grupo: 1,
+                    id_grupo: 4,
                     grid: true,
                     form: true
                 },
@@ -1228,7 +1229,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
             ],
             tam_pag:50,
-            fwidth: '70%',
+        fwidth: '85%',
+        fheight: '70%',
             title:'Boleto',
             ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVenta',
             //ActDel:'../../sis_obingresos/control/Boleto/eliminarBoleto',
@@ -1703,10 +1705,10 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(false);
                 }
 
-              /*if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
+              if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] > 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
                         this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS') {
                    this.formFormual();
-               }*/
+               }
 
             },
 
@@ -1716,19 +1718,16 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
                 if(fieldName == 'estado') {
-                   /*if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'
+                   if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] > 30 && this.sm.getSelected().data['estado'] == 'borrador'
                        || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS' ) {
-                        this.formViajeroFrecuente();
-
+                        //this.formViajeroFrecuente();
+                        this.formFormualRevi();
                     }else {
                         if(record.data.tipo_reg != 'summary'){
                             this.cambiarRevision(record);
                         }
-                    }*/
-
-                    if(record.data.tipo_reg != 'summary'){
-                        this.cambiarRevision(record);
                     }
+
 
 
                 }
@@ -1986,7 +1985,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 xtype:'fieldset',
                                 layout: 'form',
                                 border: true,
-                                title: 'Formas de Pago',
+                                title: 'Forma de Pago',
                                 bodyStyle: 'padding:0 10px 0;',
                                 columnWidth: 0.5,
                                 items:[],
@@ -2008,6 +2007,23 @@ header("content-type: text/javascript; charset=UTF-8");
                                 columnWidth: 0.5,
                                 items:[],
                                 id_grupo:3,
+                                collapsible:true,
+                                collapsed:false
+                            }
+                        ]
+                    },
+                    {
+                        bodyStyle: 'padding-right:10px;',
+                        items: [
+                            {
+                                xtype:'fieldset',
+                                layout: 'form',
+                                border: true,
+                                title: 'Segunda Forma de Pago',
+                                bodyStyle: 'padding:0 10px 0;',
+                                columnWidth: 0.5,
+                                items:[],
+                                id_grupo:4,
                                 collapsible:true,
                                 collapsed:false
                             }
@@ -2253,7 +2269,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         padding: true,
                         bodyStyle:'padding:5px 5px 0',
                         border: false,
-                        frame: false
+                        frame: true
+
 
                     });
 
@@ -2265,6 +2282,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         bodyStyle: 'padding:5px;',
                         layout: 'fit',
                         hidden: true,
+                        closable: false,
                         buttons: [
                             {
                                 text: '<i class="fa fa-check"></i> Aceptar',
@@ -2299,6 +2317,39 @@ header("content-type: text/javascript; charset=UTF-8");
                                 scope: this
                             },
                             {
+                                text: '<i class="fa fa-check"></i> Ignorar',
+                                handler: function () {
+                                    VentanaInicio.close();
+                                    /*if (formularioInicio.getForm().isValid()) {
+                                        validado = true;
+                                        this.ffid = ffid.getValue();
+                                        this.voucher = voucherCoide.getValue();
+                                        this.ticket = ticketNumber.getValue();
+                                        this.pnr  = pnr.getValue();
+                                        VentanaInicio.close();
+                                        m = this;
+                                        Ext.Ajax.request({
+                                            url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
+                                            params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
+                                                ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
+                                                pnr:this.pnr },
+                                            success:function(resp){
+                                                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                                console.log('id',reg);
+                                            },
+                                            failure: this.conexionFailure,
+                                            timeout:this.timeout,
+                                            scope:this
+                                        });
+
+
+
+
+                                    }*/
+                                },
+                                scope: this
+                            },
+                            {
                                 text: '<i class="fa fa-check"></i> Declinar',
                                 handler : function() {
                                     //refresh source grid
@@ -2313,7 +2364,167 @@ header("content-type: text/javascript; charset=UTF-8");
                         closeAction: 'close'
                     });
                     VentanaInicio.show();
-            }
+            },
+        formFormualRevi: function (origen) {
+
+            var ffid = new Ext.form.TextField(
+                {
+                    name: 'ffid',
+                    msgTarget: 'title',
+                    fieldLabel: 'FFID',
+                    allowBlank: true,
+                    anchor: '90%',
+                    style: 'background-color:#9BF592 ; background-image: none;',
+                    maxLength:50
+                });
+
+            var voucherCoide = new Ext.form.TextField(
+                {
+                    name: 'voucherCode',
+                    msgTarget: 'title',
+                    fieldLabel: 'Voucher Code',
+                    allowBlank: true,
+                    anchor: '90%',
+                    style: 'background-color: #9BF592; background-image: none;',
+                    maxLength:50
+                });
+            var ticketNumber = new Ext.form.TextField(
+                {
+                    name: 'ticketNumber',
+                    msgTarget: 'title',
+                    fieldLabel: 'Ticket Number',
+                    allowBlank: true,
+                    readOnly :true,
+                    anchor: '90%',
+                    style: 'background-color: #E1F590; background-image: none;',
+                    value: this.sm.getSelected().data['nro_boleto'] ,
+                    maxLength:50
+                });
+            var pnr = new Ext.form.TextField(
+                {
+                    name: 'pnr',
+                    msgTarget: 'title',
+                    fieldLabel: 'PNR',
+                    allowBlank: true,
+                    readOnly :true,
+                    anchor: '90%',
+                    style: 'background-color: #E1F590; background-image: none;',
+                    value: this.sm.getSelected().data['localizador'] ,
+                    maxLength:50
+                });
+
+            var formularioInicio = new Ext.form.FormPanel({
+                items: [ffid,voucherCoide,ticketNumber,pnr],
+                padding: true,
+                bodyStyle:'padding:5px 5px 0',
+                border: false,
+                frame: false
+
+            });
+
+            var VentanaInicio = new Ext.Window({
+                title: 'Formulario Viajero Frecuente',
+                modal: true,
+                width: 300,
+                height: 200,
+                bodyStyle: 'padding:5px;',
+                layout: 'fit',
+                hidden: true,
+                closable: false,
+                buttons: [
+                    {
+                        text: '<i class="fa fa-check"></i> Aceptar',
+                        handler: function () {
+                            if (formularioInicio.getForm().isValid()) {
+                                validado = true;
+                                this.ffid = ffid.getValue();
+                                this.voucher = voucherCoide.getValue();
+                                this.ticket = ticketNumber.getValue();
+                                this.pnr  = pnr.getValue();
+                                VentanaInicio.close();
+                                m = this;
+                                Ext.Ajax.request({
+                                    url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
+                                    params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
+                                        ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
+                                        pnr:this.pnr },
+                                    success:function(resp){
+                                        var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                        console.log('id',reg);
+                                    },
+                                    failure: this.conexionFailure,
+                                    timeout:this.timeout,
+                                    scope:this
+                                });
+
+
+
+
+                            }
+                        },
+                        scope: this
+                    },
+                    {
+                        text: '<i class="fa fa-check"></i> Ignorar',
+                        handler: function () {
+
+                           // VentanaInicio.close();
+                            if (formularioInicio.getForm().isValid()) {
+                                validado = true;
+                                this.ffid = ffid.getValue();
+                                this.voucher = voucherCoide.getValue();
+                                this.ticket = ticketNumber.getValue();
+                                this.pnr  = pnr.getValue();
+
+                                m = this;
+                                Ext.Ajax.request({
+                                    url:'../../sis_obingresos/control/Boleto/logViajeroFrecuente',
+                                    params:{    id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
+                                                importe: m.sm.getSelected().data['neto'],
+                                                moneda:m.sm.getSelected().data['moneda'] ,
+                                        tickert_number: this.ticket,
+                                                pnr:this.pnr },
+                                    success:function(resp){
+                                        var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                        console.log('respuesta',reg);
+                                    },
+                                    failure: this.conexionFailure,
+                                    timeout:this.timeout,
+                                    scope:this
+                                });
+                                VentanaInicio.close();
+                                Phx.CP.loadingShow();
+                                Ext.Ajax.request({
+                                    url:'../../sis_obingresos/control/Boleto/cambiarRevisionBoleto',
+                                    params:{ id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus']},
+                                    success: this.successRevision,
+                                    failure: this.conexionFailure,
+                                    timeout: this.timeout,
+                                    scope: this
+                                });
+
+                            }
+                        },
+                        scope: this
+                    },
+                    {
+                        text: '<i class="fa fa-check"></i> Declinar',
+                        handler : function() {
+                            //refresh source grid
+                            console.log(formularioInicio.getForm());
+                            formularioInicio.getForm().reset();
+                        },
+                        scope: this
+                    }
+                ],
+                items: formularioInicio,
+                autoDestroy: true,
+                closeAction: 'close'
+            });
+            VentanaInicio.show();
+            //this.cambiarRevision();
+
+        }
 
         }
     )

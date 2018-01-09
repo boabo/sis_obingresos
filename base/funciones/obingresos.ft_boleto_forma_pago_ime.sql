@@ -34,6 +34,12 @@ DECLARE
     v_localizador			varchar;
     v_id_forma_pago			integer;
     v_importe				numeric;
+    v_id_fpago     			integer;
+    v_id_forma_mov			integer;
+    v_importe_mov			numeric;
+    v_datos 				record;
+    v_replicar				record;
+    v_cont					integer;
 
 BEGIN
 
@@ -119,6 +125,7 @@ BEGIN
 	elsif(p_transaccion='OBING_BFPAMA_INS')then
 
         begin
+
         	select fp.codigo into v_codigo_fp
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
@@ -126,6 +133,34 @@ BEGIN
             select localizador into v_localizador
             from obingresos.tboleto_amadeus
             where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
+             select a.id_forma_pago, a.importe into v_id_fpago , v_importe_mov
+             from obingresos.tboleto_amadeus_forma_pago a
+             where a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+              select  count(a.id_boleto_amadeus)
+           			into
+        		v_cont
+               from obingresos.tboleto_amadeus_forma_pago a
+               where a.id_forma_pago = v_parametros.id_forma_pago and a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+              if (left (v_parametros.mco,3)  <> '930' and v_parametros.mco <> '')then
+            raise exception 'El numero del MCO tiene que empezar con 930';
+            end if;
+
+          	if (char_length(v_parametros.mco::varchar) <> 15 and v_parametros.mco <> '' ) then
+            raise exception 'El numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
+            end if;
+
+            if ((v_cont = 0 )  or
+               (v_id_fpago = v_parametros.id_forma_pago and v_importe_mov <> v_parametros.importe))  then
+                select obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
+                                                        v_parametros.numero_tarjeta::varchar,v_parametros.id_auxiliar,
+                                                        p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.importe,
+                                                         v_parametros.mco)
+            into
+                v_id_forma_mov;
+            end if;
 
         	--Sentencia de la insercion
         	insert into obingresos.tboleto_amadeus_forma_pago(
@@ -142,7 +177,8 @@ BEGIN
 			usuario_ai,
 			fecha_reg,
 			id_usuario_mod,
-			fecha_mod
+			fecha_mod,
+            mco
           	) values(
 
 			v_parametros.id_forma_pago,
@@ -162,7 +198,8 @@ BEGIN
 			v_parametros._nombre_usuario_ai,
 			now(),
 			null,
-			null
+			null,
+            v_parametros.mco
 
 
 
@@ -172,7 +209,7 @@ BEGIN
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago almacenado(a) con exito (id_boleto_amadeus_forma_pago'||v_id_boleto_forma_pago||')');
             v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus_forma_pago',v_id_boleto_forma_pago::varchar);
-
+			v_resp = pxp.f_agrega_clave(v_resp,'v_id_forma_mov',v_id_forma_mov::varchar);
             --Devuelve la respuesta
             return v_resp;
 
@@ -260,6 +297,52 @@ BEGIN
         	from obingresos.tforma_pago fp
         	where fp.id_forma_pago = v_parametros.id_forma_pago;
 
+            select a.id_forma_pago, a.importe into v_id_fpago , v_importe_mov
+             from obingresos.tboleto_amadeus_forma_pago a
+
+             where a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+              select  count(a.id_boleto_amadeus)
+           				into
+        		v_cont
+               from obingresos.tboleto_amadeus_forma_pago a
+               where a.id_forma_pago = v_parametros.id_forma_pago and a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+             --limpiar tabla replicacion
+
+
+              if (left (v_parametros.mco,3)  <> '930' and v_parametros.mco <> '')then
+            raise exception 'El numero del MCO tiene que empezar con 930';
+            end if;
+
+          	if (char_length(v_parametros.mco::varchar) <> 15 and v_parametros.mco <> '' ) then
+            raise exception 'El numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
+            end if;
+
+              select 	b.nro_boleto,
+             			a.importe,
+                        p.codigo
+                        into
+                        v_replicar
+             from obingresos.tboleto_amadeus b
+             inner join obingresos.tboleto_amadeus_forma_pago a on a.id_boleto_amadeus = b.id_boleto_amadeus
+             inner join obingresos.tforma_pago p on p.id_forma_pago = a.id_forma_pago
+             where a.id_boleto_amadeus_forma_pago = v_parametros.id_boleto_amadeus_forma_pago;
+
+            if ((v_cont = 0 )  or
+               (v_id_fpago = v_parametros.id_forma_pago and v_importe_mov <> v_parametros.importe)) then
+                delete from obingresos.tmod_forma_pago m
+              where m.billete = v_replicar.nro_boleto::numeric and m.importe = v_replicar.importe and m.forma = v_replicar.codigo ;
+
+                select obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
+                                                        v_parametros.numero_tarjeta::varchar,v_parametros.id_auxiliar,
+                                                        p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.importe,
+                                                         v_parametros.mco)
+            into
+                v_id_forma_mov;
+            end if;
+
+
 
 			--Sentencia de la modificacion
 			update obingresos.tboleto_amadeus_forma_pago set
@@ -277,20 +360,14 @@ BEGIN
 			id_usuario_mod = p_id_usuario,
 			fecha_mod = now(),
 			id_usuario_ai = v_parametros._id_usuario_ai,
-			usuario_ai = v_parametros._nombre_usuario_ai
+			usuario_ai = v_parametros._nombre_usuario_ai,
+            mco = v_parametros.mco
 			where id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago;
-            /*
-            if (pxp.f_existe_parametro(p_tabla,'fp_amadeus_corregido')) then
-            	UPDATE obingresos.tboleto_forma_pago set
-                fp_amadeus_corregido = v_parametros.fp_amadeus_corregido,
-                id_usuario_fp_amadeus_corregido = p_id_usuario
-                where id_boleto_forma_pago=v_parametros.id_boleto_forma_pago;
-            end if;*/
 
 			--Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Forma de Pago modificado(a)');
             v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus_forma_pago',v_parametros.id_boleto_amadeus_forma_pago::varchar);
-
+            v_resp = pxp.f_agrega_clave(v_resp,'v_id_forma_mov',v_id_forma_mov::varchar);
             --Devuelve la respuesta
             return v_resp;
 
@@ -340,6 +417,21 @@ BEGIN
             from obingresos.tboleto_amadeus_forma_pago bfp
             inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
             where bfp.id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago;
+
+            --Eliminar en tabla replicacion
+
+            select  b.nro_boleto,
+            		f.codigo,
+                    p.importe
+            into
+            v_datos
+            from obingresos.tboleto_amadeus b
+            inner join obingresos.tboleto_amadeus_forma_pago p on p.id_boleto_amadeus = b.id_boleto_amadeus
+            inner join obingresos.tforma_pago f on f.id_forma_pago = p.id_forma_pago
+            where p.id_boleto_amadeus_forma_pago = v_parametros.id_boleto_amadeus_forma_pago;
+
+            delete from obingresos.tmod_forma_pago m
+            where m.billete = v_datos.nro_boleto::numeric and m.forma = v_datos.codigo and m.importe = v_datos.importe;
 
 			--Sentencia de la eliminacion
 			delete from obingresos.tboleto_amadeus_forma_pago
