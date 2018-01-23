@@ -489,6 +489,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('ctacte2','ctacte2','varchar');
 		$this->setParametro('id_auxiliar2','id_auxiliar2','integer');
 		$this->setParametro('tipo_comision','tipo_comision','varchar');
+        $this->setParametro('mco','mco','varchar');
+        $this->setParametro('mco2','mco2','varchar');
 
 
 		//Ejecuta la instruccion
