@@ -1009,6 +1009,7 @@ class MODBoleto extends MODbase{
 
         $this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
         $this->setParametro('ffid','ffid','varchar');
+        $this->setParametro('bandera','bandera','varchar');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('ticketNumber','ticketNumber','varchar');
         $this->setParametro('voucherCode','voucherCode','varchar');

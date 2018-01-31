@@ -1793,15 +1793,6 @@ class ACTBoleto extends ACTbase{
     }
     function viajeroFrecuente()
     {
-         if ($this->objParam->getParametro('ffid')== null)
-         {
-             throw new Exception('Registre el FFID');
-         }
-        if ($this->objParam->getParametro('voucherCode')== null)
-        {
-            throw new Exception('Registre Voucher Code');
-        }
-
         $data = array("FFID" => $this->objParam->getParametro('ffid'),
             "PNR" => $this->objParam->getParametro('pnr'),
             "TicketNumber" => '930'.$this->objParam->getParametro('ticketNumber'),
@@ -1848,6 +1839,13 @@ class ACTBoleto extends ACTbase{
          $this->res->imprimirRespuesta($this->res->generarJson());
         }
     }
+
+    function logViajeroFrecuente (){
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->logViajeroFrecuente($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
 
 }
 
