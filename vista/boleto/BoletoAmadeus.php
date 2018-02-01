@@ -120,6 +120,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.seleccionarPuntoVentaSucursal();
                 this.grid.addListener('cellclick', this.oncellclick,this);
                 this.bloquearOrdenamientoGrid();
+
             },
 
             gruposBarraTareas:[{name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:0,height:0},
@@ -1538,7 +1539,16 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.tipo_comision.on('select', function (combo,record) {
                     if(this.grupo=='no') {
                         if (record['json'][0] == 'nacional') {
-                            this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.1).toFixed(2));
+                           /// fecha_emision
+                            var fecha = '01-02-2018';
+                            if (this.campo_fecha.getValue().dateFormat('d-m-Y') < fecha ){
+                                console.log('viejo',this.campo_fecha.getValue().dateFormat('d-m-Y') );
+                                this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.1).toFixed(2));
+                            }else {
+                                console.log('nuevo',this.campo_fecha.getValue().dateFormat('d-m-Y'));
+                                this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
+                            }
+
                             if(this.Cmp.moneda.getValue()!=='USD') {
                                 this.Cmp.comision_moneda_extranjera.setValue(this.Cmp.comision.getValue() / this.Cmp.tc.getValue());
                             }else{
@@ -1568,7 +1578,15 @@ header("content-type: text/javascript; charset=UTF-8");
                         }
                     }else{
                         if (record['json'][0] == 'nacional') {
-                            this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.1).toFixed(2));
+
+                            var fecha = '01-02-2018';
+                            if (this.campo_fecha.getValue().dateFormat('d-m-Y') < fecha ){
+                                console.log('viejo',this.campo_fecha.getValue().dateFormat('d-m-Y') );
+                                this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.1).toFixed(2));
+                            }else {
+                                console.log('nuevo',this.campo_fecha.getValue().dateFormat('d-m-Y'));
+                                this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.06).toFixed(2));
+                            }
                             this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
                             this.Cmp.monto_recibido_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
                         } else {
