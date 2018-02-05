@@ -2,6 +2,7 @@
 require_once(dirname(__FILE__).'/../reportes/RReporteNitRazonXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RConciliacionBancaInter.php');
 require_once(dirname(__FILE__).'/../reportes/RConciliacionBancaInterRes.php');
+require_once(dirname(__FILE__).'/../reportes/RVentasCorporativasDeposito.php');
 class ACTDetalleBoletosWeb extends ACTbase{
 	
 	function listarDetalleBoletosWeb(){
@@ -185,6 +186,47 @@ class ACTDetalleBoletosWeb extends ACTbase{
         $this->mensajeExito->setArchivoGenerado($nombreArchivo);
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
     }
+    function reporteVentasCorporativasDepositos(){
+
+
+        /*if($this->objParam->getParametro('fecha_ini') != '' && $this->objParam->getParametro('fecha_fin') != '') {
+            $this->objParam->addFiltro(" dbw.fecha >= ''" . $this->objParam->getParametro('fecha_ini') . "'' AND dbw.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
+        }
+        if($this->objParam->getParametro('id_lugar') != ''){
+            $this->objParam->addFiltro(" a.id_lugar IN ( ".$this->objParam->getParametro('id_lugar').")");
+        }
+        if($this->objParam->getParametro('tipo_agencia') != '' && $this->objParam->getParametro('tipo_agencia') != 'todas'){
+            $this->objParam->addFiltro(" a.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");
+        }
+        if($this->objParam->getParametro('forma_pago') != '' && $this->objParam->getParametro('forma_pago') != 'todas'){
+            $this->objParam->addFiltro("''" . $this->objParam->getParametro('forma_pago') . "''  = ANY(con.formas_pago)");
+        }*/
+
+        //$this->objParam->addFiltro(" dbw.void = ''no'' and dbw.origen = ''portal''");
+
+        $this->objFunc = $this->create('MODDetalleBoletosWeb');
+        $this->res = $this->objFunc->reporteVentasCorporativasDepositos($this->objParam);
+        //var_dump( $this->res);exit;
+        //obtener titulo de reporte
+        $titulo = 'Reporte Ventas Corporativas Depositos';
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo = uniqid(md5(session_id()) . $titulo);
+
+        $nombreArchivo .= '.xls';
+        $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
+        $this->objParam->addParametro('datos', $this->res->datos);
+        //Instancia la clase de excel
+        $this->objReporteFormato = new RVentasCorporativasDeposito($this->objParam);
+        $this->objReporteFormato->generarDatos();
+        $this->objReporteFormato->generarReporte();
+
+        $this->mensajeExito = new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+    }
+
 
 
 }
