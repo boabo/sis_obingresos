@@ -118,7 +118,8 @@ BEGIN
                         mon.codigo_internacional as moneda,
                         aux.nombre_auxiliar,
                         bfp.codigo_tarjeta,
-                        bfp.mco
+                        bfp.mco,
+                        fp.codigo
                         from obingresos.tboleto_amadeus_forma_pago bfp
 						inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
