@@ -1544,14 +1544,14 @@ header("content-type: text/javascript; charset=UTF-8");
                             var f2 = new Date(this.Cmp.fecha_emision.getValue());
                             console.log('f1',f1.dateFormat('d/m/Y'));
                             console.log('f2',f2.dateFormat('d/m/Y'));
-                            if (f2 >= f1 ){
+                            /*if (f2 >= f1 ){
                                     console.log('mayor');
                                 this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
                             }else{
                                     console.log('menor');
                                 this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.1).toFixed(2));
-                            }
-
+                            }*/
+                            this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
                             if(this.Cmp.moneda.getValue()!=='USD') {
                                 this.Cmp.comision_moneda_extranjera.setValue(this.Cmp.comision.getValue() / this.Cmp.tc.getValue());
                             }else{
@@ -1586,13 +1586,14 @@ header("content-type: text/javascript; charset=UTF-8");
                             var f2 = new Date(this.Cmp.fecha_emision.getValue());
                             console.log('f1',f1.dateFormat('d/m/Y'));
                             console.log('f2',f2.dateFormat('d/m/Y'));
-                            if (f2 >= f1 ){
+                            /*if (f2 >= f1 ){
                                 console.log('mayor');
                                 this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.06).toFixed(2));
                             }else{
                                 console.log('menor');
                                 this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.1).toFixed(2));
-                            }
+                            }*/
+                            this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.06).toFixed(2));
                             this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
                             this.Cmp.monto_recibido_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
                         } else {
@@ -1803,16 +1804,40 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             anularBoleto:function(){
-                Phx.CP.loadingShow();
-                var d = this.sm.getSelected().data;
-                Ext.Ajax.request({
-                    url:'../../sis_obingresos/control/Boleto/anularBoleto',
-                    params:{id_boleto_amadeus:d.id_boleto_amadeus},
-                    success:this.successAnularBoleto,
-                    failure: this.conexionFailure,
-                    timeout:this.timeout,
-                    scope:this
-                });
+                var filas=this.sm.getSelections(),
+                    total= 0,tmp='',me = this;
+                for(var i=0;i<this.sm.getCount();i++){
+                    aux={};
+                    if(total == 0){
+                        tmp = filas[i].data[this.id_store];
+                    }
+                    else{
+                        tmp = tmp + ','+ filas[i].data[this.id_store];
+                    }
+                    total = total + 1;
+                }
+                if(total != 0){
+                    if(confirm("¿Esta seguro de Anular los boletos?") ){
+
+                        Phx.CP.loadingShow();
+                        //var d = this.sm.getSelected().data;
+                        Ext.Ajax.request({
+                            url:'../../sis_obingresos/control/Boleto/anularBoleto',
+                            params:{id_boleto_amadeus:tmp},
+                            success:this.successAnularBoleto,
+                           /* success : function(resp) {
+                                Phx.CP.loadingHide();
+                                this.reload();
+                            },*/
+                            failure: this.conexionFailure,
+                            timeout:this.timeout,
+                            scope:this
+                        });
+                    }
+                }
+                else{
+                    alert ('No selecciono ningun boleto');
+                }
 
             },
 

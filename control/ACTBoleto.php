@@ -1358,6 +1358,7 @@ class ACTBoleto extends ACTbase{
 				$identificador_reporte = 0;
 			}
 		}
+
 		//boletos en bolivianos
 		$data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"");
 		$data_string = json_encode($data);
@@ -1662,7 +1663,6 @@ class ACTBoleto extends ACTbase{
         if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
             throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
         }
-
         foreach($array_fechas as $fecha) {
             $data = array("credenciales" => $_SESSION['_CREDENCIALES_RESIBER'],
                 "idioma" => "ES",

@@ -33,6 +33,7 @@ DECLARE
     v_id_moneda_usd		integer;
     v_medio_pago		varchar;
     v_group_by			varchar;
+    v_filtro_periodo	varchar;
 			    
 BEGIN
 
@@ -108,13 +109,20 @@ BEGIN
                 select m.id_moneda into v_id_moneda_usd
                 from param.tmoneda m
                 where m.codigo_internacional = 'USD';
-                
-                select tp.medio_pago into v_medio_pago
-                from obingresos.tperiodo_venta pv
-                inner join obingresos.ttipo_periodo tp on 
-                	tp.id_tipo_periodo = pv.id_tipo_periodo
-                where pv.id_periodo_venta = v_parametros.id_periodo_venta;
+                if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then
+                    select tp.medio_pago into v_medio_pago
+                    from obingresos.tperiodo_venta pv
+                    inner join obingresos.ttipo_periodo tp on 
+                        tp.id_tipo_periodo = pv.id_tipo_periodo
+                    where pv.id_periodo_venta = v_parametros.id_periodo_venta;
+                    
+                    v_filtro_periodo = ' me.id_periodo_venta = ' || v_parametros.id_periodo_venta;
+                ELSE
+                	v_filtro_periodo = '0=0';
+                    v_medio_pago = 'cuenta_corriente';
+                end if;
                 v_group_by = '';
+                
         		if (v_medio_pago = 'cuenta_corriente') then
                     --Sentencia de la consulta
                     v_consulta:='select pva.id_periodo_venta_agencia,pv.codigo_periodo,pva.id_agencia,
@@ -143,7 +151,7 @@ BEGIN
                                     inner join obingresos.tagencia age on age.id_agencia = pva.id_agencia  
                                     left join obingresos.tmovimiento_entidad me on me.id_periodo_venta = pv.id_periodo_venta and me.id_agencia = age.id_agencia
                                     left join obingresos.tdetalle_boletos_web dbw on dbw.numero_autorizacion = me.autorizacion__nro_deposito
-                                    where  pv.id_periodo_venta = ' || v_parametros.id_periodo_venta || ' and 
+                                    where  ' || v_filtro_periodo || ' and 
                                     ';
                                     
                                     v_group_by = ' group by  pva.id_periodo_venta_agencia,
@@ -191,7 +199,7 @@ BEGIN
                                     inner join obingresos.tperiodo_venta_agencia pva on pva.id_periodo_venta = pv.id_periodo_venta 
                                     inner join obingresos.tdetalle_boletos_web me on me.id_periodo_venta = pv.id_periodo_venta
 
-                                    where me.estado_reg = ''activo'' and me.id_periodo_venta = ' || v_parametros.id_periodo_venta || '
+                                    where me.estado_reg = ''activo'' and ' || v_filtro_periodo || '
                                     group by  pva.id_periodo_venta_agencia,pva.id_agencia,tp.medio_pago,pv.fecha_ini,
                                     pv.fecha_fin,pv.id_periodo_venta';
                 end if;
@@ -395,11 +403,18 @@ BEGIN
      				
     	begin
         		                
-                select tp.medio_pago into v_medio_pago
-                from obingresos.tperiodo_venta pv
-                inner join obingresos.ttipo_periodo tp on 
-                	tp.id_tipo_periodo = pv.id_tipo_periodo
-                where pv.id_periodo_venta = v_parametros.id_periodo_venta;
+                if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then
+                    select tp.medio_pago into v_medio_pago
+                    from obingresos.tperiodo_venta pv
+                    inner join obingresos.ttipo_periodo tp on 
+                        tp.id_tipo_periodo = pv.id_tipo_periodo
+                    where pv.id_periodo_venta = v_parametros.id_periodo_venta;
+                    
+                    v_filtro_periodo = ' pva.id_periodo_venta = ' || v_parametros.id_periodo_venta;
+                ELSE
+                	v_filtro_periodo = '0=0';
+                    v_medio_pago = 'cuenta_corriente';
+                end if;
         		if (v_medio_pago = 'cuenta_corriente') then
                     --Sentencia de la consulta
                     v_consulta:='select count(pva.id_periodo_venta_agencia),
@@ -416,7 +431,7 @@ BEGIN
                                     from obingresos.tperiodo_venta pv                                    
                                     inner join obingresos.tperiodo_venta_agencia pva on pva.id_periodo_venta = pv.id_periodo_venta
                                     inner join obingresos.tagencia age on age.id_agencia = pva.id_agencia  
-                                    where pva.id_periodo_venta = ' || v_parametros.id_periodo_venta || ' and ';
+                                    where ' || v_filtro_periodo || ' and ';
                                     
                 ELSE
                 	--Sentencia de la consulta
@@ -438,7 +453,7 @@ BEGIN
                                     inner join obingresos.tperiodo_venta_agencia pva on pva.id_periodo_venta = pv.id_periodo_venta 
                                     inner join obingresos.tdetalle_boletos_web me on me.id_periodo_venta = pv.id_periodo_venta
 
-                                    where me.estado_reg = ''activo'' and me.id_periodo_venta = ' || v_parametros.id_periodo_venta || '
+                                    where me.estado_reg = ''activo'' and ' || v_filtro_periodo || '
                                     group by  pva.id_periodo_venta_agencia,pva.id_agencia,tp.medio_pago,pv.fecha_ini,
                                     pv.fecha_fin,pv.id_periodo_venta';
                 end if;

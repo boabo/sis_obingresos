@@ -22,7 +22,7 @@ header("content-type:text/javascript; charset=UTF-8");
 					limit: 1000,
 					fecha_ini:this.maestro.fecha_ini.dateFormat('d/m/Y'),
 					fecha_fin:this.maestro.fecha_fin.dateFormat('d/m/Y'),
-					id_moneda:this.maestro.id_moneda,
+					//id_moneda:this.maestro.id_moneda,
 					id_lugar:this.maestro.id_lugar,
 					tipo_agencia:this.maestro.tipo_agencia,
 					forma_pago:this.forma_pago
@@ -132,19 +132,91 @@ header("content-type:text/javascript; charset=UTF-8");
 		
 		{
 			config : {
-				name : 'monto_total',
-				fieldLabel : 'Total Ventas',
+				name : 'monto_creditos',
+				fieldLabel : 'Creditos',
 				allowBlank : false,
 				anchor : '100%',
-				gwidth : 150,
+				gwidth : 130,
 				maxLength : 20,
 				galign:'right',
 				renderer:function (value,p,record){
 						if(record.data.tipo_reg != 'summary'){
-							return  String.format('{0}', Ext.util.Format.number(record.data.monto_total,'0,000.00'));
+							return  String.format('{0}', Ext.util.Format.number(record.data.monto_creditos,'0,000.00'));
 						}
 						else{
-							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.monto_total,'0,000.00'));
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.monto_creditos,'0,000.00'));
+						}
+					} 
+			},
+			type : 'NumberField',
+			
+			id_grupo : 1,
+			grid : true,
+			form : false
+		},
+		{
+			config : {
+				name : 'monto_debitos',
+				fieldLabel : 'Debitos',
+				allowBlank : false,
+				anchor : '100%',
+				gwidth : 130,
+				maxLength : 20,
+				galign:'right',
+				renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number(record.data.monto_debitos,'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.monto_debitos,'0,000.00'));
+						}
+					} 
+			},
+			type : 'NumberField',
+			
+			id_grupo : 1,
+			grid : true,
+			form : false
+		},
+		{
+			config : {
+				name : 'monto_ajustes',
+				fieldLabel : 'Ajustes',
+				allowBlank : false,
+				anchor : '100%',
+				gwidth : 130,
+				maxLength : 20,
+				galign:'right',
+				renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number(record.data.monto_ajustes,'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.monto_ajustes,'0,000.00'));
+						}
+					} 
+			},
+			type : 'NumberField',
+			
+			id_grupo : 1,
+			grid : true,
+			form : false
+		},
+		{
+			config : {
+				name : 'saldo',
+				fieldLabel : 'Saldo',
+				allowBlank : false,
+				anchor : '100%',
+				gwidth : 130,
+				maxLength : 20,
+				galign:'right',
+				renderer:function (value,p,record){
+						if(record.data.tipo_reg != 'summary'){
+							return  String.format('{0}', Ext.util.Format.number(record.data.saldo,'0,000.00'));
+						}
+						else{
+							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.saldo,'0,000.00'));
 						}
 					} 
 			},
@@ -177,7 +249,16 @@ header("content-type:text/javascript; charset=UTF-8");
 			name : 'tipo_reg',
 			type : 'string'
 		}, {
-			name : 'monto_total',
+			name : 'monto_creditos',
+			type : 'numeric'
+		}, {
+			name : 'monto_debitos',
+			type : 'numeric'
+		}, {
+			name : 'monto_ajustes',
+			type : 'numeric'
+		}, {
+			name : 'saldo',
 			type : 'numeric'
 		}],
 		sortInfo : {

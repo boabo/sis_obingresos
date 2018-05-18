@@ -39,6 +39,10 @@ $body$
     v_pnr_no_boleto		text;
     
     v_id_alarma			integer;
+    v_monto_str			varchar;
+    v_id_moneda_base	integer;
+    v_id_moneda_usd		integer;
+    v_filtro 			varchar;
 
   BEGIN
 
@@ -99,7 +103,7 @@ $body$
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-
+			raise notice 'consulta -> %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 						
@@ -199,7 +203,7 @@ $body$
                                 END);
        end loop;
        
-       v_id_alarma = (select param.f_inserta_alarma_dblink (1,'PORTAL - Diferencias entre reservas autorizadas y boletos emitidos',v_pnr_no_boleto,'jaime.rivera@boa.bo,earrazola@boa.bo,fvargas@boa.bo')); 
+       v_id_alarma = (select param.f_inserta_alarma_dblink (1,'PORTAL - Diferencias entre reservas autorizadas y boletos emitidos',v_pnr_no_boleto,'miguel.mamani@boa.bo,earrazola@boa.bo,fvargas@boa.bo')); 
        
               
         
@@ -500,7 +504,7 @@ $body$
         	(select ''boletos''::varchar,substring(b.medio_pago from 1 for 3)::varchar, m.codigo_internacional::varchar,sum(b.total),NULL::numeric
             from obingresos.tboleto b
             inner join param.tmoneda m on m.id_moneda = b.id_moneda_boleto
-            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMY'') and
+            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMY'',''TMYU'') and
             b.estado_reg = ''activo'' and b.voided = ''no''
             group by b.medio_pago,m.codigo_internacional
             order by b.medio_pago,m.codigo_internacional)
@@ -590,7 +594,18 @@ $body$
     elsif(p_transaccion='OBING_REPCENCOR_SEL')then
 
       begin
-      	v_consulta = 'with contrato as(
+      	v_id_moneda_base = (select param.f_get_moneda_base()); 
+        select m.id_moneda into v_id_moneda_usd
+        from param.tmoneda m
+        where m.codigo_internacional = 'USD';
+        
+        v_monto_str = '(case when me.id_moneda = ' || v_id_moneda_base || ' then
+                            	me.monto
+                            else
+                            	param.f_convertir_moneda(' || v_id_moneda_usd || ',' || v_id_moneda_base || ',me.monto,me.fecha,''O'',2)
+                            end)';
+            
+      	v_consulta = 'WITH contrato as(
         				select 
 							max(id_contrato) as ultimo_contrato,
             				id_agencia 
@@ -598,13 +613,48 @@ $body$
 						where id_agencia is not null and c.estado = ''finalizado''
     					group by id_agencia )
 					select a.id_agencia,a.nombre ,a.codigo_int, a.tipo_agencia,
-                    		array_to_string(con.formas_pago, '','')::varchar as formas_pago,l.codigo,sum(dbw.importe-dbw.comision) as monto
-					from obingresos.tdetalle_boletos_web dbw 
-					inner join obingresos.tagencia a on a.id_agencia = dbw.id_agencia
+                    		array_to_string(con.formas_pago, '','')::varchar as formas_pago,l.codigo,
+                            sum(case when me.tipo = ''credito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) as monto_creditos,
+                            sum(case when me.tipo = ''debito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) as monto_debitos,
+                            sum(case when me.ajuste = ''si'' and me.tipo = ''credito'' then 
+                            		' || v_monto_str || '
+                            	when me.ajuste = ''si'' and me.tipo = ''debito'' then
+                                	' || v_monto_str || ' * -1
+                                else
+                                	0
+                                end) as monto_ajustes,
+                                sum(case when me.tipo = ''credito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) -
+                            sum(case when me.tipo = ''debito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) +
+                            sum(case when me.ajuste = ''si'' and me.tipo = ''credito'' then 
+                            		' || v_monto_str || '
+                            	when me.ajuste = ''si'' and me.tipo = ''debito'' then
+                                	' || v_monto_str || ' * -1
+                                else
+                                	0
+                                end) as saldo
+                            
+					from obingresos.tmovimiento_entidad me 
+					inner join obingresos.tagencia a on a.id_agencia = me.id_agencia
 					inner join contrato c on c.id_agencia = a.id_agencia
 					inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
 					inner join param.tlugar l on l.id_lugar = a.id_lugar
-					where  ' ||v_parametros.filtro  || ' 
+					where me.estado_reg = ''activo'' and me.cierre_periodo = ''no'' and me.garantia = ''no'' and ' ||v_parametros.filtro  || ' 
                     
                     group by a.id_agencia,a.nombre,a.codigo_int, a.tipo_agencia,con.formas_pago,l.codigo';
         
@@ -614,6 +664,7 @@ $body$
                      
 
         --Devuelve la respuesta
+        raise notice 'consulta %',v_consulta;
         return v_consulta;
 
       end;
@@ -635,16 +686,52 @@ $body$
 						where id_agencia is not null and c.estado = ''finalizado''
     					group by id_agencia ),
 					 detalle as (
-                        select a.id_agencia,sum(dbw.importe-dbw.comision) as monto
-                        from obingresos.tdetalle_boletos_web dbw 
-                        inner join obingresos.tagencia a on a.id_agencia = dbw.id_agencia
-                        inner join contrato c on c.id_agencia = a.id_agencia
-                        inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
-                        inner join param.tlugar l on l.id_lugar = a.id_lugar
-					where  ' ||v_parametros.filtro  || ' 
+                        select a.id_agencia,a.nombre ,a.codigo_int, a.tipo_agencia,
+                    		array_to_string(con.formas_pago, '','')::varchar as formas_pago,l.codigo,
+                            sum(case when me.tipo = ''credito'' and me.ajuste = ''no'' then 
+                            		me.monto
+                                else
+                                	0
+                                end) as monto_creditos,
+                            sum(case when me.tipo = ''debito'' and me.ajuste = ''no'' then 
+                            		me.monto
+                                else
+                                	0
+                                end) as monto_debitos,
+                            sum(case when me.ajuste = ''si'' and me.tipo = ''credito'' then 
+                            		me.monto
+                            	when me.ajuste = ''si'' and me.tipo = ''debito'' then
+                                	me.monto * -1
+                                else
+                                	0
+                                end) as monto_ajustes,
+                                sum(case when me.tipo = ''credito'' and me.ajuste = ''no'' then 
+                            		me.monto
+                                else
+                                	0
+                                end) -
+                            sum(case when me.tipo = ''debito'' and me.ajuste = ''no'' then 
+                            		me.monto
+                                else
+                                	0
+                                end) +
+                            sum(case when me.ajuste = ''si'' and me.tipo = ''credito'' then 
+                            		me.monto
+                            	when me.ajuste = ''si'' and me.tipo = ''debito'' then
+                                	me.monto * -1
+                                else
+                                	0
+                                end) as saldo
+                            
+					from obingresos.tmovimiento_entidad me 
+					inner join obingresos.tagencia a on a.id_agencia = me.id_agencia
+					inner join contrato c on c.id_agencia = a.id_agencia
+					inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
+					inner join param.tlugar l on l.id_lugar = a.id_lugar
+					where me.estado_reg = ''activo'' and me.cierre_periodo = ''no'' and me.garantia = ''no'' and ' ||v_parametros.filtro  || ' 
                     
                     group by a.id_agencia,a.nombre,a.codigo_int, a.tipo_agencia,con.formas_pago,l.codigo)
-                    select count(id_agencia), sum(monto)
+                    select count(id_agencia), sum(monto_creditos), sum(monto_debitos), sum(monto_ajustes),sum(saldo)
                      from detalle';
         
 		            
@@ -654,6 +741,111 @@ $body$
         return v_consulta;
 
       end;
+     
+       /*********************************
+     #TRANSACCION:  'OBING_REPDEP_SEL'
+     #DESCRIPCION:  Listado 
+     #AUTOR:    MMV
+     #FECHA:    18-11-2016
+    ***********************************/
+      elsif(p_transaccion='OBING_REPDEP_SEL')then
+
+      begin
+     
+     	v_id_moneda_base = (select param.f_get_moneda_base()); 
+        select m.id_moneda into v_id_moneda_usd
+        from param.tmoneda m
+        where m.codigo_internacional = 'USD';
+		/*if(v_parametros.nro_deposito = '')then
+        v_filtro = 
+        else
+    	v_filtro = 
+        end if;*/
+  
+        
+        v_monto_str = '(case when me.id_moneda = ' || v_id_moneda_base || ' then
+                              me.monto
+                            else
+                              param.f_convertir_moneda(' || v_id_moneda_usd || ',' || v_id_moneda_base || ',me.monto,me.fecha,''O'',2)
+                            end)';
+                    
+      
+         v_consulta = 'WITH contrato as(select 	max(id_contrato) as ultimo_contrato,
+            									id_agencia 
+												from leg.tcontrato c 
+												where id_agencia is not null and c.estado = ''finalizado''
+    											group by id_agencia
+        ),saldos  as (select a.id_agencia,a.nombre ,a.codigo_int, a.tipo_agencia,
+                    		array_to_string(con.formas_pago, '','')::varchar as formas_pago,
+                            l.codigo,
+                           
+        					 sum(case when me.tipo = ''credito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) as monto_creditos,
+                            sum(case when me.tipo = ''debito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) as monto_debitos,
+                            sum(case when me.ajuste = ''si'' and me.tipo = ''credito'' then 
+                            		' || v_monto_str || '
+                            	when me.ajuste = ''si'' and me.tipo = ''debito'' then
+                                	' || v_monto_str || ' * -1
+                                else
+                                	0
+                                end) as monto_ajustes,
+                                sum(case when me.tipo = ''credito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) -
+                            sum(case when me.tipo = ''debito'' and me.ajuste = ''no'' then 
+                            		' || v_monto_str || '
+                                else
+                                	0
+                                end) +
+                            sum(case when me.ajuste = ''si'' and me.tipo = ''credito'' then 
+                            		' || v_monto_str || '
+                            	when me.ajuste = ''si'' and me.tipo = ''debito'' then
+                                	' || v_monto_str || ' * -1
+                                else
+                                	0
+                                end) as saldo
+                            
+					from obingresos.tmovimiento_entidad me 
+					inner join obingresos.tagencia a on a.id_agencia = me.id_agencia
+                   
+					inner join contrato c on c.id_agencia = a.id_agencia
+					inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
+					inner join param.tlugar l on l.id_lugar = a.id_lugar
+					where me.estado_reg = ''activo'' and me.cierre_periodo = ''no'' and me.garantia = ''no'' and ' ||v_parametros.filtro || ' 
+                    group by a.id_agencia,a.nombre,a.codigo_int, a.tipo_agencia,con.formas_pago,l.codigo)
+                    select 		d.id_agencia,
+                    			s.nombre,
+                                s.codigo_int,
+                                s.formas_pago,
+                                s.codigo,
+                                s.saldo,
+								d.nro_deposito,
+        					    d.monto_deposito,
+                                to_char(d.fecha,''DD/MM/YYYY'')::varchar as fecha,
+                                	obingresos.f_get_total_depositos_agencia(''agencia'','''||v_parametros.fecha_ini_de||''','''||v_parametros.fecha_fin_de||''',''validado'',d.id_agencia) as total_deposito,
+                                ((-1 * s.saldo )- obingresos.f_get_total_depositos_agencia(''agencia'','''||v_parametros.fecha_ini_de||''','''||v_parametros.fecha_fin_de||''',''validado'',d.id_agencia)) as diferencia,
+                                 d.observaciones::varchar
+                                from obingresos.tdeposito d
+                                inner join saldos s on s.id_agencia = d.id_agencia
+								where d.tipo=''agencia'' and d.fecha BETWEEN '''||v_parametros.fecha_ini_de||''' and '''||v_parametros.fecha_fin_de||''' and d.estado = ''validado''
+                                
+                                 order by nombre,fecha asc';
+        
+		--Devuelve la respuesta
+      
+       raise notice 'consular %',v_consulta;
+        return v_consulta;
+	end;
+
     else
 
       raise exception 'Transaccion inexistente';

@@ -101,6 +101,22 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
+                        name: 'codigo',
+                        fieldLabel: 'Cod. Forma Pago',
+                        allowBlank: true,
+                        anchor: '60%',
+                        gwidth: 150,
+                        minLength:16,
+                        maxLength:20
+                    },
+                    type:'codigo',
+
+                    id_grupo:1,
+                    grid:true,
+                    form:false
+                },
+                {
+                    config:{
                         name: 'importe',
                         fieldLabel: 'Monto a Pagar',
                         allowBlank:false,
@@ -109,7 +125,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         decimalPrecision:2,
                         allowNegative : false,
                         gwidth: 125,
-                        style: 'background-color: #f2f23c;  background-image: none;'
+                        style: 'background-color: #F1F894;  background-image: none;'
                     },
                     type:'NumberField',
                     id_grupo:1,
@@ -201,7 +217,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         gwidth: 150,
                         minLength:15,
                         maxLength:20,
-                        style: 'background-color: #FAA3A3;  background-image: none;'
+                        style: 'background-color: #A6F5C2;  background-image: none;'
                     },
                     type:'TextField',
                     id_grupo:1,
@@ -334,7 +350,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'usr_reg', type: 'string'},
                 {name:'usr_mod', type: 'string'},
                 {name:'moneda', type: 'string'},
-                {name:'mco', type: 'string'}
+                {name:'mco', type: 'string'} ,
+                {name:'codigo', type: 'string'}
 
             ],
             sortInfo:{
@@ -344,9 +361,13 @@ header("content-type: text/javascript; charset=UTF-8");
             bdel:true,
             bsave:false,
             bedit:true,
+            onButtonEdit : function () {
+
+                Phx.vista.BoletoAmadeusFormaPago.superclass.onButtonEdit.call(this);
+                this.manejoComponentesFP(this.sm.getSelected().data['codigo']);
+            },
             iniciarEventos : function () {
                 this.Cmp.id_forma_pago.on('select', function (combo,record,index){
-
                     this.manejoComponentesFP(record.data.codigo);
                     if (this.maestro.moneda == record.data.desc_moneda){
                         this.Cmp.importe.setValue(this.monto_fp);
@@ -391,6 +412,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
                 else if (codigoFp.startsWith("MCO")) {
                     //mco
+                    console.log('hola');
                     this.ocultarComponente(this.Cmp.numero_tarjeta);
                     this.ocultarComponente(this.Cmp.id_auxiliar);
                     this.Cmp.id_auxiliar.reset();
@@ -444,16 +466,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.ocultarComponente(this.Cmp.id_auxiliar);
                 this.ocultarComponente(this.Cmp.mco)
             },
-            onButtonEdit : function () {
 
-                Phx.vista.BoletoAmadeusFormaPago.superclass.onButtonEdit.call(this);
-                this.ocultarComponente(this.Cmp.numero_tarjeta);
-                this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                this.ocultarComponente(this.Cmp.id_auxiliar);
-                this.ocultarComponente(this.Cmp.mco);
-
-
-            },
             round : function(value, decimals) {
                 return Math.ceil(value*100)/100;
             },

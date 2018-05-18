@@ -532,7 +532,10 @@ BEGIN
 		begin
 			--Sentencia de la eliminacion
 			update obingresos.tdeposito
-            set estado = 'validado'
+            set 
+            estado = 'validado',
+            id_usuario_mod = p_id_usuario,
+            fecha_mod = now()
             where id_deposito=v_parametros.id_deposito;
 
             --Definicion de la respuesta
