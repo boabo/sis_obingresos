@@ -126,8 +126,12 @@ DECLARE
     v_contar	integer;
     v_record  record;
     v_error_mes varchar;
+<<<<<<< HEAD
     v_id_boleto_a integer;
   
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
 
 BEGIN
@@ -415,6 +419,7 @@ BEGIN
 
             if (v_parametros.id_forma_pago is not null and v_parametros.id_forma_pago != 0) then
         			-- Forma de pago igual y importe distinto
+<<<<<<< HEAD
                     
                      select a.id_forma_pago,
                      		a.importe 
@@ -431,12 +436,31 @@ BEGIN
                             delete from obingresos.tmod_forma_pago m
                             where m.billete = v_boleto.nro_boleto::numeric;
         					 
+=======
+
+                     select a.id_forma_pago,
+                     		a.importe
+                     		into
+                     		v_id_fpago,
+                     		v_importe
+                     from obingresos.tboleto_amadeus_forma_pago a
+                     where a.id_forma_pago = v_parametros.id_forma_pago  and
+                     a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+                    IF ( v_id_fpago = v_parametros.id_forma_pago and
+                    		v_importe <> v_parametros.monto_forma_pago) THEN
+
+                            delete from obingresos.tmod_forma_pago m
+                            where m.billete = v_boleto.nro_boleto::numeric;
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                              perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
             													v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
                                                                 p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
                                                                  v_parametros.mco);
 
                     END IF;
+<<<<<<< HEAD
                     
                      --replicacion
                   IF EXISTS (select 1 from obingresos.tboleto_amadeus_forma_pago a
@@ -445,6 +469,16 @@ BEGIN
                          	
                                RAISE NOTICE 'Existe una forma de Pago';
                     
+=======
+
+                     --replicacion
+                  IF EXISTS (select 1 from obingresos.tboleto_amadeus_forma_pago a
+                                        where a.id_forma_pago = v_parametros.id_forma_pago  and
+                                        a.id_boleto_amadeus = v_parametros.id_boleto_amadeus) THEN
+
+                               RAISE NOTICE 'Existe una forma de Pago';
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                    ELSE
                                delete from obingresos.tmod_forma_pago m
                             where m.billete = v_boleto.nro_boleto::numeric;
@@ -453,19 +487,33 @@ BEGIN
                                                                 p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
                                                                  v_parametros.mco);
 					END IF;
+<<<<<<< HEAD
                  
                     IF(v_boleto.estado_informix = 'no_migra')THEN
                 
                     delete from obingresos.tmod_forma_pago m
                     where m.billete = v_boleto.nro_boleto::numeric;
                           
+=======
+
+                    IF(v_boleto.estado_informix = 'no_migra')THEN
+
+                    delete from obingresos.tmod_forma_pago m
+                    where m.billete = v_boleto.nro_boleto::numeric;
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                    perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
                                                             v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
                                                             p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
                                                              v_parametros.mco);
                     END IF;
+<<<<<<< HEAD
                      
                     
+=======
+
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     delete from obingresos.tboleto_amadeus_forma_pago
           			where id_boleto_amadeus = v_parametros.id_boleto_amadeus;
 
@@ -485,6 +533,7 @@ BEGIN
                 	end if;
                 end if;
                  select a.id_forma_pago,
+<<<<<<< HEAD
                      		a.importe 
                      		into 
                      		v_id_fpago,
@@ -494,6 +543,17 @@ BEGIN
                      a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
                     
                 
+=======
+                     		a.importe
+                     		into
+                     		v_id_fpago,
+                     		v_importe
+                     from obingresos.tboleto_amadeus_forma_pago a
+                     where a.id_forma_pago = v_parametros.id_forma_pago  and
+                     a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                  --raise exception 'llega';
                 INSERT INTO
                   obingresos.tboleto_amadeus_forma_pago
@@ -535,7 +595,11 @@ BEGIN
                     end if;
 				 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
            			IF(v_boleto.estado_informix = 'no_migra')THEN
+<<<<<<< HEAD
            			
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,
                                                                 p_id_usuario,v_parametros.codigo_tarjeta2,v_parametros.monto_forma_pago2,
@@ -815,7 +879,11 @@ BEGIN
                                         where id_boleto_amadeus = v_id_boleto)  then
                delete from obingresos.tforma_pago_ant
                where id_boleto_amadeus = v_id_boleto;
+<<<<<<< HEAD
               
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
               insert into obingresos.tforma_pago_ant(	importe,
                               id_forma_pago,
                               id_boleto_amadeus
@@ -824,7 +892,11 @@ BEGIN
               a.id_boleto_amadeus
               from obingresos.tboleto_amadeus_forma_pago a
               where a.id_boleto_amadeus = v_id_boleto;
+<<<<<<< HEAD
         	   
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                else
                insert into obingresos.tforma_pago_ant(	importe,
                                                         id_forma_pago,
@@ -834,7 +906,11 @@ BEGIN
                                         a.id_boleto_amadeus
                                 		from obingresos.tboleto_amadeus_forma_pago a
                                 		where a.id_boleto_amadeus = v_id_boleto;
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                 end if ;
 
                v_comision_total = v_comision_total + v_importe_comision;
@@ -845,9 +921,21 @@ BEGIN
                 delete from obingresos.tboleto_amadeus_forma_pago
                 where id_boleto_amadeus = v_id_boleto;
 
+<<<<<<< HEAD
 
             	if (v_saldo_fp1 > 0) then
                 
+=======
+
+
+
+                delete from obingresos.tboleto_amadeus_forma_pago
+                where id_boleto_amadeus = v_id_boleto;
+
+
+            	if (v_saldo_fp1 > 0) then
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                 v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago );
 
                     v_saldo_fp1 = v_saldo_fp1 - v_valor;
@@ -864,14 +952,20 @@ BEGIN
                     if (v_codigo_tarjeta is not null) then
                         v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta,v_codigo_tarjeta);
                     end if;
+<<<<<<< HEAD
                     
                         
+=======
+
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                if (left (v_parametros.mco,3)  <> '930' and v_parametros.mco <> '')then
                         raise exception 'El numero del MCO tiene que empezar con 930';
                         end if;
             			
                         if (char_length(v_parametros.mco::varchar) <> 15 and v_parametros.mco <> '' ) then 
                         raise exception 'El numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
+<<<<<<< HEAD
                       end if;  
                        
                      select a.id_forma_pago,
@@ -893,12 +987,36 @@ BEGIN
         				
                    
                             
+=======
+                      end if;
+
+                     select a.id_forma_pago,
+                     		a.importe
+                     		into
+                     		v_id_fpago,
+                     		v_importe
+                     from obingresos.tforma_pago_ant a
+                     where a.id_forma_pago = v_parametros.id_forma_pago  and
+                     a.id_boleto_amadeus = v_id_boleto;
+
+                    IF ( v_id_fpago = v_parametros.id_forma_pago and
+                    		v_importe <> v_valor) THEN
+
+
+                            delete from obingresos.tmod_forma_pago m
+                            where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
+                            where a.id_boleto_amadeus = v_id_boleto );
+
+
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                              perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
                                                                 		p_id_usuario,v_parametros.codigo_tarjeta,v_valor,
                                                                  		v_parametros.mco);
 
                     END IF;
+<<<<<<< HEAD
                     
                      IF EXISTS (select 1 from obingresos.tforma_pago_ant
                                         where id_forma_pago = v_parametros.id_forma_pago  and 
@@ -913,16 +1031,40 @@ BEGIN
                       where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                       where a.id_boleto_amadeus = v_id_boleto );
                               
+=======
+
+                     IF EXISTS (select 1 from obingresos.tforma_pago_ant
+                                        where id_forma_pago = v_parametros.id_forma_pago  and
+                                        id_boleto_amadeus = v_id_boleto) THEN
+
+                              RAISE notice 'Existe una forma de Pago';
+
+                   ELSE
+
+
+                      delete from obingresos.tmod_forma_pago m
+                      where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
+                      where a.id_boleto_amadeus = v_id_boleto );
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                              perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
                                                                 		p_id_usuario,v_parametros.codigo_tarjeta,v_valor,
                                                                  		v_parametros.mco);
 					END IF;
+<<<<<<< HEAD
                     
                     IF( (select a.estado_informix
                     	from obingresos.tboleto_amadeus a
                         where a.id_boleto_amadeus = v_id_boleto)='no_migra')THEN
                            
+=======
+
+                    IF( (select a.estado_informix
+                    	from obingresos.tboleto_amadeus a
+                        where a.id_boleto_amadeus = v_id_boleto)='no_migra')THEN
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                            delete from obingresos.tmod_forma_pago m
                             where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                             where a.id_boleto_amadeus = v_id_boleto );
@@ -931,10 +1073,17 @@ BEGIN
                                                                 		p_id_usuario,v_parametros.codigo_tarjeta,v_valor,
                                                                  		v_parametros.mco);
                     END IF;
+<<<<<<< HEAD
                    
               
                     
                        
+=======
+
+
+
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 					INSERT INTO obingresos.tboleto_amadeus_forma_pago( 	id_usuario_reg,
                                                                         importe,
                                                                         id_forma_pago,
@@ -978,7 +1127,11 @@ BEGIN
                     if (v_codigo_tarjeta is not null) then
                         v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
                     end if;
+<<<<<<< HEAD
                     
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     if (left (v_parametros.mco2::varchar,3)<> '930' and v_parametros.mco2 <> '' )then
                     raise exception 'Segunda forma de pago el numero del MCO tiene que empezar con 390';
                     end if;
@@ -987,12 +1140,20 @@ BEGIN
                     raise exception 'Segunda forma de pago el numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
                     end if;
                      ---Replicacion Ingreso--
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     IF( (select a.estado_informix
                     	from obingresos.tboleto_amadeus a
                         where a.id_boleto_amadeus = v_id_boleto
                     			)='no_migra')THEN
+<<<<<<< HEAD
                                 
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                                  perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
                                                                 p_id_usuario,v_parametros.codigo_tarjeta2,v_valor,
@@ -1003,8 +1164,13 @@ BEGIN
                                                                 p_id_usuario,v_parametros.codigo_tarjeta2,v_valor,
                                                                 v_parametros.mco2);
                     END IF;
+<<<<<<< HEAD
                  
                  
+=======
+
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
                     INSERT INTO obingresos.tboleto_amadeus_forma_pago ( id_usuario_reg,
                                                                         importe,
@@ -1033,7 +1199,11 @@ BEGIN
                                                                         null,
                                                                         v_parametros.mco2
                                                                       );
+<<<<<<< HEAD
                     
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
             	end if;
 
                 select obingresos.f_valida_boleto_amadeus_fp(v_id_boleto) into v_res;
@@ -1804,9 +1974,15 @@ BEGIN
 	elsif(p_transaccion='OBING_SERVAMAJS_INS')then
 
         begin
+<<<<<<< HEAD
       
       -- RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
         
+=======
+
+      --  RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
         	if (pxp.f_get_variable_global('vef_tiene_apertura_cierre') = 'si') then
 
             	select id_usuario into v_id_usuario
@@ -1852,7 +2028,11 @@ BEGIN
             	FOR v_record_json_boletos IN (SELECT json_array_elements(v_boletos :: JSON)
             	) LOOP
                   --recuperamos nro boleto
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                   v_nro_boleto = v_record_json_boletos.json_array_elements::JSON ->> 'documentNumber';
                   v_nro_boleto = v_nro_boleto::JSON ->> 'documentDetails';
                   v_nro_boleto = v_nro_boleto::JSON ->> 'number';
@@ -2133,6 +2313,7 @@ BEGIN
 
 	elsif(p_transaccion='OBING_ANUBOL_UPD')then
 
+<<<<<<< HEAD
                begin
 	
     ---raise exception 'id %',v_parametros.id_boleto_amadeus;
@@ -2143,6 +2324,18 @@ BEGIN
              
             --raise exception '%',v_record;
             
+=======
+           begin
+
+    ---raise exception 'id %',v_parametros.id_boleto_amadeus;
+
+    v_ids = string_to_array(v_parametros.id_boleto_amadeus,',');
+            FOREACH v_id_boleto_a IN ARRAY v_ids
+            LOOP
+
+            --raise exception '%',v_record;
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
         	select * into v_boleto
             from obingresos.tboleto_amadeus
             where id_boleto_amadeus=v_id_boleto_a;
@@ -2174,30 +2367,50 @@ BEGIN
 
 					
 
+
             	IF (v_boleto.voided = 'si')THEN
                   UPDATE obingresos.tboleto_amadeus
                   SET voided='no',
                   id_usuario_cajero = p_id_usuario
                   WHERE id_boleto_amadeus=v_id_boleto_a;
+<<<<<<< HEAD
              
               PERFORM vef.f_anular_forma_pago_amadeus_replicar(v_id_boleto_a);
                 
+=======
+
+              PERFORM vef.f_anular_forma_pago_amadeus_replicar(v_id_boleto_a);
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                 ELSE
                   UPDATE obingresos.tboleto_amadeus
                   SET voided='si',
                   id_usuario_cajero = p_id_usuario
                   WHERE id_boleto_amadeus=v_id_boleto_a;
+<<<<<<< HEAD
                   
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                   update obingresos.tboleto_amadeus
                   set comision = 0,
                   tipo_comision= 'ninguno'
                   where id_boleto_amadeus = v_id_boleto_a;
+<<<<<<< HEAD
                   
                  
             delete from obingresos.tmod_forma_pago m
             where m.billete = (	select 	b.nro_boleto::numeric
                          		from obingresos.tboleto_amadeus b
              			 		where b.id_boleto_amadeus = v_id_boleto_a); 
+=======
+
+
+            delete from obingresos.tmod_forma_pago m
+            where m.billete = (	select 	b.nro_boleto::numeric
+                         		from obingresos.tboleto_amadeus b
+             			 		where b.id_boleto_amadeus = v_id_boleto_a);
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                   END IF;
 
             	--Definicion de la respuesta
@@ -2210,6 +2423,7 @@ BEGIN
             return v_resp;
 
         end;
+
 
 	/*********************************
  	#TRANSACCION:  'OBING_ACTBOLAMA_INS'
@@ -2450,7 +2664,11 @@ BEGIN
             delete from obingresos.tmod_forma_pago m
             where m.billete = (	select 	b.nro_boleto::numeric
                          		from obingresos.tboleto_amadeus b
+<<<<<<< HEAD
              			 		where b.id_boleto_amadeus = v_parametros.id_boleto_amadeus); 
+=======
+             			 		where b.id_boleto_amadeus = v_parametros.id_boleto_amadeus);
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
 
               END IF;
@@ -2572,7 +2790,11 @@ BEGIN
               v_parametros.status
               )RETURNING id_viajero_frecuente into v_id_viajero_frecuente;
                if (v_parametros.status = 'OK' and v_parametros.bandera ='revisar') then
+<<<<<<< HEAD
               
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
              select * into v_boleto
             from obingresos.tboleto_amadeus
             where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
@@ -2636,7 +2858,11 @@ BEGIN
                 FROM obingresos.tboleto_amadeus_forma_pago
                 WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
 
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
               END IF;
 
@@ -2661,7 +2887,11 @@ BEGIN
               elsif(p_transaccion='OBING_LOG_VEF')then
 
                   begin
+<<<<<<< HEAD
              INSERT INTO 
+=======
+             INSERT INTO
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
             obingresos.tlog_vajero_frecuente
           (
             id_usuario_reg,
@@ -2671,7 +2901,11 @@ BEGIN
             estado_reg,
             id_usuario_ai,
             usuario_ai,
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
             tickert_number,
             pnr,
             importe,
@@ -2686,7 +2920,11 @@ BEGIN
             'activo',
            v_parametros._id_usuario_ai,
            v_parametros._nombre_usuario_ai,
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
             v_parametros.tickert_number,
             v_parametros.pnr,
             v_parametros.importe,

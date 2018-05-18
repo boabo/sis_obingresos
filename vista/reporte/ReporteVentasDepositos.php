@@ -23,7 +23,10 @@ header("content-type: text/javascript; charset=UTF-8");
                     lazyRender:true,
                     mode: 'local',
                     gwidth: 150,
+<<<<<<< HEAD
                     anchor: '100%',
+=======
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     store:['corporativa','noiata','todas']
                 },
                 type:'ComboBox',
@@ -41,7 +44,10 @@ header("content-type: text/javascript; charset=UTF-8");
                     lazyRender:true,
                     mode: 'local',
                     gwidth: 150,
+<<<<<<< HEAD
                     anchor: '100%',
+=======
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     store:['prepago','postpago','todas']
                 },
                 type:'ComboBox',
@@ -77,12 +83,19 @@ header("content-type: text/javascript; charset=UTF-8");
                     mode:'remote',
                     pageSize:50,
                     queryDelay:500,
+<<<<<<< HEAD
                     anchor: '100%',
+=======
+                    anchor:"35%",
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     minChars:2,
                     enableMultiSelect:true
                 },
                 type:'AwesomeCombo',
+<<<<<<< HEAD
                 id_grupo:1,
+=======
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                 form:true
             },
             {
@@ -90,7 +103,11 @@ header("content-type: text/javascript; charset=UTF-8");
                     name: 'fecha_ini',
                     fieldLabel: 'Fecha Inicio',
                     allowBlank: false,
+<<<<<<< HEAD
                     anchor: '95%',
+=======
+                    anchor: '30%',
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     gwidth: 100,
                     format: 'd/m/Y',
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
@@ -101,13 +118,20 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid:true,
                 form:true
             },
+<<<<<<< HEAD
 
+=======
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
             {
                 config:{
                     name: 'fecha_fin',
                     fieldLabel: 'Fecha Fin',
                     allowBlank: false,
+<<<<<<< HEAD
                     anchor: '95%',
+=======
+                    anchor: '30%',
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     gwidth: 100,
                     format: 'd/m/Y',
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
@@ -117,6 +141,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo:1,
                 grid:true,
                 form:true
+<<<<<<< HEAD
             },
            /* {
                 config:{
@@ -206,6 +231,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 ]
             }
         ],
+=======
+            }],
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
         title : 'Reporte Deposito',
         ActSave : '../../sis_obingresos/control/DetalleBoletosWeb/reporteVentasCorporativasDepositos',
 

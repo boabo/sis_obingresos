@@ -191,6 +191,7 @@ class ACTDetalleBoletosWeb extends ACTbase{
     }
     function reporteVentasCorporativasDepositos(){
 
+<<<<<<< HEAD
         //$this->objParam->addFiltro(" dbw.void = ''no'' and dbw.origen = ''portal''");
         if($this->objParam->getParametro('fecha_ini') != '' && $this->objParam->getParametro('fecha_fin') != '') {
             $this->objParam->addFiltro(" me.fecha >= ''" . $this->objParam->getParametro('fecha_ini') . "'' and me.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
@@ -202,6 +203,23 @@ class ACTDetalleBoletosWeb extends ACTbase{
         }if($this->objParam->getParametro('id_lugar') != ''){
             $this->objParam->addFiltro(" a.id_lugar IN ( ".$this->objParam->getParametro('id_lugar').")");
         }
+=======
+
+        /*if($this->objParam->getParametro('fecha_ini') != '' && $this->objParam->getParametro('fecha_fin') != '') {
+            $this->objParam->addFiltro(" dbw.fecha >= ''" . $this->objParam->getParametro('fecha_ini') . "'' AND dbw.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
+        }
+        if($this->objParam->getParametro('id_lugar') != ''){
+            $this->objParam->addFiltro(" a.id_lugar IN ( ".$this->objParam->getParametro('id_lugar').")");
+        }
+        if($this->objParam->getParametro('tipo_agencia') != '' && $this->objParam->getParametro('tipo_agencia') != 'todas'){
+            $this->objParam->addFiltro(" a.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");
+        }
+        if($this->objParam->getParametro('forma_pago') != '' && $this->objParam->getParametro('forma_pago') != 'todas'){
+            $this->objParam->addFiltro("''" . $this->objParam->getParametro('forma_pago') . "''  = ANY(con.formas_pago)");
+        }*/
+
+        //$this->objParam->addFiltro(" dbw.void = ''no'' and dbw.origen = ''portal''");
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
         $this->objFunc = $this->create('MODDetalleBoletosWeb');
         $this->res = $this->objFunc->reporteVentasCorporativasDepositos($this->objParam);
@@ -223,6 +241,12 @@ class ACTDetalleBoletosWeb extends ACTbase{
         $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado','Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
         $this->mensajeExito->setArchivoGenerado($nombreArchivo);
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+<<<<<<< HEAD
+=======
+
+    }
+
+>>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
     }
 
