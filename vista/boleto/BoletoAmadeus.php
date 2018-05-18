@@ -1823,21 +1823,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     if(confirm("¿Esta seguro de Anular los boletos?") ){
 
                         Phx.CP.loadingShow();
-<<<<<<< HEAD
-                        //var d = this.sm.getSelected().data;
-                        Ext.Ajax.request({
-                            url:'../../sis_obingresos/control/Boleto/anularBoleto',
-                            params:{id_boleto_amadeus:tmp},
-                            success:this.successAnularBoleto,
-                           /* success : function(resp) {
-                                Phx.CP.loadingHide();
-                                this.reload();
-                            },*/
-                            failure: this.conexionFailure,
-                            timeout:this.timeout,
-                            scope:this
-                        });
-=======
+
                 //var d = this.sm.getSelected().data;
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/anularBoleto',
@@ -1853,7 +1839,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     timeout:this.timeout,
                     scope:this
                 });
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
                     }
                 }
                 else{
