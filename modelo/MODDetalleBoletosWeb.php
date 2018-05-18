@@ -317,7 +317,7 @@ class  MODDetalleBoletosWeb extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
-    function reporteVentasCorporativasDepositos(){
+   /* function reporteVentasCorporativasDepositos(){
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
         $this->transaccion='OBING_REPDEP_SEL';
@@ -354,7 +354,7 @@ class  MODDetalleBoletosWeb extends MODbase{
         // var_dump( $this->respuesta);exit;
         //Devuelve la respuesta
         return $this->respuesta;
-    }
+    }*/
 
 
 

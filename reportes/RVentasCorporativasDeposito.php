@@ -5,10 +5,7 @@ class RVentasCorporativasDeposito
     private $objWriter;
     private $numero;
     private $equivalencias=array();
-<<<<<<< HEAD
-    private $agencia=array();
-=======
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
+
     private $objParam;
     public  $url_archivo;
     function __construct(CTParametro $objParam)
@@ -45,11 +42,8 @@ class RVentasCorporativasDeposito
     }
     function imprimeCabecera() {
         $this->docexcel->createSheet();
-<<<<<<< HEAD
-        $this->docexcel->getActiveSheet()->setTitle('Depositos');
-=======
+
         $this->docexcel->getActiveSheet()->setTitle('Nit y Razon');
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
         $this->docexcel->setActiveSheetIndex(0);
 
         $styleTitulos1 = array(
@@ -105,11 +99,8 @@ class RVentasCorporativasDeposito
 
         //titulos
 
-<<<<<<< HEAD
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'CUENTAS POR COBRAR AGT '.strtoupper($this->objParam->getParametro('tipo_agencia')).'' );
-=======
+
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'Reporte Vetas Corporativas Depositos' );
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
         $this->docexcel->getActiveSheet()->getStyle('A2:L2')->applyFromArray($styleTitulos1);
         $this->docexcel->getActiveSheet()->mergeCells('A2:L2');
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,4,'Del: '.  $this->objParam->getParametro('fecha_ini').'   Al: '.  $this->objParam->getParametro('fecha_fin') );
@@ -117,19 +108,7 @@ class RVentasCorporativasDeposito
         $this->docexcel->getActiveSheet()->mergeCells('A4:L4');
 
         $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
-<<<<<<< HEAD
-        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
-        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(10);
-        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('J')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('K')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('L')->setWidth(20);
 
-=======
         $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
@@ -140,7 +119,6 @@ class RVentasCorporativasDeposito
         $this->docexcel->getActiveSheet()->getColumnDimension('J')->setWidth(35);
         $this->docexcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('L')->setWidth(35);
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
 
 
@@ -153,18 +131,7 @@ class RVentasCorporativasDeposito
         $this->docexcel->getActiveSheet()->setCellValue('A5','Nº');
         $this->docexcel->getActiveSheet()->setCellValue('B5','NOMBRE AGENCIA');
         $this->docexcel->getActiveSheet()->setCellValue('C5','OFFICELD');
-<<<<<<< HEAD
-        $this->docexcel->getActiveSheet()->setCellValue('D5','CIUDAD');
-        $this->docexcel->getActiveSheet()->setCellValue('E5','SALDO');
-        $this->docexcel->getActiveSheet()->setCellValue('F5','MONTO DEPOSITADO');
-        $this->docexcel->getActiveSheet()->setCellValue('G5','FECHA DEPOSITADO');
-        $this->docexcel->getActiveSheet()->setCellValue('H5','NRO. DEPOSITADO');
-        $this->docexcel->getActiveSheet()->setCellValue('I5','TOTAL MONTO DEPOSITADO');
-        $this->docexcel->getActiveSheet()->setCellValue('J5','DIFERENCIA');
-        $this->docexcel->getActiveSheet()->setCellValue('K5','OBSERVACIONES');
-        $this->docexcel->getActiveSheet()->setCellValue('L5','FORMA DE PAGO');
 
-=======
         $this->docexcel->getActiveSheet()->setCellValue('D5','TIPO AGENCIA');
         $this->docexcel->getActiveSheet()->setCellValue('E5','CIUDAD');
         $this->docexcel->getActiveSheet()->setCellValue('F5','CREDITOS');
@@ -174,7 +141,6 @@ class RVentasCorporativasDeposito
         $this->docexcel->getActiveSheet()->setCellValue('J5','NRO. DEPOSITOS');
         $this->docexcel->getActiveSheet()->setCellValue('K5','MONTO DEPOSITO');
         $this->docexcel->getActiveSheet()->setCellValue('L5','FECHA DEPOSITO');
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
 
     }
     function generarDatos()
@@ -185,100 +151,7 @@ class RVentasCorporativasDeposito
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
         );
-<<<<<<< HEAD
-        $styleArray = array(
-            'borders' => array(
-                'allborders' => array(
-                    'style' => PHPExcel_Style_Border::BORDER_THIN
-                )
-            ),
-            'font'  => array(
-                'bold'  => true,
-                'size'  => 10,
-                'name'  => 'Arial',
-                'color' => array(
-                    'rgb' => '0A0909'
-                )
 
-            ),
-        );
-
-        $styleTitulos2 = array(
-            'font'  => array(
-                'bold'  => true,
-                'size'  => 9,
-                'name'  => 'Arial',
-                'color' => array(
-                    'rgb' => '0A0909'
-                )
-            ),
-
-            'fill' => array(
-                'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                'color' => array(
-                    'rgb' => '66EEF9'
-                )
-            ));
-
-        $datos = $this->objParam->getParametro('datos');
-        $this->imprimeCabecera(0);
-        $this->numero = 1;
-        $fila = 6;
-        $reg ='';
-        foreach ($datos as $value) {
-            if ($value['nombre'] != $reg) {
-                $this->docexcel->getActiveSheet()->getStyle("A$fila:L$fila")->applyFromArray($styleArray);
-                $reg = $value['nombre'];
-            }
-
-            if (!array_key_exists($value['nombre'], $this->agencia)) {
-                $this->agencia[$value['nombre']] = 1;
-                $value['nombre'];
-                $value['codigo_int'];
-                $value['codigo'];
-                $value['saldo'];$value['total_deposito'];$value['diferencia'];$value['formas_pago'];
-            } else {
-                $this->agencia[$value['nombre']]++;
-                $value['nombre'] = '';
-                $value['codigo_int'] = '';
-                $value['codigo'] = '';
-                $value['saldo'] = ''; $value['total_deposito'] = ''; $value['diferencia'] = '';$value['formas_pago'] = '';
-            }
-
-            if ( $value['nombre'] != "") {
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila,  $this->numero);
-            }
-
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['nombre']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['codigo_int']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['codigo']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['saldo']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['monto_deposito']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['fecha']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['nro_deposito']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['total_deposito']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['diferencia']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $value['observaciones']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $value['formas_pago']);
-            $this->docexcel->getActiveSheet()->getStyle("D$fila:D$fila")->applyFromArray($styleTitulos3);
-            $this->docexcel->getActiveSheet()->getStyle("E$fila:F$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->docexcel->getActiveSheet()->getStyle("I$fila:J$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->docexcel->getActiveSheet()->getStyle("G$fila:G$fila")->applyFromArray($styleTitulos3);
-            if ( $value['nombre'] != ""){
-                $this->numero++;
-            }
-            if($value['diferencia'] > 0){
-                $this->docexcel->getActiveSheet()->getStyle("A$fila:K$fila")->applyFromArray($styleTitulos2);
-            }
-
-
-            $fila++;
-        }
-    }
-
-
-    function generarReporte(){
-=======
 
         $this->numero = 1;
         $fila = 6;
@@ -319,7 +192,6 @@ class RVentasCorporativasDeposito
     }
     function generarReporte(){
 
->>>>>>> 896209f9b47bfe3ee98b0f239ba7d78a9ec9a031
         //$this->docexcel->setActiveSheetIndex(0);
         $this->objWriter = PHPExcel_IOFactory::createWriter($this->docexcel, 'Excel5');
         $this->objWriter->save($this->url_archivo);
