@@ -28,14 +28,14 @@ $body$
     )
     select string_agg(c.nro_boleto || ' , ' || c.numero_tarjeta || ' , ' || to_char(c.fecha_emision,'DD/MM/YYYY'),'<BR>') into v_res
     from consulta c;
-    v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos con # tarjeta ****5555 no reportados',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
+    v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos con # tarjeta ****5555 no reportados',v_res,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
 
     select string_agg(b.nro_boleto || ' , ' || to_char(b.fecha_emision,'DD/MM/YYYY'),'<BR>') into v_res
     from obingresos.tventa_web_modificaciones vwm
       inner join obingresos.tboleto b on b.nro_boleto = vwm.nro_boleto and b.estado_reg = 'activo'
     where b.voided = 'no';
 
-    v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos anulados en Resiber, por anular en sistema de ingresos',v_res,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo,dcamacho@boa.bo,xzambrana@boa.bo,gsanabria@boa.bo'));
+    v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Boletos anulados en Resiber, por anular en sistema de ingresos',v_res,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo,dcamacho@boa.bo,xzambrana@boa.bo,gsanabria@boa.bo'));
 
   END;
 $body$

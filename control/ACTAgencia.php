@@ -7,8 +7,8 @@
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
 
-class ACTAgencia extends ACTbase{    
-			
+class ACTAgencia extends ACTbase{
+
 	function listarAgencia(){
 		$this->objParam->defecto('ordenacion','id_agencia');
 
@@ -21,7 +21,12 @@ class ACTAgencia extends ACTbase{
 
         if($this->objParam->getParametro('vista') == 'corporativo'){
             $this->objParam->addFiltro(" age.tipo_agencia in(''corporativa'', ''noiata'') ");
-            
+
+        }
+
+        if($this->objParam->getParametro('comision') == 'si'){
+            $this->objParam->addFiltro(" age.tipo_agencia in(''noiata'') and age.boaagt  in ( ''A'')");
+
         }
 
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
@@ -29,7 +34,7 @@ class ACTAgencia extends ACTbase{
 			$this->res = $this->objReporte->generarReporteListado('MODAgencia','listarAgencia');
 		} else{
 			$this->objFunc=$this->create('MODAgencia');
-			
+
 			$this->res=$this->objFunc->listarAgencia($this->objParam);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
@@ -41,19 +46,19 @@ class ACTAgencia extends ACTbase{
         $this->res=$this->objFunc->getDocumentosContrato($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-	
+
 	function finalizarContratoPortal(){
 
         $this->objFunc=$this->create('MODAgencia');
         $this->res=$this->objFunc->finalizarContratoPortal($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-				
+
 	function insertarAgencia(){
-		$this->objFunc=$this->create('MODAgencia');	
+		$this->objFunc=$this->create('MODAgencia');
 		if($this->objParam->insertar('id_agencia')){
-			$this->res=$this->objFunc->insertarAgencia($this->objParam);			
-		} else{			
+			$this->res=$this->objFunc->insertarAgencia($this->objParam);
+		} else{
 			$this->res=$this->objFunc->modificarAgencia($this->objParam);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
@@ -128,9 +133,9 @@ class ACTAgencia extends ACTbase{
 
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-						
+
 	function eliminarAgencia(){
-			$this->objFunc=$this->create('MODAgencia');	
+			$this->objFunc=$this->create('MODAgencia');
 		$this->res=$this->objFunc->eliminarAgencia($this->objParam);
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
@@ -156,6 +161,7 @@ class ACTAgencia extends ACTbase{
         // iniciar sesión con nombre de usuario y contraseña
         $login_result = ftp_login($conn_id, $_SESSION['_FTP_INGRESOS_USR'], $_SESSION['_FTP_INGRESOS_PASS']);
 
+        //$login_result = ftp_login($conn_id,'usuarioftp', 'Passw0rd');
 
         ftp_pasv($conn_id,true);
 
@@ -164,27 +170,25 @@ class ACTAgencia extends ACTbase{
 
         // intenta descargar $server_file y guardarlo en $local_file
         if (ftp_get($conn_id, $local_file, $server_file, FTP_BINARY)) {
-
+      //    echo "Se ha guardado satisfactoriamente en $local_file\n";
         } else {
             throw new Exception("No se ha podido leer el archivo", 3);
         }
 
         // cerrar la conexión ftp
         ftp_close($conn_id);
-       
 
-
+           // var_dump(basename($local_file,$this->objParam->getParametro('nombre_archivo')));exit;
         echo $pxpRestClient->doPost('workflow/DocumentoWf/subirArchivoWf',
             array(
                 "id_documento_wf"=>$this->objParam->getParametro('id_documento_wf'),
                 "num_tramite"=>"",
-                "archivo" => '@' . $local_file . ';filename='.$this->objParam->getParametro('nombre_archivo')
-
+                "archivo" => "@". $local_file. ";filename=".$this->objParam->getParametro('nombre_archivo')
             ));
-    }
 
-	
-			
+
+
+    }
 }
 
 ?>

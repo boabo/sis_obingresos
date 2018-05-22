@@ -106,7 +106,7 @@ $body$
           end if;
 
           if (v_error != '') then
-            v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',v_error,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
+            v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',v_error,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
             raise exception '%, Fecha : %',v_error,v_parametros.fecha;
           end if;
 
@@ -166,7 +166,7 @@ $body$
         return v_resp;
 
       end;
-      
+
 	/*********************************
      #TRANSACCION:  'OBING_DETBOPOR_INS'
      #DESCRIPCION:	Insercion de registros Protal corporativo
@@ -182,13 +182,13 @@ $body$
           where d.billete = v_parametros.billete;
 
           if (v_id_detalle_boletos_web is not null) then
-          		raise exception 'El billete % ya esta registrado en el ERP', v_parametros.billete;            
+          		raise exception 'El billete % ya esta registrado en el ERP', v_parametros.billete;
             elsif (v_id_detalle_boletos_web is null) then
-            
+
             select m.id_moneda into v_id_moneda
             from param.tmoneda m
             where m.codigo_internacional = v_parametros.moneda;
-                        
+
             INSERT INTO
               obingresos.tdetalle_boletos_web
               (
@@ -206,7 +206,7 @@ $body$
                 razon_social,
                 fecha_pago,
                 id_agencia,
-                comision,                
+                comision,
                 numero_tarjeta,
                 numero_autorizacion,
                 id_moneda,
@@ -220,7 +220,7 @@ $body$
                v_parametros.entidad,--NINGUNA
                v_parametros.moneda,
                v_parametros.importe,
-              '',--endoso              
+              '',--endoso
               'portal',
               v_parametros.fecha_emision,
               v_parametros.nit,
@@ -234,12 +234,12 @@ $body$
               v_parametros.neto
             )returning id_detalle_boletos_web into v_id_detalle_boletos_web;
           end if;
-		
+
         --actualizar neto y fecha de emision
         with aux as (
         select dbw.numero_autorizacion, sum(neto) as neto
-        from obingresos.tdetalle_boletos_web dbw 
-        where dbw.estado_reg = 'activo' and 
+        from obingresos.tdetalle_boletos_web dbw
+        where dbw.estado_reg = 'activo' and
         	dbw.origen = 'portal' and dbw.medio_pago = 'CUENTA-CORRI' and
             dbw.numero_autorizacion =  v_parametros.numero_autorizacion
         group by dbw.numero_autorizacion)
@@ -247,9 +247,9 @@ $body$
         set neto = a.neto,
         fecha = v_parametros.fecha_emision
         from aux a
-        where a.numero_autorizacion = obingresos.tmovimiento_entidad.autorizacion__nro_deposito; 
-        
-        
+        where a.numero_autorizacion = obingresos.tmovimiento_entidad.autorizacion__nro_deposito;
+
+
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Detalle Boletos insertado correctamente (id_detalle_boletos_web'||v_id_detalle_boletos_web||')');
         v_resp = pxp.f_agrega_clave(v_resp,'id_detalle_boletos_web',v_id_detalle_boletos_web::varchar);
@@ -258,7 +258,7 @@ $body$
         return v_resp;
 
       end;
-          
+
     /*********************************
      #TRANSACCION:  'OBING_BOWEBFEC_MOD'
      #DESCRIPCION:	Obtiene la maxima fecha en la tabla detalle_boletos_web
@@ -308,8 +308,8 @@ $body$
 
                              now()::date - interval '1 day', '1 day'::interval) i loop
 
-          
-          if (exists (select 1 
+
+          if (exists (select 1
           		from obingresos.tboleto b
                 where b.fecha_emision = v_fecha and b.estado_reg = 'activo')) then
               for v_registros in
@@ -322,7 +322,7 @@ $body$
               end loop;
           end if;
         end loop;
-        
+
         for v_registros in
         select  *
         from obingresos.tventa_web_modificaciones vwm
@@ -352,7 +352,7 @@ $body$
 
     WHEN OTHERS THEN
       if(p_transaccion='OBING_DETBOWEB_INS')then
-      	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'jaime.rivera@boa.bo,aldo.zeballos@boa.bo'));
+      	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
       end if;
       v_resp='';
       v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);

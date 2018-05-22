@@ -10,8 +10,8 @@ require_once(dirname(__FILE__).'/../reportes/RReporteDepositoOgone.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteDepositoBancaInternet.php');
 include_once(dirname(__FILE__).'/../../lib/lib_general/ExcelInput.php');
 include(dirname(__FILE__).'/../../lib/rest/NetOBRestClient.php');
-class ACTDeposito extends ACTbase{    
-			
+class ACTDeposito extends ACTbase{
+
 	function listarDeposito(){
 		$this->objParam->defecto('ordenacion','id_deposito');
 
@@ -20,7 +20,7 @@ class ACTDeposito extends ACTbase{
 		if ($this->objParam->getParametro('id_agencia') != '') {
 			$this->objParam->addFiltro("dep.id_agencia = ". $this->objParam->getParametro('id_agencia'));
 		}
-		
+
 		if ($this->objParam->getParametro('id_deposito') != '') {
 			$this->objParam->addFiltro("dep.id_deposito = ". $this->objParam->getParametro('id_deposito'));
 		}
@@ -48,30 +48,30 @@ class ACTDeposito extends ACTbase{
 				$temp['total_deposito'] = $this->res->extraData['total_deposito'];
 				$temp['tipo_reg'] = 'summary';
 				$temp['id_deposito'] = 0;
-				
-				$this->res->total++;			
+
+				$this->res->total++;
 				$this->res->addLastRecDatos($temp);
-				
+
 			}else{
                 $this->res=$this->objFunc->listarDeposito($this->objParam);
-                
+
             }
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
-				
+
 	function insertarDeposito(){
-		
-		
-		$this->objFunc=$this->create('MODDeposito');	
+
+
+		$this->objFunc=$this->create('MODDeposito');
 		if($this->objParam->insertar('id_deposito')){
-			$this->res=$this->objFunc->insertarDeposito($this->objParam);			
-		} else{			
+			$this->res=$this->objFunc->insertarDeposito($this->objParam);
+		} else{
 			$this->res=$this->objFunc->modificarDeposito($this->objParam);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
-						
+
 	function eliminarDeposito(){
         $this->objFunc=$this->create('MODDeposito');
 		$this->res=$this->objFunc->eliminarDeposito($this->objParam);
@@ -91,7 +91,7 @@ class ACTDeposito extends ACTbase{
 
             $netOBRestClient = NetOBRestClient::connect($_SESSION['_OBNET_REST_URI'], '');
             $netOBRestClient->setHeaders(array('Content-Type: json;'));
-			$arreglo_parametros = $this->objParam->getParametro(0); 			
+			$arreglo_parametros = $this->objParam->getParametro(0);
 
                 $res = $netOBRestClient->doPost('ModificarEstadoDeposito',
                     array(
@@ -101,7 +101,7 @@ class ACTDeposito extends ACTbase{
                     ));
 				$bdlog=new MODLogError('LOG_TRANSACCION','Respuesta servicio ModificarEstadoDeposito','respuesta: '.$res);
 				$bdlog->guardarLogError();
-					
+
         }
 
         $this->res->imprimirRespuesta($this->res->generarJson());
@@ -128,7 +128,7 @@ class ACTDeposito extends ACTbase{
                         "idDepositoERP"=> $datos['id_deposito'],
                         "estadoDeposito"=> 'validado'
                     ));
-                
+
 				$bdlog=new MODLogError('LOG_TRANSACCION','Respuesta servicio ModificarEstadoDeposito','respuesta: '.$res);
 				$bdlog->guardarLogError();
 
@@ -323,11 +323,12 @@ class ACTDeposito extends ACTbase{
 
     function subirArchivoDeposito(){
         //validar que todo este bien parametrizado
+
         if (!isset($_SESSION['_FTP_INGRESOS_SERV']) || !isset($_SESSION['_FTP_INGRESOS_USR']) ||!isset($_SESSION['_FTP_INGRESOS_PASS']) ||
             !isset($_SESSION['_LOCAL_REST_USR']) ||!isset($_SESSION['_LOCAL_REST_PASS']) ) {
             throw new Exception("No existe parametrizacion completa para conexion FTP o REST", 3);
         }
-        
+
         //Crear conexion rest
         $folder = ltrim($_SESSION["_FOLDER"], '/');
         $pxpRestClient = PxpRestClient::connect($_SERVER['HTTP_HOST'], $folder . 'pxp/lib/rest/')
@@ -348,6 +349,7 @@ class ACTDeposito extends ACTbase{
         $local_file = "/tmp/" . $this->objParam->getParametro('nombre_archivo');
         $server_file = "FTPContratos#ND/" . $this->objParam->getParametro('nombre_archivo');
 
+
         // intenta descargar $server_file y guardarlo en $local_file
         if (ftp_get($conn_id, $local_file, $server_file, FTP_BINARY)) {
 
@@ -358,7 +360,7 @@ class ACTDeposito extends ACTbase{
         // cerrar la conexión ftp
         ftp_close($conn_id);
 
-
+       //
 
         $out = $pxpRestClient->doPost('parametros/Archivo/subirArchivo',
             array(
@@ -370,8 +372,6 @@ class ACTDeposito extends ACTbase{
 
             ));
         $obj_out = json_decode($out);
-
-        
         $obj_out->ROOT->datos->url = $_SERVER['HTTP_HOST'] . $_SESSION["_FOLDER"] . str_replace('./../../../','',$obj_out->ROOT->datos->url);
         $out = json_encode($obj_out);
         echo $out;

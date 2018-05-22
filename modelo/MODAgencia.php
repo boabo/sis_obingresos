@@ -35,9 +35,9 @@ class MODAgencia extends MODbase{
 		$this->captura('usr_mod','varchar');
 		$this->captura('desc_moneda','varchar');
 		
-		$this->captura('bloquear_emision','varchar');
-		$this->captura('validar_boleta','varchar');
-		$this->captura('controlar_periodos_pago','varchar');
+		//$this->captura('bloquear_emision','varchar');
+		//$this->captura('validar_boleta','varchar');
+		//$this->captura('controlar_periodos_pago','varchar');
 		
 		
 		//Ejecuta la instruccion
