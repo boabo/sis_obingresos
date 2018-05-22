@@ -26,6 +26,8 @@ class MODMovimientoEntidad extends MODbase{
 		$this->capturaCount('total_credito_moneda','numeric');
 		$this->capturaCount('total_debito_moneda','numeric');
 		$this->capturaCount('monto_total','numeric');
+        $this->capturaCount('saldo_actual','numeric');
+        $this->capturaCount('tipo','varchar');
 		$this->capturaCount('deudas','numeric');
 		
 				

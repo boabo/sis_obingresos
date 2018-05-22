@@ -8,6 +8,7 @@
 */
 
 include(dirname(__FILE__).'/../../lib/rest/NetOBRestClient.php');
+require_once(dirname(__FILE__).'/../reportes/RResumenEstadoCC.php');
 
 class ACTPeriodoVenta extends ACTbase{    
 			
@@ -64,13 +65,38 @@ class ACTPeriodoVenta extends ACTbase{
     }
 
     function ResumenEstadoCC(){
-
-
+        $this->objFunc=$this->create('MODPeriodoVenta');
+        $this->res=$this->objFunc->ResumenEstadoCC($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    function ReporteResumenEstadoCC (){
 
         $this->objFunc=$this->create('MODPeriodoVenta');
         $this->res=$this->objFunc->ResumenEstadoCC($this->objParam);
 
-        $this->res->imprimirRespuesta($this->res->generarJson());
+        //var_dump($this->res);exit;
+        //obtener titulo del reporte
+        $titulo = 'Resumen Estado Cuentas';
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo=uniqid(md5(session_id()).$titulo);
+        $nombreArchivo.='.pdf';
+        $this->objParam->addParametro('orientacion','L');
+        $this->objParam->addParametro('tamano','A6');
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        //Instancia la clase de pdf
+
+        $this->objReporteFormato=new RResumenEstadoCC($this->objParam);
+        $this->objReporteFormato->setDatos($this->res->datos);
+        $this->objReporteFormato->generarReporte();
+        $this->objReporteFormato->output($this->objReporteFormato->url_archivo,'F');
+
+
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado',
+            'Se generó con éxito el reporte: '.$nombreArchivo,'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
     }
 	
 	function listarTotalesPeriodoAgencia(){

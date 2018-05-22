@@ -198,7 +198,7 @@ class MODBoleto extends MODbase{
 		$this->captura('nombre_auxiliar2','varchar');
 		$this->captura('monto_forma_pago2','numeric');
         $this->captura('ffid','varchar');
-        $this->captura('voucher_code','varchar');
+       $this->captura('voucher_code','varchar');
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();

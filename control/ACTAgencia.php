@@ -7,8 +7,8 @@
 *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
 */
 
-class ACTAgencia extends ACTbase{    
-			
+class ACTAgencia extends ACTbase{
+
 	function listarAgencia(){
 		$this->objParam->defecto('ordenacion','id_agencia');
 
@@ -21,7 +21,7 @@ class ACTAgencia extends ACTbase{
 
         if($this->objParam->getParametro('vista') == 'corporativo'){
             $this->objParam->addFiltro(" age.tipo_agencia in(''corporativa'', ''noiata'') ");
-            
+
         }
 
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
@@ -29,7 +29,7 @@ class ACTAgencia extends ACTbase{
 			$this->res = $this->objReporte->generarReporteListado('MODAgencia','listarAgencia');
 		} else{
 			$this->objFunc=$this->create('MODAgencia');
-			
+
 			$this->res=$this->objFunc->listarAgencia($this->objParam);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
@@ -41,19 +41,19 @@ class ACTAgencia extends ACTbase{
         $this->res=$this->objFunc->getDocumentosContrato($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-	
+
 	function finalizarContratoPortal(){
 
         $this->objFunc=$this->create('MODAgencia');
         $this->res=$this->objFunc->finalizarContratoPortal($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-				
+
 	function insertarAgencia(){
-		$this->objFunc=$this->create('MODAgencia');	
+		$this->objFunc=$this->create('MODAgencia');
 		if($this->objParam->insertar('id_agencia')){
-			$this->res=$this->objFunc->insertarAgencia($this->objParam);			
-		} else{			
+			$this->res=$this->objFunc->insertarAgencia($this->objParam);
+		} else{
 			$this->res=$this->objFunc->modificarAgencia($this->objParam);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());
@@ -128,15 +128,16 @@ class ACTAgencia extends ACTbase{
 
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-						
+
 	function eliminarAgencia(){
-			$this->objFunc=$this->create('MODAgencia');	
+			$this->objFunc=$this->create('MODAgencia');
 		$this->res=$this->objFunc->eliminarAgencia($this->objParam);
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
     function subirArchivoContrato(){
         //validar que todo este bien parametrizado
+        //var_dump('Hola Que haces');exit;
         if (!isset($_SESSION['_FTP_INGRESOS_SERV']) || !isset($_SESSION['_FTP_INGRESOS_USR']) ||!isset($_SESSION['_FTP_INGRESOS_PASS']) ||
             !isset($_SESSION['_LOCAL_REST_USR']) ||!isset($_SESSION['_LOCAL_REST_PASS']) ) {
             throw new Exception("No existe parametrizacion completa para conexion FTP o REST", 3);
@@ -146,6 +147,7 @@ class ACTAgencia extends ACTbase{
         $folder = ltrim($_SESSION["_FOLDER"], '/');
         $pxpRestClient = PxpRestClient::connect($_SERVER['HTTP_HOST'], $folder . 'pxp/lib/rest/')
             ->setCredentialsPxp($_SESSION['_LOCAL_REST_USR'],$_SESSION['_LOCAL_REST_PASS']);
+
 
         //copiar archivo ftp al tmp
 
@@ -162,16 +164,17 @@ class ACTAgencia extends ACTbase{
         $local_file = "/tmp/" . $this->objParam->getParametro('nombre_archivo');
         $server_file = "FTPContratos/" . $this->objParam->getParametro('nombre_archivo');
 
+
         // intenta descargar $server_file y guardarlo en $local_file
         if (ftp_get($conn_id, $local_file, $server_file, FTP_BINARY)) {
-
+        //    echo "Se ha guardado satisfactoriamente en $local_file\n";
         } else {
             throw new Exception("No se ha podido leer el archivo", 3);
         }
 
         // cerrar la conexión ftp
         ftp_close($conn_id);
-       
+
 
 
         echo $pxpRestClient->doPost('workflow/DocumentoWf/subirArchivoWf',
@@ -181,10 +184,11 @@ class ACTAgencia extends ACTbase{
                 "archivo" => '@' . $local_file . ';filename='.$this->objParam->getParametro('nombre_archivo')
 
             ));
+						//var_dump('llega' );exit;
     }
 
-	
-			
+
+
 }
 
 ?>

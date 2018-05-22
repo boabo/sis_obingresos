@@ -26,6 +26,14 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 disabled: false,
                 handler: this.archivo
             });
+        this.addButton('Report',{
+            grupo:[0,1],
+            text :'Resumen Estado C.C.',
+            iconCls : 'bpdf32',
+            disabled: false,
+            handler : this.onButtonReporte,
+            tooltip : '<b>Resumen Estado Cuenta Corriente</b>'
+        });
         this.store.baseParams.id_entidad = this.maestro.id_agencia;
         if('id_periodo_venta' in this.maestro){
 		    this.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
@@ -50,6 +58,16 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                     height: 400
                 }, rec, this.idContenedor, 'Archivo');
         },
+    onButtonReporte:function(){
+        Ext.Ajax.request({
+            url:'../../sis_obingresos/control/PeriodoVenta/ReporteResumenEstadoCC',
+            params:{'id_agencia':this.maestro.id_agencia},
+            success: this.successExport,
+            failure: this.conexionFailure,
+            timeout:this.timeout,
+            scope:this
+        });
+    },
 			
 	Atributos:[
 		{
@@ -238,14 +256,14 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 fieldLabel: 'Pnr',
                 allowBlank: true,
                 anchor: '80%',
-                gwidth: 80,
+                gwidth: 120,
                 maxLength:8,
                 renderer:function (value,p,record){
                     if(record.data.tipo_reg != 'summary'){
                         return  String.format('{0}', value);
                     }
                     else{
-                        return '<b><p align="right">Deudas: &nbsp;&nbsp; </p></b>';
+                        return '<b><p align="right">'+record.data.pnr+': </p></b>';
                     }
                 }
             },
@@ -263,7 +281,16 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 anchor: '80%',
                 gwidth: 120,
                 maxLength:200,
-                renderer:function (value,p,record){                	
+                renderer:function (value,p,record){
+                    if(record.data.tipo_reg != 'summary'){
+                        return  String.format('{0}', value);
+                    }
+                    else{
+                        return  String.format('<p align="right"><b><font size=2 >{0}</font><b></p>', Ext.util.Format.number((record.data.debito) ,'0,000.00'));
+
+                    }
+                },
+                /*renderer:function (value,p,record){
                     if(record.data.tipo_reg != 'summary') {
                         return  String.format('{0}', value);
                     } else if (record.data.deudas*-1 > 0) {
@@ -272,7 +299,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                     else{
                         return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
                     }
-                },
+                },*/
                 scope:this
             },
             type:'TextField',
@@ -290,7 +317,14 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 width: '80%',
                 fieldLabel: 'Moneda',
                 gdisplayField : 'moneda',
-                renderer:function (value, p, record){return String.format('{0}', record.data['moneda']);}
+                renderer:function (value, p, record){
+                    if(record.data.tipo_reg != 'summary') {
+                        return String.format('{0}', record.data['moneda']);
+                    }else{
+                    return '<b><p align="right">Deuda P. Anterior: &nbsp;&nbsp; </p></b>';
+                    }
+                }
+
             },
             type: 'ComboRec',
             id_grupo: 0,
@@ -308,10 +342,21 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
                 maxLength:1179650,
                 galign: 'right',
                 renderer:function (value,p,record){
+                    if(record.data.tipo_reg != 'summary') {
+                        return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
+                    } else if (record.data.deudas*-1 > 0) {
+                        return  String.format('<p align="right"><b><font size=2 color="red">{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
+                    }
+                    else{
+                        return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
+                    }
+                },
+                scope:this
+                /*renderer:function (value,p,record){
 						if(record.data.tipo_reg != 'summary'){
 							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
 						}
-					}
+					}*/
             },
             type:'NumberField',            
             id_grupo:1,
@@ -331,7 +376,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
 						if(record.data.tipo_reg != 'summary'){
 							return  String.format('{0}', Ext.util.Format.number(value,'0,000.00'));
 						} else{
-	                    	return '<b><p align="right">Saldo: &nbsp;&nbsp; </p></b>';
+	                    	return '<b><p align="right">Saldo General: &nbsp;&nbsp; </p></b>';
 	                    }
 					}
             },
@@ -532,6 +577,7 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
 		{name:'monto', type: 'numeric'},
+        {name:'saldo_actual', type: 'numeric'}
 		
 	],
 	preparaMenu: function () {        
@@ -562,10 +608,10 @@ Phx.vista.MovimientoEntidad=Ext.extend(Phx.gridInterfaz,{
     south:{
 		  url:'../../../sis_obingresos/vista/detalle_boletos_web/DetalleBoletosWeb.php',
 		  title:'Billetes', 
-		  height:'50%',
+		  height:'35%',
 		  cls:'DetalleBoletosWeb',
-		  collapsed:true
-	},  
+		  collapsed:false
+	}
 	}
 )
 </script>

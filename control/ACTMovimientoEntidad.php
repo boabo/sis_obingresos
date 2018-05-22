@@ -41,6 +41,8 @@ class ACTMovimientoEntidad extends ACTbase{
 			$temp['credito_mb'] = $this->res->extraData['total_credito'];
 			$temp['debito_mb'] = $this->res->extraData['total_debito'];	
 			$temp['monto_total'] = $this->res->extraData['monto_total'];
+			$temp['debito'] = $this->res->extraData['saldo_actual'];
+			$temp['pnr'] = $this->res->extraData['tipo'];
 			$temp['deudas'] = $this->res->extraData['deudas'];
 
 			$temp['tipo_reg'] = 'summary';
