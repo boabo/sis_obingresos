@@ -23,6 +23,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     lazyRender:true,
                     mode: 'local',
                     gwidth: 150,
+
                     store:['corporativa','noiata','todas']
                 },
                 type:'ComboBox',
@@ -40,6 +41,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     lazyRender:true,
                     mode: 'local',
                     gwidth: 150,
+
                     store:['prepago','postpago','todas']
                 },
                 type:'ComboBox',
@@ -103,6 +105,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     name: 'fecha_fin',
                     fieldLabel: 'Fecha Fin',
                     allowBlank: false,
+
                     anchor: '30%',
                     gwidth: 100,
                     format: 'd/m/Y',
@@ -113,11 +116,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo:1,
                 grid:true,
                 form:true
-            }],
 
+            }],
         title : 'Reporte Deposito',
         ActSave : '../../sis_obingresos/control/DetalleBoletosWeb/reporteVentasCorporativasDepositos',
-
         topBar : true,
         botones : false,
         labelSubmit : 'Generar',

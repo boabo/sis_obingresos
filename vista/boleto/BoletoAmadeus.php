@@ -1554,7 +1554,11 @@ header("content-type: text/javascript; charset=UTF-8");
                             }*/
 
 
+<<<<<<< HEAD
                             this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
+=======
+                        this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
+>>>>>>> 2427fb80df4e057d6b34e88d696ffa7fc6d234df
                             if(this.Cmp.moneda.getValue()!=='USD') {
                                 this.Cmp.comision_moneda_extranjera.setValue(this.Cmp.comision.getValue() / this.Cmp.tc.getValue());
                             }else{
@@ -1823,6 +1827,19 @@ header("content-type: text/javascript; charset=UTF-8");
                     if(confirm("¿Esta seguro de Anular los boletos?") ){
 
                         Phx.CP.loadingShow();
+<<<<<<< HEAD
+=======
+
+                //var d = this.sm.getSelected().data;
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/Boleto/anularBoleto',
+                    params:{id_boleto_amadeus:tmp},
+                //success:this.successAnularBoleto,
+                    success : function(resp) {
+                        Phx.CP.loadingHide();
+                        alert('Los Boletos fueron Anulados: '+ total);
+                        this.reload();
+>>>>>>> 2427fb80df4e057d6b34e88d696ffa7fc6d234df
 
                         //var d = this.sm.getSelected().data;
                         Ext.Ajax.request({

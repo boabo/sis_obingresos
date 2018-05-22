@@ -146,6 +146,12 @@ BEGIN
 	elsif(p_transaccion='OBING_MOE_MOD')then
 
 		begin
+        	if (exists(select 1 
+            	from obingresos.tmovimiento_entidad me 
+                where me.id_movimiento_entidad =v_parametros.id_movimiento_entidad and id_periodo_venta is not null  ))then
+                
+            	raise exception 'No se puede modificar el movimiento de un preiodo cerrado';
+            end if;
         	select m.codigo_internacional into v_moneda
             from param.tmoneda m
             where id_moneda = v_parametros.id_moneda;
@@ -203,6 +209,12 @@ BEGIN
 	elsif(p_transaccion='OBING_MOE_ELI')then
 
 		begin
+        	if (exists(select 1 
+            	from obingresos.tmovimiento_entidad me 
+                where me.id_movimiento_entidad =v_parametros.id_movimiento_entidad and id_periodo_venta is not null  ))then
+                
+            	raise exception 'No se puede modificar el movimiento de un periodo cerrado';
+            end if;
 			--Sentencia de la eliminacion
 			delete from obingresos.tmovimiento_entidad
             where id_movimiento_entidad=v_parametros.id_movimiento_entidad;

@@ -79,29 +79,45 @@ class ACTPeriodoVenta extends ACTbase{
         $this->objParam->defecto('dir_ordenacion','asc');
 
         $this->objFunc=$this->create('MODPeriodoVenta');
-        $this->res=$this->objFunc->listarTotalesPeriodoAgencia($this->objParam);
-        $temp = Array();
+		
+		if($this->objParam->getParametro('id_agencia') != '') {
+            $this->objParam->addFiltro(" pva.id_agencia = " . $this->objParam->getParametro('id_agencia'));
+        }
+		
+		if($this->objParam->getParametro('periodo_cerrado') == 'no') {
+            $this->objParam->addFiltro(" pva.estado = ''abierto''");
+        }
+		
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODPeriodoVenta','listarTotalesPeriodoAgencia');
+																							
+		} else{
+			$this->objFunc=$this->create('MODPeriodoVenta');
+			
+			$this->res=$this->objFunc->listarTotalesPeriodoAgencia($this->objParam);
+			$temp = Array();
 
-        $temp['total_credito_mb'] = $this->res->extraData['total_credito_mb'];
-        $temp['total_credito_me'] = $this->res->extraData['total_credito_me'];
-        $temp['total_boletos_mb'] = $this->res->extraData['total_boletos_mb'];
-        $temp['total_boletos_usd'] = $this->res->extraData['total_boletos_usd'];
-        $temp['total_comision_mb'] = $this->res->extraData['total_comision_mb'];
-        $temp['total_comision_usd'] = $this->res->extraData['total_comision_usd'];
-        $temp['total_debito_mb'] = $this->res->extraData['total_debito_mb'];
-        $temp['total_debito_usd'] = $this->res->extraData['total_debito_usd'];
-        $temp['total_neto_mb'] = $this->res->extraData['total_neto_mb'];
-        $temp['total_neto_usd'] = $this->res->extraData['total_neto_usd'];
-
-
-        $temp['tipo_reg'] = 'summary';
-        $temp['id_periodo_venta_agencia'] = 0;
-
-        $this->res->total++;
-
-        $this->res->addLastRecDatos($temp);
-
-        $this->res->imprimirRespuesta($this->res->generarJson());
+	        $temp['total_credito_mb'] = $this->res->extraData['total_credito_mb'];
+	        $temp['total_credito_me'] = $this->res->extraData['total_credito_me'];
+	        $temp['total_boletos_mb'] = $this->res->extraData['total_boletos_mb'];
+	        $temp['total_boletos_usd'] = $this->res->extraData['total_boletos_usd'];
+	        $temp['total_comision_mb'] = $this->res->extraData['total_comision_mb'];
+	        $temp['total_comision_usd'] = $this->res->extraData['total_comision_usd'];
+	        $temp['total_debito_mb'] = $this->res->extraData['total_debito_mb'];
+	        $temp['total_debito_usd'] = $this->res->extraData['total_debito_usd'];
+	        $temp['total_neto_mb'] = $this->res->extraData['total_neto_mb'];
+	        $temp['total_neto_usd'] = $this->res->extraData['total_neto_usd'];	
+	
+	        $temp['tipo_reg'] = 'summary';
+	        $temp['id_periodo_venta_agencia'] = 0;
+	
+	        $this->res->total++;
+	
+	        $this->res->addLastRecDatos($temp);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+        
     }
 
     function modificarPeriodoVenta(){

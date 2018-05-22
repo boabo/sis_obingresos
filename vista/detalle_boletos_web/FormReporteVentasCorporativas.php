@@ -82,7 +82,7 @@ header("content-type: text/javascript; charset=UTF-8");
 			type:'AwesomeCombo',			
 			form:true
 		},
-            {
+           /* {
                 config:{
                     name:'id_moneda',
                     origen:'MONEDA',
@@ -92,7 +92,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 type:'ComboRec',
                 id_grupo:1,
                 form:true
-            },
+            },*/
 
             {
                 config:{
@@ -144,8 +144,8 @@ header("content-type: text/javascript; charset=UTF-8");
 				var data={};
 				data.fecha_ini=this.getComponente('fecha_ini').getValue();				
 				data.fecha_fin=this.getComponente('fecha_fin').getValue();
-				data.id_moneda=this.getComponente('id_moneda').getValue();
-				data.moneda=this.getComponente('id_moneda').getRawValue();
+				//data.id_moneda=this.getComponente('id_moneda').getValue();
+				//data.moneda=this.getComponente('id_moneda').getRawValue();
 				data.id_lugar=this.getComponente('id_lugar').getValue();
 				data.lugar=this.getComponente('id_lugar').getRawValue();
 				data.forma_pago=this.getComponente('forma_pago').getValue();

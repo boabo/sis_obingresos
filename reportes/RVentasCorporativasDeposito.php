@@ -5,6 +5,7 @@ class RVentasCorporativasDeposito
     private $objWriter;
     private $numero;
     private $equivalencias=array();
+
     private $objParam;
     public  $url_archivo;
     function __construct(CTParametro $objParam)
@@ -41,6 +42,7 @@ class RVentasCorporativasDeposito
     }
     function imprimeCabecera() {
         $this->docexcel->createSheet();
+
         $this->docexcel->getActiveSheet()->setTitle('Nit y Razon');
         $this->docexcel->setActiveSheetIndex(0);
 
@@ -97,6 +99,7 @@ class RVentasCorporativasDeposito
 
         //titulos
 
+
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'Reporte Vetas Corporativas Depositos' );
         $this->docexcel->getActiveSheet()->getStyle('A2:L2')->applyFromArray($styleTitulos1);
         $this->docexcel->getActiveSheet()->mergeCells('A2:L2');
@@ -105,6 +108,7 @@ class RVentasCorporativasDeposito
         $this->docexcel->getActiveSheet()->mergeCells('A4:L4');
 
         $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
+
         $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
@@ -127,6 +131,7 @@ class RVentasCorporativasDeposito
         $this->docexcel->getActiveSheet()->setCellValue('A5','Nº');
         $this->docexcel->getActiveSheet()->setCellValue('B5','NOMBRE AGENCIA');
         $this->docexcel->getActiveSheet()->setCellValue('C5','OFFICELD');
+
         $this->docexcel->getActiveSheet()->setCellValue('D5','TIPO AGENCIA');
         $this->docexcel->getActiveSheet()->setCellValue('E5','CIUDAD');
         $this->docexcel->getActiveSheet()->setCellValue('F5','CREDITOS');
@@ -146,6 +151,7 @@ class RVentasCorporativasDeposito
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
         );
+
 
         $this->numero = 1;
         $fila = 6;
