@@ -3,114 +3,120 @@ class  MODDetalleBoletosWeb extends MODbase{
     function __construct(CTParametro $pParam){
         parent::__construct($pParam);
     }
-	
-	function listarDetalleBoletosWeb(){
-		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
-		$this->transaccion='OBING_DETBOL_SEL';
-		$this->tipo_procedimiento='SEL';//tipo de transaccion
-		
-		$this->capturaCount('importe','numeric');
-		$this->capturaCount('neto','numeric');
-		$this->capturaCount('comision','numeric');
-		
-				
-		//Definicion de la lista del resultado del query
-		$this->captura('id_detalle_boletos_web','int4');
-		$this->captura('billete','varchar');
-		$this->captura('id_agencia','int4');
-		$this->captura('id_periodo_venta','int4');
-		$this->captura('id_moneda','int4');
-		$this->captura('procesado','varchar');
-		$this->captura('estado_reg','varchar');
-		$this->captura('void','varchar');
-		$this->captura('importe','numeric');
-		$this->captura('nit','varchar');
-		$this->captura('fecha_pago','date');
-		$this->captura('razon_social','varchar');
-		$this->captura('numero_tarjeta','varchar');
-		$this->captura('comision','numeric');
-		$this->captura('neto','numeric');
-		$this->captura('entidad_pago','varchar');
-		$this->captura('fecha','date');
-		$this->captura('medio_pago','varchar');
-		$this->captura('moneda','varchar');
-		$this->captura('razon_ingresos','varchar');
-		$this->captura('origen','varchar');
-		$this->captura('nit_ingresos','varchar');
-		$this->captura('endoso','varchar');
-		$this->captura('conjuncion','varchar');
-		$this->captura('numero_autorizacion','varchar');
-		$this->captura('id_usuario_reg','int4');
-		$this->captura('fecha_reg','timestamp');
-		$this->captura('usuario_ai','varchar');
-		$this->captura('id_usuario_ai','int4');
-		$this->captura('id_usuario_mod','int4');
-		$this->captura('fecha_mod','timestamp');
-		$this->captura('usr_reg','varchar');
-		$this->captura('usr_mod','varchar');
-		$this->captura('pnr','varchar');
-		
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
-		
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
 
-	function reporteVentasCorporativas(){
-		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
-		$this->transaccion='OBING_REPCENCOR_SEL';
-		$this->tipo_procedimiento='SEL';//tipo de transaccion
-		
-		$this->capturaCount('monto_total','numeric');		
-				
-		//Definicion de la lista del resultado del query
-		$this->captura('id_agencia','int4');
-		$this->captura('nombre','varchar');
-		$this->captura('codigo_int','varchar');
-		$this->captura('tipo_agencia','varchar');
-		$this->captura('formas_pago','varchar');
-		$this->captura('codigo_ciudad','varchar');
-		$this->captura('monto_total','numeric');		
-		
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
-		
-				
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
+    function listarDetalleBoletosWeb(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_DETBOL_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->capturaCount('importe','numeric');
+        $this->capturaCount('neto','numeric');
+        $this->capturaCount('comision','numeric');
+
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_detalle_boletos_web','int4');
+        $this->captura('billete','varchar');
+        $this->captura('id_agencia','int4');
+        $this->captura('id_periodo_venta','int4');
+        $this->captura('id_moneda','int4');
+        $this->captura('procesado','varchar');
+        $this->captura('estado_reg','varchar');
+        $this->captura('void','varchar');
+        $this->captura('importe','numeric');
+        $this->captura('nit','varchar');
+        $this->captura('fecha_pago','date');
+        $this->captura('razon_social','varchar');
+        $this->captura('numero_tarjeta','varchar');
+        $this->captura('comision','numeric');
+        $this->captura('neto','numeric');
+        $this->captura('entidad_pago','varchar');
+        $this->captura('fecha','date');
+        $this->captura('medio_pago','varchar');
+        $this->captura('moneda','varchar');
+        $this->captura('razon_ingresos','varchar');
+        $this->captura('origen','varchar');
+        $this->captura('nit_ingresos','varchar');
+        $this->captura('endoso','varchar');
+        $this->captura('conjuncion','varchar');
+        $this->captura('numero_autorizacion','varchar');
+        $this->captura('id_usuario_reg','int4');
+        $this->captura('fecha_reg','timestamp');
+        $this->captura('usuario_ai','varchar');
+        $this->captura('id_usuario_ai','int4');
+        $this->captura('id_usuario_mod','int4');
+        $this->captura('fecha_mod','timestamp');
+        $this->captura('usr_reg','varchar');
+        $this->captura('usr_mod','varchar');
+        $this->captura('pnr','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function reporteVentasCorporativas(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_REPCENCOR_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->capturaCount('total_creditos','numeric');
+        $this->capturaCount('total_debitos','numeric');
+        $this->capturaCount('total_ajustes','numeric');
+        $this->capturaCount('total_saldo','numeric');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_agencia','int4');
+        $this->captura('nombre','varchar');
+        $this->captura('codigo_int','varchar');
+        $this->captura('tipo_agencia','varchar');
+        $this->captura('formas_pago','varchar');
+        $this->captura('codigo_ciudad','varchar');
+        $this->captura('monto_creditos','numeric');
+        $this->captura('monto_debitos','numeric');
+        $this->captura('monto_ajustes','numeric');
+        $this->captura('saldo','numeric');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 
 
     function listarReporteNitRazon(){
         //Definicion de variables para ejecucion del procedimientp
-            $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
-            $this->transaccion='OBING_DETBOWEB_SEL';
-            $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_DETBOWEB_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
 
-            $this->setParametro('fecha_ini','fecha_ini','date');
-            $this->setParametro('fecha_fin','fecha_fin','date');
-            $this->setCount(false);
+        $this->setParametro('fecha_ini','fecha_ini','date');
+        $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setCount(false);
 
-            $this->captura('fecha_emision', 'date');
-            $this->captura('billete', 'varchar');
-            $this->captura('entidad_pago', 'varchar');
-            $this->captura('nit', 'varchar');
-            $this->captura('razon_social', 'varchar');
-            $this->captura('importe', 'numeric');
-            $this->captura('nit_ingresos', 'varchar');
-            $this->captura('razon_ingresos', 'varchar');
+        $this->captura('fecha_emision', 'date');
+        $this->captura('billete', 'varchar');
+        $this->captura('entidad_pago', 'varchar');
+        $this->captura('nit', 'varchar');
+        $this->captura('razon_social', 'varchar');
+        $this->captura('importe', 'numeric');
+        $this->captura('nit_ingresos', 'varchar');
+        $this->captura('razon_ingresos', 'varchar');
 
-            //Ejecuta la instruccion
-            $this->armarConsulta();
-            $this->ejecutarConsulta();
-            //var_dump($this->respuesta);exit;
-            //Devuelve la respuesta
-            return $this->respuesta;
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        //var_dump($this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
     }
 
     function listarConciliacionTotales(){
@@ -133,7 +139,7 @@ class  MODDetalleBoletosWeb extends MODbase{
         //Ejecuta la instruccion
         $this->armarConsulta();
 
-        
+
         $this->ejecutarConsulta();
 
         return $this->respuesta;
@@ -189,7 +195,7 @@ class  MODDetalleBoletosWeb extends MODbase{
         //Ejecuta la instruccion
         $this->armarConsulta();
 
-		$this->ejecutarConsulta();
+        $this->ejecutarConsulta();
 
         return $this->respuesta;
     }
@@ -248,34 +254,109 @@ class  MODDetalleBoletosWeb extends MODbase{
 
         return $this->respuesta;
     }
-	
-	function validarBoletos(){
+
+    function validarBoletos(){
         //Definicion de variables para ejecucion del procedimiento
         $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
         $this->transaccion='OBING_OBSERVA_SEL';
         $this->tipo_procedimiento='SEL';
-		$this->setCount(false);
+        $this->setCount(false);
 
         $this->setParametro('fecha_emision','fecha_emision','date');
         $this->setParametro('detalle','detalle','text');
-		
-		
+
+
         $this->captura('billete', 'varchar');
         $this->captura('pnr', 'varchar');
         $this->captura('total', 'numeric');
         $this->captura('moneda', 'varchar');
         $this->captura('tipo_observacion', 'varchar');
-		$this->captura('observacion', 'text');		
-		
+        $this->captura('observacion', 'text');
+
 
         //Ejecuta la instruccion
         $this->armarConsulta();
-
         $this->ejecutarConsulta();
 
         //Devuelve la respuesta
         return $this->respuesta;
     }
+    function reporteVentasCorporativasDepositos(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_REPDEP_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('fecha_ini','fecha_ini','date');
+        $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setParametro('id_lugar','id_lugar','integer');
+        $this->setParametro('tipo_agencia','tipo_agencia','varchar');
+        $this->setParametro('forma_pago','forma_pago','varchar');
+
+        $this->setCount(false);
+
+        $this->captura('id_agencia','int4');
+        $this->captura('nombre','varchar');
+        $this->captura('codigo_int','varchar');
+        $this->captura('tipo_agencia','varchar');
+        $this->captura('formas_pago','varchar');
+        $this->captura('codigo_ciudad','varchar');
+        $this->captura('monto_creditos','numeric');
+        $this->captura('monto_debitos','numeric');
+        $this->captura('monto_ajustes','numeric');
+        $this->captura('saldo','numeric');
+        $this->captura('nro_deposito','varchar');
+        $this->captura('monto_deposito','numeric');
+        $this->captura('fecha','date');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        ///var_dump( $this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+   /* function reporteVentasCorporativasDepositos(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
+        $this->transaccion='OBING_REPDEP_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('fecha_ini','fecha_ini','date');
+        $this->setParametro('fecha_fin','fecha_fin','date');
+        $this->setParametro('id_lugar','id_lugar','integer');
+        $this->setParametro('tipo_agencia','tipo_agencia','varchar');
+        $this->setParametro('forma_pago','forma_pago','varchar');
+        $this->setParametro('fecha_ini_de','fecha_ini_de','date');
+        $this->setParametro('fecha_fin_de','fecha_fin_de','date');
+        $this->setParametro('nro_deposito','nro_deposito','varchar');
+
+        $this->setCount(false);
+
+        $this->captura('id_agencia','int4');
+        $this->captura('nombre','varchar');
+        $this->captura('codigo_int','varchar');
+        $this->captura('formas_pago','varchar');
+        $this->captura('codigo','varchar');
+        $this->captura('saldo','numeric');
+        $this->captura('nro_deposito','varchar');
+        $this->captura('monto_deposito','numeric');
+        $this->captura('fecha','varchar');
+        $this->captura('total_deposito','numeric');
+        $this->captura('diferencia','numeric');
+        $this->captura('observaciones','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        // var_dump( $this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }*/
+
+
 
 }
 ?>

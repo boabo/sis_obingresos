@@ -39,7 +39,6 @@ class ACTBoletoFormaPago extends ACTbase{
 			$this->res = $this->objReporte->generarReporteListado('MODBoletoFormaPago','listarBoletoAmadeusFormaPago');
 		} else{
 			$this->objFunc=$this->create('MODBoletoFormaPago');
-
 			$this->res=$this->objFunc->listarBoletoAmadeusFormaPago($this->objParam);
 		}
 		$this->res->imprimirRespuesta($this->res->generarJson());

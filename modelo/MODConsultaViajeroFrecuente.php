@@ -1,13 +1,14 @@
 <?php
 /**
-*@package pXP
-*@file gen-MODConsultaViajeroFrecuente.php
-*@author  (miguel.mamani)
-*@date 15-12-2017 14:59:25
-*@description Clase que envia los parametros requeridos a la Base de datos para la ejecucion de las funciones, y que recibe la respuesta del resultado de la ejecucion de las mismas
-*/
+ *@package pXP
+ *@file gen-MODConsultaViajeroFrecuente.php
+ *@author  (miguel.mamani)
+ *@date 15-12-2017 14:59:25
+ *@description Clase que envia los parametros requeridos a la Base de datos para la ejecucion de las funciones, y que recibe la respuesta del resultado de la ejecucion de las mismas
+ */
 
 class MODConsultaViajeroFrecuente extends MODbase{
+
 	
 	function __construct(CTParametro $pParam){
 		parent::__construct($pParam);
@@ -50,7 +51,7 @@ class MODConsultaViajeroFrecuente extends MODbase{
 		$this->tipo_procedimiento='IME';
 				
 		//Define los parametros para la funcion
-		$this->setParametro('ffid','ffid','int4');
+		$this->setParametro('ffid','ffid','varchar');
 		$this->setParametro('estado_reg','estado_reg','varchar');
 		$this->setParametro('message','message','varchar');
 		$this->setParametro('voucher_code','voucher_code','varchar');

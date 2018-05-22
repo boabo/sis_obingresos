@@ -209,6 +209,24 @@ BEGIN
                 m.id_periodo_venta is null and m.estado_reg = 'activo' and
                 m.monto_total = dbw.importe and m.fecha <= v_fecha_fin;
                 
+                
+                with temp_bol as (
+                    select dbw.numero_autorizacion,dbw.fecha,dbw.moneda,sum(dbw.importe) as importe
+                    from obingresos.tdetalle_boletos_web dbw  
+                    where dbw.estado_reg = 'activo' and
+                              dbw.origen = 'portal' and
+                              dbw.fecha='13/03/2018' and
+                              dbw.void = 'no'
+                    group by dbw.numero_autorizacion,dbw.fecha,dbw.moneda
+                )
+                update obingresos.tmovimiento_entidad m
+                set id_periodo_venta = v_id_periodo_venta                
+                from temp_bol dbw                                      
+                where m.tipo = 'debito' and m.ajuste = 'no' AND 
+                dbw.numero_autorizacion = m.autorizacion__nro_deposito and 
+                m.id_periodo_venta is null and m.estado_reg = 'activo' and
+                m.monto_total = dbw.importe and m.fecha <= v_fecha_fin;
+                                
                 --actualizar boletos que esten relacionados por boleto_ret_web
                
                 with temp_bol as (

@@ -48,7 +48,8 @@ BEGIN
 						age.id_agencia,
 						age.id_moneda_control,
 						age.depositos_moneda_boleto,
-						age.tipo_pago,
+						--age.tipo_pago,
+                       COALESCE( co.formas_pago[1],''postpago'')  as tipo_pago,
 						age.nombre,
 						age.monto_maximo_deuda,
 						age.tipo_cambio,
@@ -66,7 +67,8 @@ BEGIN
 						inner join segu.tusuario usu1 on usu1.id_usuario = age.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = age.id_usuario_mod
 						inner join param.tmoneda mon on mon.id_moneda = age.id_moneda_control
-				        where  ';
+				        left join leg.tcontrato co on co.id_agencia = age.id_agencia and (co.fecha_fin >= now()::date)
+                        where  ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -110,12 +112,13 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_agencia)
+			v_consulta:='select count(age.id_agencia)
 					    from obingresos.tagencia age
 					    inner join segu.tusuario usu1 on usu1.id_usuario = age.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = age.id_usuario_mod
 						inner join param.tmoneda mon on mon.id_moneda = age.id_moneda_control
-					    where ';
+					    left join leg.tcontrato co on co.id_agencia = age.id_agencia and (co.fecha_fin >= now()::date)
+                        where ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;

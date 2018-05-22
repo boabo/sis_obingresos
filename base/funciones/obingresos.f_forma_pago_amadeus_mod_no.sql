@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION obingresos.f_forma_pago_amadeus_mod (
+CREATE OR REPLACE FUNCTION obingresos.f_forma_pago_amadeus_mod_no (
   p_id_boleto integer,
   p_id_forma_pago integer,
   p_numero_tarjeta varchar,
@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION obingresos.f_forma_pago_amadeus_mod (
   p_importe numeric,
   p_mco varchar
 )
-RETURNS void AS
+RETURNS integer AS
 $body$
 DECLARE
  v_nombre_funcion   	 text;
@@ -23,7 +23,6 @@ DECLARE
  v_moneda				varchar;
  v_cuenta				varchar;
  v_id_mod_forma_pago  integer;
- 
 BEGIN
 v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
 
@@ -73,10 +72,13 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                 v_res = pxp.f_valida_numero_tarjeta_credito(p_numero_tarjeta,v_codigo_tarjeta);
             end if;
         end if;
-      
-
+        
+     /*   select  m.id_forma_pago
+        from obingresos.tboleto_amadeus_forma_pago m
+        where m.id_forma_pago 
+*/
       if v_datos.voided = 'no' then
-       INSERT INTO obingresos.tmod_forma_pago ( 	billete,
+       INSERT INTO obingresos.tmod_forma_pago_no ( 	billete,
                                                     forma,
                                                     fecha,
                                                     importe,
@@ -94,7 +96,6 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                                                     hora_mod,
                                                     pagomco,
                                                     observa
-                                                    
                                                     )VALUES(
                                                     CAST(v_datos.nro_boleto as  DECIMAL),
                                                     v_forma_pago,
@@ -127,11 +128,13 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                                                     else
                                                     cast( p_mco as DECIMAL)
                                                     end,
-                                                    'ERP BOA')RETURNING id_mod_forma_pago into v_id_mod_forma_pago;
+                                                    'ERP BOA' )RETURNING id_mod_forma_pago into v_id_mod_forma_pago;
 
 
+RETURN v_id_mod_forma_pago;
+else
+RETURN 0;
 end if;
-
 EXCEPTION
 
 	WHEN OTHERS THEN

@@ -334,7 +334,7 @@ class MODBoleto extends MODbase{
 		$this->tipo_procedimiento='IME';
 
 		//Define los parametros para la funcion
-		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
+		$this->setParametro('id_boleto_amadeus','id_boleto_amadeus','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
@@ -489,6 +489,8 @@ class MODBoleto extends MODbase{
 		$this->setParametro('ctacte2','ctacte2','varchar');
 		$this->setParametro('id_auxiliar2','id_auxiliar2','integer');
 		$this->setParametro('tipo_comision','tipo_comision','varchar');
+        $this->setParametro('mco','mco','varchar');
+        $this->setParametro('mco2','mco2','varchar');
 
 
 		//Ejecuta la instruccion
@@ -1007,6 +1009,7 @@ class MODBoleto extends MODbase{
 
         $this->setParametro('id_boleto_amadeus','id_boleto_amadeus','int4');
         $this->setParametro('ffid','ffid','varchar');
+        $this->setParametro('bandera','bandera','varchar');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('ticketNumber','ticketNumber','varchar');
         $this->setParametro('voucherCode','voucherCode','varchar');

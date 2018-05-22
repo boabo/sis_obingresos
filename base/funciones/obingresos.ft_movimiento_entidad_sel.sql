@@ -169,6 +169,54 @@ BEGIN
                         	0
                         end) as debito,
                         sum(moe.monto_total),
+                        (case 
+                        when (select rt.tipo_pago
+                              from obingresos.tagencia rt
+                              where rt.id_agencia ='|| v_parametros.id_agencia ||') = ''postpago'' then
+                         (select  sum( mo.monto)
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = '|| v_parametros.id_agencia ||' and mo.garantia = ''no'' and mo.tipo =''credito'' and mo.id_periodo_venta is null)-( sum(case when moe.tipo = ''debito'' then 
+                        	moe.monto
+                        else
+                        	0
+                        end))
+                        else
+                        (select  mo.monto
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = ' || v_parametros.id_agencia || '  and mo.garantia = ''no'' and mo.id_periodo_venta is null and
+mo.estado_reg = ''activo'' and mo.cierre_periodo = ''si'' and mo.tipo = ''credito'')
+-
+(select  sum(mo.monto)
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = ' || v_parametros.id_agencia || ' and mo.garantia = ''no'' and mo.tipo =''debito'' and mo.id_periodo_venta is null and
+mo.cierre_periodo = ''no'' and mo.estado_reg = ''activo'')
+                        end)::numeric as saldo_actual,
+                        ( case 
+						when 
+(select  mo.monto
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = ' || v_parametros.id_agencia || '  and mo.garantia = ''no'' and mo.id_periodo_venta is null and
+mo.estado_reg = ''activo'' and mo.cierre_periodo = ''si'' and mo.tipo = ''credito'')
+-
+(select  sum(mo.monto)
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = ' || v_parametros.id_agencia || ' and mo.garantia = ''no'' and mo.tipo =''debito'' and mo.id_periodo_venta is null and
+mo.cierre_periodo = ''no'' and mo.estado_reg = ''activo'') > 0 then
+''Saldo a Favor''
+when 
+(select  mo.monto
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = ' || v_parametros.id_agencia || ' and mo.garantia = ''no'' and mo.id_periodo_venta is null and
+mo.estado_reg = ''activo'' and mo.cierre_periodo = ''si'' and mo.tipo = ''credito'')
+-
+(select  sum(mo.monto)
+from obingresos.tmovimiento_entidad mo
+where mo.id_agencia = ' || v_parametros.id_agencia || ' and mo.garantia = ''no'' and mo.tipo =''debito'' and mo.id_periodo_venta is null and
+mo.cierre_periodo = ''no'' and mo.estado_reg = ''activo'') = 0 then
+''Deuda Actual''
+else
+''Deuda Actual''
+end::varchar)as tipo,
                         coalesce((select sum(coalesce (pva.monto_mb,0) +
                                     param.f_convertir_moneda(' || v_id_moneda_usd || ',' || v_id_moneda_base || ',COALESCE(pva.monto_usd,0),now()::date,''O'',2))
                         from obingresos.tperiodo_venta_agencia pva
@@ -182,7 +230,7 @@ BEGIN
 			
 			--Definicion de la respuesta		    
 			v_consulta:=v_consulta||v_parametros.filtro;
-
+			raise notice '-> %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 

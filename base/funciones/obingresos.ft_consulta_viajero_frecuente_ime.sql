@@ -1,8 +1,11 @@
-CREATE OR REPLACE FUNCTION "obingresos"."ft_consulta_viajero_frecuente_ime" (	
-				p_administrador integer, p_id_usuario integer, p_tabla character varying, p_transaccion character varying)
-RETURNS character varying AS
-$BODY$
-
+CREATE OR REPLACE FUNCTION obingresos.ft_consulta_viajero_frecuente_ime (
+  p_administrador integer,
+  p_id_usuario integer,
+  p_tabla varchar,
+  p_transaccion varchar
+)
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_consulta_viajero_frecuente_ime
@@ -59,7 +62,7 @@ BEGIN
 			v_parametros.ffid,
 			'activo',
 			v_parametros.message,
-			v_parametros.voucher_code,
+			'OB.FF.VO'||v_parametros.voucher_code,
 			v_parametros.status,
 			p_id_usuario,
 			now(),
@@ -68,14 +71,12 @@ BEGIN
 			null,
 			null
 							
-			
-			
 			)RETURNING id_consulta_viajero_frecuente into v_id_consulta_viajero_frecuente;
-			
+			 
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','consulta viajero frecuente almacenado(a) con exito (id_consulta_viajero_frecuente'||v_id_consulta_viajero_frecuente||')'); 
             v_resp = pxp.f_agrega_clave(v_resp,'id_consulta_viajero_frecuente',v_id_consulta_viajero_frecuente::varchar);
-
+		
             --Devuelve la respuesta
             return v_resp;
 
@@ -95,7 +96,7 @@ BEGIN
 			update obingresos.tconsulta_viajero_frecuente set
 			ffid = v_parametros.ffid,
 			message = v_parametros.message,
-			voucher_code = v_parametros.voucher_code,
+			voucher_code = 'OB.FF.VO'||v_parametros.voucher_code,
 			status = v_parametros.status,
 			fecha_mod = now(),
 			id_usuario_mod = p_id_usuario,
@@ -151,7 +152,9 @@ EXCEPTION
 		raise exception '%',v_resp;
 				        
 END;
-$BODY$
-LANGUAGE 'plpgsql' VOLATILE
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
 COST 100;
-ALTER FUNCTION "obingresos"."ft_consulta_viajero_frecuente_ime"(integer, integer, character varying, character varying) OWNER TO postgres;

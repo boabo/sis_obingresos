@@ -120,6 +120,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.seleccionarPuntoVentaSucursal();
                 this.grid.addListener('cellclick', this.oncellclick,this);
                 this.bloquearOrdenamientoGrid();
+
             },
 
             gruposBarraTareas:[{name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:0,height:0},
@@ -511,7 +512,19 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Pnr',
                         anchor: '80%',
                         disabled: true,
-                        gwidth: 60
+                        gwidth: 60,
+                        renderer : function(value, p, record) {
+                            if ((record.data['neto'] == 30 && record.data['moneda'] == 'BOB'  || record.data['neto'] == 60 && record.data['moneda'] == 'BOB' ) ||
+                                (record.data['neto'] == 40 && record.data['moneda'] == 'USD'  || record.data['neto'] == 80 && record.data['moneda'] == 'USD' )||
+                                (record.data['neto'] == 70 && record.data['moneda'] == 'USD'  || record.data['neto'] == 140 && record.data['moneda'] == 'USD')||
+                                (record.data['neto'] == 130 && record.data['moneda'] == 'USD' || record.data['neto'] == 260 && record.data['moneda'] == 'USD')){
+                                return '<tpl for="."><p><font color="black">' + record.data['localizador'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
+                            }else{
+                                return '<tpl for="."><p><font color="black">' + record.data['localizador'] + '</tpl>';
+
+                            }
+                            return '<tpl for="."><p><font color="black">' + record.data['localizador'] + '</tpl>';
+                        }
                     },
                     type:'TextField',
                     id_grupo:0,
@@ -531,16 +544,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         enableKeyEvents:true,
                         renderer : function(value, p, record) {
 
-                            /*if (record.data['neto'] == 30 && record.data['moneda'] == 'BOB' || record.data['neto'] == 40 && record.data['moneda'] == 'USD'
-                                || record.data['neto'] == 70 && record.data['moneda'] == 'USD' || record.data['codigo_agente'] == '9998WS' ){
-                                return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</font><p><b><font color="#8b008b">Voucher</font></p></tpl>';
-                               }else{
-                               return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
-
-                            }*/
                             return '<tpl for="."><p><font color="red">' + record.data['nro_boleto'] + '</tpl>';
-
-
                         }
                     },
                     type:'TextField',
@@ -1535,7 +1539,22 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.tipo_comision.on('select', function (combo,record) {
                     if(this.grupo=='no') {
                         if (record['json'][0] == 'nacional') {
-                            this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.1).toFixed(2));
+                           /// fecha_emision
+                            var f1 = new Date('02/01/2018');
+                            var f2 = new Date(this.Cmp.fecha_emision.getValue());
+                            console.log('f1',f1.dateFormat('d/m/Y'));
+                            console.log('f2',f2.dateFormat('d/m/Y'));
+
+                            /*if (f2 >= f1 ){
+                                    console.log('mayor');
+                                this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
+                            }else{
+                                    console.log('menor');
+                                this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.1).toFixed(2));
+                            }*/
+
+
+                        this.Cmp.comision.setValue((this.Cmp.neto.getValue() * 0.06).toFixed(2));
                             if(this.Cmp.moneda.getValue()!=='USD') {
                                 this.Cmp.comision_moneda_extranjera.setValue(this.Cmp.comision.getValue() / this.Cmp.tc.getValue());
                             }else{
@@ -1565,7 +1584,19 @@ header("content-type: text/javascript; charset=UTF-8");
                         }
                     }else{
                         if (record['json'][0] == 'nacional') {
-                            this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.1).toFixed(2));
+
+                             var f1 = new Date('02/01/2018');
+                            var f2 = new Date(this.Cmp.fecha_emision.getValue());
+                            console.log('f1',f1.dateFormat('d/m/Y'));
+                            console.log('f2',f2.dateFormat('d/m/Y'));
+                            /*if (f2 >= f1 ){
+                                console.log('mayor');
+                                this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.06).toFixed(2));
+                            }else{
+                                console.log('menor');
+                                this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.1).toFixed(2));
+                            }*/
+                            this.Cmp.monto_total_comision.setValue((this.Cmp.monto_total_neto.getValue() * 0.06).toFixed(2));
                             this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
                             this.Cmp.monto_recibido_forma_pago.setValue(this.Cmp.monto_total_boletos.getValue() - this.Cmp.monto_total_comision.getValue());
                         } else {
@@ -1704,11 +1735,18 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.id_forma_pago2.setDisabled(false);
                     this.Cmp.monto_forma_pago2.setDisabled(false);
                 }
+                if (this.sm.getSelected().data['ffid'] == '' && this.sm.getSelected().data['voucher_code']  == '' && this.sm.getSelected().data['estado'] == 'borrador' )
+                {
+                    if ((this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'|| this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 60 && this.sm.getSelected().data['estado'] == 'borrador') ||
+                        (this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador'||this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] ==  80 && this.sm.getSelected().data['estado'] == 'borrador') ||
+                        (this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 70 && this.sm.getSelected().data['estado'] == 'borrador'||this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] ==  140&& this.sm.getSelected().data['estado'] == 'borrador') ||
+                        (this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 130 && this.sm.getSelected().data['estado'] == 'borrador'||this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 260 && this.sm.getSelected().data['estado'] == 'borrador')) {
 
-              /*if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] > 30 && this.sm.getSelected().data['estado'] == 'borrador' ||
-                        this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS') {
-                   this.formFormual();
-               }*/
+                        this.formFormual();
+
+
+                    }
+                }
 
             },
 
@@ -1718,21 +1756,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
                 if(fieldName == 'estado') {
-                   /*if (this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] > 30 && this.sm.getSelected().data['estado'] == 'borrador'
-                       || this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador' ||  this.sm.getSelected().data['codigo_agente'] =='9998WS' ) {
-                        //this.formViajeroFrecuente();
+
+                    if (this.sm.getSelected().data['ffid'] != '' && this.sm.getSelected().data['voucher_code']  != '' && this.sm.getSelected().data['estado'] == 'borrador' ){
+                       if(record.data.tipo_reg != 'summary'){
+                           this.cambiarRevision(record);
+                       }
+                   }  else if((this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 30 && this.sm.getSelected().data['estado'] == 'borrador'||this.sm.getSelected().data['moneda'] == 'BOB' && this.sm.getSelected().data['neto'] == 60 && this.sm.getSelected().data['estado'] == 'borrador') ||
+                        (this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 40 && this.sm.getSelected().data['estado'] == 'borrador'||      this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] ==  80 && this.sm.getSelected().data['estado'] == 'borrador') ||
+                        (this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 70 && this.sm.getSelected().data['estado'] == 'borrador'||      this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] ==  140&& this.sm.getSelected().data['estado'] == 'borrador') ||
+                        (this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 130 && this.sm.getSelected().data['estado'] == 'borrador'||     this.sm.getSelected().data['moneda'] == 'USD' && this.sm.getSelected().data['neto'] == 260 && this.sm.getSelected().data['estado'] == 'borrador')) {
                         this.formFormualRevi();
-                    }else {
+                    }
+                   else {
                         if(record.data.tipo_reg != 'summary'){
                             this.cambiarRevision(record);
                         }
-                    }*/
-                    if(record.data.tipo_reg != 'summary'){
-                        this.cambiarRevision(record);
                     }
-
-
-
                 }
                 if(fieldName == 'nro_boleto') {
                     if(record.data.tipo_reg != 'summary'){
@@ -1768,16 +1807,43 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             anularBoleto:function(){
-                Phx.CP.loadingShow();
-                var d = this.sm.getSelected().data;
+                var filas=this.sm.getSelections(),
+                    total= 0,tmp='',me = this;
+                for(var i=0;i<this.sm.getCount();i++){
+                    aux={};
+                    if(total == 0){
+                        tmp = filas[i].data[this.id_store];
+                    }
+                    else{
+                        tmp = tmp + ','+ filas[i].data[this.id_store];
+                    }
+                    total = total + 1;
+                }
+                if(total != 0){
+                    if(confirm("¿Esta seguro de Anular los boletos?") ){
+
+                        Phx.CP.loadingShow();
+
+                //var d = this.sm.getSelected().data;
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/anularBoleto',
-                    params:{id_boleto_amadeus:d.id_boleto_amadeus},
-                    success:this.successAnularBoleto,
+                    params:{id_boleto_amadeus:tmp},
+                //success:this.successAnularBoleto,
+                    success : function(resp) {
+                        Phx.CP.loadingHide();
+                        alert('Los Boletos fueron Anulados: '+ total);
+                        this.reload();
+
+                    },
                     failure: this.conexionFailure,
                     timeout:this.timeout,
                     scope:this
                 });
+                    }
+                }
+                else{
+                    alert ('No selecciono ningun boleto');
+                }
 
             },
 
@@ -2219,155 +2285,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.idContenedor,
                 'ViajeroFrecuente');
         },
-        formFormual: function () {
-
-                    var ffid = new Ext.form.TextField(
-                        {
-                                name: 'ffid',
-                                msgTarget: 'title',
-                                fieldLabel: 'FFID',
-                                allowBlank: false,
-                                anchor: '90%',
-                                style: 'background-color:#9BF592 ; background-image: none;',
-                                maxLength:50
-                        });
-
-                    var voucherCoide = new Ext.form.TextField(
-                        {
-                            name: 'voucherCode',
-                            msgTarget: 'title',
-                            fieldLabel: 'Voucher Code',
-                            allowBlank: false,
-                            anchor: '90%',
-                            style: 'background-color: #9BF592; background-image: none;',
-                            maxLength:50
-                        });
-                    var ticketNumber = new Ext.form.TextField(
-                        {
-                            name: 'ticketNumber',
-                            msgTarget: 'title',
-                            fieldLabel: 'Ticket Number',
-                            allowBlank: true,
-                            readOnly :true,
-                            anchor: '90%',
-                            style: 'background-color: #E1F590; background-image: none;',
-                            value: this.sm.getSelected().data['nro_boleto'] ,
-                            maxLength:50
-                        });
-                    var pnr = new Ext.form.TextField(
-                        {
-                            name: 'pnr',
-                            msgTarget: 'title',
-                            fieldLabel: 'PNR',
-                            allowBlank: true,
-                            readOnly :true,
-                            anchor: '90%',
-                            style: 'background-color: #E1F590; background-image: none;',
-                            value: this.sm.getSelected().data['localizador'] ,
-                            maxLength:50
-                        });
-
-                    var formularioInicio = new Ext.form.FormPanel({
-                        items: [ffid,voucherCoide,ticketNumber,pnr],
-                        padding: true,
-                        bodyStyle:'padding:5px 5px 0',
-                        border: false,
-                        frame: true
-
-
-                    });
-
-                    var VentanaInicio = new Ext.Window({
-                        title: 'Formulario Viajero Frecuente',
-                        modal: true,
-                        width: 300,
-                        height: 200,
-                        bodyStyle: 'padding:5px;',
-                        layout: 'fit',
-                        hidden: true,
-                        closable: false,
-                        buttons: [
-                            {
-                                text: '<i class="fa fa-check"></i> Aceptar',
-                                handler: function () {
-                                    if (formularioInicio.getForm().isValid()) {
-                                        validado = true;
-                                        this.ffid = ffid.getValue();
-                                        this.voucher = voucherCoide.getValue();
-                                        this.ticket = ticketNumber.getValue();
-                                        this.pnr  = pnr.getValue();
-                                        VentanaInicio.close();
-                                        m = this;
-                                        Ext.Ajax.request({
-                                            url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
-                                            params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
-                                                    ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
-                                                    pnr:this.pnr },
-                                            success:function(resp){
-                                                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-                                                console.log('id',reg);
-                                            },
-                                            failure: this.conexionFailure,
-                                            timeout:this.timeout,
-                                            scope:this
-                                        });
-
-
-
-
-                                    }
-                                },
-                                scope: this
-                            },
-                            {
-                                text: '<i class="fa fa-check"></i> Ignorar',
-                                handler: function () {
-                                    VentanaInicio.close();
-                                    /*if (formularioInicio.getForm().isValid()) {
-                                        validado = true;
-                                        this.ffid = ffid.getValue();
-                                        this.voucher = voucherCoide.getValue();
-                                        this.ticket = ticketNumber.getValue();
-                                        this.pnr  = pnr.getValue();
-                                        VentanaInicio.close();
-                                        m = this;
-                                        Ext.Ajax.request({
-                                            url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
-                                            params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
-                                                ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
-                                                pnr:this.pnr },
-                                            success:function(resp){
-                                                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-                                                console.log('id',reg);
-                                            },
-                                            failure: this.conexionFailure,
-                                            timeout:this.timeout,
-                                            scope:this
-                                        });
-
-
-
-
-                                    }*/
-                                },
-                                scope: this
-                            },
-                            {
-                                text: '<i class="fa fa-check"></i> Declinar',
-                                handler : function() {
-                                    //refresh source grid
-                                    console.log(formularioInicio.getForm());
-                                    formularioInicio.getForm().reset();
-                                },
-                                scope: this
-                            }
-                            ],
-                        items: formularioInicio,
-                        autoDestroy: true,
-                        closeAction: 'close'
-                    });
-                    VentanaInicio.show();
-            },
         formFormualRevi: function (origen) {
 
             var ffid = new Ext.form.TextField(
@@ -2450,7 +2367,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                     url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
                                     params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
                                         ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
-                                        pnr:this.pnr },
+                                        pnr:this.pnr ,bandera:'revisar'},
                                     success:function(resp){
                                         var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                         console.log('id',reg);
@@ -2459,8 +2376,6 @@ header("content-type: text/javascript; charset=UTF-8");
                                     timeout:this.timeout,
                                     scope:this
                                 });
-
-
 
 
                             }
@@ -2478,7 +2393,6 @@ header("content-type: text/javascript; charset=UTF-8");
                                 this.voucher = voucherCoide.getValue();
                                 this.ticket = ticketNumber.getValue();
                                 this.pnr  = pnr.getValue();
-
                                 m = this;
                                 Ext.Ajax.request({
                                     url:'../../sis_obingresos/control/Boleto/logViajeroFrecuente',
@@ -2505,6 +2419,151 @@ header("content-type: text/javascript; charset=UTF-8");
                                     timeout: this.timeout,
                                     scope: this
                                 });
+                            }
+                        },
+                        scope: this
+                    },
+                    {
+                        text: '<i class="fa fa-check"></i> Declinar',
+                        handler : function() {
+                            //refresh source grid
+                            console.log(formularioInicio.getForm());
+                            formularioInicio.getForm().reset();
+                        },
+                        scope: this
+                    }
+                ],
+                items: formularioInicio,
+                autoDestroy: true,
+                closeAction: 'close'
+            });
+            VentanaInicio.show();
+        },
+        formFormual: function (origen) {
+
+            var ffid = new Ext.form.TextField(
+                {
+                    name: 'ffid',
+                    msgTarget: 'title',
+                    fieldLabel: 'FFID',
+                    allowBlank: true,
+                    anchor: '90%',
+                    style: 'background-color:#9BF592 ; background-image: none;',
+                    maxLength:50
+                });
+
+            var voucherCoide = new Ext.form.TextField(
+                {
+                    name: 'voucherCode',
+                    msgTarget: 'title',
+                    fieldLabel: 'Voucher Code',
+                    allowBlank: true,
+                    anchor: '90%',
+                    style: 'background-color: #9BF592; background-image: none;',
+                    maxLength:50
+                });
+            var ticketNumber = new Ext.form.TextField(
+                {
+                    name: 'ticketNumber',
+                    msgTarget: 'title',
+                    fieldLabel: 'Ticket Number',
+                    allowBlank: true,
+                    readOnly :true,
+                    anchor: '90%',
+                    style: 'background-color: #E1F590; background-image: none;',
+                    value: this.sm.getSelected().data['nro_boleto'] ,
+                    maxLength:50
+                });
+            var pnr = new Ext.form.TextField(
+                {
+                    name: 'pnr',
+                    msgTarget: 'title',
+                    fieldLabel: 'PNR',
+                    allowBlank: true,
+                    readOnly :true,
+                    anchor: '90%',
+                    style: 'background-color: #E1F590; background-image: none;',
+                    value: this.sm.getSelected().data['localizador'] ,
+                    maxLength:50
+                });
+
+            var formularioInicio = new Ext.form.FormPanel({
+                items: [ffid,voucherCoide,ticketNumber,pnr],
+                padding: true,
+                bodyStyle:'padding:5px 5px 0',
+                border: false,
+                frame: false
+
+            });
+
+            var VentanaInicio = new Ext.Window({
+                title: 'Formulario Viajero Frecuente',
+                modal: true,
+                width: 300,
+                height: 200,
+                bodyStyle: 'padding:5px;',
+                layout: 'fit',
+                hidden: true,
+                closable: false,
+                buttons: [
+                    {
+                        text: '<i class="fa fa-check"></i> Aceptar',
+                        handler: function () {
+                            if (formularioInicio.getForm().isValid()) {
+                                validado = true;
+                                this.ffid = ffid.getValue();
+                                this.voucher = voucherCoide.getValue();
+                                this.ticket = ticketNumber.getValue();
+                                this.pnr  = pnr.getValue();
+                                VentanaInicio.close();
+                                m = this;
+
+                                Ext.Ajax.request({
+                                    url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
+                                    params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
+                                        ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
+                                        pnr:this.pnr,bandera:'form' },
+                                    success:function(resp){
+                                        var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                        console.log('id',reg);
+                                    },
+                                    failure: this.conexionFailure,
+                                    timeout:this.timeout,
+                                    scope:this
+                                });
+
+                            }
+                        },
+                        scope: this
+                    },
+                    {
+                        text: '<i class="fa fa-check"></i> Ignorar',
+                        handler: function () {
+
+                            // VentanaInicio.close();
+                            if (formularioInicio.getForm().isValid()) {
+                                validado = true;
+                                this.ffid = ffid.getValue();
+                                this.voucher = voucherCoide.getValue();
+                                this.ticket = ticketNumber.getValue();
+                                this.pnr  = pnr.getValue();
+                                m = this;
+                                Ext.Ajax.request({
+                                    url:'../../sis_obingresos/control/Boleto/logViajeroFrecuente',
+                                    params:{    id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
+                                        importe: m.sm.getSelected().data['neto'],
+                                        moneda:m.sm.getSelected().data['moneda'] ,
+                                        tickert_number: this.ticket,
+                                        pnr:this.pnr },
+                                    success:function(resp){
+                                        var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                        console.log('respuesta',reg);
+                                    },
+                                    failure: this.conexionFailure,
+                                    timeout:this.timeout,
+                                    scope:this
+                                });
+                                VentanaInicio.close();
 
                             }
                         },
@@ -2525,8 +2584,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 closeAction: 'close'
             });
             VentanaInicio.show();
-            //this.cambiarRevision();
-
         }
 
         }
