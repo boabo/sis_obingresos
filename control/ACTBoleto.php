@@ -1310,75 +1310,7 @@ class ACTBoleto extends ACTbase{
             $this->res->setDatos($temp);
             $this->res->imprimirRespuesta($this->res->generarJson());
         }
-<<<<<<< HEAD
 
-
-    }
-
-    function anularBoleto(){
-        $this->objFunc=$this->create('MODBoleto');
-        $this->res=$this->objFunc->anularBoleto($this->objParam);
-        $this->res->imprimirRespuesta($this->res->generarJson());
-    }
-
-    function traerBoletosJson(){
-
-        if ($this->objParam->getParametro('id_punto_venta') != '') {
-            $this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
-        }
-
-        if ($this->objParam->getParametro('fecha') != '') {
-            $fecha = $this->objParam->getParametro('fecha');
-            $this->objParam->addFiltro("bol.fecha_emision = ''". date($fecha)."''");
-            //$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
-        }
-
-        if ($this->objParam->getParametro('reporte') == 'reporte') {
-            $this->objFunc = $this->create('MODBoleto');
-            //$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
-        }
-
-        if ($this->objParam->getParametro('officeId_agencia') != '') {
-            $officeid = $this->objParam->getParametro('officeId_agencia');
-        }else{
-            $this->objParam->addParametro('fecha', $fecha);
-            $this->objParam->addParametro('moneda', "BOB");
-            $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
-            $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
-
-            $datos = $this->res->getDatos();
-
-            $officeid = $datos[0]['officeid'];
-            $id_agencia = $datos[0]['id_agencia'];
-
-            if($this->objParam->getParametro('todos')=='no') {
-                $numberItems = 5;
-                $identificador_reporte = $datos[0]['identificador_reporte'];
-            }else{
-                $numberItems = 0;
-                $identificador_reporte = 0;
-            }
-        }
-
-        //boletos en bolivianos
-        $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"");
-        $data_string = json_encode($data);
-        $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
-        $session = curl_init($request);
-        curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
-        curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($session, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($data_string))
-        );
-
-        $result = curl_exec($session);
-        curl_close($session);
-
-        $respuesta = json_decode($result);
-=======
-		
 
 	}
 
@@ -1444,7 +1376,6 @@ class ACTBoleto extends ACTbase{
 		curl_close($session);
 
 		$respuesta = json_decode($result);
->>>>>>> 2427fb80df4e057d6b34e88d696ffa7fc6d234df
         //var_dump($respuesta);exit;
         if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
