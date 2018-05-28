@@ -8,7 +8,7 @@
 */
 
 include(dirname(__FILE__).'/../../lib/rest/NetOBRestClient.php');
-
+require_once(dirname(__FILE__).'/../reportes/REstadoCuentaXLS.php');
 class ACTPeriodoVenta extends ACTbase{    
 			
 	function listarPeriodoVenta(){
@@ -236,6 +236,48 @@ class ACTPeriodoVenta extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
 
     }
+    function EstadoCuentaDatos(){
+        $this->objFunc = $this->create('MODPeriodoVenta');
+        $cbteHeader = $this->objFunc->EstadoCuenta($this->objParam);
+        if($cbteHeader->getTipo() == 'EXITO'){
+            return $cbteHeader;
+        }
+        else{
+            $cbteHeader->imprimirRespuesta($cbteHeader->generarJson());
+            exit;
+        }
+
+    }
+    function EstadoCuentaDesDatos(){
+        $this->objFunc = $this->create('MODPeriodoVenta');
+        $cbteHeader = $this->objFunc->EstadoCuentaDes($this->objParam);
+        if($cbteHeader->getTipo() == 'EXITO'){
+            return $cbteHeader;
+        }
+        else{
+            $cbteHeader->imprimirRespuesta($cbteHeader->generarJson());
+            exit;
+        }
+
+    }
+    function EstadoCuenta (){
+        $dataSource = $this->EstadoCuentaDatos();
+        $dataSourceDes= $this->EstadoCuentaDesDatos();
+        //var_dump(($dataSource->getDatos()));exit;
+        $nombreArchivo = uniqid(md5(session_id()).'Estado Cuentas').'.xls';
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        $reporte =new REstadoCuentaXLS($this->objParam);
+        $reporte->datosHeader($dataSource->getDatos(),$dataSourceDes->getDatos());
+        $reporte->generarReporte();
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado','Se generó con éxito el reporte: '.$nombreArchivo,'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+
+
+    }
+
 			
 }
 

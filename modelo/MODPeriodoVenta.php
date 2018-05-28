@@ -238,6 +238,61 @@ class MODPeriodoVenta extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+    function EstadoCuenta(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_periodo_venta_sel';
+        $this->transaccion='OBING_SALAT_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+        $this->setParametro('id_agencia','id_agencia','int4');
+        //Definicion de la lista del resultado del query
+        $this->captura('id_agencia','int4');
+        $this->captura('id_periodo_venta','int4');
+        $this->captura('nombre','varchar');
+        $this->captura('mes','varchar');
+        $this->captura('fecha_ini','date');
+        $this->captura('fecha_fin','date');
+        $this->captura('credito','varchar');
+        $this->captura('total_credito','numeric');
+        $this->captura('debito','varchar');
+        $this->captura('total_debito','numeric');
+        $this->captura('saldo','numeric');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+       // var_dump($this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    function EstadoCuentaDes(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_periodo_venta_sel';
+        $this->transaccion='OBING_AGTD_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+        $this->setParametro('id_agencia','id_agencia','int4');
+        //Definicion de la lista del resultado del query
+        $this->captura('fecha_ini','date');
+        $this->captura('fecha_fin','date');
+        $this->captura('titulo','varchar');
+        $this->captura('mes','varchar');
+        $this->captura('fecha','date');
+        $this->captura('autorizacion__nro_deposito','varchar');
+        $this->captura('id_periodo_venta','int4');
+        $this->captura('monto_total','numeric');
+        $this->captura('neto','numeric');
+        $this->captura('monto','numeric');
+        $this->captura('cierre_periodo','varchar');
+        $this->captura('ajuste','varchar');
+        $this->captura('tipo','varchar');
+        $this->captura('transaccion','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+       // var_dump($this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 			
 }
 ?>

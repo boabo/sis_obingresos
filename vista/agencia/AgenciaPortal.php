@@ -53,6 +53,15 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Billetes emitidos de la agencia corporativa'
                 }
             );
+            this.addButton('Estado',
+                {
+                    text: 'Estado de Cuenta',
+                    iconCls: 'bprint',
+                    disabled: true,
+                    handler: this.estado,
+                    tooltip: 'Billetes emitidos de la agencia corporativa'
+                }
+            );
 
         },
         onMovimientosSP : function () {
@@ -107,6 +116,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.getBoton('btnMovimientosSP').enable();
             
             this.getBoton('btnTkt').enable();
+            this.getBoton('Estado').enable();
 
         },
         liberaMenu:function()
@@ -116,7 +126,20 @@ header("content-type: text/javascript; charset=UTF-8");
             this.getBoton('btnMovimientos').disable();
             this.getBoton('btnMovimientosSP').disable();
             this.getBoton('btnTkt').disable();
+            this.getBoton('Estado').disable();
         },
+        estado:function(){
+            Phx.CP.loadingShow();
+            var rec=this.sm.getSelected();
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/PeriodoVenta/EstadoCuenta',
+                params:{'id_agencia':rec.data.id_agencia},
+                success: this.successExport,
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        }
 
     };
 </script>
