@@ -33,7 +33,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Movimientos de la agencia corporativa para el periodo vigente'
                 }
             );
-            
+
             this.addButton('btnMovimientosSP',
                 {
                     text: 'Rep Movimientos',
@@ -43,13 +43,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Movimientos de la agencia corporativa para un rango de fechas'
                 }
             );
-            
+
             this.addButton('btnTkt',
                 {
                     text: 'Tkts',
                     iconCls: 'blist',
                     disabled: true,
                     handler: this.onTkts,
+                    tooltip: 'Billetes emitidos de la agencia corporativa'
+                }
+            );
+            this.addButton('Estado',
+                {
+                    text: 'Estado de Cuenta',
+                    iconCls: 'bprint',
+                    disabled: true,
+                    handler: this.estado,
                     tooltip: 'Billetes emitidos de la agencia corporativa'
                 }
             );
@@ -69,7 +78,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 'MovimientoEntidadSinPeriodo');
 
         },
-        
+
         onMovimientos : function () {
             var rec = {maestro: this.sm.getSelected().data};
 
@@ -84,7 +93,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 'MovimientoEntidad');
 
         },
-        
+
         onTkts : function () {
             var rec = {maestro: this.sm.getSelected().data};
 
@@ -105,8 +114,9 @@ header("content-type: text/javascript; charset=UTF-8");
             Phx.vista.AgenciaPortal.superclass.preparaMenu.call(this);
             this.getBoton('btnMovimientos').enable();
             this.getBoton('btnMovimientosSP').enable();
-            
+
             this.getBoton('btnTkt').enable();
+            this.getBoton('Estado').enable();
 
         },
         liberaMenu:function()
@@ -116,7 +126,20 @@ header("content-type: text/javascript; charset=UTF-8");
             this.getBoton('btnMovimientos').disable();
             this.getBoton('btnMovimientosSP').disable();
             this.getBoton('btnTkt').disable();
+            this.getBoton('Estado').disable();
         },
+        estado:function(){
+            Phx.CP.loadingShow();
+            var rec=this.sm.getSelected();
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/PeriodoVenta/EstadoCuenta',
+                params:{'id_agencia':rec.data.id_agencia},
+                success: this.successExport,
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        }
 
     };
 </script>

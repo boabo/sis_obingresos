@@ -276,48 +276,13 @@ class  MODDetalleBoletosWeb extends MODbase{
 
         //Ejecuta la instruccion
         $this->armarConsulta();
+
         $this->ejecutarConsulta();
 
         //Devuelve la respuesta
         return $this->respuesta;
     }
     function reporteVentasCorporativasDepositos(){
-        //Definicion de variables para ejecucion del procedimientp
-        $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
-        $this->transaccion='OBING_REPDEP_SEL';
-        $this->tipo_procedimiento='SEL';//tipo de transaccion
-
-        $this->setParametro('fecha_ini','fecha_ini','date');
-        $this->setParametro('fecha_fin','fecha_fin','date');
-        $this->setParametro('id_lugar','id_lugar','integer');
-        $this->setParametro('tipo_agencia','tipo_agencia','varchar');
-        $this->setParametro('forma_pago','forma_pago','varchar');
-
-        $this->setCount(false);
-
-        $this->captura('id_agencia','int4');
-        $this->captura('nombre','varchar');
-        $this->captura('codigo_int','varchar');
-        $this->captura('tipo_agencia','varchar');
-        $this->captura('formas_pago','varchar');
-        $this->captura('codigo_ciudad','varchar');
-        $this->captura('monto_creditos','numeric');
-        $this->captura('monto_debitos','numeric');
-        $this->captura('monto_ajustes','numeric');
-        $this->captura('saldo','numeric');
-        $this->captura('nro_deposito','varchar');
-        $this->captura('monto_deposito','numeric');
-        $this->captura('fecha','date');
-
-        //Ejecuta la instruccion
-        $this->armarConsulta();
-        $this->ejecutarConsulta();
-
-        ///var_dump( $this->respuesta);exit;
-        //Devuelve la respuesta
-        return $this->respuesta;
-    }
-   /* function reporteVentasCorporativasDepositos(){
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_detalle_boletos_web_sel';
         $this->transaccion='OBING_REPDEP_SEL';
@@ -354,7 +319,7 @@ class  MODDetalleBoletosWeb extends MODbase{
         // var_dump( $this->respuesta);exit;
         //Devuelve la respuesta
         return $this->respuesta;
-    }*/
+    }
 
 
 

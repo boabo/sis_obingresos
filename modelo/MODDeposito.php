@@ -1,11 +1,11 @@
 <?php
 /**
-*@package pXP
-*@file gen-MODDeposito.php
-*@author  (jrivera)
-*@date 06-01-2016 22:42:28
-*@description Clase que envia los parametros requeridos a la Base de datos para la ejecucion de las funciones, y que recibe la respuesta del resultado de la ejecucion de las mismas
-*/
+ *@package pXP
+ *@file gen-MODDeposito.php
+ *@author  (jrivera)
+ *@date 06-01-2016 22:42:28
+ *@description Clase que envia los parametros requeridos a la Base de datos para la ejecucion de las funciones, y que recibe la respuesta del resultado de la ejecucion de las mismas
+ */
 
 class MODDeposito extends MODbase{
 
@@ -13,40 +13,40 @@ class MODDeposito extends MODbase{
     var $informix;
     var $tabla_deposito_informix;
     var $nro_deposito;
-	
-	function __construct(CTParametro $pParam){
-		parent::__construct($pParam);
+
+    function __construct(CTParametro $pParam){
+        parent::__construct($pParam);
         $this->cone = new conexion();
         $this->informix = $this->cone->conectarPDOInformix();
         $this->link = $this->cone->conectarpdo(); //conexion a pxp(postgres)
-	}
-			
-	function listarDeposito(){
-		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='obingresos.ft_deposito_sel';
-		$this->transaccion='OBING_DEP_SEL';
-		$this->tipo_procedimiento='SEL';//tipo de transaccion
-		
-		$this->capturaCount('total_deposito','numeric');
-				
-		//Definicion de la lista del resultado del query
-		$this->captura('id_deposito','int4');
-		$this->captura('estado_reg','varchar');
-		$this->captura('nro_deposito','varchar');
-		$this->captura('monto_deposito','numeric');
-		$this->captura('id_moneda_deposito','int4');
-		$this->captura('id_agencia','int4');
-		$this->captura('fecha','date');
-		$this->captura('saldo','numeric');
-		$this->captura('id_usuario_reg','int4');
-		$this->captura('fecha_reg','timestamp');
-		$this->captura('id_usuario_ai','int4');
-		$this->captura('usuario_ai','varchar');
-		$this->captura('id_usuario_mod','int4');
-		$this->captura('fecha_mod','timestamp');
-		$this->captura('usr_reg','varchar');
-		$this->captura('usr_mod','varchar');
-		$this->captura('desc_moneda','varchar');
+    }
+
+    function listarDeposito(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_deposito_sel';
+        $this->transaccion='OBING_DEP_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->capturaCount('total_deposito','numeric');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_deposito','int4');
+        $this->captura('estado_reg','varchar');
+        $this->captura('nro_deposito','varchar');
+        $this->captura('monto_deposito','numeric');
+        $this->captura('id_moneda_deposito','int4');
+        $this->captura('id_agencia','int4');
+        $this->captura('fecha','date');
+        $this->captura('saldo','numeric');
+        $this->captura('id_usuario_reg','int4');
+        $this->captura('fecha_reg','timestamp');
+        $this->captura('id_usuario_ai','int4');
+        $this->captura('usuario_ai','varchar');
+        $this->captura('id_usuario_mod','int4');
+        $this->captura('fecha_mod','timestamp');
+        $this->captura('usr_reg','varchar');
+        $this->captura('usr_mod','varchar');
+        $this->captura('desc_moneda','varchar');
         $this->captura('agt','varchar');
         $this->captura('fecha_venta','date');
         $this->captura('monto_total','numeric');
@@ -54,31 +54,31 @@ class MODDeposito extends MODbase{
         $this->captura('desc_periodo','text');
         $this->captura('estado','varchar');
         $this->captura('id_apertura_cierre_caja','int4');
-		
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
-		
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
-			
-	function insertarDeposito(){
-		//Definicion de variables para ejecucion del procedimiento
-		$this->procedimiento='obingresos.ft_deposito_ime';
-		$this->transaccion='OBING_DEP_INS';
-		$this->tipo_procedimiento='IME';
 
-		
-		//Define los parametros para la funcion
-		$this->setParametro('estado_reg','estado_reg','varchar');
-		$this->setParametro('nro_deposito','nro_deposito','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function insertarDeposito(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEP_INS';
+        $this->tipo_procedimiento='IME';
+
+
+        //Define los parametros para la funcion
+        $this->setParametro('estado_reg','estado_reg','varchar');
+        $this->setParametro('nro_deposito','nro_deposito','varchar');
         $this->setParametro('agt','agt','varchar');
-		$this->setParametro('monto_deposito','monto_deposito','numeric');
-		$this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
-		$this->setParametro('id_agencia','id_agencia','int4');
-		$this->setParametro('fecha','fecha','date');
-		$this->setParametro('saldo','saldo','numeric');
+        $this->setParametro('monto_deposito','monto_deposito','numeric');
+        $this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
+        $this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('fecha','fecha','date');
+        $this->setParametro('saldo','saldo','numeric');
         $this->setParametro('descripcion','descripcion','varchar');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('moneda','moneda','varchar');
@@ -87,66 +87,66 @@ class MODDeposito extends MODbase{
         $this->setParametro('monto_total','monto_total','numeric');
         $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
         $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
 
-		if($this->aParam->getParametro('tipo') == 'venta_propia'){
+        if($this->aParam->getParametro('tipo') == 'venta_propia'){
 
             $this->insertatDepositoInformix();
         }
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
-			
-	function modificarDeposito(){
-		//Definicion de variables para ejecucion del procedimiento
-		$this->procedimiento='obingresos.ft_deposito_ime';
-		$this->transaccion='OBING_DEP_MOD';
-		$this->tipo_procedimiento='IME';
-				
-		//Define los parametros para la funcion
-		$this->setParametro('id_deposito','id_deposito','int4');
-		$this->setParametro('estado_reg','estado_reg','varchar');
-		$this->setParametro('nro_deposito','nro_deposito','varchar');
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function modificarDeposito(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEP_MOD';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_deposito','id_deposito','int4');
+        $this->setParametro('estado_reg','estado_reg','varchar');
+        $this->setParametro('nro_deposito','nro_deposito','varchar');
         $this->setParametro('agt','agt','varchar');
-		$this->setParametro('monto_deposito','monto_deposito','numeric');
-		$this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
-		$this->setParametro('id_agencia','id_agencia','int4');
-		$this->setParametro('fecha','fecha','date');
-		$this->setParametro('saldo','saldo','numeric');
-		$this->setParametro('descripcion','descripcion','varchar');
+        $this->setParametro('monto_deposito','monto_deposito','numeric');
+        $this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
+        $this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('fecha','fecha','date');
+        $this->setParametro('saldo','saldo','numeric');
+        $this->setParametro('descripcion','descripcion','varchar');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('moneda','moneda','varchar');
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');
 
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
         if($this->aParam->getParametro('tipo') == 'venta_propia'){
-           $this->modificarDepositoInformix();
+            $this->modificarDepositoInformix();
         }
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
-			
-	function eliminarDeposito(){
-		//Definicion de variables para ejecucion del procedimiento
-		$this->procedimiento='obingresos.ft_deposito_ime';
-		$this->transaccion='OBING_DEP_ELI';
-		$this->tipo_procedimiento='IME';
-				
-		//Define los parametros para la funcion
-		$this->setParametro('id_deposito','id_deposito','int4');
-		//Ejecuta la instruccion
-		$this->armarConsulta();
-		$this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 
-		//Devuelve la respuesta
-		return $this->respuesta;
-	}
+    function eliminarDeposito(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_deposito_ime';
+        $this->transaccion='OBING_DEP_ELI';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_deposito','id_deposito','int4');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 
     function cambiaEstadoDeposito(){
         //Definicion de variables para ejecucion del procedimiento
@@ -318,7 +318,7 @@ class MODDeposito extends MODbase{
             $hora= date ("h:i:s");
             $fechaventa =  $this->aParam->getParametro('fecha_venta');
             $this->informix->beginTransaction();
-           $sql_in = "INSERT INTO ingresos:deposito ( pais,
+            $sql_in = "INSERT INTO ingresos:deposito ( pais,
                                                           estacion,
                                                           agt,             
                                                           fecini,
@@ -342,6 +342,7 @@ class MODDeposito extends MODbase{
                                                          TODAY,
                                                          '".$hora."' )";
             $info_nota_ins = $this->informix->prepare($sql_in);
+
             $info_nota_ins->execute();
             $this->informix->commit();
             $this->insertarBoletaDeposito();
