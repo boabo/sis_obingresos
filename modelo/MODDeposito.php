@@ -318,7 +318,7 @@ class MODDeposito extends MODbase{
             $hora= date ("h:i:s");
             $fechaventa =  $this->aParam->getParametro('fecha_venta');
             $this->informix->beginTransaction();
-           $sql_in = "INSERT INTO ingresos:deposito_pru ( pais,
+           $sql_in = "INSERT INTO ingresos:deposito ( pais,
                                                           estacion,
                                                           agt,             
                                                           fecini,
@@ -355,7 +355,7 @@ class MODDeposito extends MODbase{
         try{
             $fecha = str_replace('/','-',$this->aParam->getParametro('fecha'));
             $this->informix->beginTransaction();
-            $sql_in = "INSERT INTO ingresos:deposito_boleta_pru(
+            $sql_in = "INSERT INTO ingresos:deposito_boleta(
 					  pais,
 					  estacion,
 					  agt, 
@@ -387,7 +387,6 @@ class MODDeposito extends MODbase{
 					 '0' 
 					 )";
             $info_nota_ins = $this->informix->prepare($sql_in);
-            var_dump($info_nota_ins);exit;
             $info_nota_ins->execute();
             $this->informix->commit();
             return true;
@@ -446,7 +445,7 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
         try {
 
             $fecha = str_replace('/','-',$this->aParam->getParametro('fecha'));
-            $sql = " UPDATE ingresos:deposito_boleta_pru
+            $sql = " UPDATE ingresos:deposito_boleta
               SET
                   nroboleta =  '".$this->aParam->getParametro('nro_deposito')."' ,
                   fecha =   '".$fecha."',
@@ -490,7 +489,7 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
     function eliminarDepositoInformix (){
         $this->informix->beginTransaction();
         try {
-            $sql = "DELETE FROM ingresos:deposito_boleta_pru
+            $sql = "DELETE FROM ingresos:deposito_boleta
                     WHERE  agt = '".$this->aParam->getParametro('codigo')."' AND  fecini = '".$this->aParam->getParametro('fecha_venta')."' AND fecfin = '".$this->aParam->getParametro('fecha_venta')."'
                     AND nroboleta = '".$this->aParam->getParametro('nro_deposito')."' AND moneda = '".$this->aParam->getParametro('desc_moneda')."' AND monto = '".$this->aParam->getParametro('monto_deposito')."' AND tipdoc = 'DPENDE'";
             $info_nota_ins = $this->informix->prepare($sql);
