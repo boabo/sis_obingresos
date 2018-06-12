@@ -26,14 +26,14 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: false,
                     handler: this.archivo
                 });
-                /*this.addButton('Report',{
+                this.addButton('Report',{
                     grupo:[0,1],
-                    text :'Resumen Estado C.C.',
+                    text :'Estado Cuenta',
                     iconCls : 'bpdf32',
                     disabled: false,
                     handler : this.onButtonReporte,
                     tooltip : '<b>Resumen Estado Cuenta Corriente</b>'
-                });*/
+                });
                 this.store.baseParams.id_entidad = this.maestro.id_agencia;
                 if('id_periodo_venta' in this.maestro){
                     this.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
@@ -58,16 +58,16 @@ header("content-type: text/javascript; charset=UTF-8");
                         height: 400
                     }, rec, this.idContenedor, 'Archivo');
             },
-            onButtonReporte:function(){
-                Ext.Ajax.request({
-                    url:'../../sis_obingresos/control/PeriodoVenta/ReporteResumenEstadoCC',
-                    params:{'id_agencia':this.maestro.id_agencia},
-                    success: this.successExport,
-                    failure: this.conexionFailure,
-                    timeout:this.timeout,
-                    scope:this
-                });
-            },
+        onButtonReporte:function(){
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/PeriodoVenta/ReporteResumenEstadoCC',
+                params:{'id_agencia':this.maestro.id_agencia},
+                success: this.successExport,
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        },
 
             Atributos:[
                 {

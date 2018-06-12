@@ -30,6 +30,48 @@ class ACTMovimientoEntidad extends ACTbase{
             $this->objParam->addFiltro("moe.id_periodo_venta = ". $this->objParam->getParametro('id_periodo_venta') . " and moe.garantia = ''no'' ");
         }
 
+<<<<<<< HEAD
+		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+			$this->objReporte = new Reporte($this->objParam,$this);
+			$this->res = $this->objReporte->generarReporteListado('MODMovimientoEntidad','listarMovimientoEntidad');
+		} else{
+			$this->objFunc=$this->create('MODMovimientoEntidad');
+			
+			$this->res=$this->objFunc->listarMovimientoEntidad($this->objParam);
+			$temp = Array();
+			$temp['credito_mb'] = $this->res->extraData['total_credito'];
+			$temp['debito_mb'] = $this->res->extraData['total_debito'];	
+			$temp['monto_total'] = $this->res->extraData['monto_total'];
+			$temp['debito'] = $this->res->extraData['saldo_actual'];
+			$temp['pnr'] = $this->res->extraData['tipo'];
+			$temp['deudas'] = $this->res->extraData['deudas'];
+
+			$temp['tipo_reg'] = 'summary';
+			$temp['id_movimiento_entidad'] = 0;
+			
+			$this->res->total++;
+			
+			$this->res->addLastRecDatos($temp);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+				
+	function insertarMovimientoEntidad(){
+		$this->objFunc=$this->create('MODMovimientoEntidad');	
+		if($this->objParam->insertar('id_movimiento_entidad')){
+			$this->res=$this->objFunc->insertarMovimientoEntidad($this->objParam);			
+		} else{			
+			$this->res=$this->objFunc->modificarMovimientoEntidad($this->objParam);
+		}
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+						
+	function eliminarMovimientoEntidad(){
+			$this->objFunc=$this->create('MODMovimientoEntidad');	
+		$this->res=$this->objFunc->eliminarMovimientoEntidad($this->objParam);
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
+=======
         if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
             $this->objReporte = new Reporte($this->objParam,$this);
             $this->res = $this->objReporte->generarReporteListado('MODMovimientoEntidad','listarMovimientoEntidad');
@@ -70,6 +112,7 @@ class ACTMovimientoEntidad extends ACTbase{
         $this->res=$this->objFunc->eliminarMovimientoEntidad($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+>>>>>>> 2427fb80df4e057d6b34e88d696ffa7fc6d234df
 
     function anularAutorizacion(){
         $this->objFunc=$this->create('MODMovimientoEntidad');

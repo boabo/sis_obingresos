@@ -33,7 +33,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Movimientos de la agencia corporativa para el periodo vigente'
                 }
             );
-            
+
             this.addButton('btnMovimientosSP',
                 {
                     text: 'Rep Movimientos',
@@ -43,7 +43,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Movimientos de la agencia corporativa para un rango de fechas'
                 }
             );
-            
+
             this.addButton('btnTkt',
                 {
                     text: 'Tkts',
@@ -78,7 +78,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 'MovimientoEntidadSinPeriodo');
 
         },
-        
+
         onMovimientos : function () {
             var rec = {maestro: this.sm.getSelected().data};
 
@@ -93,7 +93,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 'MovimientoEntidad');
 
         },
-        
+
         onTkts : function () {
             var rec = {maestro: this.sm.getSelected().data};
 
@@ -114,7 +114,7 @@ header("content-type: text/javascript; charset=UTF-8");
             Phx.vista.AgenciaPortal.superclass.preparaMenu.call(this);
             this.getBoton('btnMovimientos').enable();
             this.getBoton('btnMovimientosSP').enable();
-            
+
             this.getBoton('btnTkt').enable();
             this.getBoton('Estado').enable();
 

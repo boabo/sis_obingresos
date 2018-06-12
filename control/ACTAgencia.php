@@ -1,23 +1,23 @@
 <?php
 /**
-*@package pXP
-*@file gen-ACTAgencia.php
-*@author  (jrivera)
-*@date 06-01-2016 21:30:12
-*@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
-*/
+ *@package pXP
+ *@file gen-ACTAgencia.php
+ *@author  (jrivera)
+ *@date 06-01-2016 21:30:12
+ *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
+ */
 
 class ACTAgencia extends ACTbase{
 
-	function listarAgencia(){
-		$this->objParam->defecto('ordenacion','id_agencia');
+    function listarAgencia(){
+        $this->objParam->defecto('ordenacion','id_agencia');
 
-		$this->objParam->defecto('dir_ordenacion','asc');
+        $this->objParam->defecto('dir_ordenacion','asc');
 
-		if($this->objParam->getParametro('tipo_agencia') != ''){
-			$this->objParam->addFiltro(" age.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");
-			//$this->objParam->addFiltro(" age.id_lugar in (select id_lugar from param.tlugar where codigo=''".$this->objParam->getParametro('lugar')."'')");
-		}
+        if($this->objParam->getParametro('tipo_agencia') != ''){
+            $this->objParam->addFiltro(" age.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");
+            //$this->objParam->addFiltro(" age.id_lugar in (select id_lugar from param.tlugar where codigo=''".$this->objParam->getParametro('lugar')."'')");
+        }
 
         if($this->objParam->getParametro('vista') == 'corporativo'){
             $this->objParam->addFiltro(" age.tipo_agencia in(''corporativa'', ''noiata'') ");
@@ -29,16 +29,16 @@ class ACTAgencia extends ACTbase{
 
         }
 
-		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
-			$this->objReporte = new Reporte($this->objParam,$this);
-			$this->res = $this->objReporte->generarReporteListado('MODAgencia','listarAgencia');
-		} else{
-			$this->objFunc=$this->create('MODAgencia');
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODAgencia','listarAgencia');
+        } else{
+            $this->objFunc=$this->create('MODAgencia');
 
-			$this->res=$this->objFunc->listarAgencia($this->objParam);
-		}
-		$this->res->imprimirRespuesta($this->res->generarJson());
-	}
+            $this->res=$this->objFunc->listarAgencia($this->objParam);
+        }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 
     function getDocumentosContrato(){
 
@@ -47,22 +47,22 @@ class ACTAgencia extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
-	function finalizarContratoPortal(){
+    function finalizarContratoPortal(){
 
         $this->objFunc=$this->create('MODAgencia');
         $this->res=$this->objFunc->finalizarContratoPortal($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
-	function insertarAgencia(){
-		$this->objFunc=$this->create('MODAgencia');
-		if($this->objParam->insertar('id_agencia')){
-			$this->res=$this->objFunc->insertarAgencia($this->objParam);
-		} else{
-			$this->res=$this->objFunc->modificarAgencia($this->objParam);
-		}
-		$this->res->imprimirRespuesta($this->res->generarJson());
-	}
+    function insertarAgencia(){
+        $this->objFunc=$this->create('MODAgencia');
+        if($this->objParam->insertar('id_agencia')){
+            $this->res=$this->objFunc->insertarAgencia($this->objParam);
+        } else{
+            $this->res=$this->objFunc->modificarAgencia($this->objParam);
+        }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 
     function insertarAgenciaPortal(){
         $this->objFunc=$this->create('MODAgencia');
@@ -134,11 +134,11 @@ class ACTAgencia extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
-	function eliminarAgencia(){
-			$this->objFunc=$this->create('MODAgencia');
-		$this->res=$this->objFunc->eliminarAgencia($this->objParam);
-		$this->res->imprimirRespuesta($this->res->generarJson());
-	}
+    function eliminarAgencia(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->eliminarAgencia($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 
     function subirArchivoContrato(){
         //validar que todo este bien parametrizado
@@ -170,7 +170,7 @@ class ACTAgencia extends ACTbase{
 
         // intenta descargar $server_file y guardarlo en $local_file
         if (ftp_get($conn_id, $local_file, $server_file, FTP_BINARY)) {
-      //    echo "Se ha guardado satisfactoriamente en $local_file\n";
+            //    echo "Se ha guardado satisfactoriamente en $local_file\n";
         } else {
             throw new Exception("No se ha podido leer el archivo", 3);
         }
@@ -178,7 +178,7 @@ class ACTAgencia extends ACTbase{
         // cerrar la conexión ftp
         ftp_close($conn_id);
 
-           // var_dump(basename($local_file,$this->objParam->getParametro('nombre_archivo')));exit;
+        // var_dump(basename($local_file,$this->objParam->getParametro('nombre_archivo')));exit;
         echo $pxpRestClient->doPost('workflow/DocumentoWf/subirArchivoWf',
             array(
                 "id_documento_wf"=>$this->objParam->getParametro('id_documento_wf'),
