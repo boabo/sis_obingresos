@@ -321,7 +321,5 @@ class  MODDetalleBoletosWeb extends MODbase{
         return $this->respuesta;
     }
 
-
-
 }
 ?>

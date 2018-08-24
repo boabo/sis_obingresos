@@ -33,6 +33,7 @@ class MODDeposito extends MODbase{
         $this->captura('id_deposito','int4');
         $this->captura('estado_reg','varchar');
         $this->captura('nro_deposito','varchar');
+        $this->captura('nro_deposito_boa','varchar');
         $this->captura('monto_deposito','numeric');
         $this->captura('id_moneda_deposito','int4');
         $this->captura('id_agencia','int4');
@@ -73,6 +74,7 @@ class MODDeposito extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('nro_deposito','nro_deposito','varchar');
+        //$this->setParametro('nro_deposito_boa','nro_deposito_boa','varchar');
         $this->setParametro('agt','agt','varchar');
         $this->setParametro('monto_deposito','monto_deposito','numeric');
         $this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
@@ -109,6 +111,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('id_deposito','id_deposito','int4');
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('nro_deposito','nro_deposito','varchar');
+        $this->setParametro('nro_deposito_boa','nro_deposito_boa','varchar');
         $this->setParametro('agt','agt','varchar');
         $this->setParametro('monto_deposito','monto_deposito','numeric');
         $this->setParametro('id_moneda_deposito','id_moneda_deposito','int4');
@@ -318,11 +321,7 @@ class MODDeposito extends MODbase{
             $hora= date ("h:i:s");
             $fechaventa =  $this->aParam->getParametro('fecha_venta');
             $this->informix->beginTransaction();
-<<<<<<< HEAD
-           $sql_in = "INSERT INTO ingresos:deposito ( pais,
-=======
             $sql_in = "INSERT INTO ingresos:deposito ( pais,
->>>>>>> 3c57fc65097ce3cbadf2f469bd77689a5b1a5280
                                                           estacion,
                                                           agt,             
                                                           fecini,

@@ -59,8 +59,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     }, rec, this.idContenedor, 'Archivo');
             },
         onButtonReporte:function(){
+            Phx.CP.loadingShow();
             Ext.Ajax.request({
-                url:'../../sis_obingresos/control/PeriodoVenta/ReporteResumenEstadoCC',
+                url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuenta',
                 params:{'id_agencia':this.maestro.id_agencia},
                 success: this.successExport,
                 failure: this.conexionFailure,

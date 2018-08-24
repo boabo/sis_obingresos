@@ -49,11 +49,16 @@ header("content-type: text/javascript; charset=UTF-8");
             title: '<H1 align="center"><i class="fa fa-eye"></i> Registrados</h1>',
             grupo: 0,
             height: 0
-        },
+        }, {
+            name: 'validado',
+            title: '<H1 align="center"><i class="fa fa-eye"></i> Validados</h1>',
+            grupo: 1,
+            height: 0
+            },
             {
-                name: 'validado',
-                title: '<H1 align="center"><i class="fa fa-eye"></i> Validados</h1>',
-                grupo: 1,
+                name: 'eliminado',
+                title: '<H1 align="center"><i class="fa fa-eye"></i> Eliminados</h1>',
+                grupo: 2,
                 height: 0
             }
 
@@ -99,8 +104,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     height: 400
                 }, rec, this.idContenedor, 'Archivo');
         },
-        bactGroups: [0, 1],
-        bexcelGroups: [0, 1],
+        bactGroups: [0,1,2],
+        bexcelGroups: [0,1,2],
 
         Atributos: [
             {
@@ -199,6 +204,22 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             {
                 config: {
+                    name: 'nro_deposito_boa',
+                    fieldLabel: 'No Deposito Boa',
+                    allowBlank: false,
+                    anchor: '80%',
+                    gwidth: 150,
+                    maxLength: 70
+                },
+                type: 'TextField',
+                filters: {pfiltro: 'dep.nro_deposito_boa', type: 'string'},
+                id_grupo: 1,
+                grid: true,
+                form: true,
+                bottom_filter: true
+            },
+            {
+                config: {
                     name: 'fecha',
                     fieldLabel: 'Fecha Deposito',
                     allowBlank: false,
@@ -243,7 +264,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid: true,
                 form: true
             },
-
             {
                 config: {
                     name: 'monto_deposito',
@@ -311,8 +331,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 type: 'ComboBox',
                 id_grupo: 1,
-                grid: true,
-                form: true
+                grid: false,
+                form: false
             },
 
 
@@ -440,6 +460,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {name: 'id_deposito', type: 'numeric'},
             {name: 'estado_reg', type: 'string'},
             {name: 'nro_deposito', type: 'string'},
+            {name: 'nro_deposito_boa', type: 'string'},
             {name: 'desc_moneda', type: 'string'},
             {name: 'tipo_reg', type: 'string'},
             {name: 'desc_periodo', type: 'string'},
@@ -472,7 +493,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
         },
         bdel: true,
-        beditGroups:[0,1],
+        beditGroups:[0],
         bsave: false,
         preparaMenu: function () {
             var rec = this.sm.getSelected();
@@ -509,14 +530,14 @@ header("content-type: text/javascript; charset=UTF-8");
         	this.Cmp.id_agencia.enable();
     		this.Cmp.monto_deposito.enable();
     		this.Cmp.id_moneda_deposito.enable();
-    		this.Cmp.id_periodo_venta.enable();
+    		//this.Cmp.id_periodo_venta.enable();
         	Phx.vista.DepositoPortal.superclass.onButtonNew.call(this);
         	
         },
         onButtonEdit : function () {
         	
         	var rec = this.sm.getSelected();
-        	if (rec.data.estado == 'validado') {
+        	/*if (rec.data.estado == 'validado') {
         		this.Cmp.id_agencia.disable();
         		this.Cmp.monto_deposito.disable();
         		this.Cmp.id_moneda_deposito.disable();
@@ -525,8 +546,13 @@ header("content-type: text/javascript; charset=UTF-8");
         		this.Cmp.id_agencia.enable();
         		this.Cmp.monto_deposito.enable();
         		this.Cmp.id_moneda_deposito.enable();
-        		this.Cmp.id_periodo_venta.enable();
-        	}
+                this.Cmp.id_periodo_venta.enable();
+        	}*/
+            this.Cmp.id_agencia.disable();
+            this.Cmp.monto_deposito.disable();
+            this.Cmp.nro_deposito.disable();
+            this.Cmp.fecha.disable();
+            this.Cmp.id_moneda_deposito.disable();
         	Phx.vista.DepositoPortal.superclass.onButtonEdit.call(this);
         	this.Cmp.tipo.setValue('agencia');
         	

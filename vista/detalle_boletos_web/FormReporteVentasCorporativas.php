@@ -154,7 +154,7 @@ header("content-type: text/javascript; charset=UTF-8");
 				Phx.CP.loadWindows('../../../sis_obingresos/vista/detalle_boletos_web/GridReporteVentasCorporativas.php', 
 						'Reporte Ventas Corporativas: del '+data.fecha_ini.dateFormat('d/m/Y') + ' al '+data.fecha_fin.dateFormat('d/m/Y') ,
 					{
-						width : '90%',
+						width : '83%',
 						height : '80%'
 					}, data	, this.idContenedor, 'GridReporteVentasCorporativas')
 			}

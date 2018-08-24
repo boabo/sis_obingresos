@@ -228,8 +228,6 @@ class ACTDetalleBoletosWeb extends ACTbase{
         $this->mensajeExito->setArchivoGenerado($nombreArchivo);
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
 
-
     }
-
 }
 ?>

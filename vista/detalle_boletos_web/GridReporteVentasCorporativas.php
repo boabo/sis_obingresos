@@ -6,14 +6,21 @@
  * @date	10/07/2013
  * @description	Archivo con la interfaz de usuario que permite la ejecucion de las funcionales del sistema
  */
+include_once ('../../media/styles.php');
 header("content-type:text/javascript; charset=UTF-8");
 ?>
 <script>
 	Phx.vista.GridReporteVentasCorporativas = Ext.extend(Phx.gridInterfaz, {
+        viewConfig: {
+            getRowClass: function(record) {
+                if(record.data.saldo < 0){
+                    return 'prioridad_importanteA';
+                }
+            }
+        },
 		constructor : function(config) {
 			this.maestro = config;
-			this.description = this.maestro.tipo_agencia;			
-		
+			this.description = this.maestro.tipo_agencia;
 			Phx.vista.GridReporteVentasCorporativas.superclass.constructor.call(this, config);
 			this.init();
 			this.load({
@@ -45,7 +52,7 @@ header("content-type:text/javascript; charset=UTF-8");
 				fieldLabel : 'Nombre Agencia',
 				allowBlank : false,
 				anchor : '100%',
-				gwidth : 180,
+				gwidth : 300,
 				maxLength : 20
 				
 				
@@ -56,6 +63,7 @@ header("content-type:text/javascript; charset=UTF-8");
 				type : 'string'
 			},
 			id_grupo : 1,
+            bottom_filter:true,
 			grid : true,
 			form : false
 		},
@@ -65,7 +73,7 @@ header("content-type:text/javascript; charset=UTF-8");
 				fieldLabel : 'OfficeId',
 				allowBlank : false,
 				anchor : '100%',
-				gwidth : 180,
+				gwidth : 100,
 				maxLength : 20
 				
 				
@@ -86,7 +94,7 @@ header("content-type:text/javascript; charset=UTF-8");
 				fieldLabel : 'Tipo Agencia',
 				allowBlank : false,
 				anchor : '100%',
-				gwidth : 180,
+				gwidth : 100,
 				maxLength : 20
 				
 				
@@ -106,7 +114,7 @@ header("content-type:text/javascript; charset=UTF-8");
 				fieldLabel : 'Ciudad',
 				allowBlank : false,
 				anchor : '100%',
-				gwidth : 180,
+				gwidth : 80,
 				maxLength : 20,
 				renderer:function (value,p,record){
 						if(record.data.tipo_reg != 'summary'){

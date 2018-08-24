@@ -8,56 +8,6 @@
  */
 
 class MODMovimientoEntidad extends MODbase{
-<<<<<<< HEAD
-	
-	function __construct(CTParametro $pParam){
-		parent::__construct($pParam);
-	}
-			
-	function listarMovimientoEntidad(){
-		//Definicion de variables para ejecucion del procedimientp
-		$this->procedimiento='obingresos.ft_movimiento_entidad_sel';
-		$this->transaccion='OBING_MOE_SEL';
-		$this->tipo_procedimiento='SEL';//tipo de transaccion
-		
-		$this->setParametro('id_agencia','id_entidad','int4');
-		
-		$this->capturaCount('total_credito','numeric');
-		$this->capturaCount('total_debito','numeric');
-		$this->capturaCount('total_credito_moneda','numeric');
-		$this->capturaCount('total_debito_moneda','numeric');
-		$this->capturaCount('monto_total','numeric');
-        $this->capturaCount('saldo_actual','numeric');
-        $this->capturaCount('tipo','varchar');
-		$this->capturaCount('deudas','numeric');
-		
-				
-		//Definicion de la lista del resultado del query
-		$this->captura('id_movimiento_entidad','int4');
-		$this->captura('id_moneda','int4');
-		$this->captura('id_periodo_venta','int4');
-		$this->captura('id_agencia','int4');
-		$this->captura('garantia','varchar');
-		$this->captura('monto_total','numeric');
-		$this->captura('tipo','varchar');
-		$this->captura('autorizacion__nro_deposito','varchar');
-		$this->captura('estado_reg','varchar');
-		$this->captura('credito','numeric');
-		$this->captura('debito','numeric');
-		$this->captura('ajuste','varchar');
-		$this->captura('fecha','date');
-		$this->captura('pnr','varchar');
-		$this->captura('apellido','varchar');
-		$this->captura('id_usuario_reg','int4');
-		$this->captura('fecha_reg','timestamp');
-		$this->captura('usuario_ai','varchar');
-		$this->captura('id_usuario_ai','int4');
-		$this->captura('fecha_mod','timestamp');
-		$this->captura('id_usuario_mod','int4');
-		$this->captura('usr_reg','varchar');
-		$this->captura('usr_mod','varchar');
-=======
-
     function __construct(CTParametro $pParam){
         parent::__construct($pParam);
     }
@@ -104,7 +54,6 @@ class MODMovimientoEntidad extends MODbase{
         $this->captura('id_usuario_mod','int4');
         $this->captura('usr_reg','varchar');
         $this->captura('usr_mod','varchar');
->>>>>>> 2427fb80df4e057d6b34e88d696ffa7fc6d234df
         $this->captura('moneda','varchar');
         $this->captura('credito_mb','numeric');
         $this->captura('debito_mb','numeric');
