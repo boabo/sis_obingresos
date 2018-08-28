@@ -49,7 +49,7 @@ BEGIN
 						age.id_moneda_control,
 						age.depositos_moneda_boleto,
 						--age.tipo_pago,
-                       COALESCE( co.formas_pago[1],''postpago'')  as tipo_pago,
+                       COALESCE( co.formas_pago[1],''postpago'')::varchar  as tipo_pago,
 						age.nombre,
 						age.monto_maximo_deuda,
 						age.tipo_cambio,
@@ -73,7 +73,7 @@ BEGIN
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-			raise notice 'v_consulta %', v_consulta;
+			--raise notice 'v_consulta %', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
@@ -144,7 +144,7 @@ BEGIN
                         inner join wf.ttipo_documento td on td.id_tipo_documento = dwf.id_tipo_documento
 					    where c.id_contrato = ' || v_parametros.id_contrato;
 
-			
+
 			--Devuelve la respuesta
 			return v_consulta;
 

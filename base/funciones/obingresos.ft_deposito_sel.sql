@@ -52,6 +52,7 @@ BEGIN
 						dep.id_deposito,
 						dep.estado_reg,
 						dep.nro_deposito,
+                        dep.nro_deposito_boa,
 						dep.monto_deposito,
 						dep.id_moneda_deposito,
 						dep.id_agencia,

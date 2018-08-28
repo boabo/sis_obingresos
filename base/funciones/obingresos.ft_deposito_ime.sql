@@ -40,6 +40,8 @@ DECLARE
     v_moneda				varchar;
     v_deposito				record;
     v_aux					varchar;
+    v_deposito_boa			varchar;
+
 
 
 BEGIN
@@ -208,36 +210,38 @@ BEGIN
 
                 if (v_parametros.id_agencia is not null) then
                 	--generar alerta para ingresos
+
                     select a.*,lu.codigo as ciudad into v_agencia
                     from obingresos.tagencia a
                     inner join param.tlugar lu on lu.id_lugar = a.id_lugar
                     where id_agencia = v_parametros.id_agencia;
 
                     if (v_agencia.tipo_pago = 'prepago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_prep'))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por '
-                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                        v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || replace(v_agencia.nombre,'''',' ')  || ' ha registrado un nuevo deposito por '
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al Sistema ERP BOA para verificarlo.',
                         				pxp.f_get_variable_global('obingresos_notidep_prep')));
+
                 	end if;
 
                     if (v_agencia.tipo_agencia = 'corporativa' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_corp'))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por '
-                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia prepago','La Agencia ' || replace(v_agencia.nombre,'''',' ') || ' ha registrado un nuevo deposito por '
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al Sistema ERP BOA para verificarlo.',
                         				pxp.f_get_variable_global('obingresos_notidep_corp')));
                 	end if;
                     if (v_agencia.tipo_pago = 'postpago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_prep')) then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por '
-                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || replace(v_agencia.nombre,'''',' ') || ' ha registrado un nuevo deposito por '
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al Sistema ERP BOA para verificarlo.',
                         				pxp.f_get_variable_global('obingresos_notidep_prep')));
                 	end if;
                     if (v_agencia.tipo_pago = 'postpago' and exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep_posp_'||v_agencia.ciudad))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por '
-                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito agencia postpago','La Agencia ' || replace(v_agencia.nombre,'''',' ') || ' ha registrado un nuevo deposito por '
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al Sistema ERP BOA para verificarlo.',
                         				pxp.f_get_variable_global('obingresos_notidep_posp_'||v_agencia.ciudad)));
                 	end if;
 
                     if (exists(select 1 from pxp.variable_global va where va.variable = 'obingresos_notidep'))  then
-                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito de agencia','La Agencia ' || v_agencia.nombre || ' ha registrado un nuevo deposito por '
-                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al ERP para verificarlo',
+                    	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Nuevo deposito de agencia','La Agencia ' || replace(v_agencia.nombre,'''',' ') || ' ha registrado un nuevo deposito por '
+                        			|| v_parametros.monto_deposito || ' ' || v_moneda || ' . Ingrese al Sistema ERP BOA para verificarlo.',
                         				pxp.f_get_variable_global('obingresos_notidep')));
                 	end if;
                 end if;
@@ -269,6 +273,7 @@ BEGIN
 	elsif(p_transaccion='OBING_DEP_MOD')then
 		begin
         	if (v_parametros.tipo = 'agencia') then
+            --raise exception 'llega %',v_parametros.tipo;
             	SELECT * into v_deposito
                 from obingresos.tdeposito
                 where id_deposito = v_parametros.id_deposito;
@@ -331,6 +336,7 @@ BEGIN
            elsif (v_parametros.tipo = 'venta_agencia')then
         		 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
+                modificarDeposito = v_parametros.modificarDeposito,
                 monto_deposito = v_parametros.monto_deposito,
                 id_moneda_deposito = v_id_moneda,
                 fecha = v_parametros.fecha,
@@ -340,6 +346,12 @@ BEGIN
                 usuario_ai = v_parametros._nombre_usuario_ai
                 where id_deposito=v_parametros.id_deposito;
             else
+
+            if (pxp.f_existe_parametro(p_tabla,'nro_deposito_boa')) then
+                  v_deposito_boa = v_parametros.nro_deposito_boa;
+              else
+                  v_deposito_boa = '';
+            end if;
             	--Sentencia de la modificacion
                 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
@@ -351,10 +363,8 @@ BEGIN
                 id_usuario_mod = p_id_usuario,
                 fecha_mod = now(),
                 id_usuario_ai = v_parametros._id_usuario_ai,
-                usuario_ai = v_parametros._nombre_usuario_ai
-                --fecha_venta = v_parametros.fecha_venta,
-                --monto_total = v_parametros.monto_total,
-                --agt = v_parametros.agt
+                usuario_ai = v_parametros._nombre_usuario_ai,
+                nro_deposito_boa = v_deposito_boa
                 where id_deposito=v_parametros.id_deposito;
 
             end if;
@@ -515,9 +525,27 @@ BEGIN
 	elsif(p_transaccion='OBING_DEP_ELI')then
 
 		begin
-			--Sentencia de la eliminacion
-			delete from obingresos.tdeposito
+
+        select de.tipo
+        into
+        v_deposito
+        from obingresos.tdeposito de
+        where de.id_deposito =  v_parametros.id_deposito;
+
+        if   (v_deposito.tipo  = 'agencia') then
+
+            update obingresos.tdeposito
+            set
+            estado = 'eliminado',
+            id_usuario_mod = p_id_usuario,
+            fecha_mod = now()
             where id_deposito=v_parametros.id_deposito;
+          else
+
+            delete from obingresos.tdeposito
+            where id_deposito=v_parametros.id_deposito;
+        end if;
+
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos eliminado(a)');
@@ -532,7 +560,7 @@ BEGIN
 		begin
 			--Sentencia de la eliminacion
 			update obingresos.tdeposito
-            set 
+            set
             estado = 'validado',
             id_usuario_mod = p_id_usuario,
             fecha_mod = now()

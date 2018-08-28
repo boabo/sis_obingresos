@@ -1,35 +1,35 @@
 <?php
 /**
-*@package pXP
-*@file gen-ACTConsultaViajeroFrecuente.php
-*@author  (miguel.mamani)
-*@date 15-12-2017 14:59:25
-*@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
-*/
+ *@package pXP
+ *@file gen-ACTConsultaViajeroFrecuente.php
+ *@author  (miguel.mamani)
+ *@date 15-12-2017 14:59:25
+ *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
+ */
 
-class ACTConsultaViajeroFrecuente extends ACTbase{    
-			
-	function listarConsultaViajeroFrecuente(){
-		$this->objParam->defecto('ordenacion','id_consulta_viajero_frecuente');
+class ACTConsultaViajeroFrecuente extends ACTbase{
 
-		$this->objParam->defecto('dir_ordenacion','asc');
-		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
-			$this->objReporte = new Reporte($this->objParam,$this);
-			$this->res = $this->objReporte->generarReporteListado('MODConsultaViajeroFrecuente','listarConsultaViajeroFrecuente');
-		} else{
-			$this->objFunc=$this->create('MODConsultaViajeroFrecuente');
-			
-			$this->res=$this->objFunc->listarConsultaViajeroFrecuente($this->objParam);
-		}
-		$this->res->imprimirRespuesta($this->res->generarJson());
-	}
-				
-	function insertarConsultaViajeroFrecuente(){
+    function listarConsultaViajeroFrecuente(){
+        $this->objParam->defecto('ordenacion','id_consulta_viajero_frecuente');
+
+        $this->objParam->defecto('dir_ordenacion','asc');
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODConsultaViajeroFrecuente','listarConsultaViajeroFrecuente');
+        } else{
+            $this->objFunc=$this->create('MODConsultaViajeroFrecuente');
+
+            $this->res=$this->objFunc->listarConsultaViajeroFrecuente($this->objParam);
+        }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    function insertarConsultaViajeroFrecuente(){
 
         $data = array(  "FFID" => $this->objParam->getParametro('ffid'),
-                        "PNR" => '',
-                        "TicketNumber" => '',
-                        "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucher_code'));
+            "PNR" => '',
+            "TicketNumber" => $this->objParam->getParametro('nro_boleto'),
+            "VoucherCode" => 'OB.FF.VO'.$this->objParam->getParametro('voucher_code'));
         $data_string = json_encode($data);
         $request = 'https://elevate.boa.bo/LoyaltyRestService/Api/LoyaltyRest/ValidateVoucher';
         $user_id = '1';
@@ -63,14 +63,14 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
             }
             $this->res->imprimirRespuesta($this->res->generarJson());
         }
-	}
-						
-	function eliminarConsultaViajeroFrecuente(){
-			$this->objFunc=$this->create('MODConsultaViajeroFrecuente');	
-		$this->res=$this->objFunc->eliminarConsultaViajeroFrecuente($this->objParam);
-		$this->res->imprimirRespuesta($this->res->generarJson());
-	}
-			
+    }
+
+    function eliminarConsultaViajeroFrecuente(){
+        $this->objFunc=$this->create('MODConsultaViajeroFrecuente');
+        $this->res=$this->objFunc->eliminarConsultaViajeroFrecuente($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
 }
 
 ?>

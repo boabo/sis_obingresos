@@ -15,7 +15,6 @@ $body$
  COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
-
  DESCRIPCION:
  AUTOR:
  FECHA:
@@ -53,7 +52,6 @@ BEGIN
                                 array_agg(bfp.ctacte) as ctacte,
                                 array_agg(mon.codigo_internacional) as moneda_fp,
                                 sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,''O'',2)) as monto_total_fp
-
 					        from obingresos.tboleto_forma_pago bfp
 					        inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                             inner join obingresos.tboleto bol on bol.id_boleto = bfp.id_boleto
@@ -115,7 +113,6 @@ BEGIN
                         forpa.codigo_tarjeta[1],
                         forpa.ctacte[1],
                         forpa.moneda_fp[1],
-
                         (case when (forpa.cantidad_forma_pago <> 2) then
                         	0::integer
                         else
@@ -138,7 +135,6 @@ BEGIN
                         forpa.codigo_tarjeta[2] as codigo_tarjeta2,
                         forpa.ctacte[2] as ctacte2,
                         forpa.moneda_fp[2] as moneda_fp2,
-
                         bol.tc,
                         bol.moneda_sucursal,
                         bol.ruta_completa,
@@ -289,8 +285,8 @@ BEGIN
                                  fpo.id_auxiliar [ 2 ]::integer as id_auxiliar2,
                                  fpo.nombre_auxiliar [ 2 ]::varchar as nombre_auxiliar2,
                                  fpo.monto_forma_pago [ 2 ]::numeric as monto_forma_pago2,
-                                  v.ffid,
-                                 v.voucher_code
+                                 cvf.ffid as ffid_consul,
+                                 substring(cvf.voucher_code from 9)::varchar as voucher_consul
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
                           inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
@@ -298,7 +294,8 @@ BEGIN
                           inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
                           left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
                           left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario
-                          left join obingresos.tviajero_frecuente v on v.id_boleto_amadeus = nr.id_boleto_amadeus ';
+                          left join obingresos.tviajero_frecuente v on v.id_boleto_amadeus = nr.id_boleto_amadeus ;
+                          left join obingresos.tconsulta_viajero_frecuente cvf on cvf.nro_boleto = nr.nro_boleto;
 
             --Definicion de la respuesta
 			--v_consulta:=v_consulta||v_parametros.filtro;
@@ -321,11 +318,15 @@ BEGIN
 		begin
 			--Sentencia de la consulta de conteo de registros
         v_consulta:='select count(id_boleto)
-					    from obingresos.tboleto bol
-                        inner join obingresos.tagencia age on age.id_agencia = bol.id_agencia
-                        inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
-					    inner join segu.tusuario usu1 on usu1.id_usuario = bol.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
+					    from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
+                          inner join param.tmoneda  mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          left join segu.vusuario usu on usu.id_usuario=usuex.id_usuario
+                          left join obingresos.tviajero_frecuente v on v.id_boleto_amadeus = nr.id_boleto_amadeus
+                          left join obingresos.tconsulta_viajero_frecuente cvf on cvf.nro_boleto = nr.nro_boleto
 					    where  bol.estado_reg = ''activo'' and  ';
 
 			--Definicion de la respuesta
@@ -420,7 +421,6 @@ BEGIN
                         			i.codigo in (''BO'', ''QM'')
             where bi.id_boleto = ' || v_parametros.id_boleto|| '
             group by id_boleto),
-
      forma_pago as (
      		select bfp.id_boleto, pxp.list((case when fp.codigo = ''CA'' then ''CASH'' else fp.codigo end) || '' '' || fpmon.codigo_internacional || '' '' || bfp.importe)::varchar as forma_pago
             from obingresos.tboleto_forma_pago bfp
@@ -429,8 +429,6 @@ BEGIN
             where bfp.id_boleto = ' || v_parametros.id_boleto|| '
             group by id_boleto
             )
-
-
             select  e.nit,
             			to_char (b.fecha_emision,''DD MON YYYY'')::varchar as fecha_emision,
                         pv.codigo as codigo_pv,
@@ -446,7 +444,6 @@ BEGIN
                         (mon.codigo_internacional || '' '' || coalesce(t.importe,0) + coalesce(b.xt,0))::varchar as tasas,
                         (mon.codigo_internacional || '' '' || b.total)::varchar as total,
                         fp.forma_pago,
-
                         b.pasajero,
                         (case when substr(b.identificacion,1,2) = ''NI'' then
                         	''DNI / NATIONAL ID''
@@ -466,7 +463,6 @@ BEGIN
                         						else '','' || b.xt || '' XT''
                                                 end))::varchar as detalle_tasas,
                         ''' || v_conexion || '''::varchar as conexion
-
                         from  obingresos.tboleto b
                         inner join vef.tpunto_venta pv on b.id_punto_venta = pv.id_punto_venta
                         inner join vef.tsucursal s on s.id_sucursal = pv.id_sucursal
@@ -568,7 +564,6 @@ BEGIN
                                 from boleto_fp bfp
                                 group by bfp.id_boleto
                             )
-
                             select row_to_json(b.*) as boleto,bv.detalle,bfp.pagos
                             from boleto b
                             inner join boleto_vuelo bv on bv.id_boleto = b.id_boleto
