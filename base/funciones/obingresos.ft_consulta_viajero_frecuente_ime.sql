@@ -29,8 +29,8 @@ DECLARE
 	v_nombre_funcion        text;
 	v_mensaje_error         text;
 	v_id_consulta_viajero_frecuente	integer;
-  v_exist					numeric;
-  v_exist1					numeric;
+    v_exist					numeric;
+    v_existe				numeric;
 
 BEGIN
 
@@ -47,20 +47,26 @@ BEGIN
 	if(p_transaccion='OBING_VIF_INS')then
 
         begin
-         CASE
+        --raise exception 'p_transaccion %', p_transaccion;
+        IF(v_parametros.ffid != '' AND v_parametros.voucher_code !='')THEN
+                    /*select count( v.id_consulta_viajero_frecuente)::numeric into v_existe
+                    from obingresos.tconsulta_viajero_frecuente v
+                    where v.voucher_code = 'OB.FF.VO'||v_parametros.voucher_code and v.ffid = v_parametros.ffid;
+                    raise exception 'El numero % %',v_existe,v_parametros.ffidw;*/
+            CASE
 
                 WHEN (select 1
                 	from obingresos.tconsulta_viajero_frecuente v
                     where v.voucher_code = 'OB.FF.VO'||v_parametros.voucher_code and v.ffid = v_parametros.ffid)
-                THEN v_exist = '1';
-                ELSE v_exist = '0';
+                    THEN v_existe = '1';
+                ELSE v_existe = '0';
             END CASE;
 
-            IF(v_exist = 1)
-            THEN
+            IF(v_existe = 1)
+             THEN
             	raise exception 'El numero de voucher que intenta registrar ya existe.';
-            ELSIF(v_parametros.ffid != '' and v_parametros.voucher_code != '' )
-            THEN
+            ELSE
+            --THEN
         	--Sentencia de la insercion
         	insert into obingresos.tconsulta_viajero_frecuente(
 			ffid,
@@ -68,7 +74,7 @@ BEGIN
 			message,
 			voucher_code,
 			status,
-      nro_boleto,
+            --nro_boleto,
 			id_usuario_reg,
 			fecha_reg,
 			usuario_ai,
@@ -88,17 +94,21 @@ BEGIN
 			null,
 			null
 
+
 			)RETURNING id_consulta_viajero_frecuente into v_id_consulta_viajero_frecuente;
-             ELSE
-            raise exception 'los campos FFID / Voucher no pueden ser vacios.';
-            end if;
-            --end if;
+            END IF;
+
+
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','consulta viajero frecuente almacenado(a) con exito (id_consulta_viajero_frecuente'||v_id_consulta_viajero_frecuente||')');
             v_resp = pxp.f_agrega_clave(v_resp,'id_consulta_viajero_frecuente',v_id_consulta_viajero_frecuente::varchar);
 
             --Devuelve la respuesta
             return v_resp;
+            ELSE
+            raise exception 'los campos FFID / Voucher no pueden ser vacios.';
+        --end if;
+            end if;
 
 		end;
 
@@ -112,23 +122,30 @@ BEGIN
 	elsif(p_transaccion='OBING_VIF_MOD')then
 
 		begin
-         CASE
+        --raise exception 'p_transaccion %', p_transaccion;
+        if (v_parametros.nro_boleto != '') then
+              --select count( v.id_consulta_viajero_frecuente)::numeric into v_exist
+                    --from obingresos.tconsulta_viajero_frecuente v
+                   -- where v.nro_boleto = '930'||v_parametros.nro_boleto;
+                    --raise exception 'El numero % %',            v_exist, v_parametros.nro_boleto;
+        CASE
             	WHEN (select 1
                     from obingresos.tconsulta_viajero_frecuente v
                     where v.nro_boleto = '930'||v_parametros.nro_boleto)
-                THEN v_exist1 = '1';
+                THEN v_exist = '1';
 
-                ELSE v_exist1 = '0';
+                ELSE v_exist = '0';
             END CASE;
 
-            IF(v_exist1 = 1)
+            IF(v_exist = 1)
             THEN
-            	raise exception 'El numero de boleto que intenta registrar ya existe.';
+            	raise exception 'El numero de boleto que intenta registrar ya se encuentra asociado con un voucher.';
             ELSE
-             	--raise exception 'no existe';
+            	--raise exception 'no existe';
                 --Sentencia de la modificacion
+            --THEN
 			update obingresos.tconsulta_viajero_frecuente set
-			id_consulta_viajero_frecuente = v_parametros.id_consulta_viajero_frecuente,
+			--id_consulta_viajero_frecuente = v_parametros.id_consulta_viajero_frecuente,
             --ffid = v_parametros.ffid,
             --status = v_parametros.status,
             nro_boleto = '930'||v_parametros.nro_boleto,
@@ -137,14 +154,18 @@ BEGIN
 			id_usuario_ai = v_parametros._id_usuario_ai,
 			usuario_ai = v_parametros._nombre_usuario_ai
 			where id_consulta_viajero_frecuente=v_parametros.id_consulta_viajero_frecuente;
-
+        --ELSE raise exception 'cadena vacia';
+        end if;
 			--Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','consulta viajero frecuente modificado(a)');
             v_resp = pxp.f_agrega_clave(v_resp,'id_consulta_viajero_frecuente',v_parametros.id_consulta_viajero_frecuente::varchar);
 
             --Devuelve la respuesta
             return v_resp;
-             END IF;
+            ELSE raise exception 'El campo Boleto no puede ser vacio';
+            END IF;
+
+
 		end;
 
 	/*********************************
