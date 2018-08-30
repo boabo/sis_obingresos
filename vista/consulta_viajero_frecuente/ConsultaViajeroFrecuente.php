@@ -427,20 +427,28 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Cmp.ffid.disable();
             this.Cmp.voucher_code.disable();
             this.Cmp.nro_boleto.enable();
-            this.Cmp.nro_boleto.show('930');
+            this.Cmp.nro_boleto.show();
             Phx.vista.ConsultaViajeroFrecuente.superclass.onButtonEdit.call(this);
-            aux = this.Cmp.nro_boleto.getValue();
-            aux = aux.toString();
-            var res = aux.substr();
-            this.Cmp.nro_boleto.setValue(res);
+            //aux = this.Cmp.nro_boleto.getValue();
+            //aux = aux.toString();
+            //var res = aux.substr();
+            var aux = this.Cmp.id_consulta_viajero_frecuente.getValue();
+            console.log('probando2',aux);
+            //this.Cmp.nro_boleto.setValue(res);
             console.log(res);
         },
         onButtonNew : function () {
+            var aux = this.Cmp.id_consulta_viajero_frecuente.getValue();
+            console.log('probando1',aux);
+
             this.Cmp.ffid.enable();
             this.Cmp.voucher_code.enable();
             this.Cmp.nro_boleto.hide();
+
             //this.Cmp.id_periodo_venta.enable();
             Phx.vista.ConsultaViajeroFrecuente.superclass.onButtonNew.call(this);
+            //this.Cmp.id_consulta_viajero_frecuente.reset();
+            this.Cmp.id_consulta_viajero_frecuente.setValue();
 
         },
     })

@@ -1984,7 +1984,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 else{
                     this.getBoton('btnAnularBoleto').setDisabled(false);
                 }
-                if (data['ffid'] != '' && data['voucher_code'] != '' ){
+                if (data['ffid_consul'] != '' && data['voucher_consu'] != '' ){
                     this.getBoton('btnVoucherCode').enable();
                 }else{
                     this.getBoton('btnVoucherCode').disable();
@@ -2368,13 +2368,15 @@ header("content-type: text/javascript; charset=UTF-8");
                                         success:function(resp){
                                             var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                             console.log('id',reg);
+                                            this.Cmp.ffid.setValue(this.ffid);
+                                            this.Cmp.voucher_code.setValue(this.voucher);
                                         },
                                         failure: this.conexionFailure,
                                         timeout:this.timeout,
                                         scope:this
                                     });
-
-
+                                    this.Cmp.ffid.setValue(this.ffid);
+                                    this.Cmp.voucher_code.setValue(this.voucher);
                                 }
                             },
                             scope: this
@@ -2401,6 +2403,9 @@ header("content-type: text/javascript; charset=UTF-8");
                                         success:function(resp){
                                             var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                             console.log('respuesta',reg);
+                                            var res= this.Cmp.ffid.setValue(this.ffid);
+                                            this.Cmp.voucher_code.setValue(this.voucher);
+                                            console.log('no muestra ',res);
                                         },
                                         failure: this.conexionFailure,
                                         timeout:this.timeout,
@@ -2530,11 +2535,16 @@ header("content-type: text/javascript; charset=UTF-8");
                                         success:function(resp){
                                             var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                             console.log('id:prueba',reg);
+                                            this.Cmp.ffid.setValue(this.ffid);
+                                            this.Cmp.voucher_code.setValue(this.voucher);
                                         },
                                         failure: this.conexionFailure,
                                         timeout:this.timeout,
                                         scope:this
                                     });
+                                    var aux1 = this.Cmp.ffid.setValue(this.ffid);
+                                    this.Cmp.voucher_code.setValue(this.voucher);
+                                    console.log(aux1);
 
                                 }
                             },

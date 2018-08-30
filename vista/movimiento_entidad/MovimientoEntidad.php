@@ -58,17 +58,17 @@ header("content-type: text/javascript; charset=UTF-8");
                         height: 400
                     }, rec, this.idContenedor, 'Archivo');
             },
-        onButtonReporte:function(){
-            Phx.CP.loadingShow();
-            Ext.Ajax.request({
-                url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuenta',
-                params:{'id_agencia':this.maestro.id_agencia},
-                success: this.successExport,
-                failure: this.conexionFailure,
-                timeout:this.timeout,
-                scope:this
-            });
-        },
+            onButtonReporte:function(){
+                Phx.CP.loadingShow();
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuenta',
+                    params:{'id_agencia':this.maestro.id_agencia},
+                    success: this.successExport,
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+            },
 
             Atributos:[
                 {
@@ -199,7 +199,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             }
                         }
                     },
-                    type:'TextField',
+                    type:'TextArea',
                     filters:{pfiltro:'moe.autorizacion__nro_deposito',type:'string'},
                     id_grupo:1,
                     grid:true,
@@ -449,7 +449,6 @@ header("content-type: text/javascript; charset=UTF-8");
 
 
 
-
                 {
                     config:{
                         name: 'usr_reg',
@@ -584,6 +583,11 @@ header("content-type: text/javascript; charset=UTF-8");
             ],
             preparaMenu: function () {
                 Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
+                var tb = this.tbar;
+                //console.log('rec',rec,this.idContenedor,this.tbar,Ext.getCmp('b-edit-' + this.idContenedor));
+                if (this.sm.getSelected().data['ajuste'] == 'si'){
+                    //Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
+                    tb.items.get('b-edit-' + this.idContenedor).enable();}else{tb.items.get('b-edit-' + this.idContenedor).disable();}
                 this.getBoton('archivo').enable();
             },
 
@@ -606,6 +610,34 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.id_agencia.setValue(this.maestro.id_agencia);
                 this.Cmp.garantia.setValue('no');
 
+            },
+            onButtonNew: function(){
+                //this.Cmp.fecha.getDate(fecha.now());
+                var currentDay = new Date().format('d/m/Y');
+                //var aux = [currentDay.getDay(), currentDay.getMonth(), currentDay.getFullYear()].join('/');
+                //var res = toString(aux);
+                // aux = currentDay(;
+                console.log(currentDay);
+
+                //this.Cmp.fecha.datepicker('setDate', currentDay);
+                this.Cmp.fecha.disable();
+                Phx.vista.MovimientoEntidad.superclass.onButtonNew.call(this);
+                this.Cmp.fecha.setValue(currentDay);
+                this.Cmp.id_movimiento_entidad.setValue();
+            },
+            onButtonEdit: function(){
+                var rec = this.sm.getSelected();
+                var data = rec.data;
+                //this.Cmp.fecha.disable();
+                if(data.ajuste == 'si'){
+                    this.Cmp.fecha.disable();
+                    Phx.vista.MovimientoEntidad.superclass.onButtonEdit.call(this);
+                    console.log('es ajuste', data.ajuste);
+
+                }else
+                {console.log(data.ajuste, 'es ajuste');
+                }
+                //this.Cmp.fecha.enable();
             },
             south:{
                 url:'../../../sis_obingresos/vista/detalle_boletos_web/DetalleBoletosWeb.php',

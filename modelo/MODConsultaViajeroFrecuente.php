@@ -52,6 +52,7 @@ class MODConsultaViajeroFrecuente extends MODbase{
         //$this->setParametro('nro_boleto','nro_boleto','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
+        //echo $this->consulta;exit;
         $this->ejecutarConsulta();
         //Devuelve la respuesta
         return $this->respuesta;
@@ -72,6 +73,7 @@ class MODConsultaViajeroFrecuente extends MODbase{
         $this->setParametro('nro_boleto','nro_boleto','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
+        //echo $this->consulta;exit;
         $this->ejecutarConsulta();
         //Devuelve la respuesta
         return $this->respuesta;
