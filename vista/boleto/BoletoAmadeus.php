@@ -1984,7 +1984,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 else{
                     this.getBoton('btnAnularBoleto').setDisabled(false);
                 }
-                if (data['ffid_consul'] != '' && data['voucher_consu'] != '' ){
+                if (data['ffid_consul'] != '' && data['voucher_consu'] != '' || data['ffid'] != '' && data['voucher_code'] != '' ){
                     this.getBoton('btnVoucherCode').enable();
                 }else{
                     this.getBoton('btnVoucherCode').disable();
@@ -2555,6 +2555,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             handler: function () {
 
                                 // VentanaInicio.close();
+                                //Ext.Msg.alert('<b> Se debe registrar el Voucher y FFID "Aceptar" </b>')
                                 if (formularioInicio.getForm().isValid()) {
                                     validado = true;
                                     this.ffid = ffid.getValue();
@@ -2580,6 +2581,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                     if(m.sm.getSelected().data['ffid_consul'] == null || m.sm.getSelected().data['ffid_consul'] == ''){
                                         //if(this.ffid == null || this.voucher == null){Ext.Msg.alert('no se puede ignorar');}
                                         VentanaInicio.close();}
+                                        else{Ext.Msg.alert('Importante','<b> Se debe registrar el Voucher / FFID  </b>');}
 
                                 }
                             },

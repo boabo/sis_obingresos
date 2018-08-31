@@ -42,7 +42,7 @@ BEGIN
 	if(p_transaccion='OBING_VFB_SEL')then
 
     	begin
-        raise exception 'llega';
+
     		--Sentencia de la consulta
 			v_consulta:='select
 						vfb.id_viajero_frecuente,
