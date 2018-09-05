@@ -59,6 +59,8 @@ class MODMovimientoEntidad extends MODbase{
         $this->captura('debito_mb','numeric');
         $this->captura('tipo_cambio','numeric');
         $this->captura('monto','numeric');
+        $this->captura('nro_deposito', 'varchar');
+        $this->captura('id_deposito', 'int4');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

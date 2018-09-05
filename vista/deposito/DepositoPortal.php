@@ -495,6 +495,7 @@ header("content-type: text/javascript; charset=UTF-8");
         bdel: true,
         beditGroups:[0],
         bsave: false,
+        bnew: false,
         preparaMenu: function () {
             var rec = this.sm.getSelected();
             Phx.vista.DepositoPortal.superclass.preparaMenu.call(this);
@@ -530,6 +531,7 @@ header("content-type: text/javascript; charset=UTF-8");
         	this.Cmp.id_agencia.enable();
     		this.Cmp.monto_deposito.enable();
     		this.Cmp.id_moneda_deposito.enable();
+            this.Cmp.fecha.enable();
     		//this.Cmp.id_periodo_venta.enable();
         	Phx.vista.DepositoPortal.superclass.onButtonNew.call(this);
         	

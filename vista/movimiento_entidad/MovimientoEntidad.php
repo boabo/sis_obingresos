@@ -44,12 +44,29 @@ header("content-type: text/javascript; charset=UTF-8");
             archivo : function (){
                 var rec = this.getSelectedData();
 
-                //enviamos el id seleccionado para cual el archivo se deba subir
+                console.log('deposito moe:', rec.autorizacion__nro_deposito);
+                console.log('deposito depo:', rec.nro_deposito);
+                /*//enviamos el id seleccionado para cual el archivo se deba subir
                 rec.datos_extras_id = rec.id_movimiento_entidad;
                 //enviamos el nombre de la tabla
                 rec.datos_extras_tabla = 'obingresos.tmovimiento_entidad';
                 //enviamos el codigo ya que una tabla puede tener varios archivos diferentes como ci,pasaporte,contrato,slider,fotos,etc
-                rec.datos_extras_codigo = 'ESCANMOVRESP';
+                rec.datos_extras_codigo = 'ESCANMOVRESP';*/
+                if (rec.autorizacion__nro_deposito = rec.nro_deposito){
+                    //enviamos el id seleccionado para cual el archivo se deba subir
+                    rec.datos_extras_id = rec.id_deposito;
+                    //enviamos el nombre de la tabla
+                    rec.datos_extras_tabla = 'obingresos.tdeposito';
+                    //enviamos el codigo ya que una tabla puede tener varios archivos diferentes como ci,pasaporte,contrato,slider,fotos,etc
+                    rec.datos_extras_codigo = 'ESCANDEP';
+                }else {
+                    //enviamos el id seleccionado para cual el archivo se deba subir
+                    rec.datos_extras_id = rec.id_movimiento_entidad;
+                    //enviamos el nombre de la tabla
+                    rec.datos_extras_tabla = 'obingresos.tmovimiento_entidad';
+                    //enviamos el codigo ya que una tabla puede tener varios archivos diferentes como ci,pasaporte,contrato,slider,fotos,etc
+                    rec.datos_extras_codigo = 'ESCANMOVRESP';
+                }
 
                 Phx.CP.loadWindows('../../../sis_parametros/vista/archivo/Archivo.php',
                     'Archivo',
@@ -578,7 +595,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'usr_reg', type: 'string'},
                 {name:'usr_mod', type: 'string'},
                 {name:'monto', type: 'numeric'},
-                {name:'saldo_actual', type: 'numeric'}
+                {name:'saldo_actual', type: 'numeric'},
+                {name:'nro_deposito', type: 'string'},
+                {name:'id_deposito', type: 'numeric'}
 
             ],
             preparaMenu: function () {
