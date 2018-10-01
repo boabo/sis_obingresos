@@ -1085,3 +1085,99 @@ ALTER TABLE obingresos.tagencia
 ALTER TABLE obingresos.tconsulta_viajero_frecuente
 ADD COLUMN nro_boleto VARCHAR(50);
 /********************************************F-SCP-RZM-OBINGRESOS-0-14/08/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tarchivo_acm (
+  id_archivo_acm SERIAL,
+  fecha_ini DATE NOT NULL,
+  fecha_fin DATE NOT NULL,
+  nombre VARCHAR(500) NOT NULL,
+  estado VARCHAR(50),
+  ultimo_numero INTEGER,
+  CONSTRAINT tarchivo_acm_pkey PRIMARY KEY(id_archivo_acm)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************F-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tarchivo_acm_det (
+  id_archivo_acm_det SERIAL,
+  officce_id VARCHAR(50) NOT NULL,
+  porcentaje INTEGER NOT NULL,
+  id_agencia INTEGER,
+  importe_total_mb NUMERIC(18,2),
+  importe_total_mt NUMERIC(18,2),
+  id_archivo_acm INTEGER NOT NULL,
+  neto_total_mb NUMERIC(18,2),
+  neto_total_mt NUMERIC(18,2),
+  cant_bol_mb INTEGER,
+  cant_bol_mt INTEGER,
+  CONSTRAINT tarchivo_acm_det_pkey PRIMARY KEY(id_archivo_acm_det),
+  CONSTRAINT tarchivo_acm_det_fk FOREIGN KEY (id_archivo_acm)
+    REFERENCES obingresos.tarchivo_acm(id_archivo_acm)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************I-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tacm (
+  id_acm SERIAL,
+  id_archivo_acm_det INTEGER NOT NULL,
+  numero VARCHAR(20) NOT NULL,
+  fecha DATE NOT NULL,
+  ruta VARCHAR(10) NOT NULL,
+  id_moneda INTEGER,
+  importe NUMERIC(18,2),
+  id_movimiento_entidad INTEGER,
+  total_bsp NUMERIC(18,2),
+  CONSTRAINT tacm_pkey PRIMARY KEY(id_acm),
+  CONSTRAINT tacm_fk FOREIGN KEY (id_moneda)
+    REFERENCES param.tmoneda(id_moneda)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tacm_fk1 FOREIGN KEY (id_archivo_acm_det)
+    REFERENCES obingresos.tarchivo_acm_det(id_archivo_acm_det)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tacm_fk2 FOREIGN KEY (id_movimiento_entidad)
+    REFERENCES obingresos.tmovimiento_entidad(id_movimiento_entidad)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tacm
+  ALTER COLUMN numero SET STATISTICS 0;
+/********************************************F-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tacm_det (
+  id_acm_det SERIAL,
+  id_detalle_boletos_web INTEGER NOT NULL,
+  neto NUMERIC(18,2) NOT NULL,
+  over_comision NUMERIC(18,2) NOT NULL,
+  id_acm INTEGER NOT NULL,
+  com_bsp NUMERIC(18,2),
+  porcentaje_over INTEGER,
+  moneda VARCHAR(10),
+  td VARCHAR(10),
+  CONSTRAINT tacm_det_pkey PRIMARY KEY(id_acm_det),
+  CONSTRAINT tacm_det_fk FOREIGN KEY (id_acm)
+    REFERENCES obingresos.tacm(id_acm)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tacm_det_fk1 FOREIGN KEY (id_detalle_boletos_web)
+    REFERENCES obingresos.tdetalle_boletos_web(id_detalle_boletos_web)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************F-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
