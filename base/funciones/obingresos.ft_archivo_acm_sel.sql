@@ -1,11 +1,3 @@
-CREATE OR REPLACE FUNCTION obingresos.ft_archivo_acm_sel (
-  p_administrador integer,
-  p_id_usuario integer,
-  p_tabla varchar,
-  p_transaccion varchar
-)
-RETURNS varchar AS
-$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_archivo_acm_sel
@@ -125,20 +117,10 @@ BEGIN
                         where taa.id_archivo_acm = '||v_parametros.id_archivo_acm;
 
 			--Definicion de la respuesta
-			v_consulta:=v_consulta||'GROUP BY taa.id_archivo_acm,
-                        archdet.porcentaje,
-                        archdet.neto_total_mb,
-                        archdet.neto_total_mt,
-                        archdet.cant_bol_mb,
-                        archdet.cant_bol_mt,
-                        archdet.importe_total_mb,
-                        archdet.importe_total_mt,
-                        archdet.id_archivo_acm_det,
+			v_consulta:=v_consulta||'ORDER BY
+            			lu.codigo,
                         agen.nombre,
-                        agen.codigo_int,
-                        lu.codigo,
-                        lu.nombre,
-                        acm.numero';
+                        lu.nombre';
 			--v_consulta:=v_consulta||' order by archdet.id_archivo_acm_det';
 
 			--Devuelve la respuesta
@@ -186,9 +168,3 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
-$body$
-LANGUAGE 'plpgsql'
-VOLATILE
-CALLED ON NULL INPUT
-SECURITY INVOKER
-COST 100;

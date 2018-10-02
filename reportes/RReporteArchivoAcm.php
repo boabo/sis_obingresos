@@ -367,6 +367,7 @@ class RReporteArchivoAcm
             $neto[]= $value['neto_total_mb'];
             $comision[] = $value['importe_total_mb'];
             $boletos []= $value ['cant_bol_mb'];
+            $agencia []= $value ['agencia'];
              if(!in_array($valor, $estacion)){
                  $estacion[]=$valor;
              }
@@ -377,6 +378,7 @@ class RReporteArchivoAcm
         foreach($estacion as $value1 ){
 
     foreach ($datos as $value) {
+//        rsort($agencia);
         if ($value['cod_ciudad'] == $value1) {
 //               var_dump($value1);exit;
 

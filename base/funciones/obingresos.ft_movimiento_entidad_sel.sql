@@ -226,12 +226,12 @@ end::varchar)as tipo,
                         from obingresos.tperiodo_venta_agencia pva
                         where pva.id_agencia = ' || v_parametros.id_agencia || ' and pva.estado= ''abierto''),0) as deudas
 					    from obingresos.tmovimiento_entidad moe
-                        inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
+              inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
 					    inner join segu.tusuario usu1 on usu1.id_usuario = moe.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = moe.id_usuario_mod
-                        inner join obingresos.tdeposito depo on depo.nro_deposito = moe.autorizacion__nro_deposito
+						  left join segu.tusuario usu2 on usu2.id_usuario = moe.id_usuario_mod
+              left join obingresos.tdeposito depo on depo.nro_deposito = moe.autorizacion__nro_deposito
 					    where moe.estado_reg = ''activo'' and
-                        (moe.cierre_periodo = ''no'' or (moe.cierre_periodo = ''si'' and moe.tipo = ''credito'')) and ';
+              (moe.cierre_periodo = ''no'' or (moe.cierre_periodo = ''si'' and moe.tipo = ''credito'')) and ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
