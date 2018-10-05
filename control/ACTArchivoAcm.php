@@ -36,6 +36,26 @@ class ACTArchivoAcm extends ACTbase{
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
 
+    function listarPlantillaArchivoExcel(){
+        $this->objParam->defecto('ordenacion','id_plantilla_archivo_excel');
+
+        $this->objParam->defecto('dir_ordenacion','asc');
+
+        if($this->objParam->getParametro('archivoAcm') == 'EXTACM'){
+            $this->objParam->addFiltro(" arxls.codigo in(''EXTACM'') and arxls.nombre in(''Extracto ACM .xlsx'') ");
+        }
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('sis_parametros/MODPlantillaArchivoExcel','listarPlantillaArchivoExcel');
+        } else{
+            $this->objFunc=$this->create('sis_parametros/MODPlantillaArchivoExcel');
+
+            $this->res=$this->objFunc->listarPlantillaArchivoExcel($this->objParam);
+        }
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
 	function insertarArchivoAcm(){
 		$this->objFunc=$this->create('MODArchivoAcm');
 		if($this->objParam->insertar('id_archivo_acm')){

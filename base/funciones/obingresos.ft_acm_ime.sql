@@ -173,7 +173,11 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           from obingresos.tdetalle_boletos_web bole
                           inner join obingresos.tmovimiento_entidad mov on mov.autorizacion__nro_deposito = bole.numero_autorizacion
                           inner join obingresos.tboleto boletos on boletos.id_agencia = mov.id_agencia
-                          where mov.id_agencia = v_registros.id_agencia
+                          where
+                          boletos.voided = 'no' and
+                          bole.void = 'no' and
+                          boletos.tipdoc = 'ETN' and
+                          mov.id_agencia = v_registros.id_agencia
                           and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
                           and mov.id_moneda=2
                           and bole.billete = boletos.nro_boleto)  LOOP
@@ -254,7 +258,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
           end if;
 
           --INSERTAMOS DATOS RECUPERADOS EN ACM DET
-              if v_porcentaje BETWEEN 2 and 2 or 4 and 4 then
+              if v_porcentaje = 2 and v_porcentaje = 4 then
               insert into obingresos.tacm_det(
               id_acm,
               id_detalle_boletos_web,
@@ -319,7 +323,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
           ------------------------------------------------------------------------------------------
           -- raise exception 'Los datos son: %', v_contador_boletos;
           ELSE
-          raise exception 'El porcentaje es: %  y no se encuentra en el rango de porcentajes (2 y 4) ',v_porcentaje ;
+          raise exception 'El porcentaje es: %  y no se encuentra no son de porcentajes (2 y 4) ',v_porcentaje ;
           end if;
 
          end loop;
@@ -341,7 +345,11 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           from obingresos.tdetalle_boletos_web bole
                           inner join obingresos.tmovimiento_entidad mov on mov.autorizacion__nro_deposito = bole.numero_autorizacion
                           inner join obingresos.tboleto boletos on boletos.id_agencia = mov.id_agencia
-                          where mov.id_agencia = v_registros.id_agencia
+                          where
+                          boletos.voided = 'no' and
+                          bole.void = 'no' and
+                          boletos.tipdoc = 'ETN' and
+                          mov.id_agencia = v_registros.id_agencia
                           and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
                           and mov.id_moneda=1
                           and bole.billete = boletos.nro_boleto)  LOOP
@@ -430,7 +438,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
          -- raise exception 'EL ultimo numero es: %', v_ultimo_numero;
           end if;
 
-              if v_porcentaje BETWEEN 2 and 4 then
+              if v_porcentaje = 2 and v_porcentaje = 4 then
               insert into obingresos.tacm_det(
               id_acm,
               id_detalle_boletos_web,

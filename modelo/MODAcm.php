@@ -168,7 +168,7 @@ class MODAcm extends MODbase{
 
 	function eliminarAcmValidado(){
 			//Definicion de variables para ejecucion del procedimiento
-			$this->procedimiento='obingresos.ft_movimiento_entidad_ime';
+			$this->procedimiento='obingresos.ft_archivo_acm_ime';
 			$this->transaccion='OBING_VALILIMPIO_ELI';
 			$this->tipo_procedimiento='IME';
 

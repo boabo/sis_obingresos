@@ -64,6 +64,33 @@ class MODArchivoAcm extends MODbase{
 		return $this->respuesta;
 	}
 
+    function validarAcm(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_archivo_acm_ime';
+        $this->transaccion='OBING_VALIDACION_INS';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_moneda','id_moneda','int4');
+        $this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('monto_total','monto_total','numeric');
+        $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('autorizacion__nro_deposito','autorizacion__nro_deposito','varchar');
+        $this->setParametro('estado_reg','estado_reg','varchar');
+        $this->setParametro('monto','monto','numeric');
+        $this->setParametro('ajuste','ajuste','varchar');
+        $this->setParametro('fecha','fecha','date');
+        $this->setParametro('id_archivo_acm','id_archivo_acm','varchar');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 	function modificarArchivoAcm(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_archivo_acm_ime';

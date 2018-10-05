@@ -53,7 +53,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         emptyText:'Codigo Archivo...',
                         store: new Ext.data.JsonStore({
                             //if (this.store.baseParams.id_plantilla_archivo_excel = '14'){
-                            url: '../../sis_parametros/control/PlantillaArchivoExcel/listarPlantillaArchivoExcel',
+                            url: '../../sis_obingresos/control/ArchivoAcm/listarPlantillaArchivoExcel',
+                            // url: '../../sis_parametros/control/PlantillaArchivoExcel/listarPlantillaArchivoExcel',
                             id: 'id_plantilla_archivo_excel',
                             root: 'datos',
                             sortInfo:{

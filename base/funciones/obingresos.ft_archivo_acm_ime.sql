@@ -32,6 +32,36 @@ DECLARE
     v_last_ini			date;
     v_last_fin			date;
 
+    --v_nro_requerimiento    	integer;
+	--v_parametros           	record;
+	--v_id_requerimiento     	integer;
+	--v_resp		            varchar;
+	--v_nombre_funcion        text;
+	--v_mensaje_error         text;
+	v_id_movimiento_entidad	integer;
+    v_codigo_autorizacion	varchar;
+    v_id_periodo_venta		integer;
+    v_monto					numeric;
+    v_id_alarma				integer;
+    v_moneda				varchar;
+    v_agencia				varchar;
+    v_usuario				varchar;
+
+    v_arreglo				INTEGER[];
+    v_length				integer;
+    v_boletos_bs			record;
+    v_correlativo			varchar;
+    v_suma_importe 			FLOAT;
+    v_suma_total			record;
+    v_boletos_sus			record;
+    v_ultimo_numero			integer;
+    v_resetear				integer;
+    v_registros				record;
+	v_movimiento			integer;
+    v_movimiento_enti		record;
+    v_periodo				integer;
+    v_porcentaje			integer;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_archivo_acm_ime';
@@ -158,6 +188,196 @@ BEGIN
 			--Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Estado Archivo ACM modificado(a)');
             v_resp = pxp.f_agrega_clave(v_resp,'id_archivo_acm',v_parametros.id_archivo_acm::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+ /*********************************
+ 	#TRANSACCION:  'OBING_VALIDACION_INS'
+ 	#DESCRIPCION:	Insercion de validacion ACM
+ 	#AUTOR:		ivaldivia/rzabala
+ 	#FECHA:		19-09-2018 11:34:32
+	***********************************/
+
+	elsif(p_transaccion='OBING_VALIDACION_INS')then
+
+
+
+        begin
+
+        v_arreglo = string_to_array(v_parametros.id_archivo_acm,',');
+                      v_length = array_length(v_arreglo,1);
+
+        update obingresos.tarchivo_acm ac set
+            estado = 'finalizado'
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm::integer;
+
+      -- raise exception 'El ID del Archivo ACM es: %', v_parametros.id_archivo_acm;
+
+
+
+FOR 	v_registros in (select 	arch.id_archivo_acm_det, arch.id_agencia, acm.importe, acm.numero, acm.id_moneda
+                        from obingresos.tarchivo_acm_det arch
+                        inner join obingresos.tarchivo_acm ar on ar.id_archivo_acm = arch.id_archivo_acm
+                        inner join obingresos.tacm acm on acm.id_archivo_acm_det = arch.id_archivo_acm_det
+                        where ar.id_archivo_acm = v_parametros.id_archivo_acm::integer) LOOP
+
+select
+                          archivo.porcentaje
+                          into v_porcentaje
+                          from obingresos.tarchivo_acm_det archivo
+                         where archivo.id_archivo_acm_det= v_registros.id_archivo_acm_det;
+
+            if v_porcentaje = 2 or v_porcentaje = 4 then
+             ---Sentencia de la insercion
+        	insert into obingresos.tmovimiento_entidad(
+			id_moneda,
+			id_agencia,
+			garantia,
+			monto_total,
+			tipo,
+			autorizacion__nro_deposito,
+			estado_reg,
+			monto,
+			ajuste,
+			fecha,
+			pnr,
+			apellido,
+			id_usuario_reg,
+			fecha_reg,
+			usuario_ai,
+			id_usuario_ai,
+			fecha_mod,
+			id_usuario_mod
+          	) values(
+			v_registros.id_moneda,
+			v_registros.id_agencia,
+			'no',
+			v_registros.importe,
+			'credito',
+			v_registros.numero,
+			'activo',
+			v_registros.importe,
+			'no',
+			now(),
+			NULL,
+			NULL,
+			p_id_usuario,
+			now(),
+			v_parametros._nombre_usuario_ai,
+			v_parametros._id_usuario_ai,
+			null,
+			null
+
+
+
+			)RETURNING id_movimiento_entidad into v_id_movimiento_entidad;
+
+
+        	select mov.id_movimiento_entidad
+            into v_movimiento
+            from obingresos.tmovimiento_entidad mov
+            inner join obingresos.tacm acm on acm.numero = mov.autorizacion__nro_deposito
+            where acm.numero = v_registros.numero;
+
+			--raise exception 'El ID del Movimiento es: %', v_movimiento;
+
+            UPDATE obingresos.tacm acm set
+            id_movimiento_entidad = v_movimiento
+            where acm.numero = v_registros.numero;
+            ELSE
+          raise exception 'El porcentaje es: %  y no se encuentra no son porcentajes (2 y 4) ',v_porcentaje ;
+          end if;
+
+
+
+ end loop;
+
+
+
+
+			--Definicion de la respuesta
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','ACM almacenado(a) con exito (id_movimiento_entidad'||v_id_movimiento_entidad||')');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_movimiento_entidad',v_id_movimiento_entidad::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+
+ /*********************************
+ 	#TRANSACCION:  'OBING_VALILIMPIO_ELI'
+ 	#DESCRIPCION:	Eliminacion de ACM Validado
+ 	#AUTOR:		ivaldivia/rzabala
+ 	#FECHA:		19-09-2018 11:34:32
+	***********************************/
+
+	elsif(p_transaccion='OBING_VALILIMPIO_ELI')then
+
+
+
+        begin
+
+        --v_arreglo = string_to_array(v_parametros.id_archivo_acm,',');
+                      v_length = array_length(v_arreglo,1);
+
+
+
+      --raise exception 'El ID del Archivo ACM es: %', v_parametros.id_archivo_acm;
+
+
+FOR 	v_registros in (select 	arch.id_agencia, acm.importe, acm.numero, acm.id_moneda
+                        from obingresos.tarchivo_acm_det arch
+                        inner join obingresos.tarchivo_acm ar on ar.id_archivo_acm = arch.id_archivo_acm
+                        left join obingresos.tacm acm on acm.id_archivo_acm_det = arch.id_archivo_acm_det
+                        where ar.id_archivo_acm = v_parametros.id_archivo_acm::integer) LOOP
+
+			--raise exception 'El ID del Archivo ACM es: %', v_parametros.id_archivo_acm;
+
+			select mov.id_movimiento_entidad
+            into v_movimiento
+            from obingresos.tmovimiento_entidad mov
+            inner join obingresos.tacm acm on acm.numero = mov.autorizacion__nro_deposito
+            where acm.numero = v_registros.numero;
+
+			--raise exception 'El ID del Movimiento es: %', v_movimiento;
+
+            UPDATE obingresos.tacm acm set
+            id_movimiento_entidad = null
+            where acm.numero = v_registros.numero;
+
+			update obingresos.tarchivo_acm ac set
+            estado = 'generado'
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
+
+			--raise exception 'El ID del Archivo ACM es: %', v_registros.numero;
+
+            select mov.id_periodo_venta
+            into v_periodo
+            from obingresos.tmovimiento_entidad mov
+            inner join obingresos.tacm acm on acm.numero = mov.autorizacion__nro_deposito
+            where acm.numero = v_registros.numero;
+
+
+		  if v_periodo is not null then
+          raise exception 'No se puede Eliminar el registro %', v_registros.numero ||'porque ya fue validado';
+          end if;
+
+           delete from obingresos.tmovimiento_entidad ent
+           where ent.autorizacion__nro_deposito=v_registros.numero;
+
+
+
+ end loop;
+
+
+
+
+			--Definicion de la respuesta
+			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','ACM almacenado(a) con exito (id_movimiento_entidad'||v_id_movimiento_entidad||')');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_movimiento_entidad',v_id_movimiento_entidad::varchar);
 
             --Devuelve la respuesta
             return v_resp;

@@ -42,10 +42,10 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
 				var rec = this.sm.getSelected();
 				console.log('que es',rec.data.estado);
 				if (rec !== ''){
-				    if(rec.data.neto_total_mb !== null && rec.data.importe_total_mb !== null && rec.data.cant_bol_mb !== null){
+				    if(rec.data.neto_total_mb !== null || rec.data.importe_total_mb !== null || rec.data.cant_bol_mb !== null){
                         this.getBoton('btnVentana').enable();
                     }
-                    if(rec.data.neto_total_mt !== null && rec.data.importe_total_mt !== null && rec.data.cant_bol_mt !== null){
+                    if(rec.data.neto_total_mt !== null || rec.data.importe_total_mt !== null || rec.data.cant_bol_mt !== null){
                         this.getBoton('btnVentana').enable();
                     }
                     Phx.vista.ArchivoAcmDet.superclass.preparaMenu.call(this);
@@ -183,7 +183,7 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
             },
             type: 'ComboBox',
             id_grupo: 0,
-            filters: {pfiltro: 'aad.id_agencia',type: 'string'},
+            filters: {pfiltro: 'age.nombre',type: 'string'},
             grid: true,
             form: true,
             bottom_filter : true

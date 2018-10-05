@@ -59,7 +59,7 @@ class ACTAcm extends ACTbase{
 			$this->res->imprimirRespuesta($this->res->generarJson());
 	}
     function validarAcm(){
-        $this->objFunc=$this->create('sis_obingresos/MODMovimientoEntidad');
+        $this->objFunc=$this->create('sis_obingresos/MODArchivoAcm');
         if($this->objParam->insertar('id_acm')){
             $this->res=$this->objFunc->validarAcm($this->objParam);
         }
