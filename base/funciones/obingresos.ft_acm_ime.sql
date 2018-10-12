@@ -51,8 +51,8 @@ DECLARE
     v_ultimo_numero			integer;
     v_resetear				integer;
     v_datos_boletos			record;
-    v_porcentaje			integer;
     v_suma_bsp				FLOAT;
+    v_acms					record;
 
 BEGIN
 
@@ -152,10 +152,12 @@ FOR 	v_registros in (select 	arch.id_agencia,
                                 arch.id_archivo_acm_det,
                                 agen.tipo_agencia,
                                 agen.nombre
-                                from obingresos.tarchivo_acm_det arch
-                                inner join obingresos.tarchivo_acm ar on ar.id_archivo_acm = arch.id_archivo_acm
+                                from obingresos.tarchivo_acm ar
+                                inner join obingresos.tarchivo_acm_det arch on arch.id_archivo_acm = ar.id_archivo_acm
                                 inner join obingresos.tagencia agen on agen.id_agencia = arch.id_agencia
-                        		where ar.id_archivo_acm = v_parametros.id_archivo_acm::integer) LOOP
+                        		where ar.id_archivo_acm = v_parametros.id_archivo_acm::integer
+                                --and agen.id_agencia= 3975
+                                ) LOOP
 
 
       --##########OBTENEMOS TODOS LOS BOLETOS EN DOLARES E INSERTAMOS EN TACM Y TEACMDET#########--
@@ -170,17 +172,15 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           boletos.moneda,
                           boletos.tipdoc
                           --acmd.id_agencia
-                          from obingresos.tdetalle_boletos_web bole
-                          inner join obingresos.tmovimiento_entidad mov on mov.autorizacion__nro_deposito = bole.numero_autorizacion
-                          inner join obingresos.tboleto boletos on boletos.id_agencia = mov.id_agencia
+                          from obingresos.tmovimiento_entidad mov
+                          inner join obingresos.tdetalle_boletos_web bole on (bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
+                          inner join obingresos.tboleto boletos on (bole.billete = boletos.nro_boleto and boletos.estado_reg='activo')
                           where
+                          mov.id_agencia = v_registros.id_agencia and
+                          mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin and
                           boletos.voided = 'no' and
                           bole.void = 'no' and
-                          boletos.tipdoc = 'ETN' and
-                          mov.id_agencia = v_registros.id_agencia
-                          and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
-                          and mov.id_moneda=2
-                          and bole.billete = boletos.nro_boleto)  LOOP
+                          boletos.tipdoc = 'ETN')  LOOP
 
 
 
@@ -191,13 +191,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
            where acm.id_archivo_acm_det=v_registros.id_archivo_acm_det
            and acm.id_moneda=2;
 
-           select
-                          archivo.porcentaje
-                          into v_porcentaje
-                          from obingresos.tarchivo_acm_det archivo  ;
-
-
-           if  v_id_acm_sus is null then
+          if  v_id_acm_sus is null then
 
             --OBTENEMOS EL CORRELATIVO DEL CAMPO NUMERO
              SELECT *
@@ -214,7 +208,8 @@ FOR 	v_registros in (select 	arch.id_agencia,
 
            --INSERTAMOS DATOS EN ACM
               --Sentencia de la insercion
-              if v_registros.tipo_agencia = 'noiata' THEN
+           if v_registros.tipo_agencia = 'noiata' THEN
+
               insert into obingresos.tacm(
               id_moneda,
               id_archivo_acm_det,
@@ -225,7 +220,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
               id_usuario_reg,
               fecha_reg
               ) values(
-              1,
+              2,
               v_registros.id_archivo_acm_det,
               now(),
               v_correlativo,--generar correlativo
@@ -249,16 +244,18 @@ FOR 	v_registros in (select 	arch.id_agencia,
           UPDATE obingresos.tarchivo_acm ac SET
 		  ultimo_numero = (v_ultimo_numero)
 		  Where ac.id_archivo_acm = v_parametros.id_archivo_acm::INTEGER;
+
           --------------------------------------------------------------------
       	  ELSE
-          raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
+          		raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
           end if;
 
          -- raise exception 'EL ultimo numero es: %', v_ultimo_numero;
-          end if;
+          end if; --fin acm dolares
 
           --INSERTAMOS DATOS RECUPERADOS EN ACM DET
-              if v_porcentaje = 2 and v_porcentaje = 4 then
+              if v_registros.porcentaje = 2 or v_registros.porcentaje = 4 then
+
               insert into obingresos.tacm_det(
               id_acm,
               id_detalle_boletos_web,
@@ -281,8 +278,9 @@ FOR 	v_registros in (select 	arch.id_agencia,
               v_boletos_sus.comision*(-1),
               v_boletos_sus.moneda,
               v_boletos_sus.tipdoc,
-              v_porcentaje
+              v_registros.porcentaje
               );
+
           --OBTENEMOS LA SUMA DE LA COMISION Y LO ALMACENAMOS EN EL CAMPO IMPORTE DE ACM
           select round (sum(acmdet.over_comision),2)
            						into v_suma_importe
@@ -323,7 +321,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
           ------------------------------------------------------------------------------------------
           -- raise exception 'Los datos son: %', v_contador_boletos;
           ELSE
-          raise exception 'El porcentaje es: %  y no se encuentra no son de porcentajes (2 y 4) ',v_porcentaje ;
+          		raise exception 'El porcentaje es: %  y no se encuentra no son de porcentajes (2 y 4) ',v_registros.porcentaje ;
           end if;
 
          end loop;
@@ -342,17 +340,15 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           boletos.moneda,
                           boletos.tipdoc
                           --acmd.id_agencia
-                          from obingresos.tdetalle_boletos_web bole
-                          inner join obingresos.tmovimiento_entidad mov on mov.autorizacion__nro_deposito = bole.numero_autorizacion
-                          inner join obingresos.tboleto boletos on boletos.id_agencia = mov.id_agencia
-                          where
-                          boletos.voided = 'no' and
-                          bole.void = 'no' and
-                          boletos.tipdoc = 'ETN' and
-                          mov.id_agencia = v_registros.id_agencia
+                          from obingresos.tmovimiento_entidad mov
+                          inner join obingresos.tdetalle_boletos_web bole on (bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=1)
+                          inner join obingresos.tboleto boletos on bole.billete = boletos.nro_boleto and boletos.estado_reg='activo'
+                          where mov.id_agencia = v_registros.id_agencia
                           and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
                           and mov.id_moneda=1
-                          and bole.billete = boletos.nro_boleto)  LOOP
+                          and boletos.voided = 'no' and
+                          bole.void = 'no' and
+                          boletos.tipdoc = 'ETN')  LOOP
 
 
 
@@ -363,13 +359,8 @@ FOR 	v_registros in (select 	arch.id_agencia,
            where acm.id_archivo_acm_det=v_registros.id_archivo_acm_det
            and acm.id_moneda=1;
 
-           select
-                          archivo.porcentaje
-                          into v_porcentaje
-                          from obingresos.tarchivo_acm_det archivo
-                         where archivo.id_archivo_acm_det= v_registros.id_archivo_acm_det;
 
-   			/*raise exception 'EL ultimo numero es: %', v_porcentaje;*/
+   			/*raise exception 'EL ultimo numero es: %', v_registros.porcentaje;*/
 
            if  v_id_acm_bs is null then
 
@@ -389,6 +380,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
               --INSERTAMOS DATOS EN ACM
                --Sentencia de la insercion
               if v_registros.tipo_agencia = 'noiata' THEN
+
               insert into obingresos.tacm(
               id_moneda,
               id_archivo_acm_det,
@@ -428,17 +420,15 @@ FOR 	v_registros in (select 	arch.id_agencia,
           UPDATE obingresos.tarchivo_acm ac SET
 		  ultimo_numero = (v_ultimo_numero)
 		  Where ac.id_archivo_acm = v_parametros.id_archivo_acm::INTEGER;
+
           ELSE
-          raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
+          		raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
           end if;
-
-
-
 
          -- raise exception 'EL ultimo numero es: %', v_ultimo_numero;
-          end if;
+    end if;
 
-              if v_porcentaje = 2 and v_porcentaje = 4 then
+              if v_registros.porcentaje = 2 or v_registros.porcentaje = 4 then
               insert into obingresos.tacm_det(
               id_acm,
               id_detalle_boletos_web,
@@ -461,7 +451,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
               v_boletos_bs.comision*(-1),
               v_boletos_bs.moneda,
               v_boletos_bs.tipdoc,
-              v_porcentaje
+              v_registros.porcentaje
               );
 
           select round (sum(acmdet.over_comision),2)
@@ -506,8 +496,9 @@ FOR 	v_registros in (select 	arch.id_agencia,
            UPDATE obingresos.tacm SET
 		   total_bsp = v_suma_bsp
 		   Where id_acm = v_id_acm_bs;
+
            ELSE
-           raise exception 'El porcentaje es: %  y no se encuentra en el rango de porcentajes (2 y 4) ',v_porcentaje ;
+           		raise exception 'El porcentaje es: %  y no se encuentra en el rango de porcentajes permitidos: 2 o 4. ',v_registros.porcentaje ;
            end if;
 
 
@@ -602,6 +593,18 @@ end loop;
                       v_length = array_length(v_arreglo,1);
 
         	update obingresos.tarchivo_acm_det ac set
+            importe_total_mt = null
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
+
+            update obingresos.tarchivo_acm_det ac set
+            neto_total_mt = null
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
+
+            update obingresos.tarchivo_acm_det ac set
+            cant_bol_mt = null
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
+
+            update obingresos.tarchivo_acm_det ac set
             importe_total_mb = null
             where ac.id_archivo_acm = v_parametros.id_archivo_acm;
 
@@ -648,93 +651,27 @@ end loop;
         --raise exception 'El valor de id_archivo_acm es: %', v_parametros.id_archivo_acm::integer;
 
 
-FOR 	v_registros in (select 	arch.id_agencia, ar.fecha_ini, ar.fecha_fin, arch.porcentaje, arch.id_archivo_acm_det
+FOR 	v_registros in (select 	arch.id_agencia, arch.porcentaje, arch.id_archivo_acm_det
                         from obingresos.tarchivo_acm_det arch
-                        inner join obingresos.tarchivo_acm ar on ar.id_archivo_acm = arch.id_archivo_acm
-                        where ar.id_archivo_acm = v_parametros.id_archivo_acm::integer) LOOP
+                        where arch.id_archivo_acm = v_parametros.id_archivo_acm::integer) LOOP
 
-		  for v_boletos_sus in ( select
-                          bole.id_detalle_boletos_web,
-                          bole.billete,
-                          bole.id_agencia,
-                          bole.neto
-                          --acmd.id_agencia
-                          from obingresos.tdetalle_boletos_web bole
-                          inner join obingresos.tmovimiento_entidad mov on mov.autorizacion__nro_deposito = bole.numero_autorizacion
-                          where mov.id_agencia = v_registros.id_agencia
-                          and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
-                          and mov.id_moneda=2)  LOOP
-
-           Select acm.id_acm
-           into v_boletos_sus
-           from obingresos.tacm acm
-           where acm.id_archivo_acm_det=v_registros.id_archivo_acm_det
-           and acm.id_moneda=2;
-
-           if  v_boletos_sus is not null then
-           --Sentencia de la eliminacion
-              delete from obingresos.tacm_det
-              where id_acm=v_boletos_sus;
+		  for v_acms in ( Select ac.id_acm
+          					from obingresos.tacm ac
+                            where ac.id_archivo_acm_det=v_registros.id_archivo_acm_det)  LOOP
 
 
+              	--Sentencia de la eliminacion
+              	delete from obingresos.tacm_det
+              	where id_acm=v_acms.id_acm;
+
+              	--Sentencia de la eliminacion
+				delete from obingresos.tacm
+            	where id_acm=v_acms.id_acm;
+
+		end loop;
 
 
-           end if;
-
-              --Sentencia de la eliminacion
-
-
-
-			delete from obingresos.tacm
-            where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-
-
-
-
-
-
-	end loop;
-
-
-         for v_boletos_bs in ( select
-                          bole.id_detalle_boletos_web,
-                          bole.billete,
-                          bole.id_agencia,
-                          bole.neto
-                          --acmd.id_agencia
-                          from obingresos.tdetalle_boletos_web bole
-                          inner join obingresos.tmovimiento_entidad mov on mov.autorizacion__nro_deposito = bole.numero_autorizacion
-                          where mov.id_agencia = v_registros.id_agencia
-                          and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
-                          and mov.id_moneda=1)  LOOP
-
-           Select acm.id_acm
-           into v_id_acm_bs
-           from obingresos.tacm acm
-           where acm.id_archivo_acm_det=v_registros.id_archivo_acm_det
-           and acm.id_moneda=1;
-
-           if  v_id_acm_bs is not null then
-           --Sentencia de la eliminacion
-              delete from obingresos.tacm_det
-              where id_acm=v_id_acm_bs;
-
-
-
-
-           end if;
-
-              --Sentencia de la eliminacion
-
-
-
-			delete from obingresos.tacm
-            where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-
-
-
-	end loop;
-     end loop;
+end loop;
 
 
             --Definicion de la respuesta

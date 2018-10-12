@@ -19,32 +19,6 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 		this.init();
 		var that = this;
 
-	Ext.Ajax.request({
-			url:'../../sis_parametros/control/Gestion/obtenerGestionByFecha',
-			params:{fecha:new Date()},
-			success:function (resp) {
-				var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
-				if(!reg.ROOT.error){
-					console.log('config',that.acm);
-					if(that.acm==undefined){
-							this.store.baseParams.acm = 'general';
-							//this.load({params:{start:0, limit:this.tam_pag}});
-						}else {
-							this.store.baseParams.acm = that.acm;
-							this.store.baseParams.id_archivo_acm_det = that.maestro.id_archivo_acm_det;
-							console.log('config',that.acm, that.maestro.id_archivo_acm_det, this.maestro.id_archivo_acm_det);
-						}
-					this.load({params:{start:0, limit:this.tam_pag}});
-				}else{
-
-					alert('Ocurrio un error al obtener la Gestión')
-				}
-			},
-			failure: this.conexionFailure,
-			timeout:this.timeout,
-			scope:this
-		});
-
 		this.iniciarEventos();
 
 		this.addButton('btnReporteAcm',
@@ -56,9 +30,19 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 							tooltip: '<b>Generar Reporte</b><br/>Generar Reporte de ACM.'
 					}
 			);
-
-
-
+        if(that.acm==undefined){
+            this.store.baseParams.acm = 'general';
+            //this.load({params:{start:0, limit:this.tam_pag}});
+        }else {
+            this.store.baseParams.acm = that.acm;
+            this.store.baseParams.id_archivo_acm_det = that.maestro.id_archivo_acm_det;
+            // this.store.baseParams.officce_id = that.maestro.codigo_int;
+            console.log('config',that.acm, that.maestro.id_archivo_acm_det);
+        }
+        if(that.acm == 'funcional' && that.maestro.id_archivo_acm_det ==undefined){
+            this.store.baseParams.agencia = that.maestro.codigo_int;
+            console.log('config',that.acm, that.maestro.id_archivo_acm_det,  this.store.baseParams.agencia);
+        }
 		this.load({params:{start:0, limit:this.tam_pag}})
 	},
 
@@ -627,8 +611,9 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 		direction: 'ASC'
 	},
 
-	bdel:true,
-	bsave:true,
+	bdel:false,
+	bsave:false,
+    bnew:false,
 
 	tabsouth :[
 		{

@@ -64,8 +64,17 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
             text: 'Validar',
             iconCls: 'bok',
             disabled: true,
-            handler:this.onButtonvalidar,
+            handler:this.alerta,
             tooltip: '<b>Validar</b><br/>Valida y Registra archivos ACM Generados en Entidades'
+        });
+
+        this.addButton('btnhabilitar', {
+            //grupo: [0],
+            text: 'Habilitar',
+            iconCls: 'bball_green',
+            disabled: true,
+            handler:this.alertaHabilitar,
+            tooltip: '<b>Habilitar</b><br/>Sirve como habilitacion para revertir lo validado y retornar a estado generado'
         });
 
         this.addButton('btnrevertir_validar', {
@@ -73,18 +82,10 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
             text: 'Revertir Validacion',
             iconCls: 'batras',
             disabled: true,
-            handler:this.onButtonRevertirVal,
+            handler:this.alertaRevertirVal,
             tooltip: '<b>Revertir Validacion</b><br/>Revierte el Registro realizado en entidades y retorna al estado generado'
         });
 
-        this.addButton('btnhabilitar', {
-            //grupo: [0],
-            text: 'habilitar',
-            iconCls: 'bball_green',
-            disabled: true,
-            handler:this.onButtonHabilitar,
-            tooltip: '<b>Habilitar</b><br/>Sirve como habilitacion para revertir lo validado y retornar a estado generado'
-        });
         this.addButton('btnReporteArchivoAcm',
             {
                 text: 'Reporte',
@@ -182,8 +183,10 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
             if (this.sm.getSelected().data['estado']== 'borrador'){
                 //Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
                 tb.items.get('b-edit-' + this.idContenedor).enable();
+                tb.items.get('b-del-' + this.idContenedor).enable();
             }else{
                 tb.items.get('b-edit-' + this.idContenedor).disable();
+                tb.items.get('b-del-' + this.idContenedor).disable();
             }
         }
     },
@@ -264,6 +267,18 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
 							scope:this
 			});
 		},
+
+    alerta: function(){
+        var mensaje;
+        var global = this;
+        Ext.Msg.confirm('Confirmacion', 'Esta Seguro que desea <b>Validar ACMs</b> Generados?', function (btn) {
+            if (btn == 'yes') {
+                global.onButtonvalidar();
+            }
+            else {
+            }
+        });
+    },
     onButtonvalidar: function(){
         Phx.CP.loadingShow();
         var d = this.sm.getSelected().data;
@@ -275,6 +290,17 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
             failure: this.conexionFailure,
             timeout:this.timeout,
             scope:this
+            });
+    },
+    alertaRevertirVal: function(){
+        var mensaje;
+        var global = this;
+        Ext.Msg.confirm('Confirmacion', 'Esta Seguro que desea <b>Revertir Validacion?</b>', function (btn) {
+            if (btn == 'yes') {
+                global.onButtonRevertirVal();
+            }
+            else {
+            }
         });
     },
     onButtonRevertirVal: function(){
@@ -304,6 +330,17 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
             scope:this
         });
         console.log('EL DATO ES:',d.id_archivo_acm);
+    },
+    alertaHabilitar: function(){
+        var mensaje;
+        var global = this;
+        Ext.Msg.confirm('Confirmacion', 'Esta Seguro que desea Habilitar la opción <b>Revertir Validación?</b>', function (btn) {
+            if (btn == 'yes') {
+                global.onButtonHabilitar();
+            }
+            else {
+            }
+        });
     },
     onButtonHabilitar: function() {
         Phx.CP.loadingShow();

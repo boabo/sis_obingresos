@@ -103,7 +103,8 @@ Phx.vista.AcmDet=Ext.extend(Phx.gridInterfaz,{
 				filters:{pfiltro:'bole.billete',type:'numeric'},
 				id_grupo:1,
 				grid:true,
-				form:false
+				form:false,
+                bottom_filter : true
 		},
 		{
 			config: {
@@ -252,7 +253,8 @@ Phx.vista.AcmDet=Ext.extend(Phx.gridInterfaz,{
 				filters:{pfiltro:'acmdet.porcentaje_over',type:'numeric'},
 				id_grupo:1,
 				grid:true,
-				form:true
+				form:true,
+                bottom_filter : true
 		},
 		{
 			config:{
@@ -437,15 +439,17 @@ Phx.vista.AcmDet=Ext.extend(Phx.gridInterfaz,{
 
 	],
 	sortInfo:{
-		field: 'id_acm_det',
+		field: 'billete',
 		direction: 'ASC'
 	},
-	bdel:true,
-	bsave:true,
+	bdel:false,
+	bsave:false,
+    bnew:false,
+
 	onReloadPage: function (m) {
 		this.maestro = m;
 		this.store.baseParams = {id_acm:this.maestro.id_acm};
-		this.bloquearMenus();
+		// this.bloquearMenus();
 	  this.load({params: {start: 0, limit: 50}});
 	},
 

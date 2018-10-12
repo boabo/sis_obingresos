@@ -62,6 +62,33 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Billetes emitidos de la agencia corporativa'
                 }
             );
+            this.addButton('Acm',
+                {
+                    text: 'Acm',
+                    iconCls: 'bfolder',
+                    disabled: true,
+                    handler: this.onButtonAcm,
+                    tooltip: '<b>Archivo Acm</b></br>Muestra el Detalle de ACMs validados.'
+                }
+            );
+
+        },
+        onButtonAcm: function(){
+
+            //Phx.vista.ArchivoAcmDet.superclass.onButtonAcm.call(this);
+            var rec = {maestro: this.sm.getSelected().data}
+            rec.acm='funcional';
+            console.log('VALOR', rec.acm);
+
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/acm/Acm.php',
+                'Detalle de los ACMs Validados',
+                {
+                    width:1200,
+                    height:600
+                },
+                rec,
+                this.idContenedor,
+                'Acm');
 
         },
         onMovimientosSP : function () {
@@ -118,6 +145,8 @@ header("content-type: text/javascript; charset=UTF-8");
             this.getBoton('btnTkt').enable();
             this.getBoton('Estado').enable();
 
+            this.getBoton('Acm').enable();
+
         },
         liberaMenu:function()
         {
@@ -127,6 +156,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.getBoton('btnMovimientosSP').disable();
             this.getBoton('btnTkt').disable();
             this.getBoton('Estado').disable();
+            this.getBoton('Acm').disable();
         },
         estado:function(){
             Phx.CP.loadingShow();

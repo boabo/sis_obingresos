@@ -34,6 +34,8 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
 	},
     iniciarEventos: function(){
 	    this.Cmp.id_archivo_acm.on('select', function(cmb, record, index){},this);
+        // var tb = this.tbar;
+        // tb.items('b-new-' + this.idContenedor).disable();
     },
 
 
@@ -50,12 +52,11 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
                     }
                     Phx.vista.ArchivoAcmDet.superclass.preparaMenu.call(this);
                     if (rec.data['estado']== 'cargado' ){
-                        //Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
                         tb.items.get('b-edit-' + this.idContenedor).enable();
-                        tb.items.get('b-new-' + this.idContenedor).enable();
+                        tb.items.get('b-del-' + this.idContenedor).enable();
                     }else{
                         tb.items.get('b-edit-' + this.idContenedor).disable();
-                        tb.items.get('b-new-' + this.idContenedor).disable();
+                        tb.items.get('b-del-' + this.idContenedor).disable();
                     }
                 }
 
@@ -531,11 +532,13 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
         'id_archivo_acm','estado_reg', 'usuario_ai', 'fecha_mod', 'usr_mod'],*/
 
 	sortInfo:{
-		field: 'id_archivo_acm_det',
+		field: 'agencia',
 		direction: 'ASC'
 	},
+    bnew:false,
+    bedit:true,
 	bdel:true,
-	bsave:true,
+	bsave:false,
     onButtonNew : function () {
 	    Phx.vista.ArchivoAcmDet.superclass.onButtonNew.call(this);
         this.Cmp.id_agencia.enable();

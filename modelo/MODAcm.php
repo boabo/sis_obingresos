@@ -45,7 +45,7 @@ class MODAcm extends MODbase{
 		$this->captura('total_bsp','numeric');
 		$this->captura('neto_total_mb','numeric');
 		$this->captura('neto_total_mt','numeric');
-		$this->captura('office_id','varchar');
+		$this->captura('officce_id','varchar');
 		$this->captura('codigo_largo','varchar');
 
 
