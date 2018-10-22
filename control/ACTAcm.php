@@ -16,10 +16,12 @@ class ACTAcm extends ACTbase{
 
 		if ($this->objParam->getParametro('acm') == 'especifico') {
 		 $this->objParam->addFiltro("acm.id_archivo_acm_det = ". $this->objParam->getParametro('id_archivo_acm_det'));
-	 }
-        if ($this->objParam->getParametro('agencia') !== '' && $this->objParam->getParametro('acm') == 'funcional') {
-            $this->objParam->addFiltro("acmdet.officce_id::varchar = ''". $this->objParam->getParametro('agencia')."''::varchar");
+	 	}
+
+        if ( $this->objParam->getParametro('acm') == 'funcional' ) {
+            $this->objParam->addFiltro("acmdet.officce_id::varchar = ''". $this->objParam->getParametro('agencia')."''::varchar and acm.id_movimiento_entidad is not null");
         }
+
 		if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 			$this->objReporte = new Reporte($this->objParam,$this);
 			$this->res = $this->objReporte->generarReporteListado('MODAcm','listarAcm');

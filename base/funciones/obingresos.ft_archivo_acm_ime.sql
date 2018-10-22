@@ -28,16 +28,10 @@ DECLARE
 	v_resp		            varchar;
 	v_nombre_funcion        text;
 	v_mensaje_error         text;
-	v_id_archivo_acm	integer;
-    v_last_ini			date;
-    v_last_fin			date;
+	v_id_archivo_acm		integer;
+    v_last_ini				date;
+    v_last_fin				date;
 
-    --v_nro_requerimiento    	integer;
-	--v_parametros           	record;
-	--v_id_requerimiento     	integer;
-	--v_resp		            varchar;
-	--v_nombre_funcion        text;
-	--v_mensaje_error         text;
 	v_id_movimiento_entidad	integer;
     v_codigo_autorizacion	varchar;
     v_id_periodo_venta		integer;
@@ -61,6 +55,7 @@ DECLARE
     v_movimiento_enti		record;
     v_periodo				integer;
     v_porcentaje			integer;
+    v_bloqueado				varchar;
 
 BEGIN
 
@@ -209,9 +204,9 @@ BEGIN
         v_arreglo = string_to_array(v_parametros.id_archivo_acm,',');
                       v_length = array_length(v_arreglo,1);
 
-        update obingresos.tarchivo_acm ac set
+        /*update obingresos.tarchivo_acm ac set
             estado = 'finalizado'
-            where ac.id_archivo_acm = v_parametros.id_archivo_acm::integer;
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm::integer;*/
 
       -- raise exception 'El ID del Archivo ACM es: %', v_parametros.id_archivo_acm;
 
@@ -222,14 +217,24 @@ FOR 	v_registros in (select 	arch.id_archivo_acm_det, arch.id_agencia, acm.impor
                         inner join obingresos.tarchivo_acm ar on ar.id_archivo_acm = arch.id_archivo_acm
                         inner join obingresos.tacm acm on acm.id_archivo_acm_det = arch.id_archivo_acm_det
                         where ar.id_archivo_acm = v_parametros.id_archivo_acm::integer) LOOP
-
+ /*if v_registros.importe is null then
+ raise exception 'No se tienen Registros de Importe para realizar la Validacion, Registros: %', v_registros.importe;
+else */
 select
                           archivo.porcentaje
                           into v_porcentaje
                           from obingresos.tarchivo_acm_det archivo
                          where archivo.id_archivo_acm_det= v_registros.id_archivo_acm_det;
+select
+                          age.bloquear_emision
+                          into v_bloqueado
+                          from obingresos.tagencia age
+                          inner join obingresos.tarchivo_acm_det adet on adet.id_agencia = age.id_agencia
+                         where adet.id_archivo_acm_det= v_registros.id_archivo_acm_det;
 
-            if v_porcentaje = 2 or v_porcentaje = 4 then
+
+			if v_bloqueado = 'no' then
+            if (v_porcentaje = 2 or v_porcentaje = 4) then
              ---Sentencia de la insercion
         	insert into obingresos.tmovimiento_entidad(
 			id_moneda,
@@ -287,13 +292,17 @@ select
             id_movimiento_entidad = v_movimiento
             where acm.numero = v_registros.numero;
             ELSE
-          raise exception 'El porcentaje es: %  y no se encuentra no son porcentajes (2 y 4) ',v_porcentaje ;
-          end if;
-
+            raise exception 'El porcentaje es: %  solo se pueden realizar calculos con los porcentajes (2 y 4) ',v_porcentaje ;
+            end if;
+             --else
+           -- raise notice 'no se puede realizar el abono porque no se encuentra habilitada la agencia',v_registros.id_agencia;
+          	end if;
 
 
  end loop;
-
+			update obingresos.tarchivo_acm ac set
+            estado = 'finalizado'
+            where ac.id_archivo_acm = v_parametros.id_archivo_acm::integer;
 
 
 

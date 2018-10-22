@@ -334,7 +334,7 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
     alertaHabilitar: function(){
         var mensaje;
         var global = this;
-        Ext.Msg.confirm('Confirmacion', 'Esta Seguro que desea Habilitar la opción <b>Revertir Validación?</b>', function (btn) {
+        Ext.Msg.confirm('Confirmacion', 'Esta Seguro que desea <b>Habilitar Revertir Validación?</b>', function (btn) {
             if (btn == 'yes') {
                 global.onButtonHabilitar();
             }

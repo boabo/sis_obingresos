@@ -36,12 +36,11 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
         }else {
             this.store.baseParams.acm = that.acm;
             this.store.baseParams.id_archivo_acm_det = that.maestro.id_archivo_acm_det;
-            // this.store.baseParams.officce_id = that.maestro.codigo_int;
-            console.log('config',that.acm, that.maestro.id_archivo_acm_det);
+            // console.log('config',that.acm, that.maestro.id_archivo_acm_det);
         }
         if(that.acm == 'funcional' && that.maestro.id_archivo_acm_det ==undefined){
             this.store.baseParams.agencia = that.maestro.codigo_int;
-            console.log('config',that.acm, that.maestro.id_archivo_acm_det,  this.store.baseParams.agencia);
+            // console.log('config',that.acm, that.maestro.id_movimiento_entidad,  this.store.baseParams.agencia);
         }
 		this.load({params:{start:0, limit:this.tam_pag}})
 	},
