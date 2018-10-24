@@ -47,7 +47,7 @@ Phx.vista.ArchivoAcm=Ext.extend(Phx.gridInterfaz,{
             iconCls: 'bdocuments',
             disabled: true,
             handler:this.onButtonGenerar,
-            tooltip: '<b>Generar ACM</b><br/>Genera un detalle de archivos ACM.'
+            tooltip: '<b>Generar ACM</b><br/>Genera OVER COMISION del archivo ACM.'
         });
 
         this.addButton('btnrevertir_acm', {

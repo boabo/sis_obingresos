@@ -7,10 +7,27 @@
 *@description Archivo con la interfaz de usuario que permite la ejecucion de todas las funcionalidades del sistema
 */
 
+include_once ('../../media/styles.php');
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 <script>
 Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
+
+
+    viewConfig: {
+        stripeRows: false,
+        getRowClass: function(record) {
+            console.log('registro', record.data.abonado);
+            if(record.data.abonado == 'no'){
+                return 'prioridad_importanteA';
+            }
+        }/*,
+        listener: {
+            render: this.createTooltip
+        },*/
+
+    },
+    stateId:'ArchivoAcmDet',
 
 	constructor:function(config){
 		this.maestro=config.maestro;
@@ -393,6 +410,32 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
             grid:true,
             form:false
         },
+        {
+            config:{
+                name: 'abonado',
+                fieldLabel: 'Abonado',
+                allowBlank: false,
+                anchor: '80%',
+                gwidth: 100,
+                renderer: function (value, p, record) {
+                    if (record.data['abonado'] == 'no') {
+                        return String.format('<div title="no"><b><font color="red">{0}</font></b></div>', value);
+
+                    } else {
+                        return String.format('<div title="si"><b><font color="darkgreen">{0}</font></b></div>', value);
+                    }
+                },
+                /*renderer: function(value, p, record){
+                    return String.format('<b style="color:#274d80;vertical-align:middle;text-align:right;">{0}</b>', record.data['abonado']);
+                },*/
+                maxLength:10
+            },
+            type:'TextField',
+            filters:{pfiltro:'aad.abonado',type:'string'},
+            id_grupo:1,
+            grid:true,
+            form:false
+        },
 		{
 			config:{
 				name: 'estado_reg',
@@ -525,6 +568,7 @@ Phx.vista.ArchivoAcmDet=Ext.extend(Phx.gridInterfaz,{
 		{name:'agencia', type: 'string'},
         {name:'tipo_agencia', type: 'string'},
         {name:'estado', type: 'string'},
+        {name:'abonado', type: 'string'},
 
 
 	],

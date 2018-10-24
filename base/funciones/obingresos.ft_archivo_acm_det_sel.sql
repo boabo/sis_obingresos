@@ -1,11 +1,3 @@
-CREATE OR REPLACE FUNCTION obingresos.ft_archivo_acm_det_sel (
-  p_administrador integer,
-  p_id_usuario integer,
-  p_tabla varchar,
-  p_transaccion varchar
-)
-RETURNS varchar AS
-$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_archivo_acm_det_sel
@@ -58,20 +50,21 @@ BEGIN
 						aad.id_usuario_ai,
 						aad.id_usuario_mod,
 						aad.fecha_mod,
-                        aad.neto_total_mb,
-                        aad.cant_bol_mb,
-                        aad.neto_total_mt,
-                        aad.cant_bol_mt,
+            aad.neto_total_mb,
+            aad.cant_bol_mb,
+            aad.neto_total_mt,
+            aad.cant_bol_mt,
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
-                        age.nombre as agencia,
-                        age.tipo_agencia,
-                        arch.estado
+            age.nombre as agencia,
+            age.tipo_agencia,
+            arch.estado,
+            aad.abonado
 						from obingresos.tarchivo_acm_det aad
 						inner join segu.tusuario usu1 on usu1.id_usuario = aad.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = aad.id_usuario_mod
-                        left join obingresos.tagencia age on age.id_agencia = aad.id_agencia
-                        left join obingresos.tarchivo_acm arch on arch.id_archivo_acm = aad.id_archivo_acm
+            left join obingresos.tagencia age on age.id_agencia = aad.id_agencia
+            left join obingresos.tarchivo_acm arch on arch.id_archivo_acm = aad.id_archivo_acm
 				        where  ';
 
 			--Definicion de la respuesta
@@ -131,9 +124,3 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
-$body$
-LANGUAGE 'plpgsql'
-VOLATILE
-CALLED ON NULL INPUT
-SECURITY INVOKER
-COST 100;

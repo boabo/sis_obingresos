@@ -50,6 +50,7 @@ class MODArchivoAcmDet extends MODbase{
 		$this->captura('agencia','varchar');
     	$this->captura('tipo_agencia','varchar');
         $this->captura('estado','varchar');
+        $this->captura('abonado','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

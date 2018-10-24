@@ -7,10 +7,26 @@
 *@description Archivo con la interfaz de usuario que permite la ejecucion de todas las funcionalidades del sistema
 */
 
+include_once ('../../media/styles.php');
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 <script>
 Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
+
+    viewConfig: {
+        stripeRows: false,
+        getRowClass: function(record) {
+            console.log('registro', record.data.id_movimiento_entidad);
+            if(record.data.id_movimiento_entidad == null){
+                return 'prioridad_importanteA';
+            }
+        }/*,
+        listener: {
+            render: this.createTooltip
+        },*/
+
+    },
+    stateId:'Acm',
 
 	constructor:function(config){
 		this.maestro=config.maestro;

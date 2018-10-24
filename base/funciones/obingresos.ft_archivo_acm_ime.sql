@@ -291,9 +291,19 @@ select
             UPDATE obingresos.tacm acm set
             id_movimiento_entidad = v_movimiento
             where acm.numero = v_registros.numero;
+
+            UPDATE obingresos.tarchivo_acm_det aad set
+            abonado = 'si'
+            where 	aad.id_archivo_acm_det = v_registros.id_archivo_acm_det;
+
             ELSE
             raise exception 'El porcentaje es: %  solo se pueden realizar calculos con los porcentajes (2 y 4) ',v_porcentaje ;
             end if;
+            ELSE
+
+            UPDATE obingresos.tarchivo_acm_det aad set
+            abonado = 'no'
+            where 	aad.id_archivo_acm_det = v_registros.id_archivo_acm_det;
              --else
            -- raise notice 'no se puede realizar el abono porque no se encuentra habilitada la agencia',v_registros.id_agencia;
           	end if;
@@ -356,6 +366,10 @@ FOR 	v_registros in (select 	arch.id_agencia, acm.importe, acm.numero, acm.id_mo
             UPDATE obingresos.tacm acm set
             id_movimiento_entidad = null
             where acm.numero = v_registros.numero;
+
+            UPDATE obingresos.tarchivo_acm_det aad set
+            abonado = null
+            where 	aad.id_agencia = v_registros.id_agencia;
 
 			update obingresos.tarchivo_acm ac set
             estado = 'generado'
