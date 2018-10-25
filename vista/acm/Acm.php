@@ -489,12 +489,12 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 		{
 			config:{
 				name: 'id_movimiento_entidad',
-				fieldLabel: 'Id_Movimiento_Entidad',
+				fieldLabel: 'Id Movimiento Entidad',
 				allowBlank: false,
 				anchor: '80%',
 				gwidth: 100,
 				renderer: function(value, p, record){
-						return String.format('<b style="color:#FF7400;vertical-align:middle;text-align:right;">{0}</b>', record.data['id_movimiento_entidad']);
+                    return String.format('<b style="color:#FF7400;vertical-align:middle;text-align:right;">{0}</b>', record.data['id_movimiento_entidad']);
 				},
 				maxLength:10
 			},
@@ -629,6 +629,7 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 	bdel:false,
 	bsave:false,
     bnew:false,
+    bedit:false,
 
 	tabsouth :[
 		{

@@ -124,7 +124,18 @@ class RReporteArchivoAcm
                 ),
             ),
         );
-
+        $gdImage = imagecreatefrompng('../../../lib/imagenes/logos/logo.png');
+        // Add a drawing to the worksheetecho date('H:i:s') . " Add a drawing to the worksheet\n";
+        $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+        $objDrawing->setName('Sample image');
+        $objDrawing->setDescription('Sample image');
+        $objDrawing->setImageResource($gdImage);
+        $objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
+        $objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
+        $objDrawing->setHeight(65);
+        $objDrawing->setCoordinates('A1');
+        $objDrawing->setWorksheet($this->docexcel->getActiveSheet());
+        $this->docexcel->getActiveSheet()->mergeCells('A1:A3');
         /*$imagePath=dirname(__FILE__).'/../../lib/imagenes/logos/logo.jpg';
         $archivo= file($imagePath);
         //titulos
@@ -132,15 +143,15 @@ class RReporteArchivoAcm
         $this->drawing->setPath($archivo);
         $this->drawing->setCoordinates('A2');*/
 //        $this->Image(dirname(__FILE__).'/../../lib/imagenes/logos/logo.jpg', 10,5,40,20);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,1,'Boliviana de Aviacion (BoA)' );
-        $this->docexcel->getActiveSheet()->getStyle('A1:B1')->applyFromArray($styleBoa);
-        $this->docexcel->getActiveSheet()->mergeCells('A1:B1');
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'Ingresos' );
-        $this->docexcel->getActiveSheet()->getStyle('A2:B2')->applyFromArray($styleBoa);
-        $this->docexcel->getActiveSheet()->mergeCells('A2:B2');
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,3,'BSP-BO' );
-        $this->docexcel->getActiveSheet()->getStyle('A3:B3')->applyFromArray($styleBoa);
-        $this->docexcel->getActiveSheet()->mergeCells('A3:B3');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,1,'Boliviana de Aviacion (BoA)' );
+        $this->docexcel->getActiveSheet()->getStyle('B1')->applyFromArray($styleBoa);
+//        $this->docexcel->getActiveSheet()->mergeCells('B1');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,2,'Ingresos' );
+        $this->docexcel->getActiveSheet()->getStyle('B2')->applyFromArray($styleBoa);
+//        $this->docexcel->getActiveSheet()->mergeCells('B2');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,3,'BSP-BO' );
+        $this->docexcel->getActiveSheet()->getStyle('B3')->applyFromArray($styleBoa);
+//        $this->docexcel->getActiveSheet()->mergeCells('B3');
         $this->docexcel->getActiveSheet()->getStyle('C1:F1')->applyFromArray($styleBoa);
         $this->docexcel->getActiveSheet()->mergeCells('C1:F1');
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2,2,'REPORTE ACMs GENERADOS POR COMISIONES AGT-BSP / BV DOM EN BOB' );

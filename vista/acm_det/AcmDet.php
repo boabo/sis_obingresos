@@ -445,6 +445,7 @@ Phx.vista.AcmDet=Ext.extend(Phx.gridInterfaz,{
 	bdel:false,
 	bsave:false,
     bnew:false,
+    bedit:false,
 
 	onReloadPage: function (m) {
 		this.maestro = m;
