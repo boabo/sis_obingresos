@@ -7,11 +7,11 @@ ALTER TABLE ONLY obingresos.tagencia
 ALTER TABLE ONLY obingresos.tboleto
     ADD CONSTRAINT fk_boleto__id_agencia
     FOREIGN KEY (id_agencia) REFERENCES obingresos.tagencia(id_agencia);
-    
+
 ALTER TABLE ONLY obingresos.tboleto
     ADD CONSTRAINT fk_boleto__id_moneda_boleto
     FOREIGN KEY (id_moneda_boleto) REFERENCES param.tmoneda(id_moneda);
-    
+
 ALTER TABLE ONLY obingresos.tdeposito
     ADD CONSTRAINT fk_deposito__id_moneda_deposito
     FOREIGN KEY (id_moneda_deposito) REFERENCES param.tmoneda(id_moneda);
@@ -19,21 +19,21 @@ ALTER TABLE ONLY obingresos.tdeposito
 ALTER TABLE ONLY obingresos.tdeposito
     ADD CONSTRAINT fk_deposito__id_agencia
     FOREIGN KEY (id_agencia) REFERENCES obingresos.tagencia(id_agencia);
-    
+
 ALTER TABLE ONLY obingresos.tdeposito_boleto
     ADD CONSTRAINT fk_deposito_boleto__id_boleto
     FOREIGN KEY (id_boleto) REFERENCES obingresos.tboleto(id_boleto);
-    
+
 ALTER TABLE ONLY obingresos.tdeposito_boleto
     ADD CONSTRAINT fk_deposito_boleto__id_deposito
     FOREIGN KEY (id_deposito) REFERENCES obingresos.tdeposito(id_deposito);
-    
+
 CREATE TRIGGER tdeposito_tr
-  AFTER INSERT 
-  ON obingresos.tdeposito FOR EACH ROW 
+  AFTER INSERT
+  ON obingresos.tdeposito FOR EACH ROW
   EXECUTE PROCEDURE obingresos.f_tr_deposito();
 
-    
+
 
 /********************************************F-DEP-JRR-OBINGRESOS-0-10/12/2015********************************************/
 
@@ -43,11 +43,11 @@ CREATE TRIGGER tdeposito_tr
 ALTER TABLE ONLY obingresos.tperiodo_venta
     ADD CONSTRAINT fk_tperiodo_venta__id_pais
     FOREIGN KEY (id_pais) REFERENCES param.tlugar(id_lugar);
-    
+
 ALTER TABLE ONLY obingresos.tperiodo_venta
     ADD CONSTRAINT fk_tperiodo_venta__id_gestion
     FOREIGN KEY (id_gestion) REFERENCES param.tgestion(id_gestion);
-    
+
 ALTER TABLE ONLY obingresos.tagencia
     ADD CONSTRAINT fk_tagencia__id_lugar
     FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
@@ -57,10 +57,10 @@ ALTER TABLE ONLY obingresos.tforma_pago
     FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
 
 CREATE TRIGGER trig_partition_boleto
-  BEFORE INSERT 
-  ON obingresos.tboleto FOR EACH ROW 
+  BEFORE INSERT
+  ON obingresos.tboleto FOR EACH ROW
   EXECUTE PROCEDURE obingresos.ftrig_partition_boleto();
-  
+
 ALTER TABLE ONLY obingresos.taeropuerto
     ADD CONSTRAINT fk_taeropuerto__id_lugar
     FOREIGN KEY (id_lugar) REFERENCES param.tlugar(id_lugar);
@@ -72,7 +72,7 @@ ALTER TABLE ONLY obingresos.taeropuerto
 ALTER TABLE ONLY obingresos.tboleto_vuelo
     ADD CONSTRAINT fk_tboleto_vuelo__id_aeropuerto_origen
     FOREIGN KEY (id_aeropuerto_origen) REFERENCES obingresos.taeropuerto(id_aeropuerto);
-    
+
 ALTER TABLE ONLY obingresos.tboleto_vuelo
     ADD CONSTRAINT fk_tboleto_vuelo__id_aeropuerto_destino
     FOREIGN KEY (id_aeropuerto_destino) REFERENCES obingresos.taeropuerto(id_aeropuerto);
@@ -305,15 +305,15 @@ ALTER TABLE ONLY obingresos.tdetalle_boletos_web
 ALTER TABLE ONLY obingresos.tboleto_retweb
     ADD CONSTRAINT fk_tboleto_retweb__id_moneda
     FOREIGN KEY (id_moneda) REFERENCES param.tmoneda(id_moneda);
-    
+
 ALTER TABLE ONLY obingresos.tdetalle_boletos_web
     ADD CONSTRAINT fk_tdetalle_boletos_web__id_periodo_venta
     FOREIGN KEY (id_periodo_venta) REFERENCES obingresos.tperiodo_venta(id_periodo_venta);
-    
+
 ALTER TABLE ONLY obingresos.tboleto_retweb
     ADD CONSTRAINT fk_boleto_retweb__id_agencia
     FOREIGN KEY (id_agencia) REFERENCES obingresos.tagencia(id_agencia);
-    
+
 ALTER TABLE ONLY obingresos.tdetalle_boletos_web
     ADD CONSTRAINT fk_tdetalle_boletos_web__id_moneda
     FOREIGN KEY (id_moneda) REFERENCES param.tmoneda(id_moneda);
@@ -563,3 +563,76 @@ AS
   GROUP BY tboleto.localizador, tboleto.id_moneda_boleto, tboleto.moneda, tboleto.origen, tboleto.destino, tboleto.fecha_emision, tboleto.id_punto_venta, tboleto.id_usuario_reg;
 
 /********************************************F-DEP-FEA-OBINGRESOS-0-07/11/2018********************************************/
+
+/************************************I-DEP-IRVA-OBINGRESOS-0-23/11/2017*************************************************/
+CREATE VIEW obingresos.vdepositos_imp (
+    id_deposito,
+    id_agencia,
+    fecha,
+    nro_deposito,
+    monto_deposito,
+    estado,
+    tipo,
+    nro_deposito_boa,
+    id_periodo_venta)
+AS
+SELECT mo.id_movimiento_entidad AS id_deposito,
+    mo.id_agencia,
+    mo.fecha,
+    mo.autorizacion__nro_deposito AS nro_deposito,
+        CASE
+            WHEN mo.id_moneda = 1 THEN mo.monto
+            ELSE param.f_convertir_moneda(2, 1, mo.monto, mo.fecha,
+                'O'::character varying, 2)
+        END AS monto_deposito,
+    'validado'::character varying AS estado,
+    'agencia'::character varying AS tipo,
+    dep.nro_deposito_boa,
+    mo.id_periodo_venta
+FROM obingresos.tmovimiento_entidad mo
+     LEFT JOIN obingresos.tdeposito dep ON dep.nro_deposito::text =
+         mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+WHERE mo.fecha >= '2017-01-08'::date AND mo.fecha <= now()::date AND
+    mo.cierre_periodo::text = 'no'::text AND mo.ajuste::text = 'no'::text AND mo.garantia::text = 'no'::text AND mo.estado_reg::text = 'activo'::text AND mo.tipo::text = 'credito'::text
+UNION
+SELECT mo.id_movimiento_entidad AS id_deposito,
+    mo.id_agencia,
+    mo.fecha,
+    mo.autorizacion__nro_deposito AS nro_deposito,
+        CASE
+            WHEN mo.id_moneda = 1 THEN mo.monto
+            ELSE param.f_convertir_moneda(2, 1, mo.monto, mo.fecha,
+                'O'::character varying, 2)
+        END AS monto_deposito,
+    'validado'::character varying AS estado,
+    'agencia'::character varying AS tipo,
+    NULL::character varying(70) AS nro_deposito_boa,
+    mo.id_periodo_venta
+FROM obingresos.tmovimiento_entidad mo
+WHERE mo.fecha >= '2017-01-08'::date AND mo.fecha <= now()::date AND
+    mo.cierre_periodo::text = 'no'::text AND mo.ajuste::text = 'si'::text AND mo.garantia::text = 'no'::text AND mo.estado_reg::text = 'activo'::text AND mo.tipo::text = 'credito'::text
+ORDER BY 3;
+
+
+CREATE VIEW obingresos.vcredito_ag_boleta (
+    id_agencia,
+    id_periodo_venta,
+    tipo,
+    mes,
+    fecha_ini,
+    fecha_fin,
+    monto_total)
+AS
+SELECT mo.id_agencia,
+    mo.id_periodo_venta,
+    mo.tipo,
+    pe.mes,
+    pe.fecha_ini,
+    pe.fecha_fin,
+    sum(mo.monto_total) AS monto_total
+FROM obingresos.tmovimiento_entidad mo
+     LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+WHERE mo.tipo::text = 'credito'::text AND mo.estado_reg::text = 'activo'::text
+GROUP BY mo.tipo, mo.id_agencia, mo.id_periodo_venta, pe.mes, pe.fecha_ini, pe.fecha_fin
+ORDER BY mo.id_periodo_venta;
+/************************************F-DEP-IRVA-OBINGRESOS-0-23/11/2017*************************************************/
