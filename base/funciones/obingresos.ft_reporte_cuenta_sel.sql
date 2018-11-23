@@ -40,6 +40,9 @@ DECLARE
     v_where_forma		varchar;
     v_records			record;
     v_calculo 			numeric;
+    v_mes				integer;
+    v_dia				integer;
+    v_id_periodo_veta	integer;
 
 BEGIN
 
@@ -56,6 +59,8 @@ BEGIN
 	if(p_transaccion='OBING_ENT_SEL')then
 
     	begin
+
+
 
         CREATE TEMPORARY TABLE temp ( id_agencia  int4,
                                       nombre varchar,
@@ -845,13 +850,13 @@ group by me.id_agencia,mon.codigo_internacional
     /*********************************
      #TRANSACCION:  'OBING_SALVIG_SEL'
      #DESCRIPCION:	Reporte saldo vigente
-     #AUTOR:		MMV
-     #FECHA:		18-11-2018
+     #AUTOR:		IRVA
+     #FECHA:		23-11-2018
     ***********************************/
     elsif(p_transaccion='OBING_SALVIG_SEL')then
 
         begin
-
+		--raise exception 'LLEGA AQUI %',v_parametros.fecha_ini;
         v_consulta ='with credito as (	select  mo.id_agencia,
 		sum(case when mo.ajuste = ''no'' and  mo.garantia = ''no''   then
             	(case when mo.id_moneda = 1 then
@@ -886,7 +891,7 @@ group by me.id_agencia,mon.codigo_internacional
             0
         end) as ajuste_credito
         from obingresos.tmovimiento_entidad mo
-		where mo.fecha >= ''8/1/2017'' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
+		where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
          mo.cierre_periodo = ''no'' and
       	 mo.estado_reg = ''activo'' and
          mo.tipo = ''credito''
@@ -913,7 +918,7 @@ sum(case when mo.ajuste = ''no'' then
             0
         end) as ajuste_debito
 from obingresos.tmovimiento_entidad mo
-where mo.fecha >= ''8/1/2017'' and mo.fecha <='''||v_parametros.fecha_fin||''' and
+where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <='''||v_parametros.fecha_fin||''' and
       mo.tipo = ''debito'' and
       mo.cierre_periodo = ''no'' and
       mo.estado_reg = ''activo''
@@ -933,7 +938,8 @@ contrato as( select max(id_contrato) as ultimo_contrato,
                 cr.garantia as codigo_ciudad,
                 de.monto_debito,
                (cr.ajuste_credito - de.ajuste_debito) as monto_ajustes,
-               ( cr.garantia+ cr.monto_credito - de.monto_debito )+(cr.ajuste_credito- de.ajuste_debito) as saldo
+               ( cr.garantia+ cr.monto_credito - de.monto_debito )+(cr.ajuste_credito- de.ajuste_debito) as saldo_con_boleto,
+               ( cr.monto_credito - de.monto_debito) + (cr.ajuste_credito - de.ajuste_debito) as saldo_sin_boleto
         from obingresos.tagencia ag
         inner join credito cr on cr.id_agencia = ag.id_agencia
         left join  debitos de on de.id_agencia = ag.id_agencia
@@ -942,14 +948,13 @@ contrato as( select max(id_contrato) as ultimo_contrato,
 		inner join param.tlugar l on l.id_lugar = ag.id_lugar
         where  '||v_parametros.filtro||'
         order by nombre';
-
         return v_consulta;
 		end;
     /*********************************
      #TRANSACCION:  'OBING_SALVIG_CONT'
      #DESCRIPCION:	Listado
-     #AUTOR:		JRR
-     #FECHA:		18-11-2016
+     #AUTOR:		IRVA
+     #FECHA:		23-11-2018
     ***********************************/
 
     elsif(p_transaccion='OBING_SALVIG_CONT')then
@@ -989,7 +994,7 @@ contrato as( select max(id_contrato) as ultimo_contrato,
             0
         end) as ajuste_credito
         from obingresos.tmovimiento_entidad mo
-		where mo.fecha >= ''8/1/2017'' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
+		where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
          mo.cierre_periodo = ''no'' and
       	 mo.estado_reg = ''activo'' and
          mo.tipo = ''credito''
@@ -1016,7 +1021,7 @@ sum(case when mo.ajuste = ''no'' then
             0
         end) as ajuste_debito
 from obingresos.tmovimiento_entidad mo
-where mo.fecha >= ''8/1/2017'' and mo.fecha <='''||v_parametros.fecha_fin||''' and
+where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <='''||v_parametros.fecha_fin||''' and
       mo.tipo = ''debito'' and
       mo.cierre_periodo = ''no'' and
       mo.estado_reg = ''activo''
@@ -1036,7 +1041,8 @@ contrato as( select max(id_contrato) as ultimo_contrato,
                 cr.garantia as codigo_ciudad,
                 de.monto_debito,
                (cr.ajuste_credito - de.ajuste_debito) as monto_ajustes,
-               ( cr.garantia+ cr.monto_credito - de.monto_debito )+(cr.ajuste_credito- de.ajuste_debito) as saldo
+               ( cr.garantia+ cr.monto_credito - de.monto_debito )+(cr.ajuste_credito- de.ajuste_debito) as saldo_con_boleto,
+               ( cr.monto_credito - de.monto_debito) + (cr.ajuste_credito - de.ajuste_debito) as saldo_sin_boleto
         from obingresos.tagencia ag
         inner join credito cr on cr.id_agencia = ag.id_agencia
         left join  debitos de on de.id_agencia = ag.id_agencia
@@ -1048,23 +1054,26 @@ select count(id_agencia),
  sum(monto_credito) as total_creditos,
  sum(monto_debito)as total_debitos,
  sum(monto_ajustes) as total_ajuste,
- sum(saldo) as total_saldo
+ sum(saldo_con_boleto) as total_saldo_con_boleto,
+ sum(saldo_sin_boleto) as total_saldo_sin_boleto
 from detalle';
         --Devuelve la respuesta
         return v_consulta;
 
       end;
-      /*********************************
+/*********************************
      #TRANSACCION:  'OBING_CUT_SEL'
      #DESCRIPCION:	Listado
-     #AUTOR:		MMV
-     #FECHA:		18-11-2016
+     #AUTOR:		IRVA
+     #FECHA:		23-11-2018
     ***********************************/
 
     elsif(p_transaccion='OBING_CUT_SEL')then
 
-      begin
-      		v_consulta = 'select  ''boletos''::varchar as tipo,
+    begin
+      		v_consulta = '
+
+	(select  ''boletos''::varchar as tipo,
                                   bp.id_agencia,
                                   bp.id_periodo_venta,
                                   ag.nombre,
@@ -1076,14 +1085,163 @@ from detalle';
                                    where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
                                    null::date as fecha,
                                    null::varchar as nro_deposito,
-                                   null::numeric as garante
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
                           from obingresos.vboletos_a_pagar bp
                           inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
                           where bp.id_agencia = '||v_parametros.id_agencia||'
+                          --and bp.fecha_ini >= '''||v_parametros.fecha_ini||''' and bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
+                          and bp.id_periodo_venta >=(select max(bp.id_periodo_venta)
+                          														from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_ini <= '''||v_parametros.fecha_ini||''')
+                          and bp.id_periodo_venta <=(select max(bp.id_periodo_venta)
+                                                                                from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
+                                                                                )
+
+
+                       /*OBTENEMOS EL PERIODO VIGENTE */
+                       /*union
+
+                          select  ''boletos''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta is null*/
+                          /*-----------------------------------------------------------------*/
+
+						union
+                         /*OBTENEMOS PERIODO ANTERIOR*/
+
+
+                         select  ''boletos''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
+                          														from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin <='''||v_parametros.fecha_ini||''')
+
+                        /*---------------------------------------------------------------------------------------------*/
+                        union
+                        /*OBTENEMOS LOS DATOS AL PERIODO INICIO QUE CORRESPONDE*/
+
+
+                         select  ''boletos''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
+                          														from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_ini <= '''||v_parametros.fecha_ini||''')
+
+                        /*---------------------------------------------------------------------------------------------*/
+                        union
+                        /*OBTENEMOS DATOS DEL PERIODO FINAL QUE CORRESPONDE*/
+                        select  ''boletos''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
+                                                                                from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
+                                                                                )
+
+
                           union
+
+                           select  ''boletos''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select bp.id_periodo_venta
+                                                                                from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin >= '''||v_parametros.fecha_fin||'''
+                                                                                FETCH FIRST 1 ROW ONLY
+                                                                                )
+
+                          )
+                        /*---------------------------------------------------------------------------------------------*/
+
+
+                          union
+
+
                           select  ''deposito''::varchar as tipo,
                                   db.id_agencia,
-                                  null as id_periodo_venta,
+                                  db.id_periodo_venta,
                                   null::varchar as nombre,
                                   null::text as periodo,
                                   null::numeric as monto_debito,
@@ -1093,26 +1251,72 @@ from detalle';
                                   db.nro_deposito,
                                   (select  COALESCE(mo.monto,0)
                                   from obingresos.tmovimiento_entidad mo
-                                  where mo.id_agencia =  '||v_parametros.id_agencia||' and
-                                  mo.garantia = ''si''and mo.id_periodo_venta is null) as garante
+                                  where mo.id_agencia = '||v_parametros.id_agencia||'  and
+                                  mo.garantia = ''si'' and mo.id_periodo_venta is null) as garante,
+                                  db.nro_deposito_boa,
+                                  null::numeric as monto_sin_boleta
                                   from obingresos.vdepositos_imp db
                           where db.id_agencia = '||v_parametros.id_agencia||'
+                          and db.id_periodo_venta >=(select max(bp.id_periodo_venta)
+                          														from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_ini <= '''||v_parametros.fecha_ini||''')
+                          and db.id_periodo_venta <=(select max(bp.id_periodo_venta)
+                                                                                from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
+                                                                                )
+
+                            UNION
+
+                          select  ''deposito''::varchar as tipo,
+                                  db.id_agencia,
+                                  db.id_periodo_venta,
+                                  null::varchar as nombre,
+                                  null::text as periodo,
+                                  null::numeric as monto_debito,
+                                  db.monto_deposito,
+                                  null::date as fecha_pago,
+                                  db.fecha,
+                                  db.nro_deposito,
+                                  (select  COALESCE(mo.monto,0)
+                                  from obingresos.tmovimiento_entidad mo
+                                  where mo.id_agencia = '||v_parametros.id_agencia||'  and
+                                  mo.garantia = ''si'' and mo.id_periodo_venta is null) as garante,
+                                  db.nro_deposito_boa,
+                                  null::numeric as monto_sin_boleta
+                                  from obingresos.vdepositos_imp db
+                          where db.id_agencia = '||v_parametros.id_agencia||'
+                          and db.id_periodo_venta >=(select max(bp.id_periodo_venta)
+                          														from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_ini <= '''||v_parametros.fecha_ini||''')
+                          and db.id_periodo_venta <= (select bp.id_periodo_venta
+                                                                                from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin >= '''||v_parametros.fecha_fin||'''
+                                                                                FETCH FIRST 1 ROW ONLY
+                                                                                )
+
+
                           order by id_periodo_venta ,fecha';
 
        --Devuelve la respuesta
     return v_consulta;
 	end;
-      /*********************************
+
+          /*********************************
      #TRANSACCION:  'OBING_MOV_SEL'
      #DESCRIPCION:	Listado
-     #AUTOR:		MMV
-     #FECHA:		18-11-2016
+     #AUTOR:		IRVA
+     #FECHA:		23-11-2018
     ***********************************/
 
     elsif(p_transaccion='OBING_MOV_SEL')then
 
       begin
-      		v_consulta = 'with aux as (select mo.tipo,
+
+      v_mes = v_parametros.mes_ini;
+      v_dia = v_parametros.dia_ini;
+      		v_consulta = '
+
+    (  with aux as (select mo.tipo,
                                        mo.id_agencia,
                                        COALESCE(TO_CHAR(mo.fecha_ini,''DD'')||'' al ''|| TO_CHAR(mo.fecha_fin,''DD'')||'' ''||mo.mes||'' ''||EXTRACT(YEAR FROM mo.fecha_ini),''actual'')::text as periodo,
                                        mo.id_periodo_venta,
@@ -1120,8 +1324,9 @@ from detalle';
                                        from obingresos.vdebito_ag mo
                                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
                                        where mo.id_agencia = '||v_parametros.id_agencia||'
-                                       order by id_periodo_venta)
-                                select mo.tipo as credito,
+            						   order by id_periodo_venta)
+
+      select mo.tipo as credito,
                                        COALESCE(au.tipo,''debito'') as debito,
                                        ag.nombre,
                                        ag.codigo_int,
@@ -1130,14 +1335,81 @@ from detalle';
                                        COALESCE(TO_CHAR(mo.fecha_ini,''DD'')||'' al ''|| TO_CHAR(mo.fecha_fin,''DD'')||'' ''||mo.mes||'' ''||EXTRACT(YEAR FROM mo.fecha_ini),''Periodo Vigente'')::text as periodo,
                                        mo.monto_total,
                                        COALESCE(au.monto_total,0) as  monto_total_debito,
-                                        mo.monto_total - COALESCE(au.monto_total,0) as saldo
+                                       mo.monto_total - COALESCE(au.monto_total,0) as saldo,
+                                       mcb.monto_total - COALESCE(au.monto_total,0) as saldo2
                                        from obingresos.vcredito_ag mo
                                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                                       inner join obingresos.vcredito_ag_boleta mcb on mcb.id_agencia = mo.id_agencia
                                        left join aux au on  COALESCE (au.id_periodo_venta,0) = COALESCE(mo.id_periodo_venta,0)
                                        where mo.id_agencia = '||v_parametros.id_agencia||'
+                                       and mcb.id_periodo_venta = mo.id_periodo_venta and
+                                       mo.id_periodo_venta = (SELECT MAX(mo.id_periodo_venta)
+                                                               FROM obingresos.vcredito_ag mo
+                                                               where
+                                                               mo.fecha_fin <= '''||v_parametros.fecha_ini||'''
+                                                               )
+                                                               )
+
+
+
+            UNION
+
+
+           ( with aux as (select mo.tipo,
+                                       mo.id_agencia,
+                                       COALESCE(TO_CHAR(mo.fecha_ini,''DD'')||'' al ''|| TO_CHAR(mo.fecha_fin,''DD'')||'' ''||mo.mes||'' ''||EXTRACT(YEAR FROM mo.fecha_ini),''actual'')::text as periodo,
+                                       mo.id_periodo_venta,
+                                       mo.monto_total
+                                       from obingresos.vdebito_ag mo
+                                       inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                                       where mo.id_agencia = '||v_parametros.id_agencia||'
+            						   order by id_periodo_venta)
+
+
+                                (select mo.tipo as credito,
+                                       COALESCE(au.tipo,''debito'') as debito,
+                                       ag.nombre,
+                                       ag.codigo_int,
+                                       mo.id_agencia,
+                                       mo.id_periodo_venta,
+                                       COALESCE(TO_CHAR(mo.fecha_ini,''DD'')||'' al ''|| TO_CHAR(mo.fecha_fin,''DD'')||'' ''||mo.mes||'' ''||EXTRACT(YEAR FROM mo.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                       mo.monto_total,
+                                       COALESCE(au.monto_total,0) as  monto_total_debito,
+                                       mo.monto_total - COALESCE(au.monto_total,0) as saldo,
+                                       mcb.monto_total - COALESCE(au.monto_total,0) as saldo2
+                                       from obingresos.vcredito_ag mo
+                                       inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                                       inner join obingresos.vcredito_ag_boleta mcb on mcb.id_agencia = mo.id_agencia
+                                       left join aux au on  COALESCE (au.id_periodo_venta,0) = COALESCE(mo.id_periodo_venta,0)
+                                       where mo.id_agencia = '||v_parametros.id_agencia||'
+                                       and mo.id_periodo_venta = mcb.id_periodo_venta
+                                       and mo.fecha_ini between '''||v_parametros.fecha_ini||''' and '''||v_parametros.fecha_fin||'''
+                                       and mcb.fecha_ini between '''||v_parametros.fecha_ini||''' and '''||v_parametros.fecha_fin||''')
+                                 UNION
+                                (select mo.tipo as credito,
+                                       COALESCE(au.tipo,''debito'') as debito,
+                                       ag.nombre,
+                                       ag.codigo_int,
+                                       mo.id_agencia,
+                                       mo.id_periodo_venta,
+                                       COALESCE(TO_CHAR(mo.fecha_ini,''DD'')||'' al ''|| TO_CHAR(mo.fecha_fin,''DD'')||'' ''||mo.mes||'' ''||EXTRACT(YEAR FROM mo.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                       mo.monto_total,
+                                       COALESCE(au.monto_total,0) as  monto_total_debito,
+                                       mo.monto_total - COALESCE(au.monto_total,0) as saldo,
+                                       mcb.monto_total - COALESCE(au.monto_total,0) as saldo2
+                                       from obingresos.vcredito_ag mo
+                                       inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                                       inner join obingresos.vcredito_ag_boleta mcb on mcb.id_agencia = mo.id_agencia
+                                       left join aux au on  COALESCE (au.id_periodo_venta,0) = COALESCE(mo.id_periodo_venta,0)
+                                       where mo.id_agencia = '||v_parametros.id_agencia||'
+                                       and mo.id_periodo_venta = mcb.id_periodo_venta
+                                       and to_char(mo.fecha_ini,''MM'') >= '''||v_parametros.mes_ini||'''
+                                       and to_char(mo.fecha_fin,''DD'') between '''||v_parametros.dia_ini||'''  and to_char(mo.fecha_fin,''DD'') and mo.fecha_fin <='''||v_parametros.fecha_fin||''')
+                                       )
                                        order by id_periodo_venta';
 
        --Devuelve la respuesta
+
     return v_consulta;
 	end;
 
@@ -1169,13 +1441,15 @@ from detalle';
 	    /*********************************
      #TRANSACCION:  'OBING_RERE_SEL'
      #DESCRIPCION:	Listado
-     #AUTOR:		MMV
-     #FECHA:		18-11-2016
+     #AUTOR:		IRVA
+     #FECHA:		23-11-2018
     ***********************************/
 
     elsif(p_transaccion='OBING_RERE_SEL')then
 
       begin
+
+
 
       		v_consulta = 'with credito as (	select  mo.id_agencia,
 		sum(case when mo.ajuste = ''no'' and  mo.garantia = ''no''   then
@@ -1211,7 +1485,7 @@ from detalle';
             0
         end) as ajuste_credito
         from obingresos.tmovimiento_entidad mo
-		where mo.fecha >= ''8/1/2017'' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
+		where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
          mo.cierre_periodo = ''no'' and
       	 mo.estado_reg = ''activo'' and
          mo.tipo = ''credito''
@@ -1238,7 +1512,7 @@ sum(case when mo.ajuste = ''no'' then
             0
         end) as ajuste_debito
 from obingresos.tmovimiento_entidad mo
-where mo.fecha >= ''8/1/2017'' and mo.fecha <='''||v_parametros.fecha_fin||''' and
+where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <='''||v_parametros.fecha_fin||''' and
       mo.tipo = ''debito'' and
       mo.cierre_periodo = ''no'' and
       mo.estado_reg = ''activo''
@@ -1258,7 +1532,8 @@ contrato as( select max(id_contrato) as ultimo_contrato,
                 cr.garantia as codigo_ciudad,
                 de.monto_debito as monto_debitos,
                (cr.ajuste_credito - de.ajuste_debito) as monto_ajustes,
-               ( cr.garantia+ cr.monto_credito - de.monto_debito )+(cr.ajuste_credito- de.ajuste_debito) as saldo
+               ( cr.garantia+ cr.monto_credito - de.monto_debito )+(cr.ajuste_credito- de.ajuste_debito) as saldo_con_boleto,
+               ( cr.monto_credito - de.monto_debito) + (cr.ajuste_credito - de.ajuste_debito) as saldo_sin_boleto
         from obingresos.tagencia ag
         inner join credito cr on cr.id_agencia = ag.id_agencia
         left join  debitos de on de.id_agencia = ag.id_agencia

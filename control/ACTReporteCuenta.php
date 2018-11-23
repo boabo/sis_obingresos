@@ -79,7 +79,8 @@ class ACTReporteCuenta extends ACTbase{
              $temp['monto_credito'] = $this->res->extraData['total_creditos'];
              $temp['monto_debito'] = $this->res->extraData['total_debitos'];
              $temp['monto_ajustes'] = $this->res->extraData['total_ajustes'];
-             $temp['saldo'] = $this->res->extraData['total_saldo'];
+             $temp['saldo_con_boleto'] = $this->res->extraData['total_saldo_con_boleto'];
+             $temp['saldo_sin_boleto'] = $this->res->extraData['total_saldo_sin_boleto'];
              $temp['tipo_reg'] = 'summary';
              $temp['id_agencia'] = 0;
              $this->res->total++;
