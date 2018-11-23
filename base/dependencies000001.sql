@@ -320,3 +320,246 @@ ALTER TABLE ONLY obingresos.tdetalle_boletos_web
 
 
 /********************************************F-DEP-JRR-OBINGRESOS-0-24/07/2017********************************************/
+
+
+/********************************************I-DEP-FEA-OBINGRESOS-0-07/11/2018********************************************/
+
+CREATE OR REPLACE VIEW obingresos.vboletos_a_pagar (
+    id_agencia,
+    id_periodo_venta,
+    mes,
+    fecha_ini,
+    fecha_fin,
+    monto_debito)
+AS
+ SELECT mo.id_agencia,
+    mo.id_periodo_venta,
+    pe.mes,
+    pe.fecha_ini,
+    pe.fecha_fin,
+    sum(
+        CASE
+            WHEN mo.ajuste::text = 'no'::text THEN
+            CASE
+                WHEN mo.id_moneda = 1 THEN mo.monto
+                ELSE param.f_convertir_moneda(2, 1, mo.monto, mo.fecha, 'O'::character varying, 2)
+            END
+            ELSE 0::numeric
+        END) + sum(
+        CASE
+            WHEN mo.ajuste::text = 'si'::text THEN
+            CASE
+                WHEN mo.id_moneda = 1 THEN mo.monto
+                ELSE param.f_convertir_moneda(2, 1, mo.monto, mo.fecha, 'O'::character varying, 2)
+            END
+            ELSE 0::numeric
+        END) AS monto_debito
+   FROM obingresos.tmovimiento_entidad mo
+     LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+  WHERE mo.tipo::text = 'debito'::text AND mo.estado_reg::text = 'activo'::text AND mo.cierre_periodo::text = 'no'::text
+  GROUP BY mo.id_periodo_venta, mo.tipo, mo.id_agencia, pe.mes, pe.fecha_ini, pe.fecha_fin
+  ORDER BY mo.id_periodo_venta;
+
+  CREATE OR REPLACE VIEW obingresos.vboletos_erp (
+    nro_boleto,
+    importe,
+    comision,
+    codigo,
+    codigo_in,
+    cambio,
+    fecha_emision,
+    total,
+    total_ingresos)
+AS
+ WITH temp AS (
+         SELECT m_1.nro_boleto,
+            p2_1.importe,
+            m_1.comision,
+            f_1.codigo,
+            p2_1.importe + m_1.comision AS total_ingresos
+           FROM obingresos.tboleto_amadeus m_1
+             JOIN obingresos.tboleto_amadeus_forma_pago p2_1 ON p2_1.id_boleto_amadeus = m_1.id_boleto_amadeus
+             JOIN obingresos.tforma_pago f_1 ON f_1.id_forma_pago = p2_1.id_forma_pago
+          WHERE m_1.fecha_emision >= '2018-01-01'::date AND m_1.fecha_emision <= '2018-01-31'::date AND p2_1.importe <> 0::numeric AND m_1.voided::text = 'no'::text AND m_1.estado_reg::text = 'activo'::text AND m_1.voided::text = 'no'::text
+          ORDER BY m_1.nro_boleto
+        )
+ SELECT m.nro_boleto,
+    p2.importe,
+    m.comision,
+    a.codigo,
+    f.codigo AS codigo_in,
+        CASE
+            WHEN f.codigo::text <> a.codigo::text OR f.codigo::text = a.codigo::text AND p2.importe <> a.importe THEN 1
+            ELSE 0
+        END AS cambio,
+    m.fecha_emision,
+    p2.importe + m.comision AS total,
+    a.total_ingresos
+   FROM obingresos.tboleto_2018 m
+     JOIN obingresos.tboleto_forma_pago p2 ON p2.id_boleto = m.id_boleto
+     JOIN obingresos.tforma_pago f ON f.id_forma_pago = p2.id_forma_pago
+     JOIN temp a ON a.nro_boleto::text = m.nro_boleto::text
+  WHERE
+        CASE
+            WHEN f.codigo::text <> a.codigo::text OR f.codigo::text = a.codigo::text AND p2.importe <> a.importe THEN 1
+            ELSE 0
+        END = 1 AND m.fecha_emision >= '2018-01-01'::date AND m.fecha_emision <= '2018-01-31'::date AND m.voided::text = 'no'::text AND p2.importe <> 0::numeric
+  ORDER BY m.nro_boleto;
+
+
+CREATE OR REPLACE VIEW obingresos.vcomision_boletos (
+    id_boleto,
+    importe)
+AS
+ SELECT bc.id_boleto,
+    sum(bc.importe) AS importe
+   FROM obingresos.tboleto_comision bc
+  GROUP BY bc.id_boleto;
+
+CREATE VIEW obingresos.vcredito_ag (
+    id_agencia,
+    id_periodo_venta,
+    tipo,
+    mes,
+    fecha_ini,
+    fecha_fin,
+    monto_total)
+AS
+SELECT mo.id_agencia,
+    mo.id_periodo_venta,
+    mo.tipo,
+    pe.mes,
+    pe.fecha_ini,
+    pe.fecha_fin,
+    sum(mo.monto_total) AS monto_total
+FROM obingresos.tmovimiento_entidad mo
+     LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+WHERE mo.tipo::text = 'credito'::text AND mo.estado_reg::text = 'activo'::text
+    AND mo.garantia::text = 'no'::text
+GROUP BY mo.tipo, mo.id_agencia, mo.id_periodo_venta, pe.mes, pe.fecha_ini, pe.fecha_fin
+ORDER BY mo.id_periodo_venta;
+
+
+CREATE OR REPLACE VIEW obingresos.vdebito_ag (
+    id_agencia,
+    id_periodo_venta,
+    tipo,
+    mes,
+    fecha_ini,
+    fecha_fin,
+    monto_total)
+AS
+ SELECT mo.id_agencia,
+    mo.id_periodo_venta,
+    mo.tipo,
+    pe.mes,
+    pe.fecha_ini,
+    pe.fecha_fin,
+    sum(mo.monto) AS monto_total
+   FROM obingresos.tmovimiento_entidad mo
+     LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+  WHERE mo.tipo::text = 'debito'::text AND mo.estado_reg::text = 'activo'::text AND mo.cierre_periodo::text = 'no'::text
+  GROUP BY mo.tipo, mo.id_agencia, mo.id_periodo_venta, pe.mes, pe.fecha_ini, pe.fecha_fin
+  ORDER BY mo.id_periodo_venta;
+
+  CREATE OR REPLACE VIEW obingresos.vdepositos_imp (
+    id_deposito,
+    id_agencia,
+    fecha,
+    nro_deposito,
+    monto_deposito,
+    estado,
+    tipo)
+AS
+ SELECT mo.id_movimiento_entidad AS id_deposito,
+    mo.id_agencia,
+    mo.fecha,
+    mo.autorizacion__nro_deposito AS nro_deposito,
+        CASE
+            WHEN mo.id_moneda = 1 THEN mo.monto
+            ELSE param.f_convertir_moneda(2, 1, mo.monto, mo.fecha, 'O'::character varying, 2)
+        END AS monto_deposito,
+    'validado'::character varying AS estado,
+    'agencia'::character varying AS tipo
+   FROM obingresos.tmovimiento_entidad mo
+  WHERE mo.fecha >= '2017-01-08'::date AND mo.fecha <= now()::date AND mo.cierre_periodo::text = 'no'::text AND mo.ajuste::text = 'no'::text AND mo.garantia::text = 'no'::text AND mo.estado_reg::text = 'activo'::text AND mo.tipo::text = 'credito'::text
+UNION
+ SELECT mo.id_movimiento_entidad AS id_deposito,
+    mo.id_agencia,
+    mo.fecha,
+    mo.autorizacion__nro_deposito AS nro_deposito,
+        CASE
+            WHEN mo.id_moneda = 1 THEN mo.monto
+            ELSE param.f_convertir_moneda(2, 1, mo.monto, mo.fecha, 'O'::character varying, 2)
+        END AS monto_deposito,
+    'validado'::character varying AS estado,
+    'agencia'::character varying AS tipo
+   FROM obingresos.tmovimiento_entidad mo
+  WHERE mo.fecha >= '2017-01-08'::date AND mo.fecha <= now()::date AND mo.cierre_periodo::text = 'no'::text AND mo.ajuste::text = 'si'::text AND mo.garantia::text = 'no'::text AND mo.estado_reg::text = 'activo'::text AND mo.tipo::text = 'credito'::text
+  ORDER BY 3;
+
+
+  CREATE VIEW obingresos.vdepositos_periodo (
+    id_movimiento_entidad,
+    id_agencia,
+    id_periodo_venta,
+    gestion,
+    mes,
+    fecha_ini,
+    fecha_fin,
+    fecha,
+    autorizacion__nro_deposito,
+    monto_total)
+AS
+SELECT mo.id_movimiento_entidad,
+    mo.id_agencia,
+    mo.id_periodo_venta,
+    g.gestion::character varying AS gestion,
+    pe.mes,
+    pe.fecha_ini,
+    pe.fecha_fin,
+    mo.fecha,
+    mo.autorizacion__nro_deposito,
+    mo.monto_total
+FROM obingresos.tmovimiento_entidad mo
+     JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+     JOIN param.tgestion g ON g.id_gestion = pe.id_gestion
+WHERE mo.tipo::text = 'credito'::text AND mo.estado_reg::text = 'activo'::text
+    AND mo.ajuste::text = 'no'::text AND mo.cierre_periodo::text = 'no'::text AND mo.garantia::text = 'no'::text;
+
+
+CREATE OR REPLACE VIEW obingresos.vpnr (
+    localizador,
+    total,
+    comision,
+    liquido,
+    id_moneda_boleto,
+    moneda,
+    neto,
+    origen,
+    destino,
+    fecha_emision,
+    boletos,
+    pasajeros,
+    id_punto_venta,
+    id_usuario_reg)
+AS
+ SELECT tboleto.localizador,
+    sum(tboleto.total) AS total,
+    sum(tboleto.comision) AS comision,
+    sum(tboleto.liquido) AS liquido,
+    tboleto.id_moneda_boleto,
+    tboleto.moneda,
+    sum(tboleto.neto) AS neto,
+    tboleto.origen,
+    tboleto.destino,
+    tboleto.fecha_emision,
+    string_agg(tboleto.nro_boleto::text, ' - '::text) AS boletos,
+    string_agg(tboleto.pasajero::text, ' - '::text) AS pasajeros,
+    tboleto.id_punto_venta,
+    tboleto.id_usuario_reg
+   FROM obingresos.tboleto
+  WHERE tboleto.localizador IS NOT NULL AND tboleto.localizador::text <> ''::text AND tboleto.estado::text <> 'pagado'::text
+  GROUP BY tboleto.localizador, tboleto.id_moneda_boleto, tboleto.moneda, tboleto.origen, tboleto.destino, tboleto.fecha_emision, tboleto.id_punto_venta, tboleto.id_usuario_reg;
+
+/********************************************F-DEP-FEA-OBINGRESOS-0-07/11/2018********************************************/
