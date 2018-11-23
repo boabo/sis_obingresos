@@ -565,7 +565,7 @@ AS
 /********************************************F-DEP-FEA-OBINGRESOS-0-07/11/2018********************************************/
 
 /************************************I-DEP-IRVA-OBINGRESOS-0-23/11/2017*************************************************/
-CREATE VIEW obingresos.vdepositos_imp (
+CREATE OR REPLACE VIEW  obingresos.vdepositos_imp (
     id_deposito,
     id_agencia,
     fecha,
@@ -614,7 +614,7 @@ WHERE mo.fecha >= '2017-01-08'::date AND mo.fecha <= now()::date AND
 ORDER BY 3;
 
 
-CREATE VIEW obingresos.vcredito_ag_boleta (
+CREATE OR REPLACE VIEW obingresos.vcredito_ag_boleta (
     id_agencia,
     id_periodo_venta,
     tipo,
