@@ -50,18 +50,18 @@ header("content-type:text/javascript; charset=UTF-8");
                 scope:this
             });
             this.addButton('Report',{
-                text :'Estado Cuenta',
+                text :'Estado de Cuenta <br>Detallado',
                 iconCls : 'bprint',
                 disabled: false,
                 handler : this.onButtonReporteVi,
-                tooltip : '<b>Resumen Estado Cuenta Corriente</b>'
+                tooltip : '<b>Estado de Cuenta Detallado</b>'
             });
             this.addButton('Depositos',{
-                text: 'Depositos',
+                text: 'Reporte de Depositos <br> Detallado',
                 iconCls: 'bdocuments',
                 disabled: false,
                 handler: this.onButtonDeposito,
-                tooltip: '<b>Deposito por periodo</b>',
+                tooltip: '<b>Reporte de Depositos Detallado</b>',
                 scope:this
             });
             this.tbar.addField(this.fecha_ini);
@@ -468,15 +468,19 @@ header("content-type:text/javascript; charset=UTF-8");
         fwidth : '90%',
         fheight : '80%',
         onButtonDeposito:function() {
-            var rec=this.sm.getSelected();
-            console.log ('Data',rec.data);
+          var rec = {fechaIni: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                     fechaFin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                     agencia: this.sm.getSelected().data.id_agencia
+                     }
+
+            console.log ('MUESTRA',this);
             Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte_saldo_vigente/DepositosPeriodo.php',
-                'Depositos por Periodo',
+                'Reporte de Depositos Detallado',
                 {
                     width:'50%',
                     height:'85%'
                 },
-                rec.data,
+                rec,
                 this.idContenedor,
                 'DepositosPeriodo');
         },
@@ -494,15 +498,17 @@ header("content-type:text/javascript; charset=UTF-8");
                 failure: this.conexionFailure,
                 timeout:this.timeout,
                 scope:this
-            });            
+            });
         },
         onButtonReporteVi:function(){
             Phx.CP.loadingShow();
             var rec=this.sm.getSelected();
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuenta',
-                params:{'id_agencia':rec.data.id_agencia/*,
-                    id_periodo_venta: this.cmbPeriodo.getValue()*/},
+                params:{'id_agencia':rec.data.id_agencia,
+                fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y')
+              },
                 success: this.successExport,
                 failure: this.conexionFailure,
                 timeout:this.timeout,

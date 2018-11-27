@@ -61,7 +61,6 @@ BEGIN
     	begin
 
 
-
         CREATE TEMPORARY TABLE temp ( id_agencia  int4,
                                       nombre varchar,
                                       tipo varchar,
@@ -198,7 +197,8 @@ BEGIN
                                 ag.nombre,
                                 mo.tipo,
                                 mo.pnr,
-                                null::date as fecha,
+                                --null::date as fecha,
+                                mo.fecha,
                                 mo.autorizacion__nro_deposito as autorizacion__nro_deposito,
                                 ' '::varchar as billete,
                                 0::numeric as comision,
@@ -373,6 +373,8 @@ BEGIN
     	END LOOP;
         END IF;
     		--Sentencia de la consulta
+
+
 			v_consulta:='select id_agencia,
                                 nombre,
                                 tipo,
@@ -1071,9 +1073,7 @@ from detalle';
     elsif(p_transaccion='OBING_CUT_SEL')then
 
     begin
-      		v_consulta = '
-
-	(select  ''boletos''::varchar as tipo,
+      		v_consulta = '(select  ''boletos''::varchar as tipo,
                                   bp.id_agencia,
                                   bp.id_periodo_venta,
                                   ag.nombre,
@@ -1092,7 +1092,6 @@ from detalle';
                           inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
                           left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
                           where bp.id_agencia = '||v_parametros.id_agencia||'
-                          --and bp.fecha_ini >= '''||v_parametros.fecha_ini||''' and bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
                           and bp.id_periodo_venta >=(select max(bp.id_periodo_venta)
                           														from obingresos.vboletos_a_pagar bp
                                                                                 where bp.fecha_ini <= '''||v_parametros.fecha_ini||''')
@@ -1101,9 +1100,30 @@ from detalle';
                                                                                 where bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
                                                                                 )
 
+                       union
 
-                       /*OBTENEMOS EL PERIODO VIGENTE */
-                       /*union
+                     (     select  ''boletos''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   null::varchar nro_deposito_boa,
+                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
+                          														from obingresos.vboletos_a_pagar bp
+                                                                                where bp.fecha_fin < '''||v_parametros.fecha_ini||''')
+                          union
 
                           select  ''boletos''::varchar as tipo,
                                   bp.id_agencia,
@@ -1123,123 +1143,17 @@ from detalle';
                           from obingresos.vboletos_a_pagar bp
                           inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
                           left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
-                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta is null*/
-                          /*-----------------------------------------------------------------*/
-
-						union
-                         /*OBTENEMOS PERIODO ANTERIOR*/
-
-
-                         select  ''boletos''::varchar as tipo,
-                                  bp.id_agencia,
-                                  bp.id_periodo_venta,
-                                  ag.nombre,
-                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
-                                  bp.monto_debito,
-                                   null::numeric as monto_deposito,
-                                  (select pe.fecha_pago
-                                   from obingresos.tperiodo_venta pe
-                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
-                                   null::date as fecha,
-                                   null::varchar as nro_deposito,
-                                   null::numeric as garante,
-                                   null::varchar nro_deposito_boa,
-                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
-                          from obingresos.vboletos_a_pagar bp
-                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
-                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
-                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
-                          														from obingresos.vboletos_a_pagar bp
-                                                                                where bp.fecha_fin <='''||v_parametros.fecha_ini||''')
-
-                        /*---------------------------------------------------------------------------------------------*/
-                        union
-                        /*OBTENEMOS LOS DATOS AL PERIODO INICIO QUE CORRESPONDE*/
-
-
-                         select  ''boletos''::varchar as tipo,
-                                  bp.id_agencia,
-                                  bp.id_periodo_venta,
-                                  ag.nombre,
-                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
-                                  bp.monto_debito,
-                                   null::numeric as monto_deposito,
-                                  (select pe.fecha_pago
-                                   from obingresos.tperiodo_venta pe
-                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
-                                   null::date as fecha,
-                                   null::varchar as nro_deposito,
-                                   null::numeric as garante,
-                                   null::varchar nro_deposito_boa,
-                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
-                          from obingresos.vboletos_a_pagar bp
-                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
-                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
-                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
-                          														from obingresos.vboletos_a_pagar bp
-                                                                                where bp.fecha_ini <= '''||v_parametros.fecha_ini||''')
-
-                        /*---------------------------------------------------------------------------------------------*/
-                        union
-                        /*OBTENEMOS DATOS DEL PERIODO FINAL QUE CORRESPONDE*/
-                        select  ''boletos''::varchar as tipo,
-                                  bp.id_agencia,
-                                  bp.id_periodo_venta,
-                                  ag.nombre,
-                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
-                                  bp.monto_debito,
-                                   null::numeric as monto_deposito,
-                                  (select pe.fecha_pago
-                                   from obingresos.tperiodo_venta pe
-                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
-                                   null::date as fecha,
-                                   null::varchar as nro_deposito,
-                                   null::numeric as garante,
-                                   null::varchar nro_deposito_boa,
-                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
-                          from obingresos.vboletos_a_pagar bp
-                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
-                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
-                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
-                                                                                from obingresos.vboletos_a_pagar bp
-                                                                                where bp.fecha_fin <= '''||v_parametros.fecha_fin||'''
-                                                                                )
-
-
-                          union
-
-                           select  ''boletos''::varchar as tipo,
-                                  bp.id_agencia,
-                                  bp.id_periodo_venta,
-                                  ag.nombre,
-                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
-                                  bp.monto_debito,
-                                   null::numeric as monto_deposito,
-                                  (select pe.fecha_pago
-                                   from obingresos.tperiodo_venta pe
-                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
-                                   null::date as fecha,
-                                   null::varchar as nro_deposito,
-                                   null::numeric as garante,
-                                   null::varchar nro_deposito_boa,
-                                   (cr.monto_total - bp.monto_debito) as monto_sin_boleta
-                          from obingresos.vboletos_a_pagar bp
-                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
-                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
-                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||'  and bp.id_periodo_venta = (select bp.id_periodo_venta
                                                                                 from obingresos.vboletos_a_pagar bp
                                                                                 where bp.fecha_fin >= '''||v_parametros.fecha_fin||'''
                                                                                 FETCH FIRST 1 ROW ONLY
+                                                                                ))
                                                                                 )
-
-                          )
-                        /*---------------------------------------------------------------------------------------------*/
-
 
                           union
 
 
-                          select  ''deposito''::varchar as tipo,
+                          ( select  ''deposito''::varchar as tipo,
                                   db.id_agencia,
                                   db.id_periodo_venta,
                                   null::varchar as nombre,
@@ -1279,7 +1193,7 @@ from detalle';
                                   db.nro_deposito,
                                   (select  COALESCE(mo.monto,0)
                                   from obingresos.tmovimiento_entidad mo
-                                  where mo.id_agencia = '||v_parametros.id_agencia||'  and
+                                  where mo.id_agencia = '||v_parametros.id_agencia||'   and
                                   mo.garantia = ''si'' and mo.id_periodo_venta is null) as garante,
                                   db.nro_deposito_boa,
                                   null::numeric as monto_sin_boleta
@@ -1292,10 +1206,11 @@ from detalle';
                                                                                 from obingresos.vboletos_a_pagar bp
                                                                                 where bp.fecha_fin >= '''||v_parametros.fecha_fin||'''
                                                                                 FETCH FIRST 1 ROW ONLY
-                                                                                )
+                                                                                ) )
 
 
-                          order by id_periodo_venta ,fecha';
+                          order by id_periodo_venta ,fecha
+                          ';
 
        --Devuelve la respuesta
     return v_consulta;

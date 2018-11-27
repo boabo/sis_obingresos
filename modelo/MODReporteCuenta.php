@@ -20,6 +20,9 @@ class MODReporteCuenta extends MODbase{
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
         $this->setCount(false);
 
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+
         $this->setParametro('id_agencia','id_agencia','int4');
         $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
         $this->captura('id_agencia','int4');

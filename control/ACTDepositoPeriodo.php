@@ -6,7 +6,18 @@ class ACTDepositoPeriodo extends ACTbase{
         $this->objParam->defecto('ordenacion','id_movimiento_entidad');
         $this->objParam->defecto('dir_ordenacion','asc');
         if($this->objParam->getParametro('id_agencia') != '') {
-            $this->objParam->addFiltro("mo.id_agencia = " . $this->objParam->getParametro('id_agencia'));
+            $this->objParam->addFiltro("mo.id_agencia = " . $this->objParam->getParametro('id_agencia')."
+            and mo.id_periodo_venta between (select max(mo.id_periodo_venta)
+                                                         from obingresos.vdepositos_periodo mo
+                                                         where mo.fecha_ini <= ''".$this->objParam->getParametro('fecha_ini')."'')
+
+                                                         and
+
+                                                         (select max(mo.id_periodo_venta)
+                                                         from obingresos.vdepositos_periodo mo
+                                                         where mo.fecha_ini <= ''".$this->objParam->getParametro('fecha_fin')."'')                                                         
+                                                          ");
+            //var_dump($this->objParam->getParametro('fecha_fin'));exit;
         }
         if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
             $this->objReporte = new Reporte($this->objParam,$this);

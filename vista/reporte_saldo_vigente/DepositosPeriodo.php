@@ -13,12 +13,22 @@ header("content-type: text/javascript; charset=UTF-8");
     Phx.vista.DepositosPeriodo=Ext.extend(Phx.gridInterfaz,{
 
             constructor:function(config){
-                this.maestro = config;
-                var agencia  = this.maestro.id_agencia;
+                this.agencia = config.agencia;
+                this.fechaIni = config.fechaIni;
+                this.fechaFin = config.fechaFin;
+
+                console.log('LLEGA AGENCIA AQUI',this.agencia);
+                var agencia  = this.agencia;
+                var fechaInicio = this.fechaIni;
+                var fechaFinal = this.fechaFin;
                 Phx.vista.DepositosPeriodo.superclass.constructor.call(this,config);
                 this.init();
-                this.store.baseParams={id_agencia:agencia};
-                this.load({params: {start: 0, limit: 50}});
+                  this.store.baseParams={
+                    id_agencia:agencia,
+                    fecha_ini:fechaInicio,
+                    fecha_fin:fechaFinal
+                  };
+                  this.load({params: {start: 0, limit: 50}});
 
             },
 
@@ -102,10 +112,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'autorizacion__nro_deposito',
-                        fieldLabel: 'Monto Desposito',
+                        fieldLabel: 'Número de Comprobante Depósito',
                         allowBlank: true,
-                        anchor : '100%',
-                        gwidth : 110,
+                        anchor : '150%',
+                        gwidth : 200,
                         maxLength : 20,
                         galign:'right',
                         renderer:function (value,p,record){
@@ -122,6 +132,20 @@ header("content-type: text/javascript; charset=UTF-8");
                     id_grupo:1,
                     grid:true,
                     bottom_filter:true,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'nro_deposito',
+                        fieldLabel: 'Número de Comprobante de Depósitos BoA',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 220
+                    },
+                    type:'TextField',
+                    filters:{pfiltro:'mo.mes',type:'string'},
+                    id_grupo:1,
+                    grid:true,
                     form:true
                 },
                 {
@@ -194,7 +218,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'fecha_fin', type: 'date',dateFormat:'Y-m-d'},
                 {name:'fecha', type: 'date',dateFormat:'Y-m-d'},
                 {name:'autorizacion__nro_deposito', type: 'string'},
-                {name:'monto_total', type: 'numeric'}
+                {name:'monto_total', type: 'numeric'},
+                {name:'nro_deposito', type: 'string'}
             ],
             sortInfo:{
                 field: 'id_movimiento_entidad',
@@ -208,4 +233,3 @@ header("content-type: text/javascript; charset=UTF-8");
         }
     )
 </script>
-
