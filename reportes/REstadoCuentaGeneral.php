@@ -145,9 +145,9 @@ class REstadoCuentaGeneral
         $this->docexcel->getActiveSheet()->setCellValue('H6','GARANTIA');
         $this->docexcel->getActiveSheet()->setCellValue('I6','DEBITOS');
         $this->docexcel->getActiveSheet()->setCellValue('J6','AJUSTES');
-        $this->docexcel->getActiveSheet()->setCellValue('K6','SALDO SIN BOLETO');
+        $this->docexcel->getActiveSheet()->setCellValue('K6','SALDO SIN BOLETA DE GARANTIA');
         $this->docexcel->getActiveSheet()->getStyle('K6')->getAlignment()->setWrapText(true);
-        $this->docexcel->getActiveSheet()->setCellValue('L6','SALDO CON BOLETO');
+        $this->docexcel->getActiveSheet()->setCellValue('L6','SALDO CON BOLETA DE GARANTIA');
         $this->docexcel->getActiveSheet()->getStyle('L6')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->getStyle('A6:L6')->applyFromArray($styleTitulos1);
         $this->docexcel->getActiveSheet()->getStyle('A6:L6')->getAlignment()->setWrapText(true);

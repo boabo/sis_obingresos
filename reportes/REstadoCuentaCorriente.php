@@ -46,9 +46,10 @@ class REstadoCuentaCorriente
             76=>'BY',77=>'BZ');
 
     }
-    function datosHeader ($totales,$resumen) {
+    function datosHeader ($totales,$resumen,$anteriorCierrePeriodo) {
         $this->datos_titulo = $totales;
         $this->resumen = $resumen;
+        $this->anteriorCierrePeriodo = $anteriorCierrePeriodo;
     }
     function imprimeCabecera() {
         $this->docexcel->createSheet();
@@ -183,9 +184,30 @@ class REstadoCuentaCorriente
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
         );
+        $styleTitulos3 = array(
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'F8CBAD'
+                )
+            ),
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+            ),
+
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 12,
+                'name'  => 'Arial'
+            ),
+              );
         $numero = 1;
-        $fila = 7;
+        $fila = 8;
+        $anterior = 7;
         $datos = $this->datos_titulo;
+
+
        //var_dump($datos);exit;
         foreach ($datos as $value){
 
@@ -215,6 +237,26 @@ class REstadoCuentaCorriente
 
             $this->fila =  $fila;
         }
+
+        $anteriorCierrePeriodo = $this->anteriorCierrePeriodo;
+        if ($anteriorCierrePeriodo != NULL) {
+          foreach ($anteriorCierrePeriodo as $value3){
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'SALDO CIERRE PERIODO ANTERIOR');
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $anterior, $value3['saldo_anterior']);
+          $this->docexcel->getActiveSheet()->getStyle("I$anterior:J$anterior")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+          $this->docexcel->getActiveSheet()->mergeCells("A$anterior:D$anterior");
+          $this->docexcel->getActiveSheet()->mergeCells("I$anterior:J$anterior");
+          $this->docexcel->getActiveSheet()->getStyle("A$anterior:J$anterior" )->applyFromArray($styleTitulos3);
+        }
+      }
+        else {
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'LA AGENCIA NO CUENTA CON UN SALDO CIERRE PERIODO ANTERIOR');
+          $this->docexcel->getActiveSheet()->mergeCells("A$anterior:H$anterior");
+          $this->docexcel->getActiveSheet()->mergeCells("I$anterior:J$anterior");
+          $this->docexcel->getActiveSheet()->getStyle("A$anterior:J$anterior" )->applyFromArray($styleTitulos3);
+        }
+
 
         $fill = $this->fila+3;
         $resumen = $this->resumen;
@@ -374,10 +416,10 @@ class REstadoCuentaCorriente
             }
         }
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 6 ,  'Total Creditos');
-        $this->docexcel->getActiveSheet()->getStyle("B$this->fnumA:D$this->fnumA")->applyFromArray($styleTitulosNumeros);
+        $this->docexcel->getActiveSheet()->getStyle("B$this->fnumA:I$this->fnumA")->applyFromArray($styleTitulosNumeros4);
         $this->docexcel->getActiveSheet()->mergeCells("B$this->fnumA:D$this->fnumA");
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 6 ,  array_sum($this->fnum));
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fill + 6 ,  'BOB');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fill + 6 ,  'BOB');
         $this->docexcel->getActiveSheet()->getStyle("F$this->fnumA:I$this->fnumA")->applyFromArray($styleTitulosNumeros);
         $this->docexcel->getActiveSheet()->getStyle("B$this->fnumA:I$this->fnumA")->applyFromArray($bordes);
         $this->docexcel->getActiveSheet()->getStyle("F$this->fnumA:F$this->fnumA")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -408,19 +450,33 @@ class REstadoCuentaCorriente
                 $this->aux = $filaAuxL;
             }
         }
-        $estilo1=($fill+13);
+        $estilo1=($fill+12);
         $estilo2=($fill+11);
         $estilo3=($fill+10);
+
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 10 , 'Total Debitos');
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 10 , array_sum($this->array));
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fill + 10 , 'BOB');
         $this->docexcel->getActiveSheet()->getStyle("B$estilo3:I$estilo3")->applyFromArray($styleTitulosNumeros4);
 
+        $resu=$fill+12;
+        foreach ($resumen as $value){
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 13 , 'Saldo sin Boleta');
-        $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($styleTitulosNumeros6);
-        $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($bordes);
+                if($value['tipo'] == 'boleta_garantia'){
+                    $valor = 'Boleta Garantia';
+
+
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 12 , 'Saldo sin Boleta');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 12 , (array_sum($this->fnum)-array_sum($this->array))-$value['monto']);          
+                $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($styleTitulosNumeros6);
+                $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($bordes);
+                $this->docexcel->getActiveSheet()->getStyle("F$resu:F$resu")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+                }
+
+            }
+
 
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 11 , 'Saldo a la Fecha');

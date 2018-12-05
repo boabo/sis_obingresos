@@ -13,7 +13,7 @@ header("content-type:text/javascript; charset=UTF-8");
     Phx.vista.GridReporteSaldoVigente = Ext.extend(Phx.gridInterfaz, {
         viewConfig: {
             getRowClass: function(record) {
-                if(record.data.saldo < 0){
+                if(record.data.saldo_con_boleto < 0){
                     return 'prioridad_importanteA';
                 }
             }
@@ -28,7 +28,7 @@ header("content-type:text/javascript; charset=UTF-8");
             this.addButton('ReporteGeneral',{
                 text: 'Reporte General <br> de Saldos',
                 iconCls: 'bexcel',
-                disabled: false,
+                disabled: true,
                 handler: this.reporteGeneral,
                 tooltip: '<b>Reporte General de Saldos</b>',
                 scope:this
@@ -36,7 +36,7 @@ header("content-type:text/javascript; charset=UTF-8");
             this.addButton('Reporte',{
                 text: 'Reporte Estado de <br> Cuentas por Periodo',
                 iconCls: 'blist',
-                disabled: false,
+                disabled: true,
                 handler: this.onButtonReporte,
                 tooltip: '<b>Estado de cuenta depositos vs boletos</b>',
                 scope:this
@@ -44,7 +44,7 @@ header("content-type:text/javascript; charset=UTF-8");
             this.addButton('Movimientos',{
                 text: 'Reporte de Movimientos <br> por Periodo',
                 iconCls: 'bexcel',
-                disabled: false,
+                disabled: true,
                 handler: this.onButtonMovimientos,
                 tooltip: '<b>Estado de cuenta credito vs debito</b>',
                 scope:this
@@ -52,14 +52,14 @@ header("content-type:text/javascript; charset=UTF-8");
             this.addButton('Report',{
                 text :'Estado de Cuenta <br>Detallado',
                 iconCls : 'bprint',
-                disabled: false,
+                disabled: true,
                 handler : this.onButtonReporteVi,
                 tooltip : '<b>Estado de Cuenta Detallado</b>'
             });
             this.addButton('Depositos',{
                 text: 'Reporte de Depositos <br> Detallado',
                 iconCls: 'bdocuments',
-                disabled: false,
+                disabled: true,
                 handler: this.onButtonDeposito,
                 tooltip: '<b>Reporte de Depositos Detallado</b>',
                 scope:this
@@ -93,6 +93,31 @@ header("content-type:text/javascript; charset=UTF-8");
             this.cmbPeriodo.setValue(null);
             this.cmbPeriodo.setRawValue('Periodo Vigente');
         },
+
+        preparaMenu: function () {
+            var tb = this.tbar;
+            var rec = this.sm.getSelected();
+                this.getBoton('ReporteGeneral').enable();
+                this.getBoton('Reporte').enable();
+                this.getBoton('Movimientos').enable();
+                this.getBoton('Report').enable();
+                this.getBoton('Depositos').enable();
+            },
+
+        liberaMenu : function(){
+            var rec = this.sm.getSelected();
+          this.getBoton('ReporteGeneral').disable();
+          this.getBoton('Reporte').disable();
+          this.getBoton('Movimientos').disable();
+          this.getBoton('Report').disable();
+          this.getBoton('Depositos').disable();
+          Phx.vista.GridReporteSaldoVigente.superclass.liberaMenu.call(this);
+
+        },
+
+
+
+
         tam_pag:1000,
         Atributos : [
             {
@@ -178,7 +203,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     name : 'tipo_agencia',
                     fieldLabel : 'Tipo Agencia',
                     allowBlank : false,
-                    anchor : '100%',
+                    anchor : '200%',
                     gwidth : 100,
                     maxLength : 20
 
@@ -492,7 +517,8 @@ header("content-type:text/javascript; charset=UTF-8");
                 params:{'id_agencia':rec.data.id_agencia,
                         nombre: rec.data.nombre,
                         fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
-                        fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y')
+                        fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                        año_ini:this.fecha_ini.getValue().dateFormat('Y')
               },
                 success: this.successExport,
                 failure: this.conexionFailure,
@@ -508,6 +534,7 @@ header("content-type:text/javascript; charset=UTF-8");
                 params:{'id_agencia':rec.data.id_agencia,
                 fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
                 fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y')
+
               },
                 success: this.successExport,
                 failure: this.conexionFailure,
@@ -591,7 +618,7 @@ header("content-type:text/javascript; charset=UTF-8");
             lazyRender:true,
             mode: 'local',
             gwidth: 50,
-            anchor: "30%",
+            anchor: "10%",
             store:['corporativa','noiata','todas']
         }),
         forma_pago : new Ext.form.ComboBox({
