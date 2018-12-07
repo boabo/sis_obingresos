@@ -14,6 +14,7 @@ class REstadoCuentaCorriente
     public  $fnumA =0;
     public  $array =array();
     public  $array2 =array();
+    public  $sinboleta =array();
 
 
     function __construct(CTParametro $objParam){
@@ -205,10 +206,12 @@ class REstadoCuentaCorriente
         $numero = 1;
         $fila = 8;
         $anterior = 7;
+
         $datos = $this->datos_titulo;
 
 
        //var_dump($datos);exit;
+
         foreach ($datos as $value){
 
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $numero);
@@ -237,12 +240,15 @@ class REstadoCuentaCorriente
 
             $this->fila =  $fila;
         }
+          array_push($this->sinboleta,$value['saldo']);
+
+
 
         $anteriorCierrePeriodo = $this->anteriorCierrePeriodo;
         if ($anteriorCierrePeriodo != NULL) {
           foreach ($anteriorCierrePeriodo as $value3){
-          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'SALDO CIERRE PERIODO ANTERIOR');
-          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $anterior, $value3['saldo_anterior']);
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'SALDO ANTERIOR');
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $anterior, $value3['saldo']);
           $this->docexcel->getActiveSheet()->getStyle("I$anterior:J$anterior")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
           $this->docexcel->getActiveSheet()->mergeCells("A$anterior:D$anterior");
@@ -453,6 +459,7 @@ class REstadoCuentaCorriente
         $estilo1=($fill+12);
         $estilo2=($fill+11);
         $estilo3=($fill+10);
+        $estilo4=($fill+13);
 
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 10 , 'Total Debitos');
@@ -461,23 +468,31 @@ class REstadoCuentaCorriente
         $this->docexcel->getActiveSheet()->getStyle("B$estilo3:I$estilo3")->applyFromArray($styleTitulosNumeros4);
 
         $resu=$fill+12;
-        foreach ($resumen as $value){
+        $resu2=$fill+13;
 
-                if($value['tipo'] == 'boleta_garantia'){
+
+
+        foreach ($datos as $value4){
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 13 , 'Saldo Sin Boleta');
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 13, $value4['saldo']);
+            $this->docexcel->getActiveSheet()->getStyle("B$estilo4:I$estilo4")->applyFromArray($styleTitulosNumeros6);
+            $this->docexcel->getActiveSheet()->getStyle("B$estilo4:I$estilo4")->applyFromArray($bordes);
+            $this->docexcel->getActiveSheet()->getStyle("F$resu2:F$resu2")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+        }
+
+        foreach ($resumen as $value5){
+
+                if($value5['tipo'] == 'boleta_garantia'){
                     $valor = 'Boleta Garantia';
-
-
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 12 , 'Saldo sin Boleta');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 12 , (array_sum($this->fnum)-array_sum($this->array))-$value['monto']);          
                 $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($styleTitulosNumeros6);
                 $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($bordes);
                 $this->docexcel->getActiveSheet()->getStyle("F$resu:F$resu")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 12 , 'Saldo Con Boleta');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 12 , $value5['monto']+array_sum($this->sinboleta));
                 }
 
             }
-
-
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 11 , 'Saldo a la Fecha');
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 11 , array_sum($this->fnum)-array_sum($this->array) );

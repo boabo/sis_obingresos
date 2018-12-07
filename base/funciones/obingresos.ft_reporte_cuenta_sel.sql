@@ -402,63 +402,341 @@ BEGIN
     ***********************************/
 
     elsif(p_transaccion='OBING_ANTERIOR_SEL')then
+	begin
 
-    begin
-      		v_consulta = 'select
-            					mo.id_agencia,
-								mo.id_periodo_venta,
+        CREATE TEMPORARY TABLE temp ( id_agencia  int4,
+                                      nombre varchar,
+                                      tipo varchar,
+                                      pnr varchar,
+          							  fecha date,
+                                      autorizacion__nro_deposito text,
+                                      billete varchar,
+                                      comision numeric,
+                                      importe numeric,
+                                      neto numeric,
+                                      saldo numeric,
+                                      contador integer )ON COMMIT DROP;
+
+     if  pxp.f_existe_parametro(p_tabla,'id_periodo_venta') then
+
+
+        FOR v_record in (select mo.id_agencia,
                                 ag.nombre,
                                 mo.tipo,
                                 mo.pnr,
                                 de.fecha,
-                                mo.pnr ||'' - ''||de.billete  as autorizacion__nro_deposito,
+                                mo.pnr ||' - '||de.billete  as autorizacion__nro_deposito,
                                 de.billete,
                                 de.comision,
                                 de.importe,
                                 de.neto,
-                                de.importe -  de.comision as saldo_anterior
+                                de.importe -  de.comision as saldo
                         from obingresos.tmovimiento_entidad mo
-                        inner join obingresos.tdetalle_boletos_web de on de.numero_autorizacion = mo.autorizacion__nro_deposito and de.void = ''no''
+                        inner join obingresos.tdetalle_boletos_web de on de.numero_autorizacion = mo.autorizacion__nro_deposito and de.void = 'no'
                         inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
-                        where mo.id_agencia =  '||v_parametros.id_agencia||' and mo.tipo = ''debito''  and mo.estado_reg = ''activo''
-                        and mo.id_periodo_venta = (select max(mo.id_periodo_venta)
-                         						   from obingresos.tmovimiento_entidad mo
-                                                   where mo.id_agencia = '||v_parametros.id_agencia||' and mo.fecha < '''||v_parametros.fecha_ini||''' and mo.cierre_periodo = ''si'' )
-
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'debito'  and mo.estado_reg = 'activo' and mo.id_periodo_venta = v_parametros.id_periodo_venta
                      union all
-
-                        select
-                        		mo.id_agencia,
-                        		mo.id_periodo_venta,
+                        select 	mo.id_agencia,
                                 ag.nombre,
                                 mo.tipo,
-                                ''''::varchar as pnr,
+                                ''::varchar as pnr,
                                 mo.fecha ,
                                 (case
-                                when mo.cierre_periodo = ''no'' then
+                                when mo.cierre_periodo = 'no' then
                                 mo.autorizacion__nro_deposito
                                 else
-                                ''Saldo Cierre Perido Anterior''
+                                'Saldo Cierre Peridos Anterior'
                                 end::text) as autorizacion__nro_deposito,
-                                '' ''::varchar as billete,
+                                ' '::varchar as billete,
                                 0::numeric as comision,
                                 mo.monto_total as importe,
                                 mo.neto,
-                                mo.monto_total  as saldo_anterior
+                                mo.monto_total  as saldo
                         from obingresos.tmovimiento_entidad mo
                         inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
-                        where mo.id_agencia =  '||v_parametros.id_agencia||' and mo.tipo = ''credito''
-                        and mo.estado_reg = ''activo'' and mo.cierre_periodo = ''si''
-                        and mo.id_periodo_venta = (select max(mo.id_periodo_venta)
-                         						   from obingresos.tmovimiento_entidad mo
-                                                   where mo.id_agencia = '||v_parametros.id_agencia||' and mo.fecha < '''||v_parametros.fecha_ini||''' and mo.cierre_periodo = ''si'' )
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'credito'
+                        and mo.estado_reg = 'activo' and  mo.id_periodo_venta = v_parametros.id_periodo_venta
+                   		order by fecha ,billete asc)LOOP
+
+                     v_contador = v_contador + 1;
+
+                     IF EXISTS (select 1
+                     				from temp) THEN
+
+                     select COALESCE( saldo, 0 )
+                     into
+                     v_saldo
+                     from temp
+                     where contador = (select max(contador)
+                     				  from temp);
+                     ELSE
+                     v_saldo = 0;
+
+        			 END IF;
+
+                    insert into	temp (  id_agencia,
+                                        nombre,
+                                        tipo,
+                                        pnr,
+                                        fecha,
+                                        autorizacion__nro_deposito,
+                                        billete,
+                                        comision,
+                                        importe,
+                                        neto,
+                                        saldo,
+                                        contador)
+                                        values(
+                                        v_record.id_agencia,
+                                        v_record.nombre,
+                                        v_record.tipo,
+                                        v_record.pnr,
+                                        v_record.fecha,
+                                        v_record.autorizacion__nro_deposito,
+                                        v_record.billete,
+                                        v_record.comision,
+                                        v_record.importe,
+                                        v_record.neto,
+                                         case
+                                        	when v_saldo = 0 then
+                                          		case
+                                         			when  v_record.tipo = 'debito'  then
+                                                 		v_saldo - v_record.saldo
+                                           			when v_record.tipo = 'credito' and v_record.autorizacion__nro_deposito !='Saldo Cierre Peridos Anterior'  then
+                                                        v_saldo + v_record.saldo
+                                           			end
+                                        else
+                                        case
+                                        	when v_record.tipo = 'debito' then
+                                   					v_saldo -  v_record.saldo
+    											when v_record.tipo = 'credito' and v_record.autorizacion__nro_deposito !='Saldo Cierre Peridos Anterior'  then
+                                          			 v_record.saldo - (- v_saldo)
+                                        		end
+                                        end,
+                                        v_contador);
+    		v_contador = v_contador ;
+    	END LOOP;
+       else
+
+        FOR v_record in (select mo.id_agencia,
+                                ag.nombre,
+                                mo.tipo,
+                                mo.pnr,
+                                de.fecha,
+                                mo.pnr ||' - '||de.billete  as autorizacion__nro_deposito,
+                                de.billete,
+                                de.comision,
+                                de.importe,
+                                de.neto,
+                                de.importe -  de.comision as saldo
+                        from obingresos.tmovimiento_entidad mo
+                        inner join obingresos.tdetalle_boletos_web de on de.numero_autorizacion = mo.autorizacion__nro_deposito and de.void = 'no'
+                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'debito'
+                        and mo.estado_reg = 'activo' and mo.ajuste = 'no'
+
+                        union all
+
+                        select mo.id_agencia,
+                                ag.nombre,
+                                mo.tipo,
+                                mo.pnr,
+                                --null::date as fecha,
+                                mo.fecha,
+                                mo.autorizacion__nro_deposito as autorizacion__nro_deposito,
+                                ' '::varchar as billete,
+                                0::numeric as comision,
+                                 (case when mo.id_moneda = 1 then
+                            	mo.monto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                end)as importe,
+                                (case when mo.id_moneda = 1 then
+                            	mo.neto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.neto,mo.fecha,'O',2)
+                                end)as neto,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto_total
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,'O',2)
+                                end) as saldo
+                        from obingresos.tmovimiento_entidad mo
+                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'debito'
+                        and mo.estado_reg = 'activo' and mo.ajuste = 'si'
+
+                        union all
+
+                        select 	mo.id_agencia,
+                                ag.nombre,
+                                mo.tipo,
+                                ''::varchar as pnr,
+                                mo.fecha ,
+                                mo.autorizacion__nro_deposito,
+                                ' '::varchar as billete,
+                                0::numeric as comision,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                end)as importe,
+                                (case when mo.id_moneda = 1 then
+                            	mo.neto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.neto,mo.fecha,'O',2)
+                                end)as neto,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto_total
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,'O',2)
+                                end) as saldo
+                        from obingresos.tmovimiento_entidad mo
+                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'credito'
+                        and mo.estado_reg = 'activo' and mo.cierre_periodo = 'no' and mo.garantia = 'no'
+                        and mo.ajuste = 'no'
+                     union all
+                     select 	mo.id_agencia,
+                                ag.nombre,
+                                mo.tipo,
+                                ''::varchar as pnr,
+                                mo.fecha ,
+                                mo.autorizacion__nro_deposito,
+                                ' '::varchar as billete,
+                                0::numeric as comision,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                end)as importe,
+                                (case when mo.id_moneda = 1 then
+                            	mo.neto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.neto,mo.fecha,'O',2)
+                                end)as neto,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto_total
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,'O',2)
+                                end) as saldo
+                        from obingresos.tmovimiento_entidad mo
+                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'credito'
+                        and mo.estado_reg = 'activo' and mo.cierre_periodo = 'no' and mo.garantia = 'no'
+                        and mo.ajuste = 'si'
+                        union all
+                        select 	mo.id_agencia,
+                                ag.nombre,
+                                mo.tipo,
+                                ''::varchar as pnr,
+                                mo.fecha ,
+                                'Boleta Garantia'::varchar as autorizacion__nro_deposito,
+                                ' '::varchar as billete,
+                                0::numeric as comision,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                end)as importe,
+                                (case when mo.id_moneda = 1 then
+                            	mo.neto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.neto,mo.fecha,'O',2)
+                                end)as neto,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto_total
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,'O',2)
+                                end) as saldo
+                        from obingresos.tmovimiento_entidad mo
+                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'credito'
+                        and mo.estado_reg = 'activo' and mo.cierre_periodo = 'no' and mo.garantia = 'si'
+                        and mo.id_periodo_venta is null
+                        and mo.ajuste = 'no'
+                        order by fecha ,billete asc)LOOP
+
+                     v_contador = v_contador + 1;
+
+                     IF EXISTS (select 1
+                     				from temp) THEN
+
+                     select COALESCE( saldo, 0 )
+                     into
+                     v_saldo
+                     from temp
+                     where contador = (select max(contador)
+                     				  from temp);
+                     ELSE
+                     v_saldo = 0;
+
+        			 END IF;
+
+                    insert into	temp (  id_agencia,
+                                        nombre,
+                                        tipo,
+                                        pnr,
+                                        fecha,
+                                        autorizacion__nro_deposito,
+                                        billete,
+                                        comision,
+                                        importe,
+                                        neto,
+                                        saldo,
+                                        contador)
+                                        values(
+                                        v_record.id_agencia,
+                                        v_record.nombre,
+                                        v_record.tipo,
+                                        v_record.pnr,
+                                        v_record.fecha,
+                                        v_record.autorizacion__nro_deposito,
+                                        v_record.billete,
+                                        v_record.comision,
+                                        v_record.importe,
+                                        v_record.neto,
+                                        case
+                                        	when v_saldo = 0 then
+                                          		case
+                                         			when  v_record.tipo = 'debito' then
+                                                 		v_saldo - v_record.saldo
+                                           			when v_record.tipo = 'credito' then
+                                                        v_saldo + v_record.saldo
+                                           			end
+                                        else
+                                        case
+                                        	when v_record.tipo = 'debito' then
+                                   					v_saldo -  v_record.saldo
+    											when v_record.tipo = 'credito' then
+                                          			 v_record.saldo +  v_saldo
+                                        		end
+                                        end,
+                                        v_contador);
+    		v_contador = v_contador ;
+    	END LOOP;
+        END IF;
+    		--Sentencia de la consulta
 
 
-                   		order by fecha ,billete asc';
+			v_consulta:='select id_agencia,
+                                nombre,
+                                tipo,
+                                pnr,
+            					fecha,
+                                autorizacion__nro_deposito,
+                                billete,
+                                comision,
+                                importe,
+                                neto,
+                                saldo
+                                from temp
+                                where fecha < '''||v_parametros.fecha_ini||'''';
 
-       --Devuelve la respuesta
-    return v_consulta;
-	end;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
 
     /*********************************
  	#TRANSACCION:  'OBING_ENT_RE'
@@ -961,7 +1239,7 @@ group by me.id_agencia,mon.codigo_internacional
             0
         end) as ajuste_credito
         from obingresos.tmovimiento_entidad mo
-		where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
+		where mo.fecha >= ''8/1/2017'' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
          mo.cierre_periodo = ''no'' and
       	 mo.estado_reg = ''activo'' and
          mo.tipo = ''credito''
@@ -988,7 +1266,7 @@ sum(case when mo.ajuste = ''no'' then
             0
         end) as ajuste_debito
 from obingresos.tmovimiento_entidad mo
-where mo.fecha >= '''||v_parametros.fecha_ini||''' and mo.fecha <='''||v_parametros.fecha_fin||''' and
+where mo.fecha >= ''8/1/2017'' and mo.fecha <= '''||v_parametros.fecha_fin||''' and
       mo.tipo = ''debito'' and
       mo.cierre_periodo = ''no'' and
       mo.estado_reg = ''activo''
@@ -1314,6 +1592,7 @@ Union
     elsif(p_transaccion='OBING_PERANT_SEL')then
 
     begin
+
       		v_consulta = 'select  ''boletos''::varchar as tipo,
                                   bp.id_agencia,
                                   bp.id_periodo_venta,
@@ -1334,7 +1613,58 @@ Union
                           where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
                                                                               from obingresos.vboletos_a_pagar bp
                                                                               left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
-                                                                              where bp.id_agencia = '||v_parametros.id_agencia||' and bp.fecha_fin <= '''||v_parametros.fecha_ini||''')';
+                                                                              where bp.id_agencia = '||v_parametros.id_agencia||' and bp.fecha_fin <= '''||v_parametros.fecha_ini||''')
+
+
+    					UNION
+
+
+
+(select  ''SinBoleta''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                  COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   (COALESCE( cr.monto_total,0) - COALESCE( bp.monto_debito,0)) as monto_anterior
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select max(bp.id_periodo_venta)
+                                                                              from obingresos.vboletos_a_pagar bp
+                                                                              left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                                                                              where bp.id_agencia = '||v_parametros.id_agencia||' and bp.fecha_ini <= '''||v_parametros.fecha_fin||''')
+UNION
+
+select  ''SinBoleta''::varchar as tipo,
+                                  bp.id_agencia,
+                                  bp.id_periodo_venta,
+                                  ag.nombre,
+                                   COALESCE(TO_CHAR(bp.fecha_ini,''DD'')||'' al ''|| TO_CHAR(bp.fecha_fin,''DD'')||'' ''||bp.mes||'' ''||EXTRACT(YEAR FROM bp.fecha_ini),''Periodo Vigente'')::text as periodo,
+                                  bp.monto_debito,
+                                   null::numeric as monto_deposito,
+                                  (select pe.fecha_pago
+                                   from obingresos.tperiodo_venta pe
+                                   where pe.id_periodo_venta = bp.id_periodo_venta) as fecha_pago,
+                                   null::date as fecha,
+                                   null::varchar as nro_deposito,
+                                   null::numeric as garante,
+                                   (COALESCE( cr.monto_total,0) - COALESCE( bp.monto_debito,0)) as monto_anterior
+                          from obingresos.vboletos_a_pagar bp
+                          inner join obingresos.tagencia ag on ag.id_agencia = bp.id_agencia
+                          left join obingresos.vcredito_ag cr on cr.id_agencia = bp.id_agencia and cr.id_periodo_venta = bp.id_periodo_venta
+                          where bp.id_agencia = '||v_parametros.id_agencia||' and bp.id_periodo_venta = (select bp.id_periodo_venta
+                                                                              from obingresos.vboletos_a_pagar bp
+                                                                              where bp.id_agencia='||v_parametros.id_agencia||' and bp.fecha_fin >= '''||v_parametros.fecha_fin||'''
+                                                                              FETCH FIRST 1 ROW ONLY)
+                          and EXTRACT(YEAR FROM bp.fecha_fin)='''||v_parametros.año_ini||''')';
 
        --Devuelve la respuesta
     return v_consulta;
@@ -1490,8 +1820,8 @@ UNION
                                        COALESCE(TO_CHAR(mo.fecha_ini,''DD'')||'' al ''|| TO_CHAR(mo.fecha_fin,''DD'')||'' ''||mo.mes||'' ''||EXTRACT(YEAR FROM mo.fecha_ini),''Periodo Vigente'')::text as periodo,
                                        mo.monto_total as credito_anterior,
                                        COALESCE(au.monto_total,0) as  debito_anterior,
-                                        mo.monto_total - COALESCE(au.monto_total,0) as saldo_boleta,
-                                        mcb.monto_total - COALESCE(au.monto_total,0) as saldo_sin_boleta
+                                        mo.monto_total - COALESCE(au.monto_total,0) as saldo_sin_boleta,
+                                        mcb.monto_total - COALESCE(au.monto_total,0) as saldo_boleta
                                        from obingresos.vcredito_ag mo
                                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
                                        inner join obingresos.vcredito_ag_boleta mcb on mcb.id_agencia = mo.id_agencia and mo.id_periodo_venta = mcb.id_periodo_venta

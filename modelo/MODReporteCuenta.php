@@ -56,9 +56,9 @@ class MODReporteCuenta extends MODbase{
         $this->setParametro('id_agencia','id_agencia','int4');
 
 				$this->captura('id_agencia','int4');
-        $this->captura('id_periodo_venta','int4');
 				$this->captura('nombre','varchar');
         $this->captura('tipo','varchar');
+				//$this->captura('id_periodo_venta','int4');
         $this->captura('pnr','varchar');
         $this->captura('fecha','date');
         $this->captura('autorizacion__nro_deposito','text');
@@ -66,7 +66,7 @@ class MODReporteCuenta extends MODbase{
         $this->captura('comision','numeric');
         $this->captura('importe','numeric');
         $this->captura('neto','numeric');
-        $this->captura('saldo_anterior','numeric');
+        $this->captura('saldo','numeric');
         //Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -173,6 +173,7 @@ class MODReporteCuenta extends MODbase{
 				$this->setParametro('id_agencia','id_agencia','int4');
 				$this->setParametro('fecha_ini','fecha_ini','varchar');
 				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('año_ini','año_ini','varchar');
 
 				$this->captura('tipo','varchar');
 				$this->captura('id_agencia','int4');
@@ -246,8 +247,8 @@ class MODReporteCuenta extends MODbase{
 				$this->captura('periodo','text');
         $this->captura('credito_anterior','numeric');
         $this->captura('debito_anterior','numeric');
-				$this->captura('saldo_boleta','numeric');
-        $this->captura('saldo_sin_boleta','numeric');
+				$this->captura('saldo_sin_boleta','numeric');
+        $this->captura('saldo_boleta','numeric');
 
         $this->armarConsulta();
         $this->ejecutarConsulta();
