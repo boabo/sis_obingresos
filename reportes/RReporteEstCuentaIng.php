@@ -250,8 +250,8 @@ class RReporteEstCuentaIng
 
                       array_push($this->monto, $value['monto_deposito']);
                       $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $ini2 ,date_format(date_create($value["fecha"]), 'd/m/Y'));
-                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $ini2 , $value['nro_deposito']);
-                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $ini2 , $value['nro_deposito_boa']);
+                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $ini2 , " ".$value['nro_deposito']);
+                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $ini2 , " ".$value['nro_deposito_boa']);
                       $this->docexcel->getActiveSheet()->getStyle("H$fill")->getAlignment()->setWrapText(true);
                       $this->docexcel->getActiveSheet()->getStyle("C$fill:C$fill")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
@@ -262,8 +262,10 @@ class RReporteEstCuentaIng
                       array_push($this->monto, $value['monto_deposito']);
 
                       $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill ,date_format(date_create($value["fecha"]), 'd/m/Y'));
-                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fill , $value['nro_deposito']);
-                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fill , $value['nro_deposito_boa']);
+                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fill ," ".$value['nro_deposito']);
+                    //  $this->docexcel->getActiveSheet()->getStyle("G$fill:G$fill")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_TEXT);
+
+                      $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fill , " ".$value['nro_deposito_boa']);
                       $this->docexcel->getActiveSheet()->getStyle("H$fill")->getAlignment()->setWrapText(true);
                       $this->docexcel->getActiveSheet()->getStyle("C$fill:C$fill")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 

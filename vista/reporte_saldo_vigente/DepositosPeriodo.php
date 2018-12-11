@@ -101,7 +101,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Mes',
                         allowBlank: true,
                         anchor: '80%',
-                        gwidth: 50
+                        gwidth: 90
                     },
                     type:'TextField',
                     filters:{pfiltro:'mo.mes',type:'string'},
@@ -117,7 +117,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         anchor : '150%',
                         gwidth : 200,
                         maxLength : 20,
-                        galign:'right',
+                        galign:'left',
                         renderer:function (value,p,record){
                             if(record.data.autorizacion__nro_deposito != 'summary'){
                                 return  String.format('{0}', value);
@@ -136,14 +136,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
-                        name: 'nro_deposito',
+                        name: 'nro_deposito_boa',
                         fieldLabel: 'Número de Comprobante de Depósitos BoA',
                         allowBlank: true,
                         anchor: '80%',
-                        gwidth: 220
+                        gwidth: 220,
+                        galign:'left',
                     },
                     type:'TextField',
-                    filters:{pfiltro:'mo.mes',type:'string'},
+                    filters:{pfiltro:'dep.nro_deposito_boa',type:'string'},
                     id_grupo:1,
                     grid:true,
                     form:true
@@ -219,7 +220,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'fecha', type: 'date',dateFormat:'Y-m-d'},
                 {name:'autorizacion__nro_deposito', type: 'string'},
                 {name:'monto_total', type: 'numeric'},
-                {name:'nro_deposito', type: 'string'}
+                {name:'nro_deposito_boa', type: 'string'}
             ],
             sortInfo:{
                 field: 'id_movimiento_entidad',

@@ -23,7 +23,7 @@ class  MODDepositoPeriodo extends MODbase{
         $this->captura('fecha','date');
         $this->captura('autorizacion__nro_deposito','varchar');
         $this->captura('monto_total','numeric');
-        $this->captura('nro_deposito','varchar');
+        $this->captura('nro_deposito_boa','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
