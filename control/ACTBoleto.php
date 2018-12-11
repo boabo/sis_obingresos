@@ -964,7 +964,7 @@ class ACTBoleto extends ACTbase{
         $json_data = json_encode($data);
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'http://skbpruebas.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
+        curl_setopt($s, CURLOPT_URL, 'http://skbproduccion.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
