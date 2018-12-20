@@ -13,7 +13,7 @@ header("content-type:text/javascript; charset=UTF-8");
     Phx.vista.GridReporteSaldoVigente = Ext.extend(Phx.gridInterfaz, {
         viewConfig: {
             getRowClass: function(record) {
-                if(record.data.saldo < 0){
+                if(record.data.saldo_con_boleto < 0){
                     return 'prioridad_importanteA';
                 }
             }
@@ -26,55 +26,60 @@ header("content-type:text/javascript; charset=UTF-8");
             this.init();
             this.bbar.add(this.lugar);
             this.addButton('ReporteGeneral',{
-                text: 'Reporte General',
-                iconCls: 'bpdf32',
-                disabled: false,
+                text: 'Reporte General <br> de Saldos',
+                iconCls: 'bexcel',
+                disabled: true,
                 handler: this.reporteGeneral,
-                tooltip: '<b>Reporte General Cuenta Corriente</b>',
+                tooltip: '<b>Reporte General de Saldos</b>',
                 scope:this
             });
             this.addButton('Reporte',{
-                text: 'Depositos/Boletos',
+                text: 'Reporte Estado de <br> Cuentas por Periodo',
                 iconCls: 'blist',
-                disabled: false,
+                disabled: true,
                 handler: this.onButtonReporte,
                 tooltip: '<b>Estado de cuenta depositos vs boletos</b>',
                 scope:this
             });
             this.addButton('Movimientos',{
-                text: 'Movimientos',
-                iconCls: 'bpdf32',
-                disabled: false,
+                text: 'Reporte de Movimientos <br> por Periodo',
+                iconCls: 'bexcel',
+                disabled: true,
                 handler: this.onButtonMovimientos,
                 tooltip: '<b>Estado de cuenta credito vs debito</b>',
                 scope:this
             });
             this.addButton('Report',{
-                text :'Estado Cuenta',
+                text :'Estado de Cuenta <br>Detallado',
                 iconCls : 'bprint',
-                disabled: false,
+                disabled: true,
                 handler : this.onButtonReporteVi,
-                tooltip : '<b>Resumen Estado Cuenta Corriente</b>'
+                tooltip : '<b>Estado de Cuenta Detallado</b>'
             });
             this.addButton('Depositos',{
-                text: 'Depositos',
+                text: 'Reporte de Depositos <br> Detallado',
                 iconCls: 'bdocuments',
-                disabled: false,
+                disabled: true,
                 handler: this.onButtonDeposito,
-                tooltip: '<b>Deposito por periodo</b>',
+                tooltip: '<b>Reporte de Depositos Detallado</b>',
                 scope:this
             });
+            this.tbar.addField(this.fecha_ini);
             this.tbar.addField(this.fecha_fin);
             this.tbar.addField(this.tipo_agencia);
             this.tbar.addField(this.forma_pago);
            // this.tbar.addField(this.lugar);
-            this.fecha_fin.setValue(new Date().dateFormat('d/m/Y'));
+           //this.fecha_ini.setValue(new Date().dateFormat('d/m/Y'));
+           //this.fecha_fin.setValue(new Date().dateFormat('d/m/Y'));
 
-
+           this.fecha_ini.on('select',function(value){
+               this.capturaFiltros();
+           },this);
 
             this.fecha_fin.on('select',function(value){
                 this.capturaFiltros();
             },this);
+
             this.tipo_agencia.on('select', function( combo, record, index){
                 this.capturaFiltros();
             },this);
@@ -88,6 +93,31 @@ header("content-type:text/javascript; charset=UTF-8");
             this.cmbPeriodo.setValue(null);
             this.cmbPeriodo.setRawValue('Periodo Vigente');
         },
+
+        preparaMenu: function () {
+            var tb = this.tbar;
+            var rec = this.sm.getSelected();
+                this.getBoton('ReporteGeneral').enable();
+                this.getBoton('Reporte').enable();
+                this.getBoton('Movimientos').enable();
+                this.getBoton('Report').enable();
+                this.getBoton('Depositos').enable();
+            },
+
+        liberaMenu : function(){
+            var rec = this.sm.getSelected();
+          this.getBoton('ReporteGeneral').disable();
+          this.getBoton('Reporte').disable();
+          this.getBoton('Movimientos').disable();
+          this.getBoton('Report').disable();
+          this.getBoton('Depositos').disable();
+          Phx.vista.GridReporteSaldoVigente.superclass.liberaMenu.call(this);
+
+        },
+
+
+
+
         tam_pag:1000,
         Atributos : [
             {
@@ -173,7 +203,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     name : 'tipo_agencia',
                     fieldLabel : 'Tipo Agencia',
                     allowBlank : false,
-                    anchor : '100%',
+                    anchor : '200%',
                     gwidth : 100,
                     maxLength : 20
 
@@ -336,8 +366,8 @@ header("content-type:text/javascript; charset=UTF-8");
             },
             {
                 config : {
-                    name : 'saldo',
-                    fieldLabel : 'Saldo',
+                    name : 'saldo_sin_boleto',
+                    fieldLabel : 'Saldo Sin Boleta',
                     allowBlank : false,
                     anchor : '100%',
                     gwidth : 130,
@@ -345,10 +375,34 @@ header("content-type:text/javascript; charset=UTF-8");
                     galign:'right',
                     renderer:function (value,p,record){
                         if(record.data.tipo_reg != 'summary'){
-                            return  String.format('{0}', Ext.util.Format.number(record.data.saldo,'0,000.00'));
+                            return  String.format('{0}', Ext.util.Format.number(record.data.saldo_sin_boleto,'0,000.00'));
                         }
                         else{
-                            return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.saldo,'0,000.00'));
+                            return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.saldo_sin_boleto,'0,000.00'));
+                        }
+                    }
+                },
+                type : 'NumberField',
+
+                id_grupo : 1,
+                grid : true,
+                form : false
+            },
+            {
+                config : {
+                    name : 'saldo_con_boleto',
+                    fieldLabel : 'Saldo Con Boleta',
+                    allowBlank : false,
+                    anchor : '100%',
+                    gwidth : 130,
+                    maxLength : 20,
+                    galign:'right',
+                    renderer:function (value,p,record){
+                        if(record.data.tipo_reg != 'summary'){
+                            return  String.format('{0}', Ext.util.Format.number(record.data.saldo_con_boleto,'0,000.00'));
+                        }
+                        else{
+                            return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.saldo_con_boleto,'0,000.00'));
                         }
                     }
                 },
@@ -358,6 +412,8 @@ header("content-type:text/javascript; charset=UTF-8");
                 grid : true,
                 form : false
             }
+
+
 
         ],
         onEnablePanel: function(idPanel, data) {
@@ -415,7 +471,10 @@ header("content-type:text/javascript; charset=UTF-8");
             name : 'monto_ajustes',
             type : 'numeric'
         }, {
-            name : 'saldo',
+            name : 'saldo_con_boleto',
+            type : 'numeric'
+        },{
+            name : 'saldo_sin_boleto',
             type : 'numeric'
         },{
             name : 'garantia',
@@ -434,15 +493,19 @@ header("content-type:text/javascript; charset=UTF-8");
         fwidth : '90%',
         fheight : '80%',
         onButtonDeposito:function() {
-            var rec=this.sm.getSelected();
-            console.log ('Data',rec.data);
+          var rec = {fechaIni: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                     fechaFin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                     agencia: this.sm.getSelected().data.id_agencia
+                     }
+
+            console.log ('MUESTRA',this);
             Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte_saldo_vigente/DepositosPeriodo.php',
-                'Depositos por Periodo',
+                'Reporte de Depositos Detallado',
                 {
                     width:'50%',
                     height:'85%'
                 },
-                rec.data,
+                rec,
                 this.idContenedor,
                 'DepositosPeriodo');
         },
@@ -451,7 +514,12 @@ header("content-type:text/javascript; charset=UTF-8");
             var rec=this.sm.getSelected();
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuentaIng',
-                params:{'id_agencia':rec.data.id_agencia},
+                params:{'id_agencia':rec.data.id_agencia,
+                        nombre: rec.data.nombre,
+                        fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                        fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                        año_ini:this.fecha_ini.getValue().dateFormat('Y')
+              },
                 success: this.successExport,
                 failure: this.conexionFailure,
                 timeout:this.timeout,
@@ -463,8 +531,11 @@ header("content-type:text/javascript; charset=UTF-8");
             var rec=this.sm.getSelected();
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuenta',
-                params:{'id_agencia':rec.data.id_agencia/*,
-                    id_periodo_venta: this.cmbPeriodo.getValue()*/},
+                params:{'id_agencia':rec.data.id_agencia,
+                fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y')
+
+              },
                 success: this.successExport,
                 failure: this.conexionFailure,
                 timeout:this.timeout,
@@ -476,7 +547,13 @@ header("content-type:text/javascript; charset=UTF-8");
             var rec=this.sm.getSelected();
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/listarReporteMovimientos',
-                params:{'id_agencia':rec.data.id_agencia},
+                params:{'id_agencia':rec.data.id_agencia,
+                        fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                        fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                        mes_ini:this.fecha_ini.getValue().dateFormat('m'),
+                        dia_ini:this.fecha_ini.getValue().dateFormat('d'),
+                        año_ini:this.fecha_ini.getValue().dateFormat('Y'),
+                       },
                 success: this.successExport,
                 failure: this.conexionFailure,
                 timeout:this.timeout,
@@ -487,7 +564,8 @@ header("content-type:text/javascript; charset=UTF-8");
             Phx.CP.loadingShow();
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/reporteGeneralEstadoCuenta',
-                params:{fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                params:{fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                        fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
                         id_lugar:this.lugar.getValue(),
                         tipo_agencia:this.tipo_agencia.getValue(),
                         forma_pago:this.forma_pago.getValue()},
@@ -505,6 +583,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     params : {
                         start: 0,
                         limit: 1000,
+                        fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
                         fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
                         id_lugar:this.lugar.getValue(),
                         tipo_agencia:this.tipo_agencia.getValue(),
@@ -514,10 +593,18 @@ header("content-type:text/javascript; charset=UTF-8");
            // }
 
         },
+        fecha_ini : new Ext.form.DateField({
+            name: 'fecha_reg',
+            fieldLabel: 'Fecha',
+            emptyText:'Fecha Inicial',
+            anchor: '60%',
+            gwidth: 100,
+            format: 'd/m/Y'
+        }),
         fecha_fin : new Ext.form.DateField({
             name: 'fecha_reg',
             fieldLabel: 'Fecha',
-            emptyText:'Fecha Fin',
+            emptyText:'Fecha Final',
             anchor: '60%',
             gwidth: 100,
             format: 'd/m/Y'
@@ -531,7 +618,7 @@ header("content-type:text/javascript; charset=UTF-8");
             lazyRender:true,
             mode: 'local',
             gwidth: 50,
-            anchor: "30%",
+            anchor: "10%",
             store:['corporativa','noiata','todas']
         }),
         forma_pago : new Ext.form.ComboBox({
@@ -592,7 +679,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     direction: 'DESC'
                 },
                 totalProperty: 'total',
-                fields: ['id_periodo_venta', 'id_gestion','periodo' ,'mes','fecha_ini','fecha_fin'],
+                fields: ['id_periodo_venta', 'id_gestion','periodo' ,'mes','fecha_fin'],
                 remoteSort: true,
                 baseParams: {par_filtro: 'perven.mes'}
             }),

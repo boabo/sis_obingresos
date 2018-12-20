@@ -14,6 +14,13 @@ class REstadoCuentaCorriente
     public  $fnumA =0;
     public  $array =array();
     public  $array2 =array();
+    public  $sinboleta =array();
+    public  $sb2 =array();
+    public  $saldoanterior =array();
+    public  $boletaGarantia =array();
+    public  $depositosTotal =array();
+    public  $comision =array();
+    public  $boletos =array();
 
 
     function __construct(CTParametro $objParam){
@@ -46,9 +53,10 @@ class REstadoCuentaCorriente
             76=>'BY',77=>'BZ');
 
     }
-    function datosHeader ($totales,$resumen) {
+    function datosHeader ($totales,$resumen,$anteriorCierrePeriodo) {
         $this->datos_titulo = $totales;
         $this->resumen = $resumen;
+        $this->anteriorCierrePeriodo = $anteriorCierrePeriodo;
     }
     function imprimeCabecera() {
         $this->docexcel->createSheet();
@@ -60,16 +68,19 @@ class REstadoCuentaCorriente
                 'bold'  => true,
                 'size'  => 11,
                 'name'  => 'Arial',
-                'color' => array(
-                    'rgb' => '59A1EA'
-                )
             ),
             'alignment' => array(
                 'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => '70AD47'
+                )
+            ),
             'borders' => array(
-                'top' => array(
+                'allborders' => array(
                     'style' => PHPExcel_Style_Border::BORDER_THIN
                 )
             )
@@ -81,53 +92,94 @@ class REstadoCuentaCorriente
                 'size'  => 12,
                 'name'  => 'Arial'
             ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'E2EFDA'
+                )
+            ),
             'alignment' => array(
                 'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
         );
+        $gdImage = imagecreatefromjpeg('../../../sis_obingresos/reportes/logoBoa.jpg');
+        // Add a drawing to the worksheetecho date('H:i:s') . " Add a drawing to the worksheet\n";
+        $objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+        $objDrawing->setName('Sample image');
+        $objDrawing->setDescription('Sample image');
+        $objDrawing->setImageResource($gdImage);
+        $objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
+        $objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
+        $objDrawing->setHeight(80);
+        $objDrawing->setCoordinates('A1');
+        $objDrawing->setWorksheet($this->docexcel->getActiveSheet());
+        //$this->docexcel->getActiveSheet()->mergeCells('A1:C1');
 
         //titulos
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'ESTADO DE CUENTA' );
-        $this->docexcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($styleTitulos);
-        $this->docexcel->getActiveSheet()->mergeCells('A2:J2');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'ESTADO DE CUENTA DETALLADO' );
+        $this->docexcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->mergeCells('A2:M2');
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,3,'AGENCIA: '.$this->datos_titulo[0]["nombre"] );
-        $this->docexcel->getActiveSheet()->getStyle('A3:J3')->applyFromArray($styleTitulos);
-        $this->docexcel->getActiveSheet()->mergeCells('A3:J3');
+        $this->docexcel->getActiveSheet()->getStyle('A3:M3')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->mergeCells('A3:M3');
+
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,4,'Desde:'.$this->objParam->getParametro('fecha_ini').'  '.'Hasta: '. $this->objParam->getParametro('fecha_fin'));
+        $this->docexcel->getActiveSheet()->mergeCells('A4:M4');
+
+        $this->docexcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->getStyle('A4:M4')->applyFromArray($styleTitulos);
 
         //*************************************Cabecera*****************************************
 
         $this->docexcel->getActiveSheet()->setCellValue('A5','CREDITO');
         $this->docexcel->getActiveSheet()->mergeCells('A5:D5');
-        $this->docexcel->getActiveSheet()->setCellValue('E5','DEBITO');
-        $this->docexcel->getActiveSheet()->mergeCells('E5:I5');
-        $this->docexcel->getActiveSheet()->setCellValue('J5','SALDO');
+        $this->docexcel->getActiveSheet()->setCellValue('E5','COMISION');
+        $this->docexcel->getActiveSheet()->mergeCells('E5:G5');
+        $this->docexcel->getActiveSheet()->setCellValue('H5','DEBITO');
+        $this->docexcel->getActiveSheet()->mergeCells('H5:L5');
+        $this->docexcel->getActiveSheet()->setCellValue('M5','SALDO');
         $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
-        $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
-        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
+        $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
 
-        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
-        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
+
+
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(17);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
-        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
         $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-        $this->docexcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+
+        $this->docexcel->getActiveSheet()->getColumnDimension('I')->setWidth(30);
         $this->docexcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
+
         $this->docexcel->getActiveSheet()->setCellValue('A6','Nro.');
+        $this->docexcel->getActiveSheet()->setCellValue('E6','Fecha Tran.');
+        $this->docexcel->getActiveSheet()->setCellValue('F6','Nro. Deposito.');
+        $this->docexcel->getActiveSheet()->setCellValue('G6','Total');
+        //$this->docexcel->getActiveSheet()->mergeCells('D6:E6');
+
+
+
         $this->docexcel->getActiveSheet()->setCellValue('B6','Fecha Tran.');
         $this->docexcel->getActiveSheet()->setCellValue('C6','Nro. Deposito');
         $this->docexcel->getActiveSheet()->setCellValue('D6','Total');
-        $this->docexcel->getActiveSheet()->setCellValue('E6','Fecha Tran.');
-        $this->docexcel->getActiveSheet()->setCellValue('F6','Cod. Reserva Boleto');
-        $this->docexcel->getActiveSheet()->setCellValue('G6','Neto');
-        $this->docexcel->getActiveSheet()->setCellValue('H6','Tasa');
-        $this->docexcel->getActiveSheet()->setCellValue('I6','Total');
-        $this->docexcel->getActiveSheet()->setCellValue('J6','');
-        $this->docexcel->getActiveSheet()->getStyle('A5:J5')->applyFromArray($styleTitulos1);
-        $this->docexcel->getActiveSheet()->getStyle('A6:J6')->applyFromArray($styleTitulos1);
+
+        $this->docexcel->getActiveSheet()->setCellValue('H6','Fecha Tran.');
+        $this->docexcel->getActiveSheet()->setCellValue('I6','Cod. Reserva Boleto');
+        $this->docexcel->getActiveSheet()->setCellValue('J6','Neto');
+        $this->docexcel->getActiveSheet()->setCellValue('K6','Tasa');
+        $this->docexcel->getActiveSheet()->setCellValue('L6','Total');
+
+        $this->docexcel->getActiveSheet()->getStyle('A5:M5')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->getStyle('A6:M6')->applyFromArray($styleTitulos1);
 
     }
 
@@ -156,10 +208,33 @@ class REstadoCuentaCorriente
                 'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
             ),
         );
+        $styleTitulos3 = array(
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'F8CBAD'
+                )
+            ),
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+            ),
+
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 12,
+                'name'  => 'Arial'
+            ),
+              );
         $numero = 1;
-        $fila = 7;
+        $fila = 8;
+        $anterior = 7;
+
         $datos = $this->datos_titulo;
+
+
        //var_dump($datos);exit;
+
         foreach ($datos as $value){
 
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $numero);
@@ -167,27 +242,59 @@ class REstadoCuentaCorriente
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila,  date_format(date_create($value["fecha"]), 'd/m/Y'));
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['autorizacion__nro_deposito']);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['importe']);
+                array_push($this->depositosTotal,$value['importe']);
 
             }else{
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, 'comision');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['comision']);
+              /*--------------------------------------------comision-------------------------------------------------------------*/
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, 'comision');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['comision']);
+                array_push($this->comision,$value['comision']);
+
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, date_format(date_create($value["fecha"]), 'd/m/Y'));
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value['autorizacion__nro_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['neto']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, round($value['importe']-$value['neto']));
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['importe']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, date_format(date_create($value["fecha"]), 'd/m/Y'));
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['autorizacion__nro_deposito']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['neto']);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, round($value['importe']-$value['neto']));
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $value['importe']);
+                array_push($this->boletos,$value['importe']);
             }
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['saldo']);
+            /*-------------------------------------------------------------------------------------------------------------------------*/
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $value['saldo']);
             $this->docexcel->getActiveSheet()->getStyle("B$fila:C$fila")->applyFromArray($styleTitulos);
             $this->docexcel->getActiveSheet()->getStyle("E$fila:F$fila")->applyFromArray($styleTitulos);
+            $this->docexcel->getActiveSheet()->getStyle("H$fila:I$fila")->applyFromArray($styleTitulos);
             $this->docexcel->getActiveSheet()->getStyle("D$fila:D$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->docexcel->getActiveSheet()->getStyle("G$fila:J$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->docexcel->getActiveSheet()->getStyle("A$fila:J$fila")->applyFromArray($bordes);
+            $this->docexcel->getActiveSheet()->getStyle("J$fila:L$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+            $this->docexcel->getActiveSheet()->getStyle("G$fila:G$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+            $this->docexcel->getActiveSheet()->getStyle("M$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+            $this->docexcel->getActiveSheet()->getStyle("A$fila:M$fila")->applyFromArray($bordes);
             $numero++;
             $fila++;
 
             $this->fila =  $fila;
         }
+
+
+        $anteriorCierrePeriodo = $this->anteriorCierrePeriodo;
+        if ($anteriorCierrePeriodo != NULL) {
+          foreach ($anteriorCierrePeriodo as $value3){
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'SALDO ANTERIOR');
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $anterior, $value3['saldo']);
+          $this->docexcel->getActiveSheet()->getStyle("M$anterior")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+          $this->docexcel->getActiveSheet()->mergeCells("A$anterior:D$anterior");
+          $this->docexcel->getActiveSheet()->getStyle("A$anterior:M$anterior" )->applyFromArray($styleTitulos3);
+        }
+      }
+
+        else {
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'LA AGENCIA NO CUENTA CON UN SALDO CIERRE PERIODO ANTERIOR');
+          $this->docexcel->getActiveSheet()->mergeCells("A$anterior:H$anterior");
+          $this->docexcel->getActiveSheet()->mergeCells("I$anterior:J$anterior");
+          $this->docexcel->getActiveSheet()->getStyle("A$anterior:M$anterior" )->applyFromArray($styleTitulos3);
+        }
+        array_push($this->saldoanterior,$value3['saldo']);
+
 
         $fill = $this->fila+3;
         $resumen = $this->resumen;
@@ -219,6 +326,104 @@ class REstadoCuentaCorriente
                 'name'  => 'Arial'
             )
         );
+
+        $styleTitulosNumeros2 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'FFD966'
+                )
+            )
+        );
+
+
+        $styleTitulosNumeros22 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => '5B9BD5'
+                )
+            )
+        );
+
+        $styleTitulosNumeros23 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'BDD7EE'
+                )
+            )
+        );
+
+        $styleTitulosNumeros3 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'F4B084'
+                )
+            )
+        );
+
+        $styleTitulosNumeros4 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'A9D08E'
+                )
+            )
+        );
+        $styleTitulosNumeros5 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => '8EA9DB'
+                )
+            )
+        );
+        $styleTitulosNumeros6 = array(
+            'font'  => array(
+                'bold'  => true,
+                'size'  => 11,
+                'name'  => 'Arial'
+            ),
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => '00B0F0'
+                )
+            )
+        );
+
         $bordes = array(
             'borders' => array(
                 'left' => array(
@@ -236,104 +441,170 @@ class REstadoCuentaCorriente
             ),
 
         );
+        $bordes2 = array(
+            'borders' => array(
+                'left' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+                'right' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+                // 'bottom' => array(
+                //     'style' => PHPExcel_Style_Border::BORDER_THIN,
+                // ),
+                'top' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+            ),
+
+        );
+        $bordes3 = array(
+            'borders' => array(
+                'left' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+                'right' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+                'bottom' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                )
+                // 'top' => array(
+                //     'style' => PHPExcel_Style_Border::BORDER_THICK,
+                // ),
+            ),
+
+        );
+        $bordes4 = array(
+            'borders' => array(
+                'left' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+                'right' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_MEDIUM,
+                ),
+                // 'bottom' => array(
+                //     'style' => PHPExcel_Style_Border::BORDER_THICK,
+                // )
+                // // 'top' => array(
+                //     'style' => PHPExcel_Style_Border::BORDER_THICK,
+                // ),
+            ),
+
+        );
         $titulos = $fill - 2;
         $titulosub = $fill - 1;
+        $fechas = $fill;
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,$titulos,'RESUMEN ESTADO CUENTA CORRIENTE' );
         $this->docexcel->getActiveSheet()->getStyle("B$titulos:J$titulos")->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells("B$titulos:J$titulos");
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,$titulosub,'AGENCIA: '.$this->datos_titulo[0]["nombre"] );
         $this->docexcel->getActiveSheet()->getStyle("B$titulosub:J$titulosub")->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells("B$titulosub:J$titulosub");
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,$fechas,'Desde:'.$this->objParam->getParametro('fecha_ini').'  '.'Hasta: '. $this->objParam->getParametro('fecha_fin'));
+        $this->docexcel->getActiveSheet()->mergeCells("B$fechas:J$fechas");
+        $this->docexcel->getActiveSheet()->getStyle("B$fechas:J$fechas")->applyFromArray($styleTitulos);
+
 
         $filaAux = $fill +1;
-        foreach ($resumen as $value){
 
-            if($value['tipo'] == 'boleta_garantia' || $value['tipo'] == 'saldo_anterior'||
-                $value['tipo'] == 'deposito'|| $value['tipo'] == 'comision'|| $value['tipo'] == 'otro_credito') {
-                if($value['tipo'] == 'boleta_garantia'){
+
+        foreach ($resumen as $value9){
+
+            if($value9['tipo'] == 'boleta_garantia'){
                     $valor = 'Boleta Garantia';
-                }elseif ($value['tipo'] == 'saldo_anterior'){
-                    $valor = 'Saldo Anterior';
-                }elseif ($value['tipo'] == 'deposito'){
-                    $valor = 'Depositos';
-                }elseif ($value['tipo'] == 'comision'){
-                    $valor = 'Comision';
-                }elseif ( $value['tipo'] == 'otro_credito'){
-                    $valor = 'Otros Creditos';
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $filaAux, $valor);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $filaAux, $value9['monto']);
+                    array_push($this->boletaGarantia,$value9['monto']);
                 }
 
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $filaAux, $valor);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $filaAux, $value['monto']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $filaAux, $value['moneda']);
-                array_push($this->fnum,$value['monto']);
+
+
                 $this->docexcel->getActiveSheet()->mergeCells("B$filaAux:D$filaAux");
-                $this->docexcel->getActiveSheet()->getStyle("B$filaAux:D$filaAux")->applyFromArray($styleTitulos1);
-                $this->docexcel->getActiveSheet()->getStyle("F$filaAux:I$filaAux")->applyFromArray($styleTitulosNumeros);
+                $this->docexcel->getActiveSheet()->getStyle("B$filaAux:I$filaAux")->applyFromArray($styleTitulosNumeros22);
+                //$this->docexcel->getActiveSheet()->getStyle("F$filaAux:I$filaAux")->applyFromArray($styleTitulosNumeros2);
                 $this->docexcel->getActiveSheet()->getStyle("B$filaAux:I$filaAux")->applyFromArray($bordes);
+                $this->docexcel->getActiveSheet()->getStyle("B$filaAux:I$filaAux")->applyFromArray($bordes2);
+                $this->docexcel->getActiveSheet()->getStyle("B$filaAux:I$filaAux")->applyFromArray($bordes3);
                 $this->docexcel->getActiveSheet()->getStyle("F$filaAux:F$filaAux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
-                $filaAux++;
-                $this->fnumA = $filaAux;
-
-            }
-        }
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 6 ,  'Total Creditos');
-        $this->docexcel->getActiveSheet()->getStyle("B$this->fnumA:D$this->fnumA")->applyFromArray($styleTitulosNumeros);
-        $this->docexcel->getActiveSheet()->mergeCells("B$this->fnumA:D$this->fnumA");
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 6 ,  array_sum($this->fnum));
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fill + 6 ,  'BOB');
-        $this->docexcel->getActiveSheet()->getStyle("F$this->fnumA:I$this->fnumA")->applyFromArray($styleTitulosNumeros);
-        $this->docexcel->getActiveSheet()->getStyle("B$this->fnumA:I$this->fnumA")->applyFromArray($bordes);
-        $this->docexcel->getActiveSheet()->getStyle("F$this->fnumA:F$this->fnumA")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
-
-        $filaAuxL = $this->fnumA +1;
-        foreach ($resumen as $value){
-
-            if($value['tipo'] == 'boleto' || $value['tipo'] == 'periodo_adeudado'||
-                $value['tipo'] == 'otro_debito') {
-
-                if($value['tipo'] == 'boleto'){
-                    $valor = 'Boleto';
-                }elseif ($value['tipo'] == 'periodo_adeudado'){
-                    $valor = 'Periodo Adeudado';
-                }elseif ($value['tipo'] == 'otro_debito'){
-                    $valor = 'Otro Debito';
-                }
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $filaAuxL, $valor);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $filaAuxL, $value['monto']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $filaAuxL, $value['moneda']);
-                array_push($this->array,$value['monto']);
-                $this->docexcel->getActiveSheet()->mergeCells("B$filaAuxL:D$filaAuxL");
-                $this->docexcel->getActiveSheet()->getStyle("B$filaAuxL:D$filaAuxL")->applyFromArray($styleTitulos1);
-                $this->docexcel->getActiveSheet()->getStyle("F$filaAuxL:I$filaAuxL")->applyFromArray($styleTitulosNumeros);
-                $this->docexcel->getActiveSheet()->getStyle("B$filaAuxL:I$filaAuxL")->applyFromArray($bordes);
-                $this->docexcel->getActiveSheet()->getStyle("F$filaAuxL:F$filaAuxL")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-                $filaAuxL++;
-                $this->aux = $filaAuxL;
-            }
         }
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 10 , 'Total Debitos');
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 10 , array_sum($this->array));
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fill + 10 , 'BOB');
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fill + 11 , 'Saldo a la Fecha');
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fill + 11 , array_sum($this->fnum)-array_sum($this->array) );
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fill + 11 , 'BOB');
 
-        $this->docexcel->getActiveSheet()->mergeCells("B$this->aux:D$this->aux");
-        $this->docexcel->getActiveSheet()->getStyle("B$this->aux:D$this->aux")->applyFromArray($styleTitulosNumeros);
-        $this->docexcel->getActiveSheet()->getStyle("F$this->aux:I$this->aux")->applyFromArray($styleTitulosNumeros);
-        $this->docexcel->getActiveSheet()->getStyle("B$this->aux:I$this->aux")->applyFromArray($bordes);
-        $this->docexcel->getActiveSheet()->getStyle("F$this->aux:F$this->aux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+              $salAnte = $filaAux + 1;
+              $salAnte2 = $filaAux + 6;
+              $depositos = $salAnte + 1;
+              $comision2 = $depositos + 1;
+              $totalCreditos = $comision2 + 1;
+              $boleto = $totalCreditos + 3;
+              $totalDebitos = $boleto + 1;
 
-        $ayuda = $this->aux + 1;
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $filaAux + 6 , 'Saldo Anterior');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $filaAux + 6, array_sum($this->saldoanterior));
+                $this->docexcel->getActiveSheet()->getStyle("F$salAnte2:F$salAnte2")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+                $this->docexcel->getActiveSheet()->getStyle("B$salAnte2:I$salAnte2")->applyFromArray($styleTitulosNumeros3);
+                $this->docexcel->getActiveSheet()->getStyle("B$salAnte2:I$salAnte2")->applyFromArray($bordes);
+                $this->docexcel->getActiveSheet()->getStyle("B$salAnte2:I$salAnte2")->applyFromArray($bordes2);
 
-        $this->docexcel->getActiveSheet()->mergeCells("B$ayuda:D$ayuda");
-        $this->docexcel->getActiveSheet()->getStyle("B$ayuda:D$ayuda")->applyFromArray($styleTitulosNumeros);
-        $this->docexcel->getActiveSheet()->getStyle("F$ayuda:I$ayuda")->applyFromArray($styleTitulosNumeros);
-        $this->docexcel->getActiveSheet()->getStyle("B$ayuda:I$ayuda")->applyFromArray($bordes);
-        $this->docexcel->getActiveSheet()->getStyle("F$ayuda:F$ayuda")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $depositos ,  'Depositos');
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $depositos ,  array_sum($this->depositosTotal));
+              $this->docexcel->getActiveSheet()->getStyle("F$depositos:F$depositos")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+              $this->docexcel->getActiveSheet()->getStyle("B$depositos:I$depositos")->applyFromArray($styleTitulosNumeros2);
+              $this->docexcel->getActiveSheet()->getStyle("B$depositos:I$depositos")->applyFromArray($bordes);
+              $this->docexcel->getActiveSheet()->getStyle("B$depositos:I$depositos")->applyFromArray($bordes2);
+
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $comision2 ,  'Comision');
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $comision2 ,  array_sum($this->comision));
+              $this->docexcel->getActiveSheet()->getStyle("F$comision2:F$comision2")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+              $this->docexcel->getActiveSheet()->getStyle("B$comision2:I$comision2")->applyFromArray($styleTitulosNumeros2);
+              $this->docexcel->getActiveSheet()->getStyle("B$comision2:I$comision2")->applyFromArray($bordes);
+              $this->docexcel->getActiveSheet()->getStyle("B$comision2:I$comision2")->applyFromArray($bordes4);
+
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $totalCreditos ,  'Total Creditos');
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $totalCreditos , array_sum($this->depositosTotal) + array_sum($this->comision));
+              $this->docexcel->getActiveSheet()->getStyle("F$totalCreditos:F$totalCreditos")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+              $this->docexcel->getActiveSheet()->getStyle("B$totalCreditos:I$totalCreditos")->applyFromArray($styleTitulosNumeros4);
+              $this->docexcel->getActiveSheet()->getStyle("B$totalCreditos:I$totalCreditos")->applyFromArray($bordes);
+              $this->docexcel->getActiveSheet()->getStyle("B$totalCreditos:I$totalCreditos")->applyFromArray($bordes3);
+
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $boleto ,  'Boleto');
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $boleto , (array_sum($this->boletos))*(-1));
+              $this->docexcel->getActiveSheet()->getStyle("F$boleto:F$boleto")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+              $this->docexcel->getActiveSheet()->getStyle("B$boleto:I$boleto")->applyFromArray($styleTitulosNumeros3);
+              $this->docexcel->getActiveSheet()->getStyle("B$boleto:I$boleto")->applyFromArray($bordes);
+              $this->docexcel->getActiveSheet()->getStyle("B$boleto:I$boleto")->applyFromArray($bordes4);
+
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $totalDebitos ,  'Total Debitos');
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $totalDebitos ,((array_sum($this->boletos))*(-1)) + array_sum($this->saldoanterior));
+                $this->docexcel->getActiveSheet()->getStyle("F$totalDebitos:F$totalDebitos")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+                $this->docexcel->getActiveSheet()->getStyle("F$totalDebitos:F$totalDebitos")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+                $this->docexcel->getActiveSheet()->getStyle("B$totalDebitos:I$totalDebitos")->applyFromArray($styleTitulosNumeros4);
+                $this->docexcel->getActiveSheet()->getStyle("B$totalDebitos:I$totalDebitos")->applyFromArray($bordes);
+                $this->docexcel->getActiveSheet()->getStyle("B$totalDebitos:I$totalDebitos")->applyFromArray($bordes3);
+
+        $estilo1=($fill+11);
+        $estilo2=($fill+12);
+
+
+        foreach ($datos as $value4){
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $estilo1 , 'Saldo Sin Boleta');
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $estilo1, $value4['saldo']);
+            $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($styleTitulosNumeros6);
+            $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($bordes);
+            $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($bordes2);
+            $this->docexcel->getActiveSheet()->getStyle("F$estilo1:F$estilo1")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+        }
+        array_push($this->sb2,$value4['saldo']);
+
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $estilo2 , 'Saldo Con Boleta');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $estilo2 , array_sum($this->sb2) + array_sum($this->boletaGarantia));
+        $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($styleTitulosNumeros6);
+        $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($bordes);
+        $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($bordes3);
+        $this->docexcel->getActiveSheet()->getStyle("F$estilo2:F$estilo2")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
 
     }
 

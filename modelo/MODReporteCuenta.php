@@ -8,23 +8,57 @@
 */
 
 class MODReporteCuenta extends MODbase{
-	
+
 	function __construct(CTParametro $pParam){
 		parent::__construct($pParam);
 	}
-			
+
 	function listarReporteCuenta(){
 		//Definicion de variables para ejecucion del procedimientp
 		$this->procedimiento='obingresos.ft_reporte_cuenta_sel';
 		$this->transaccion='OBING_ENT_SEL';
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
         $this->setCount(false);
-				
+
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+
         $this->setParametro('id_agencia','id_agencia','int4');
         $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
         $this->captura('id_agencia','int4');
-		$this->captura('nombre','varchar');
+				$this->captura('nombre','varchar');
         $this->captura('tipo','varchar');
+        $this->captura('pnr','varchar');
+        $this->captura('fecha','date');
+        $this->captura('autorizacion__nro_deposito','text');
+        $this->captura('billete','varchar');
+        $this->captura('comision','numeric');
+        $this->captura('importe','numeric');
+        $this->captura('neto','numeric');
+        $this->captura('saldo','numeric');
+        //Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		//var_dump($this->respuesta);exit;
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+	function AnteriorCierrePeriodo(){
+		//Definicion de variables para ejecucion del procedimientp
+		$this->procedimiento='obingresos.ft_reporte_cuenta_sel';
+		$this->transaccion='OBING_ANTERIOR_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+
+        $this->setParametro('id_agencia','id_agencia','int4');
+
+				$this->captura('id_agencia','int4');
+				$this->captura('nombre','varchar');
+        $this->captura('tipo','varchar');
+				//$this->captura('id_periodo_venta','int4');
         $this->captura('pnr','varchar');
         $this->captura('fecha','date');
         $this->captura('autorizacion__nro_deposito','text');
@@ -70,10 +104,12 @@ class MODReporteCuenta extends MODbase{
         $this->capturaCount('total_creditos','numeric');
         $this->capturaCount('total_debitos','numeric');
         $this->capturaCount('total_ajustes','numeric');
-        $this->capturaCount('total_saldo','numeric');
+				$this->capturaCount('total_saldo_con_boleto','numeric');
+        $this->capturaCount('total_saldo_sin_boleto','numeric');
 
         //Definicion de la lista del resultado del query
-        $this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('fecha_ini','fecha_ini','varchar');
         $this->captura('id_agencia','int4');
         $this->captura('nombre','varchar');
         $this->captura('codigo_int','varchar');
@@ -84,8 +120,9 @@ class MODReporteCuenta extends MODbase{
         $this->captura('garantia','numeric');
         $this->captura('monto_debito','numeric');
         $this->captura('monto_ajustes','numeric');
-        $this->captura('saldo','numeric');
-        
+				$this->captura('saldo_con_boleto','numeric');
+        $this->captura('saldo_sin_boleto','numeric');
+
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -101,6 +138,9 @@ class MODReporteCuenta extends MODbase{
         $this->setCount(false);
 
         $this->setParametro('id_agencia','id_agencia','int4');
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('año_ini','año_ini','varchar');
 
         $this->captura('tipo','varchar');
         $this->captura('id_agencia','int4');
@@ -112,22 +152,63 @@ class MODReporteCuenta extends MODbase{
         $this->captura('fecha_pago','date');
         $this->captura('fecha','date');
         $this->captura('nro_deposito','varchar');
-        $this->captura('garante','numeric');
+				$this->captura('garante','numeric');
+
+        $this->captura('monto_sin_boleta','numeric');
+				$this->captura('nro_deposito_boa','varchar');
 
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
-      //  var_dump( $this->respuesta);exit;
+      // var_dump( $this->respuesta);exit;
         //Devuelve la respuesta
         return $this->respuesta;
     }
+		function  PeriodoAnterior(){
+				$this->procedimiento='obingresos.ft_reporte_cuenta_sel';
+				$this->transaccion='OBING_PERANT_SEL';
+				$this->tipo_procedimiento='SEL';//tipo de transaccion
+				$this->setCount(false);
+
+				$this->setParametro('id_agencia','id_agencia','int4');
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('año_ini','año_ini','varchar');
+
+				$this->captura('tipo','varchar');
+				$this->captura('id_agencia','int4');
+				$this->captura('id_periodo_venta','int4');
+				$this->captura('nombre','varchar');
+				$this->captura('periodo','text');
+				$this->captura('monto_debito','numeric');
+				$this->captura('monto_deposito','numeric');
+				$this->captura('fecha_pago','date');
+				$this->captura('fecha','date');
+				$this->captura('nro_deposito','varchar');
+				$this->captura('garante','numeric');
+
+				$this->captura('monto_anterior','numeric');
+				//$this->captura('nro_deposito_boa','varchar');
+
+				$this->armarConsulta();
+				$this->ejecutarConsulta();
+
+			//  var_dump( $this->respuesta);exit;
+				//Devuelve la respuesta
+				return $this->respuesta;
+		}
     function reporteEstadoMovimiento(){
         $this->procedimiento='obingresos.ft_reporte_cuenta_sel';
         $this->transaccion='OBING_MOV_SEL';
         $this->tipo_procedimiento='SEL';//tipo de transaccion
         $this->setCount(false);
 
-        $this->setParametro('id_agencia','id_agencia','int4');
+				$this->setParametro('id_agencia','id_agencia','int4');
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('mes_ini','mes_ini','varchar');
+				$this->setParametro('dia_ini','dia_ini','varchar');
+        $this->setParametro('año_ini','año_ini','varchar');
 
         $this->captura('credito','varchar');
         $this->captura('debito','varchar');
@@ -135,10 +216,11 @@ class MODReporteCuenta extends MODbase{
         $this->captura('codigo_int','varchar');
         $this->captura('id_agencia','int4');
         $this->captura('id_periodo_venta','int4');
-        $this->captura('periodo','text');
+				$this->captura('periodo','text');
         $this->captura('monto_total','numeric');
         $this->captura('monto_total_debito','numeric');
-        $this->captura('saldo','numeric');
+				$this->captura('saldo','numeric');
+        $this->captura('saldo2','numeric');
 
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -146,6 +228,35 @@ class MODReporteCuenta extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+		function PeriodoAnteriorMov(){
+        $this->procedimiento='obingresos.ft_reporte_cuenta_sel';
+        $this->transaccion='OBING_MOVANT_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+
+
+				$this->setParametro('fecha_ini','fecha_ini','varchar');
+				$this->setParametro('id_agencia','id_agencia','int4');
+
+        $this->captura('credito','varchar');
+        $this->captura('debito','varchar');
+        $this->captura('nombre','varchar');
+        $this->captura('codigo_int','varchar');
+        $this->captura('id_agencia','int4');
+        $this->captura('id_periodo_venta','int4');
+				$this->captura('periodo','text');
+        $this->captura('credito_anterior','numeric');
+        $this->captura('debito_anterior','numeric');
+				$this->captura('saldo_sin_boleta','numeric');
+        $this->captura('saldo_boleta','numeric');
+
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        //  var_dump( $this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
     function listarPeriodo(){
         $this->procedimiento='obingresos.ft_reporte_cuenta_sel';
         $this->transaccion='OBING_PER_SEL';
@@ -172,7 +283,8 @@ class MODReporteCuenta extends MODbase{
         $this->tipo_procedimiento='SEL';//tipo de transaccion
         $this->setCount(false);
         //Definicion de la lista del resultado del query
-        $this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+        //$this->setParametro('fecha_ini','fecha_ini','varchar');
         $this->setParametro('id_lugar','id_lugar','int4');
         $this->setParametro('tipo_agencia','tipo_agencia','varchar');
         $this->setParametro('forma_pago','forma_pago','varchar');
@@ -187,7 +299,8 @@ class MODReporteCuenta extends MODbase{
         $this->captura('garantia','numeric');
         $this->captura('monto_debitos','numeric');
         $this->captura('monto_ajustes','numeric');
-        $this->captura('saldo','numeric');
+				$this->captura('saldo_con_boleto','numeric');
+        $this->captura('saldo_sin_boleto','numeric');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();

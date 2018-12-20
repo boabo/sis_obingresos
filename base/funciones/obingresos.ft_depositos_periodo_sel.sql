@@ -43,8 +43,7 @@ $body$
 	if (p_transaccion='OB_DE_SEL')then
 
         begin
-
-        v_consulta = 'select  mo.id_movimiento_entidad,
+		v_consulta = 'select  mo.id_movimiento_entidad,
                               mo.id_agencia,
                               mo.id_periodo_venta,
                               mo.gestion::varchar as gestion,
@@ -53,8 +52,10 @@ $body$
                               mo.fecha_fin,
                               mo.fecha,
                               mo.autorizacion__nro_deposito,
-                              mo.monto_total
+                              mo.monto_total,
+                              dep.nro_deposito_boa
                               from obingresos.vdepositos_periodo mo
+                              left join obingresos.tdeposito dep on dep.nro_deposito = mo.autorizacion__nro_deposito and dep.estado = ''validado''
                               where ';
        --Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -77,6 +78,7 @@ $body$
 			v_consulta:='select  count(mo.id_movimiento_entidad),
             					 sum(mo.monto_total) as suma_total
                                  from obingresos.vdepositos_periodo mo
+                              	 left join obingresos.tdeposito dep on dep.nro_deposito = mo.autorizacion__nro_deposito and dep.estado = ''validado''
                               	 where ';
 			v_consulta:=v_consulta||v_parametros.filtro;
             raise notice 'cos -> %',v_consulta;
