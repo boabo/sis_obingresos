@@ -53,6 +53,7 @@ DECLARE
     v_datos_boletos			record;
     v_suma_bsp				FLOAT;
     v_acms					record;
+    v_auxacm				integer;
 
 BEGIN
 
@@ -589,7 +590,15 @@ end loop;
 	elsif(p_transaccion='OBING_ACM_LIMPIO_ELI')then
 
 		begin
-          --v_arreglo = string_to_array(v_parametros.id_archivo_acm,',');
+
+        	select ar.id_archivo_acm
+            into v_auxacm
+            from obingresos.tarchivo_acm ar
+            where ar.estado = 'generado'
+            order by ar.id_archivo_acm desc
+            limit 1
+            IF(v_parametros.id_archivo_acm = v_auxacm)then
+            
                       v_length = array_length(v_arreglo,1);
 
         	update obingresos.tarchivo_acm_det ac set
@@ -625,9 +634,11 @@ end loop;
             arch.ultimo_numero
             into v_resetear
             from obingresos.tarchivo_acm arch
-            where arch.id_archivo_acm = (v_parametros.id_archivo_acm-1);
+            where arch.id_archivo_acm < (v_parametros.id_archivo_acm)
+            order by arch.id_archivo_acm desc
+			limit 1;
 
-            if v_resetear is null then
+            if(v_resetear is null)then
             v_resetear = 0;
 
             UPDATE param.tcorrelativo corre
@@ -635,13 +646,12 @@ end loop;
             			num_siguiente=(v_resetear+1)
 
           	WHERE id_documento=41;
-
-            end if;
-
+            ELSE
             UPDATE param.tcorrelativo corre
  			SET 		num_actual = v_resetear,
             			num_siguiente=(v_resetear+1)
             WHERE id_documento=41;
+            end if;
             -----------------------------------------
 
 
@@ -672,7 +682,9 @@ FOR 	v_registros in (select 	arch.id_agencia, arch.porcentaje, arch.id_archivo_a
 
 
 end loop;
-
+else
+    raise exception 'Solo se puede Revertir el ultimo proceso Generado';
+end if:
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Archivo ACM Detalle eliminado(a)');
@@ -682,6 +694,7 @@ end loop;
             return v_resp;
 
 		end;
+
 
 	else
 
