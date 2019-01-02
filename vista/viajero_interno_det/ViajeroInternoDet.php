@@ -56,7 +56,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
 				fieldLabel: 'Nombre',
 				allowBlank: true,
 				anchor: '80%',
-				gwidth: 100,
+				gwidth: 200,
 				maxLength:100,
                 renderer: function(value, p, record){
                     return String.format('<b style="color:black; ">{0}</b>', record.data['nombre']);

@@ -44,8 +44,13 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
 	},
     preparaMenu: function () {
         var rec = this.sm.getSelected();
-        //this.getBoton('btnBoleto').enable();
+        console.log(rec.data['estado_reg']);
          Phx.vista.ViajeroInterno.superclass.preparaMenu.call(this);
+        /*if(rec.data['estado_reg'] = 'inactivo' ){
+            this.disableTabViajeroInternoDet();
+        }else{
+            this.enableTabViajeroInternoDet();
+        }*/
     },
     liberaMenu : function(){
         var d = this.sm.getSelected.data;
@@ -69,7 +74,7 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
 				fieldLabel: 'Codigo Voucher',
 				allowBlank: true,
 				anchor: '80%',
-				gwidth: 100,
+				gwidth: 150,
 				maxLength:10,
                 minLength:10,
                 style: 'background-color: #9BF592; background-image: none;',
@@ -90,7 +95,7 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
 				fieldLabel: 'Mensaje',
 				allowBlank: true,
 				anchor: '80%',
-				gwidth: 100,
+				gwidth: 250,
 				maxLength:200,
                 renderer: function(value, p, record){
                     return String.format('<b style="color:darkslategray; ">{0}</b>', record.data['mensaje']);
@@ -273,6 +278,24 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
     //bdel: false,
     bedit: false,
     //bsave: false,
+
+    disableTabViajeroInternoDet:function(){
+        if(this.TabPanelSouth.get(0)){
+            this.TabPanelSouth.get(0).disable();
+        }
+        /*if(this.TabPanelSouth.get(1)){
+            this.TabPanelSouth.get(1).disable();
+        }*/
+    },
+
+    enableTabViajeroInternoDet:function(){
+        /*if(this.TabPanelSouth.get(0)){
+            this.TabPanelSouth.get(0).enable();
+        }*/
+        if(this.TabPanelSouth.get(1)){
+            this.TabPanelSouth.get(1).enable();
+        }
+    },
 
     tabsouth :[
         {

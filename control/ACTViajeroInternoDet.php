@@ -24,19 +24,7 @@ class ACTViajeroInternoDet extends ACTbase{
 			
 			$this->res=$this->objFunc->listarViajeroInternoDet($this->objParam);
 		}
- /*       $prueba = $this->res->generarJson();
-		$prueba = json_decode($prueba);
-        /*$_out = str_replace('\\','',$prueba);
-        $_out = substr($_out,27);//23
-        $_out = substr($_out,0,-2);
-		foreach($_out as $valor){
-		    var_dump($valor['nombre']);
-        }*/
-        /*foreach($prueba as $valor){
-            var_dump($valor['nombre']);
-        }*/
-        //var_dump($prueba);exit;
-        //$temp = Array();*/
+
 
         $this->res->imprimirRespuesta($this->res->generarJson());
 	}
@@ -62,15 +50,6 @@ class ACTViajeroInternoDet extends ACTbase{
             //$this->resetParametros();
             $detalles=$valor['id_viajero_interno_det'];
             //var_dump($detalles);exit;
-	        /*foreach ($valor as $atr){
-	            $idViIntDet = $atr['id_viajero_interno_det'];
-	            $codVoucher= $atr['codigoVoucher'];
-	            $pnr = $atr['pnr'];
-	            $boleto=$atr['numBoleto'];
-	            $solicitud= $atr['solicitudID'];
-	            var_dump($solicitud);exit;
-
-            }*/
        }
         //var_dump($detalles);exit;
         $json_data = json_decode($this->objParam->getParametro('obj'));
