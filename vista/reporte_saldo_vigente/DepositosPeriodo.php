@@ -112,10 +112,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'autorizacion__nro_deposito',
-                        fieldLabel: 'Número de Comprobante Depósito',
+                        fieldLabel: '<center>Número de Comprobante <br> Depósito</center>',
                         allowBlank: true,
                         anchor : '150%',
-                        gwidth : 200,
+                        gwidth : 150,
                         maxLength : 20,
                         galign:'left',
                         renderer:function (value,p,record){
@@ -137,10 +137,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'nro_deposito_boa',
-                        fieldLabel: 'Número de Comprobante de Depósitos BoA',
+                        fieldLabel: '<center>Número de Comprobante <br>Depósitos BOA</center>',
                         allowBlank: true,
                         anchor: '80%',
-                        gwidth: 220,
+                        gwidth: 150,
                         galign:'left',
                     },
                     type:'TextField',
@@ -224,7 +224,7 @@ header("content-type: text/javascript; charset=UTF-8");
             ],
             sortInfo:{
                 field: 'id_movimiento_entidad',
-                direction: 'ASC'
+                direction: 'DESC'
             },
             bdel:false,
             bsave:false,

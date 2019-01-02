@@ -125,14 +125,16 @@ class ACTReporteCuenta extends ACTbase{
         }
 
     }
+
     function listarReporteCuentaIng(){
         $dataSource = $this->EstadoCuentaIng();
-          $periodoAnterior = $this->PeriodoAnterior();
+        $periodoAnterior = $this->PeriodoAnterior();
+
         // var_dump($resumen);exit;
         $nombreArchivo = uniqid(md5(session_id()).'Estado Cuentas').'.xls';
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $reporte =new RReporteEstCuentaIng($this->objParam);
-        $reporte->datosHeader($dataSource->getDatos(),$periodoAnterior->getDatos());
+      $reporte->datosHeader($dataSource->getDatos(),$periodoAnterior->getDatos());
         $reporte->generarReporte();
         $this->mensajeExito=new Mensaje();
         $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado','Se generó con éxito el reporte: '.$nombreArchivo,'control');
