@@ -596,9 +596,9 @@ end loop;
             from obingresos.tarchivo_acm ar
             where ar.estado = 'generado'
             order by ar.id_archivo_acm desc
-            limit 1
+            limit 1;
             IF(v_parametros.id_archivo_acm = v_auxacm)then
-            
+          --v_arreglo = string_to_array(v_parametros.id_archivo_acm,',');
                       v_length = array_length(v_arreglo,1);
 
         	update obingresos.tarchivo_acm_det ac set
@@ -683,8 +683,8 @@ FOR 	v_registros in (select 	arch.id_agencia, arch.porcentaje, arch.id_archivo_a
 
 end loop;
 else
-    raise exception 'Solo se puede Revertir el ultimo proceso Generado';
-end if:
+   raise exception 'Revertir solo el ultimo proceso generado';
+end if;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Archivo ACM Detalle eliminado(a)');
@@ -694,7 +694,6 @@ end if:
             return v_resp;
 
 		end;
-
 
 	else
 

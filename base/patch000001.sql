@@ -1494,3 +1494,34 @@ ALTER TABLE obingresos.tdeposito
   ADD COLUMN nro_deposito_aux VARCHAR(70),
   ADD COLUMN nro_deposito_boa VARCHAR(70);
 /********************************************F-SCP-FEA-OBINGRESOS-1-07/11/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/
+CREATE TABLE obingresos.tviajero_interno_det (
+  id_viajero_interno_det SERIAL,
+  nombre VARCHAR(100),
+  pnr VARCHAR(50),
+  num_boleto VARCHAR(50),
+  id_viajero_interno INTEGER,
+  solicitud VARCHAR(5),
+  num_documento INTEGER,
+  estado_voucher VARCHAR(50),
+  tarifa VARCHAR(20),
+  CONSTRAINT tviajero_interno_det_pkey PRIMARY KEY(id_viajero_interno_det),
+  CONSTRAINT tviajero_interno_det_fk FOREIGN KEY (id_viajero_interno)
+    REFERENCES obingresos.tviajero_interno(id_viajero_interno)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+CREATE TABLE obingresos.tviajero_interno (
+  id_viajero_interno SERIAL,
+  codigo_voucher VARCHAR(60),
+  mensaje VARCHAR(200),
+  estado VARCHAR(20),
+  CONSTRAINT tviajero_interno_pkey PRIMARY KEY(id_viajero_interno)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************F-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/
