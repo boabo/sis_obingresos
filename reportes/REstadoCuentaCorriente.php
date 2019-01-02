@@ -617,7 +617,7 @@ class REstadoCuentaCorriente
 
 
 
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $estilo1 , 'Saldo Sin Boleta');
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $estilo1 , 'Saldo Con Boleta');
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $estilo1, (array_sum($this->depositosTotal) + array_sum($this->comision))+(((array_sum($this->boletos))*(-1)) + array_sum($this->saldoanterior)));
             $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($styleTitulosNumeros7);
             $this->docexcel->getActiveSheet()->getStyle("B$estilo1:I$estilo1")->applyFromArray($bordes);
@@ -628,12 +628,12 @@ class REstadoCuentaCorriente
 
         //array_push($this->sb2,$value4['saldo']);
 
-        // $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $estilo2 , 'Saldo Con Boleta');
-        // $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $estilo2 , (array_sum($this->depositosTotal) + array_sum($this->comision))+(((array_sum($this->boletos))*(-1)) + array_sum($this->saldoanterior)) + array_sum($this->boletaGarantia));
-        // $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($styleTitulosNumeros6);
-        // $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($bordes);
-        // $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($bordes3);
-        // $this->docexcel->getActiveSheet()->getStyle("F$estilo2:F$estilo2")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $estilo2 , 'Saldo Sin Boleta');
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $estilo2 , (array_sum($this->depositosTotal) + array_sum($this->comision))+(((array_sum($this->boletos))*(-1)) + array_sum($this->saldoanterior)) - array_sum($this->boletaGarantia));
+        $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($styleTitulosNumeros6);
+        $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($bordes);
+        $this->docexcel->getActiveSheet()->getStyle("B$estilo2:I$estilo2")->applyFromArray($bordes3);
+        $this->docexcel->getActiveSheet()->getStyle("F$estilo2:F$estilo2")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $sincomision , 'Saldo Sin Comision');
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $sincomision , (array_sum($this->depositosTotal))+((array_sum($this->boletos))*(-1)));
