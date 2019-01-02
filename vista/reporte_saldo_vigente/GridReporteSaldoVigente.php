@@ -34,21 +34,21 @@ header("content-type:text/javascript; charset=UTF-8");
                 scope:this
             });
             this.addButton('Reporte',{
-                text: 'Reporte Estado de <br> Cuentas por Periodo',
+                text: 'Reporte Estado de <br> Cuentas',
                 iconCls: 'blist',
                 disabled: true,
                 handler: this.onButtonReporte,
                 tooltip: '<b>Estado de cuenta depositos vs boletos</b>',
                 scope:this
             });
-            this.addButton('Movimientos',{
-                text: 'Reporte de Movimientos <br> por Periodo',
-                iconCls: 'bexcel',
-                disabled: true,
-                handler: this.onButtonMovimientos,
-                tooltip: '<b>Estado de cuenta credito vs debito</b>',
-                scope:this
-            });
+            // this.addButton('Movimientos',{
+            //     text: 'Reporte de Movimientos <br> por Periodo',
+            //     iconCls: 'bexcel',
+            //     disabled: true,
+            //     handler: this.onButtonMovimientos,
+            //     tooltip: '<b>Estado de cuenta credito vs debito</b>',
+            //     scope:this
+            // });
             this.addButton('Report',{
                 text :'Estado de Cuenta <br>Detallado',
                 iconCls : 'bprint',
@@ -99,7 +99,7 @@ header("content-type:text/javascript; charset=UTF-8");
             var rec = this.sm.getSelected();
                 this.getBoton('ReporteGeneral').enable();
                 this.getBoton('Reporte').enable();
-                this.getBoton('Movimientos').enable();
+                //this.getBoton('Movimientos').enable();
                 this.getBoton('Report').enable();
                 this.getBoton('Depositos').enable();
             },
@@ -108,7 +108,7 @@ header("content-type:text/javascript; charset=UTF-8");
             var rec = this.sm.getSelected();
           this.getBoton('ReporteGeneral').disable();
           this.getBoton('Reporte').disable();
-          this.getBoton('Movimientos').disable();
+          //this.getBoton('Movimientos').disable();
           this.getBoton('Report').disable();
           this.getBoton('Depositos').disable();
           Phx.vista.GridReporteSaldoVigente.superclass.liberaMenu.call(this);
@@ -502,8 +502,8 @@ header("content-type:text/javascript; charset=UTF-8");
             Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte_saldo_vigente/DepositosPeriodo.php',
                 'Reporte de Depositos Detallado',
                 {
-                    width:'50%',
-                    height:'85%'
+                    width:'62%',
+                    height:'90%'
                 },
                 rec,
                 this.idContenedor,
@@ -512,14 +512,18 @@ header("content-type:text/javascript; charset=UTF-8");
         onButtonReporte: function () {
             Phx.CP.loadingShow();
             var rec=this.sm.getSelected();
+            console.log('PAGO',rec.data.formas_pago);
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuentaIng',
                 params:{'id_agencia':rec.data.id_agencia,
                         nombre: rec.data.nombre,
                         fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
                         fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
+                        formas_pago: rec.data.formas_pago,
                         año_ini:this.fecha_ini.getValue().dateFormat('Y')
+
               },
+
                 success: this.successExport,
                 failure: this.conexionFailure,
                 timeout:this.timeout,
