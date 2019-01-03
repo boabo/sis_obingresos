@@ -15,7 +15,7 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
     viewConfig: {
         stripeRows: false,
         getRowClass: function(record) {
-            console.log('registro', record.data);
+            //console.log('registro', record.data);
             if(record.data.estado_reg == 'inactivo'){
                 return 'prioridad_importanteA';
             }
@@ -34,23 +34,25 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
 
         /*this.addButton('btnSincronizar',
             {
-                text: 'Sincronizar',
-                iconCls: 'breload2',
+                text: 'Consultar Voucher',
+                iconCls: 'blist',
                 disabled: false,
-                handler: this.onButtonBoVendido,
-                tooltip: '<b>Asociar Boleto a voucher</b>'
+                handler: this.onButtonSync,
+                tooltip: '<b>Consultar Voucher</b><br/>Realiza la Consulta Codigos Voucher desde la Intranet.'
             }
         );*/
 	},
     preparaMenu: function () {
         var rec = this.sm.getSelected();
-        console.log(rec.data['estado_reg']);
+        //console.log(rec.data['estado_reg']);
          Phx.vista.ViajeroInterno.superclass.preparaMenu.call(this);
-        /*if(rec.data['estado_reg'] = 'inactivo' ){
+        if(rec.data.estado_reg == 'inactivo' || rec.data.estado == 'NOK'){
             this.disableTabViajeroInternoDet();
+            //console.log('estado IN:',rec.data['estado_reg']);
         }else{
             this.enableTabViajeroInternoDet();
-        }*/
+            //console.log('estado OUT:',rec.data['estado_reg']);
+        }
     },
     liberaMenu : function(){
         var d = this.sm.getSelected.data;
@@ -272,29 +274,71 @@ Phx.vista.ViajeroInterno=Ext.extend(Phx.gridInterfaz,{
 		field: 'id_viajero_interno',
 		direction: 'DESC'
 	},
-	bdel:false,
+	bnew:true,
+    bdel:false,
 	bsave:false,
     btest:false,
     //bdel: false,
     bedit: false,
     //bsave: false,
-
+    Grupos: [
+        {
+            layout: 'column',
+            border: false,
+            defaults: {
+                border: false
+            },
+            items: [
+                {
+                    bodyStyle: 'padding-right:10px;',
+                    items: [
+                        {
+                            xtype: 'fieldset',
+                            columnWidth: 1,
+                            defaults: {
+                                anchor: '-4' // leave room for error icon
+                            },
+                            title: 'Datos Voucher Interno',
+                            items: [],
+                            id_grupo: 1
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    fheight: 200,
+    fwidth: 350,
     disableTabViajeroInternoDet:function(){
+        if(this.TabPanelSouth.get(1)){
+            this.TabPanelSouth.get(1).disable();
+        }
         if(this.TabPanelSouth.get(0)){
             this.TabPanelSouth.get(0).disable();
         }
-        /*if(this.TabPanelSouth.get(1)){
-            this.TabPanelSouth.get(1).disable();
-        }*/
     },
 
     enableTabViajeroInternoDet:function(){
-        /*if(this.TabPanelSouth.get(0)){
+        if(this.TabPanelSouth.get(0)){
             this.TabPanelSouth.get(0).enable();
-        }*/
+        }
         if(this.TabPanelSouth.get(1)){
             this.TabPanelSouth.get(1).enable();
         }
+    },
+    onButtonSync: function () {
+        var global = this;
+                Ext.Msg.confirm('Confirmacion', 'Desea Realizar Busqueda del Voucher Viajero Interno', function (btn) {
+                    if (btn == 'yes') {
+                        global.onButtonNew();
+                    }
+                    else {
+                    }
+                });
+    },
+    onButtonNew : function() {
+        this.Cmp.codigo_voucher.show();
+        Phx.vista.ViajeroInterno.superclass.onButtonNew.call(this);
     },
 
     tabsouth :[

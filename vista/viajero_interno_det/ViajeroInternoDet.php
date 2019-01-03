@@ -80,8 +80,6 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
                 sortable: false,
                 maxLength:6,
                 minLength:6,
-                growMin: 6,
-                maxLengthText : 'el maximo de caracteres es {6}',
                 style: 'background-color:#9BF592 ; background-image: none;',
                 renderer: function(value, p, record){
                     return String.format('<b style="color:darkcyan; ">{0}</b>', record.data['pnr']);
@@ -194,7 +192,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
             type:'TextField',
             filters:{pfiltro:'dvi.estado_reg',type:'string'},
             id_grupo:1,
-            grid:true,
+            grid:false,
             form:false
         },
 		{
@@ -268,7 +266,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
                 maxLength:10
             },
             type:'NumberField',
-            filters:{pfiltro:'dvi.num_documento',type:'numeric'},
+            filters:{pfiltro:'dvi.num_documento',type:'string'},
             id_grupo:1,
             grid:true,
             form:false
@@ -337,7 +335,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
 		{name:'usr_mod', type: 'string'},
         {name:'id_viajero_interno', type: 'numeric'},
         {name:'solicitud', type: 'string'},
-        {name:'num_documento', type: 'numeric'},
+        {name:'num_documento', type: 'string'},
         {name:'estado_voucher', type: 'string'},
         {name:'tarifa', type: 'string'},
 		
@@ -377,14 +375,14 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
     },
     onButtonSave: function(){
         var d = this.sm.getSelected().data;
-        console.log('data:',d.estado_voucher);
+        //console.log('data:',d.estado_voucher);
         var codVaucher = Phx.CP.getPagina(this.idContenedorPadre).getSelectedData();
         array_detalles = [];
         var detalle = {};
         var detalles='[{listaDatosVoucher:[';
         var filas=this.grid.getStore().getModifiedRecords();
         //if(filas.length>0) {
-        console.log('FILAS',filas);
+        //console.log('FILAS',filas);
         //if (confirm("Está seguro de guardar los cambios?")) {
         //prepara una matriz para guardar los datos de la grilla
         var data = {};
@@ -396,7 +394,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
                 'id_viajero_interno_det' : data[i]['id_viajero_interno_det'],
                 'codigoVoucher' : codVaucher['codigo_voucher'],
                 'pnr' : data[i]['pnr'],
-                'numBoleto' : data[i]['num_boleto'],
+                'numBoleto' : data[i]['930','num_boleto'],
                 'solicitudID' : data[i]['solicitud']
             };
             array_detalles.push(detalle);
@@ -404,7 +402,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
         }
         //detalles += ']}]';
         //array_detalles=this.removeDuplicates(array_detalles);
-        console.log('datos modificados: ', array_detalles);
+        //console.log('datos modificados: ', array_detalles);
 
         //this.grid.getStore().reload();
         //this.grid.getView().refresh();
@@ -465,7 +463,7 @@ Phx.vista.ViajeroInternoDet=Ext.extend(Phx.gridInterfaz,{
         var tb = this.tbar;
         var rec = this.sm.getSelected();
         var estadoPadre = Phx.CP.getPagina(this.idContenedorPadre).getSelectedData();
-        console.log('que es',rec.data.estado_voucher);
+        //console.log('que es',rec.data.estado_voucher);
             Phx.vista.ViajeroInternoDet.superclass.preparaMenu.call(this);
         if (rec.data['estado_voucher']== 'EMITIDO' || estadoPadre['estado_reg']=='inactivo'){
             tb.items.get('b-save-' + this.idContenedor).disable();

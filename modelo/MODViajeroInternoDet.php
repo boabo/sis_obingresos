@@ -35,7 +35,7 @@ class MODViajeroInternoDet extends MODbase{
 		$this->captura('usr_mod','varchar');
         $this->captura('id_viajero_interno','int4');
         $this->captura('solicitud','varchar');
-        $this->captura('num_documento','int');
+        $this->captura('num_documento','varchar');
         $this->captura('estado_voucher','varchar');
         $this->captura('tarifa','varchar');
 		
@@ -61,7 +61,7 @@ class MODViajeroInternoDet extends MODbase{
 		$this->setParametro('num_boleto','num_boleto','varchar');
         $this->setParametro('id_viajero_interno','id_viajero_interno','int4');
         $this->setParametro('solicitud','solicitud','varchar');
-        $this->setParametro('num_documento','num_documento','int');
+        $this->setParametro('num_documento','num_documento','varchar');
         $this->setParametro('estado_voucher','estado_voucher','varchar');
         $this->setParametro('tarifa','tarifa','varchar');
 
@@ -87,7 +87,7 @@ class MODViajeroInternoDet extends MODbase{
 		$this->setParametro('num_boleto','num_boleto','varchar');
         $this->setParametro('id_viajero_interno','id_viajero_interno','int4');
         $this->setParametro('solicitud','solicitud','varchar');
-        $this->setParametro('num_documento','num_documento','int');
+        $this->setParametro('num_documento','num_documento','varchar');
         $this->setParametro('estado_voucher','estado_voucher','varchar');
         $this->setParametro('tarifa','tarifa','varchar');
 
