@@ -123,7 +123,7 @@ class REstadoCuentaCorriente
         $this->docexcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells('A2:M2');
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,3,'AGENCIA: '.$this->datos_titulo[0]["nombre"] );
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,3,'AGENCIA: '.$this->objParam->getParametro('nombre') );
         $this->docexcel->getActiveSheet()->getStyle('A3:M3')->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells('A3:M3');
 
@@ -530,7 +530,7 @@ class REstadoCuentaCorriente
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4,$titulos,'RESUMEN ESTADO CUENTA CORRIENTE' );
         $this->docexcel->getActiveSheet()->getStyle("E$titulos:I$titulos")->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells("E$titulos:I$titulos");
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4,$titulosub,'AGENCIA: '.$this->datos_titulo[0]["nombre"] );
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4,$titulosub,'AGENCIA: '.$this->objParam->getParametro('nombre')  );
         $this->docexcel->getActiveSheet()->getStyle("E$titulosub:I$titulosub")->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells("E$titulosub:I$titulosub");
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4,$fechas,'Desde:'.$this->objParam->getParametro('fecha_ini').'  '.'Hasta: '. $this->objParam->getParametro('fecha_fin'));

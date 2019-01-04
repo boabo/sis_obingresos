@@ -536,6 +536,7 @@ header("content-type:text/javascript; charset=UTF-8");
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/ReporteCuenta/listarReporteCuenta',
                 params:{'id_agencia':rec.data.id_agencia,
+                nombre: rec.data.nombre,
                 fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
                 fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y')
 
