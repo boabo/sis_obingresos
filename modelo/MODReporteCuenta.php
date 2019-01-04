@@ -35,7 +35,9 @@ class MODReporteCuenta extends MODbase{
         $this->captura('comision','numeric');
         $this->captura('importe','numeric');
         $this->captura('neto','numeric');
-        $this->captura('saldo','numeric');
+				$this->captura('saldo','numeric');
+				$this->captura('tipo_credito','varchar');
+        $this->captura('garantia','numeric');
         //Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -57,16 +59,16 @@ class MODReporteCuenta extends MODbase{
 
 				$this->captura('id_agencia','int4');
 				$this->captura('nombre','varchar');
-        $this->captura('tipo','varchar');
+        $this->captura('tipo_agencia','varchar');
 				//$this->captura('id_periodo_venta','int4');
-        $this->captura('pnr','varchar');
-        $this->captura('fecha','date');
-        $this->captura('autorizacion__nro_deposito','text');
-        $this->captura('billete','varchar');
-        $this->captura('comision','numeric');
-        $this->captura('importe','numeric');
-        $this->captura('neto','numeric');
-        $this->captura('saldo','numeric');
+        $this->captura('monto_creditos','numeric');
+        $this->captura('codigo_ciudad','numeric');
+        $this->captura('monto_debitos','numeric');
+        $this->captura('ajuste_credito','numeric');
+        $this->captura('ajuste_debito','numeric');
+        $this->captura('monto_ajustes','numeric');
+        $this->captura('saldo_sin_boleto_ant','numeric');
+        //$this->captura('saldo','numeric');
         //Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
