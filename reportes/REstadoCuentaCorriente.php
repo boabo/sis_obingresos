@@ -231,6 +231,7 @@ class REstadoCuentaCorriente
         $fila = 8;
         $anterior = 7;
         $saldo_anterior = 7;
+        $prueba = 7;
 
         $datos = $this->datos_titulo;
 
@@ -263,8 +264,12 @@ class REstadoCuentaCorriente
                 array_push($this->boletos,$value['importe']);
            }
             /*-------------------------------------------------------------------------------------------------------------------------*/
+            if ($this->objParam->getParametro('tipo')=='corporativa' && $this->objParam->getParametro('tipo_pago')=='prepago' ) {
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, "=SUM(M$saldo_anterior+D$fila-L$fila)");
+            } else {
+              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, "=SUM((M$saldo_anterior-L$fila)+(D$fila+G$fila))");
 
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, "=SUM((M$saldo_anterior-L$fila)+(D$fila+G$fila))");
+            }
 
             $this->docexcel->getActiveSheet()->getStyle("B$fila:C$fila")->applyFromArray($styleTitulos);
             $this->docexcel->getActiveSheet()->getStyle("E$fila:F$fila")->applyFromArray($styleTitulos);
@@ -618,13 +623,25 @@ class REstadoCuentaCorriente
         $this->docexcel->getActiveSheet()->getStyle("E$salSinBoleta:I$salSinBoleta")->applyFromArray($bordes3);
         $this->docexcel->getActiveSheet()->getStyle("I$salSinBoleta:I$salSinBoleta")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $sinComision , 'Saldo Sin Comision');
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $sinComision , "=SUM((I$depositos+I$saldo_antes)+(I$comisiones+I$boleto))"); ;
-        $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($styleTitulosNumeros8);
-        $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes);
-        $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes3);
-        $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes2);
-        $this->docexcel->getActiveSheet()->getStyle("I$sinComision:I$sinComision")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+        if ($this->objParam->getParametro('tipo')=='corporativa' && $this->objParam->getParametro('tipo_pago')=='prepago' ) {
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $sinComision , 'Saldo Sin Comision');
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $sinComision , "=SUM(I$saldo_antes+I$depositos+I$boleto)");
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($styleTitulosNumeros8);
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes);
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes3);
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes2);
+          $this->docexcel->getActiveSheet()->getStyle("I$sinComision:I$sinComision")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+        }else{
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $sinComision , 'Saldo Sin Comision');
+          $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $sinComision , "=SUM((I$depositos+I$saldo_antes)+(I$comisiones+I$boleto))"); ;
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($styleTitulosNumeros8);
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes);
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes3);
+          $this->docexcel->getActiveSheet()->getStyle("E$sinComision:I$sinComision")->applyFromArray($bordes2);
+          $this->docexcel->getActiveSheet()->getStyle("I$sinComision:I$sinComision")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
+        }
 
 
     }

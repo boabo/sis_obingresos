@@ -176,6 +176,7 @@ BEGIN
                     mo.pnr,
                     mo.tipo,
                     mo.fecha,
+                    mo.autorizacion__nro_deposito,
                       sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
                               (case when mo.id_moneda = 1 then
                                               mo.monto
@@ -214,7 +215,7 @@ BEGIN
                        mo.estado_reg = 'activo' and
                        mo.tipo = 'credito'
                        and mo.id_agencia = v_parametros.id_agencia
-                      group by mo.id_agencia, mo.fecha, mo.pnr, mo.tipo
+                      group by mo.id_agencia, mo.fecha, mo.pnr, mo.tipo,mo.autorizacion__nro_deposito
 
                       union
 
@@ -223,6 +224,7 @@ BEGIN
                       			''::varchar as pnr,
                                	mo.tipo,
                                 mo.fecha,
+                                mo.autorizacion__nro_deposito,
                                 (case when mo.id_moneda = 1 then
                             	mo.monto
                            		 else
@@ -244,13 +246,15 @@ BEGIN
                  insert into	temp (
                                         tipo_credito,
                                         fecha,
-                                        importe
+                                        importe,
+                                        autorizacion__nro_deposito
                                         --garantia
                                         )
                                         values(
                                         v_creditos.tipo,
                                         v_creditos.fecha,
-                                        v_creditos.monto_credito
+                                        v_creditos.monto_credito,
+                                        v_creditos.autorizacion__nro_deposito
                  						--v_creditos.garantia
                                         );
 

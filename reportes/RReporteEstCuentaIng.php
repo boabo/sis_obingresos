@@ -362,7 +362,7 @@ class RReporteEstCuentaIng
                     $this->docexcel->getActiveSheet()->getStyle("A$anterior:J$anterior" )->applyFromArray($styleTitulos3);
                   } } else {
                       $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $anterior, 'LA AGENCIA NO CUENTA CON UN SALDO ANTERIOR');
-                      $this->docexcel->getActiveSheet()->mergeCells("A$anterior:J$anterior");                      
+                      $this->docexcel->getActiveSheet()->mergeCells("A$anterior:J$anterior");
                       $this->docexcel->getActiveSheet()->getStyle("A$anterior:J$anterior" )->applyFromArray($styleTitulos3);
                     }
 
