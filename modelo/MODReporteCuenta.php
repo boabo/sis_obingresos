@@ -39,6 +39,7 @@ class MODReporteCuenta extends MODbase{
         $this->captura('neto','numeric');
 				$this->captura('saldo','numeric');
 				$this->captura('tipo_credito','varchar');
+				$this->captura('tipo_ajustes','varchar');
         $this->captura('garantia','numeric');
         //Ejecuta la instruccion
 		$this->armarConsulta();

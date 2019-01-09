@@ -249,7 +249,7 @@ class REstadoCuentaCorriente
                 //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $value['tipo_credito']);
                 array_push($this->depositosTotal,$value['importe']);
 
-            }else{
+            }elseif ($value['tipo'] == 'ajustes') {
               /*--------------------------------------------comision-------------------------------------------------------------*/
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, 'comision');
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['comision']);
@@ -258,11 +258,24 @@ class REstadoCuentaCorriente
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, date_format(date_create($value["fecha"]), 'd/m/Y'));
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, date_format(date_create($value["fecha"]), 'd/m/Y'));
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['autorizacion__nro_deposito']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['neto']);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, round($value['importe']-$value['neto']));
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, 0);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, 0);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $value['importe']);
                 array_push($this->boletos,$value['importe']);
-           }
+           }elseif ($value['tipo'] == 'debito') {
+             /*--------------------------------------------comision-------------------------------------------------------------*/
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, 'comision');
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['comision']);
+               array_push($this->comision,$value['comision']);
+
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, date_format(date_create($value["fecha"]), 'd/m/Y'));
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, date_format(date_create($value["fecha"]), 'd/m/Y'));
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $value['autorizacion__nro_deposito']);
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $value['neto']);
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, round($value['importe']-$value['neto']));
+               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $value['importe']);
+               array_push($this->boletos,$value['importe']);
+          }
             /*-------------------------------------------------------------------------------------------------------------------------*/
             if ($this->objParam->getParametro('tipo')=='corporativa' && $this->objParam->getParametro('tipo_pago')=='prepago' ) {
               $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, "=SUM(M$saldo_anterior+D$fila-L$fila)");

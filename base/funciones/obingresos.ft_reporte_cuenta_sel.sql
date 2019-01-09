@@ -10,8 +10,8 @@ $body$
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_reporte_cuenta_sel
  DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.treporte_cuenta'
- AUTOR: 		 (miguel.mamani)
- FECHA:	        11-06-2018 15:14:58
+ AUTOR: 		 (Ismael.valdivia)
+ FECHA:	        08-01-2019 16:10:58
  COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
@@ -55,6 +55,7 @@ DECLARE
     v_creditos_fuera	record;
     v_monto_anterior	record;
     v_garantia			record;
+    v_ajustes			record;
 
 BEGIN
 
@@ -85,6 +86,7 @@ BEGIN
                                       saldo numeric,
                                       contador integer,
                                       tipo_credito varchar,
+                                      tipo_ajustes varchar,
                                       garantia numeric )ON COMMIT DROP;
 
 
@@ -111,7 +113,7 @@ BEGIN
 
                         select mo.id_agencia,
                                 ag.nombre,
-                                mo.tipo,
+                                'ajustes':: varchar as tipo,
                                 mo.pnr,
                                 --null::date as fecha,
                                 mo.fecha,
@@ -171,12 +173,12 @@ BEGIN
 
     	END LOOP;
 
+
         for v_creditos in (
         	select  mo.id_agencia,
                     mo.pnr,
                     mo.tipo,
                     mo.fecha,
-                    mo.autorizacion__nro_deposito,
                       sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
                               (case when mo.id_moneda = 1 then
                                               mo.monto
@@ -215,7 +217,7 @@ BEGIN
                        mo.estado_reg = 'activo' and
                        mo.tipo = 'credito'
                        and mo.id_agencia = v_parametros.id_agencia
-                      group by mo.id_agencia, mo.fecha, mo.pnr, mo.tipo,mo.autorizacion__nro_deposito
+                      group by mo.id_agencia, mo.fecha, mo.pnr, mo.tipo
 
                       union
 
@@ -224,7 +226,6 @@ BEGIN
                       			''::varchar as pnr,
                                	mo.tipo,
                                 mo.fecha,
-                                mo.autorizacion__nro_deposito,
                                 (case when mo.id_moneda = 1 then
                             	mo.monto
                            		 else
@@ -246,15 +247,13 @@ BEGIN
                  insert into	temp (
                                         tipo_credito,
                                         fecha,
-                                        importe,
-                                        autorizacion__nro_deposito
+                                        importe
                                         --garantia
                                         )
                                         values(
                                         v_creditos.tipo,
                                         v_creditos.fecha,
-                                        v_creditos.monto_credito,
-                                        v_creditos.autorizacion__nro_deposito
+                                        v_creditos.monto_credito
                  						--v_creditos.garantia
                                         );
 
@@ -306,6 +305,7 @@ BEGIN
                                 neto,
                                 saldo,
                                 tipo_credito,
+                                tipo_ajustes,
                                 garantia
                                 from temp
                                 order by fecha';
