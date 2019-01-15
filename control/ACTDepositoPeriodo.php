@@ -7,7 +7,8 @@ class ACTDepositoPeriodo extends ACTbase{
         $this->objParam->defecto('dir_ordenacion','asc');
         if($this->objParam->getParametro('id_agencia') != '') {
             $this->objParam->addFiltro("dep.id_agencia = " . $this->objParam->getParametro('id_agencia')."
-            and dep.fecha between ''".$this->objParam->getParametro('fecha_ini')."'' and ''".$this->objParam->getParametro('fecha_fin')."''");
+            and dep.fecha between ''".$this->objParam->getParametro('fecha_ini')."'' and ''".$this->objParam->getParametro('fecha_fin')."''
+            and dep.estado = ''validado''");
 
 
 
