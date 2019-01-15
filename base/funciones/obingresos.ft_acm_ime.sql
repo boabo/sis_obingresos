@@ -174,7 +174,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           boletos.tipdoc
                           --acmd.id_agencia
                           from obingresos.tmovimiento_entidad mov
-                          inner join obingresos.tdetalle_boletos_web bole on (bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
+                          inner join obingresos.tdetalle_boletos_web bole on (bole.id_agencia=mov.id_agencia and bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
                           inner join obingresos.tboleto boletos on (bole.billete = boletos.nro_boleto and boletos.estado_reg='activo')
                           where
                           mov.id_agencia = v_registros.id_agencia and
@@ -342,7 +342,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           boletos.tipdoc
                           --acmd.id_agencia
                           from obingresos.tmovimiento_entidad mov
-                          inner join obingresos.tdetalle_boletos_web bole on (bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=1)
+                          inner join obingresos.tdetalle_boletos_web bole on (bole.id_agencia=mov.id_agencia and bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=1)
                           inner join obingresos.tboleto boletos on bole.billete = boletos.nro_boleto and boletos.estado_reg='activo'
                           where mov.id_agencia = v_registros.id_agencia
                           and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin

@@ -13,17 +13,17 @@ class  MODDepositoPeriodo extends MODbase{
         $this->capturaCount('suma_total','numeric');
 
         //Definicion de la lista del resultado del query
-        $this->captura('id_movimiento_entidad','int4');
-        $this->captura('id_agencia','int4');
-        $this->captura('id_periodo_venta','int4');
-        $this->captura('gestion','varchar');
-        $this->captura('mes','varchar');
-        $this->captura('fecha_ini','date');
-        $this->captura('fecha_fin','date');
-        $this->captura('fecha','date');
-        $this->captura('autorizacion__nro_deposito','varchar');
-        $this->captura('monto_total','numeric');
+        $this->captura('id_deposito','int4');
+        $this->captura('nombre','varchar');
+
+       $this->captura('estado_reg','varchar');
+        $this->captura('nro_deposito','varchar');
         $this->captura('nro_deposito_boa','varchar');
+        $this->captura('monto_deposito','numeric');
+        $this->captura('id_agencia','int4');
+        $this->captura('fecha','date');
+        $this->captura('estado','varchar');
+        $this->captura('id_apertura_cierre_caja','int4');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

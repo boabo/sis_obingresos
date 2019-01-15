@@ -43,20 +43,23 @@ $body$
 	if (p_transaccion='OB_DE_SEL')then
 
         begin
-		v_consulta = 'select  mo.id_movimiento_entidad,
-                              mo.id_agencia,
-                              mo.id_periodo_venta,
-                              mo.gestion::varchar as gestion,
-                              mo.mes,
-                              mo.fecha_ini,
-                              mo.fecha_fin,
-                              mo.fecha,
-                              mo.autorizacion__nro_deposito,
-                              mo.monto_total,
-                              dep.nro_deposito_boa
-                              from obingresos.vdepositos_periodo mo
-                              left join obingresos.tdeposito dep on dep.nro_deposito = mo.autorizacion__nro_deposito and dep.estado = ''validado''
-                              where ';
+		v_consulta = 'select
+						dep.id_deposito,
+                        age.nombre,
+						dep.estado_reg,
+						dep.nro_deposito,
+                        dep.nro_deposito_boa,
+						dep.monto_deposito,
+						dep.id_agencia,
+						dep.fecha,
+                        dep.estado,
+                        dep.id_apertura_cierre_caja
+                        from obingresos.tdeposito dep
+                        left join obingresos.tagencia age on age.id_agencia = dep.id_agencia
+                        left join obingresos.tperiodo_venta pv on pv.id_periodo_venta = dep.id_periodo_venta
+                        left join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
+                        left join obingresos.tperiodo_venta per on per.id_tipo_periodo = tp.id_tipo_periodo
+                        where ';
        --Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
@@ -75,11 +78,14 @@ $body$
 		begin
 			--Sentencia de la consulta de conteo de registros
 
-			v_consulta:='select  count(mo.id_movimiento_entidad),
-            					 sum(mo.monto_total) as suma_total
-                                 from obingresos.vdepositos_periodo mo
-                              	 left join obingresos.tdeposito dep on dep.nro_deposito = mo.autorizacion__nro_deposito and dep.estado = ''validado''
-                              	 where ';
+			v_consulta:='select  count(dep.id_deposito),
+            					 sum(dep.monto_deposito) as suma_total
+                                 from obingresos.tdeposito dep
+                        left join obingresos.tagencia age on age.id_agencia = dep.id_agencia
+                        left join obingresos.tperiodo_venta pv on pv.id_periodo_venta = dep.id_periodo_venta
+                        left join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
+                        left join obingresos.tperiodo_venta per on per.id_tipo_periodo = tp.id_tipo_periodo
+                        where ';
 			v_consulta:=v_consulta||v_parametros.filtro;
             raise notice 'cos -> %',v_consulta;
 			--Devuelve la respuest
