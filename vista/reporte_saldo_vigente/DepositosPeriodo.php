@@ -63,38 +63,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'Field',
                     form:true
                 },
-                // {
-                //     config:{
-                //         name: 'fecha_ini',
-                //         fieldLabel: 'Fecha Inicio',
-                //         allowBlank: true,
-                //         anchor: '80%',
-                //         gwidth: 100,
-                //         format: 'd/m/Y',
-                //         renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
-                //     },
-                //     type:'DateField',
-                //     filters:{pfiltro:'mo.fecha_ini',type:'date'},
-                //     id_grupo:1,
-                //     grid:true,
-                //     form:true
-                // },
-                // {
-                //     config:{
-                //         name: 'fecha_fin',
-                //         fieldLabel: 'Fecha Fin',
-                //         allowBlank: true,
-                //         anchor: '80%',
-                //         gwidth: 100,
-                //         format: 'd/m/Y',
-                //         renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
-                //     },
-                //     type:'DateField',
-                //     filters:{pfiltro:'mo.fecha_fin',type:'date'},
-                //     id_grupo:1,
-                //     grid:true,
-                //     form:true
-                // },
                 {
                     config:{
                         name: 'nombre',
@@ -190,20 +158,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:true
                 }
-                // {
-                //     config:{
-                //         name: 'gestion',
-                //         fieldLabel: 'Gestion',
-                //         allowBlank: true,
-                //         anchor: '80%',
-                //         gwidth: 155
-                //     },
-                //     type:'TextField',
-                //     filters:{pfiltro:'mo.gestion',type:'string'},
-                //     id_grupo:1,
-                //     grid:true,
-                //     form:true
-                // }
+
 
             ],
             tam_pag:50,
@@ -219,12 +174,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'monto_deposito', type: 'numeric'},
                 {name:'id_agencia', type: 'numeric'},
                 {name:'fecha', type: 'date',dateFormat:'Y-m-d'},
-                {name:'id_apertura_cierre_caja', type: 'numeric'}
-
-
-                // {name:'fecha_ini', type: 'date',dateFormat:'Y-m-d'},
-                // {name:'fecha_fin', type: 'date',dateFormat:'Y-m-d'},
-                // {name:'fecha', type: 'date',dateFormat:'Y-m-d'},
+                {name:'id_apertura_cierre_caja', type: 'numeric'}             
 
 
 
