@@ -164,7 +164,7 @@ header("content-type: text/javascript; charset=UTF-8");
             tam_pag:50,
             title:'Deposito',
             ActList:'../../sis_obingresos/control/DepositoPeriodo/listarDepositosPeriodo',
-            id_store:'id_movimiento_entidad',
+            id_store:'id_deposito',
             fields: [
                 {name:'id_deposito', type: 'numeric'},
                 {name:'nombre', type: 'string'},
@@ -174,7 +174,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'monto_deposito', type: 'numeric'},
                 {name:'id_agencia', type: 'numeric'},
                 {name:'fecha', type: 'date',dateFormat:'Y-m-d'},
-                {name:'id_apertura_cierre_caja', type: 'numeric'}             
+                {name:'id_apertura_cierre_caja', type: 'numeric'}
 
 
 
