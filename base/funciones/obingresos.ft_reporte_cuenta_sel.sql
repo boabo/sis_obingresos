@@ -63,13 +63,13 @@ BEGIN
     v_parametros = pxp.f_get_record(p_tabla);
 
 	/*********************************
- 	#TRANSACCION:  'OBING_ENT_SEL'
+ 	#TRANSACCION:  'OBING_REPCUOB_SEL'
  	#DESCRIPCION:	Consulta de datos
  	#AUTOR:		IVALDIVIA
  	#FECHA:		02-01-2018 20:57:30
 	***********************************/
 
-	if(p_transaccion='OBING_ENT_SEL')then
+	if(p_transaccion='OBING_REPCUOB_SEL')then
 
     	begin
 
