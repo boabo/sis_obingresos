@@ -16,7 +16,7 @@ class MODControlAgencias extends MODbase{
   function reporteSaldoVigente(){
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_control_agencia_sel';
-        $this->transaccion='OBING_SALVIG_SEL';
+        $this->transaccion='OBING_LISTA_SEL';
         $this->tipo_procedimiento='SEL';//tipo de transaccion
 
         $this->capturaCount('total_creditos','numeric');
@@ -53,7 +53,7 @@ class MODControlAgencias extends MODbase{
     function reporteGenrealCuenta(){
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_control_agencia_sel';
-        $this->transaccion='OBING_ENT_SEL';
+        $this->transaccion='OBING_REPOR_SEL';
         $this->tipo_procedimiento='SEL';//tipo de transaccion
         $this->setCount(false);
         //Definicion de la lista del resultado del query

@@ -38,13 +38,13 @@ BEGIN
     v_parametros = pxp.f_get_record(p_tabla);
 
 	/*********************************
- 	#TRANSACCION:  'OBING_ENT_SEL'
+ 	#TRANSACCION:  'OBING_REPOR_SEL'
  	#DESCRIPCION:	Consulta de datos
  	#AUTOR:		IVALDIVIA
  	#FECHA:		02-01-2018 20:57:30
 	***********************************/
 
-	if(p_transaccion='OBING_ENT_SEL')then
+	if(p_transaccion='OBING_REPOR_SEL')then
 
 
     	begin
@@ -216,12 +216,12 @@ BEGIN
 
 
     /*********************************
-     #TRANSACCION:  'OBING_SALVIG_SEL'
+     #TRANSACCION:  'OBING_LISTA_SEL'
      #DESCRIPCION:	Reporte saldo vigente
      #AUTOR:		IRVA
      #FECHA:		23-11-2018
     ***********************************/
-    elsif(p_transaccion='OBING_SALVIG_SEL')then
+    elsif(p_transaccion='OBING_LISTA_SEL')then
         begin
 
 
@@ -326,7 +326,7 @@ contrato as( select max(id_contrato) as ultimo_contrato,
      #FECHA:		23-11-2018
     ***********************************/
 
-    elsif(p_transaccion='OBING_SALVIG_CONT')then
+    elsif(p_transaccion='OBING_LISTA_CONT')then
 
       begin
       	v_consulta = 'with credito as (	select  mo.id_agencia,
