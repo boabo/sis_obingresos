@@ -33,7 +33,7 @@ DECLARE
     v_id_agencia			integer;
     v_id_moneda				integer;
     v_pnr					varchar;
-    v_estado				varchar;
+    v_estado				record;
     v_agencia				record;
     v_id_alarma				integer;
     v_monto_total			numeric;
@@ -57,7 +57,6 @@ BEGIN
 	***********************************/
 
 	if(p_transaccion='OBING_DEP_INS')then
-
         begin
         	   --raise exception 'tipo %',v_parametros.tipo;
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
@@ -272,19 +271,23 @@ BEGIN
 
 	elsif(p_transaccion='OBING_DEP_MOD')then
 		begin
+        	    SELECT * into v_estado
+                from obingresos.tdeposito
+                where id_deposito = v_parametros.id_deposito;
+
+
         	if (v_parametros.tipo = 'agencia') then
-            --raise exception 'llega %',v_parametros.tipo;
             	SELECT * into v_deposito
                 from obingresos.tdeposito
                 where id_deposito = v_parametros.id_deposito;
                 --raise exception '%,%,%,%',v_deposito.id_agencia,v_deposito.nro_deposito,v_deposito.fecha,v_deposito.monto_deposito;
 
-                update obingresos.tmovimiento_entidad
+               /* update obingresos.tmovimiento_entidad
                 set  fecha =  v_parametros.fecha,
                 autorizacion__nro_deposito =  v_parametros.nro_deposito
                 where id_agencia = v_deposito.id_agencia and   autorizacion__nro_deposito = v_deposito.nro_deposito
                 and estado_reg = 'activo' and  fecha = v_deposito.fecha and monto = v_deposito.monto_deposito and tipo = 'credito';
-
+               */
 
             end if;
 
@@ -353,6 +356,7 @@ BEGIN
                   v_deposito_boa = '';
             end if;
             	--Sentencia de la modificacion
+                IF (v_estado.estado = 'borrador') then
                 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
                 monto_deposito = v_parametros.monto_deposito,
@@ -366,6 +370,12 @@ BEGIN
                 usuario_ai = v_parametros._nombre_usuario_ai,
                 nro_deposito_boa = v_deposito_boa
                 where id_deposito=v_parametros.id_deposito;
+
+                ELSE
+
+                raise exception 'NO SE PUEDE MODIFICAR DEPOSITOS QUE YA FUERON VALIDADOS!';
+
+                end if;
 
             end if;
 
