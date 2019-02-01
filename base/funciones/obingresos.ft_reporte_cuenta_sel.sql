@@ -10,8 +10,8 @@ $body$
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_reporte_cuenta_sel
  DESCRIPCION:   Funcion que devuelve conjuntos de registros de las consultas relacionadas con la tabla 'obingresos.treporte_cuenta'
- AUTOR: 		 (Ismael.valdivia)
- FECHA:	        08-01-2019 16:10:58
+ AUTOR: 		 (miguel.mamani)
+ FECHA:	        11-06-2018 15:14:58
  COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
@@ -63,13 +63,13 @@ BEGIN
     v_parametros = pxp.f_get_record(p_tabla);
 
 	/*********************************
- 	#TRANSACCION:  'OBING_REPCUOB_SEL'
+ 	#TRANSACCION:  'OBING_ENT_SEL'
  	#DESCRIPCION:	Consulta de datos
  	#AUTOR:		IVALDIVIA
  	#FECHA:		02-01-2018 20:57:30
 	***********************************/
 
-	if(p_transaccion='OBING_REPCUOB_SEL')then
+	if(p_transaccion='OBING_ENT_SEL')then
 
     	begin
 
@@ -1192,7 +1192,7 @@ from detalle';
 
         from obingresos.tmovimiento_entidad mo
         left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
-        left JOIN obingresos.tdeposito dep ON nro_deposito_boa is not null and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+        left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
 
 		where mo.fecha >= '1/1/2017' and
          mo.cierre_periodo = 'no' and
