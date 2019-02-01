@@ -1373,7 +1373,7 @@ end loop;
 
         from obingresos.tmovimiento_entidad mo
         left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
-        left JOIN obingresos.tdeposito dep ON nro_deposito_boa is not null and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+        left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
 
 		where mo.fecha >= '1/1/2017' and
          mo.cierre_periodo = 'no' and
