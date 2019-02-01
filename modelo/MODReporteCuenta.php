@@ -16,7 +16,7 @@ class MODReporteCuenta extends MODbase{
 	function listarReporteCuenta(){
 		//Definicion de variables para ejecucion del procedimientp
 		$this->procedimiento='obingresos.ft_reporte_cuenta_sel';
-		$this->transaccion='OBING_REPCUOB_SEL';
+		$this->transaccion='OBING_ENT_SEL';
 		$this->tipo_procedimiento='SEL';//tipo de transaccion
         $this->setCount(false);
 
