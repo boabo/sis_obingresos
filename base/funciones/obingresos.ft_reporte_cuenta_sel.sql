@@ -56,6 +56,7 @@ DECLARE
     v_monto_anterior	record;
     v_garantia			record;
     v_ajustes			record;
+    v_fecha_maxima		date;
 
 BEGIN
 
@@ -1316,20 +1317,41 @@ end loop;
 
       loop
 
-      for v_fecha_ultima in (select
-                  max(pe.fecha_fin) as ultima_fecha
+
+     insert into temp (
+                                        tipo_debito,
+                                        fecha_ini,
+                                        fecha_fin,
+                                        periodo,
+                                        monto_debito,
+                                        ajuste_debito
+
+
+
+        				  )
+                                  values (
+                                  		v_debitos.tipo,
+                                        v_debitos.fecha_ini,
+                                        v_debitos.fecha_fin,
+                                        v_debitos.periodo,
+                                        v_debitos.monto_debito,
+                                        v_debitos.ajuste_debito
+                                  );
+
+end loop;
+
+select
+                  max(pe.fecha_fin)
+                  into v_fecha_maxima
 
       from obingresos.tmovimiento_entidad mo
       LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
       where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
 
-            mo.id_agencia = v_parametros.id_agencia
+            mo.id_agencia = v_parametros.id_agencia;
 
 
-      )
 
-
-      loop
 		for v_creditos_fuera in (  (with credito as (select  mo.id_agencia,
         pe.fecha_ini,
         pe.fecha_fin,
@@ -1399,7 +1421,7 @@ select 			'creditos' :: varchar as tipo,
                 from obingresos.tagencia ag
                 left join credito cr on cr.id_agencia = ag.id_agencia
                 where ag.id_agencia = v_parametros.id_agencia
-                and cr.fecha >= v_parametros.fecha_ini::date
+                and cr.fecha > v_fecha_maxima
                 and cr.fecha <= v_parametros.fecha_fin::date
 
 
@@ -1414,7 +1436,7 @@ select 			'creditos' :: varchar as tipo,
 
 
 
-        if (v_debitos.periodo = 'Periodo Vigente' and  v_creditos_fuera.fecha >= v_fecha_ultima.ultima_fecha)  then
+
         insert into temp (
                                         tipo_credito,
                                         fecha,
@@ -1439,7 +1461,6 @@ select 			'creditos' :: varchar as tipo,
 
 
 
-       	end if;
 
 
 
@@ -1447,36 +1468,6 @@ select 			'creditos' :: varchar as tipo,
 
 
   end loop;
-
-
-end loop;
-
-
-
-
-
-
-     insert into temp (
-                                        tipo_debito,
-                                        fecha_ini,
-                                        fecha_fin,
-                                        periodo,
-                                        monto_debito,
-                                        ajuste_debito
-
-
-
-        				  )
-                                  values (
-                                  		v_debitos.tipo,
-                                        v_debitos.fecha_ini,
-                                        v_debitos.fecha_fin,
-                                        v_debitos.periodo,
-                                        v_debitos.monto_debito,
-                                        v_debitos.ajuste_debito
-                                  );
-
-end loop;
 
 if (v_parametros.formas_pago = 'prepago' ) then
 
