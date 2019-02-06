@@ -41,6 +41,8 @@ DECLARE
     v_deposito				record;
     v_aux					varchar;
     v_deposito_boa			varchar;
+    v_verificar_existencia  record;
+
 
 
 
@@ -59,6 +61,7 @@ BEGIN
 	if(p_transaccion='OBING_DEP_INS')then
         begin
         	   --raise exception 'tipo %',v_parametros.tipo;
+
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
 
             	v_id_moneda = v_parametros.id_moneda_deposito;
@@ -72,6 +75,26 @@ BEGIN
                 where m.codigo_internacional = v_parametros.moneda;
                 v_moneda = v_parametros.moneda;
             end if;
+       -- raise exception 'LLEGA AQUI %',v_parametros.monto_deposito;
+       		SELECT per.nombre ||' '|| per.apellido_paterno ||'  '|| per.apellido_materno as nombre_completo,
+                   count(per.nombre) as existe
+                   into v_verificar_existencia
+            FROM obingresos.tdeposito depo
+            inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+            inner join segu.tpersona per on per.id_persona = usu.id_persona
+            WHERE
+            depo.nro_deposito = v_parametros.nro_deposito and
+            depo.fecha = v_parametros.fecha and
+            depo.monto_deposito = v_parametros.monto_deposito
+            group by per.nombre, per.apellido_paterno,per.apellido_materno;
+
+
+
+
+   /*AUMENTANDO CONDICION*/
+    if (v_verificar_existencia.existe <> 0) THEN
+    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % porfavor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo;
+    else
 
         	if (v_parametros.tipo = 'banca') then
             	insert into obingresos.tdeposito(
@@ -245,6 +268,9 @@ BEGIN
                 	end if;
                 end if;
             end if;
+
+    /*Finalizando Condicion*/   end if;
+
 
             if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then
 
