@@ -93,7 +93,7 @@ BEGIN
 
    /*AUMENTANDO CONDICION*/
     if (v_verificar_existencia.existe <> 0) THEN
-    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % porfavor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo;
+    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo;
     else
 
         	if (v_parametros.tipo = 'banca') then
