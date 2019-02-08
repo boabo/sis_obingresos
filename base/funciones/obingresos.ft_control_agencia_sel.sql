@@ -55,7 +55,8 @@ BEGIN
                                       depositos_con_saldos NUMERIC,
                                       depositos NUMERIC,
                                       debitos NUMERIC,
-                                      saldo_arrastrado NUMERIC
+                                      saldo_arrastrado NUMERIC,
+                                      periodo varchar
                                        )ON COMMIT DROP;
 
 
@@ -95,14 +96,17 @@ BEGIN
         					Select
                             mo.id_periodo_venta,
                             sum(mo.monto_total) as depositos,
-                            mo.tipo
+                            mo.tipo,
+                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
                             from obingresos.tmovimiento_entidad mo
+                            LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
                             where mo.tipo = 'credito' and
                                                 mo.id_agencia = v_parametros.id_agencia AND
                                                     mo.estado_reg = 'activo' and
                                                     mo.garantia = 'no' and
                                                     mo.cierre_periodo = 'no'
-                            group by mo.id_periodo_venta,mo.tipo
+                            group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
                             order by mo.id_periodo_venta asc
 
                             )
@@ -114,14 +118,16 @@ BEGIN
                     insert into	temp ( id_agencia  ,
                                       id_periodo_venta ,
                                       tipo,
-                                      depositos
+                                      depositos,
+                                      periodo
 
                                         )
                                         values(
                                         v_parametros.id_agencia,
                                         v_depositos.id_periodo_venta,
                                         'depositos',
-                                        v_depositos.depositos
+                                        v_depositos.depositos,
+                                        v_depositos.periodo
                                       );
                     end loop;
 
@@ -205,7 +211,8 @@ BEGIN
                                     COALESCE(depositos_con_saldos,0) as depositos_con_saldos ,
                                     COALESCE(depositos,0) as depositos ,
                                     debitos ,
-                                    saldo_arrastrado
+                                    saldo_arrastrado,
+                                    periodo
                                 	from temp';
 
 			--Devuelve la respuesta

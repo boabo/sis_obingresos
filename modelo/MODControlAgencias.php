@@ -69,7 +69,8 @@ class MODControlAgencias extends MODbase{
         $this->captura('depositos_con_saldos','numeric');
         $this->captura('depositos','numeric');
         $this->captura('debitos','numeric');
-        $this->captura('saldo_arrastrado','numeric');
+				$this->captura('saldo_arrastrado','numeric');
+        $this->captura('periodo','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
