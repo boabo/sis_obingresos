@@ -502,7 +502,7 @@ foreach($periodo as $value1 ){
     $this->docexcel->getActiveSheet()->getStyle("F$dife")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_00);
     $this->docexcel->getActiveSheet()->getStyle("F$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
-
+ 
 
   }
 
