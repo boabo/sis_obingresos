@@ -128,6 +128,8 @@ DECLARE
     v_error_mes varchar;
     v_id_boleto_a integer;
 
+    v_id_correo_det_vw		varchar;
+
 
 
 BEGIN
@@ -2702,6 +2704,26 @@ BEGIN
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
             v_resp = pxp.f_agrega_clave(v_resp,'id_log_viajero_frecuente',v_id_log_viajero_frecuente::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+	/*********************************
+ 	#TRANSACCION:  'OBING_MAIL_DET_VW'
+ 	#DESCRIPCION:	Envio de correos Error de Detalle Ventas Web
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		08-12-2019 11:42:25
+	***********************************/
+
+	elsif(p_transaccion='OBING_MAIL_DET_VW')then
+
+		begin
+			v_id_correo_det_vw = obingresos.f_send_correo_detalle_diario_vw();
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Correo enviado');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_alarma',v_id_correo_det_vw::varchar);
 
             --Devuelve la respuesta
             return v_resp;

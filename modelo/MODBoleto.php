@@ -911,5 +911,21 @@ class MODBoleto extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+    function disparaCorreoVentasWeb(){
+
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_MAIL_DET_VW';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 }
 ?>

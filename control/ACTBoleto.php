@@ -1846,6 +1846,13 @@ class ACTBoleto extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
+    //correo de incidentes detalle venta web
+    function disparaCorreoVentasWeb(){
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->disparaCorreoVentasWeb($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
 
 }
 
