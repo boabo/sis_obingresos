@@ -76,24 +76,25 @@ BEGIN
                 v_moneda = v_parametros.moneda;
             end if;
        -- raise exception 'LLEGA AQUI %',v_parametros.monto_deposito;
-       		SELECT per.nombre ||' '|| per.apellido_paterno ||'  '|| per.apellido_materno as nombre_completo,
-                   count(per.nombre) as existe
+       		SELECT per.nombre_completo1,
+                   count(per.nombre) as existe,
+                   depo.estado
                    into v_verificar_existencia
             FROM obingresos.tdeposito depo
             inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
-            inner join segu.tpersona per on per.id_persona = usu.id_persona
+            inner join segu.vpersona per on per.id_persona = usu.id_persona
             WHERE
             depo.nro_deposito = v_parametros.nro_deposito and
             depo.fecha = v_parametros.fecha and
             depo.monto_deposito = v_parametros.monto_deposito
-            group by per.nombre, per.apellido_paterno,per.apellido_materno;
+            group by per.nombre_completo1, depo.estado;
 
 
 
 
    /*AUMENTANDO CONDICION*/
-    if (v_verificar_existencia.existe <> 0) THEN
-    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo;
+    if (v_verificar_existencia.existe <> 0 and v_verificar_existencia.estado <> 'eliminado') THEN
+    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo1;
     else
 
         	if (v_parametros.tipo = 'banca') then

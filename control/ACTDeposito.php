@@ -347,7 +347,8 @@ class ACTDeposito extends ACTbase{
         ftp_pasv($conn_id,true);
 
         $local_file = "/tmp/" . $this->objParam->getParametro('nombre_archivo');
-        $server_file = "FTPContratos#ND/" . $this->objParam->getParametro('nombre_archivo');
+        //$server_file = "FTPContratos#ND/" . $this->objParam->getParametro('nombre_archivo');
+        $server_file = "docAgencias/" . $this->objParam->getParametro('nombre_archivo');
 
 
         // intenta descargar $server_file y guardarlo en $local_file
