@@ -917,7 +917,7 @@ class MODBoleto extends MODbase{
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_boleto_ime';
         $this->transaccion='OBING_MAIL_DET_VW';
-        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->tipo_procedimiento='IME';//tipo de transaccion
         $this->setCount(false);
 
         //Ejecuta la instruccion
