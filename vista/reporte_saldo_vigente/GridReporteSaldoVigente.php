@@ -591,7 +591,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     params : {
                         start: 0,
                         limit: 1000,
-                        fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
+                        //fecha_ini: this.fecha_ini.getValue().dateFormat('d/m/Y'),
                         fecha_fin: this.fecha_fin.getValue().dateFormat('d/m/Y'),
                         id_lugar:this.lugar.getValue(),
                         tipo_agencia:this.tipo_agencia.getValue(),
