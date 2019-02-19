@@ -411,11 +411,12 @@ foreach($periodo as $value1 ){
 
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['id_periodo_venta']);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['depositos_con_saldos']);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $value['periodo']);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, 0);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, 0);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, 0);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, 0);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, 0); 
             $this->docexcel->getActiveSheet()->getStyle("D$fila:D$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
             $this->docexcel->getActiveSheet()->getStyle("C$fila:H$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
@@ -426,7 +427,7 @@ foreach($periodo as $value1 ){
           }
           elseif($value['tipo'] == 'depositos'){
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $aux, $value['depositos']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $aux, $value['periodo']);
+
             $this->docexcel->getActiveSheet()->getStyle("D$aux:D$aux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
           }elseif($value['tipo'] == 'debitos'){
@@ -502,7 +503,7 @@ foreach($periodo as $value1 ){
     $this->docexcel->getActiveSheet()->getStyle("F$dife")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_00);
     $this->docexcel->getActiveSheet()->getStyle("F$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
- 
+
 
   }
 

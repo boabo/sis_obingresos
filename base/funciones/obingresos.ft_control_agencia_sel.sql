@@ -64,13 +64,16 @@ BEGIN
 
         FOR v_record in ( select  mo.id_periodo_venta,
                                   Sum(mo.monto_total) as saldos,
-                                  mo.tipo
+                                  mo.tipo,
+                                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
                                   from obingresos.tmovimiento_entidad mo
+                                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
                                   where mo.tipo = 'credito' and
                                     mo.id_agencia = v_parametros.id_agencia AND
                                     mo.estado_reg = 'activo' and
                                     mo.garantia = 'no'
-                                  group by mo.id_periodo_venta,mo.tipo
+                                  group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
                                   order by mo.id_periodo_venta asc
                         )
 
@@ -78,7 +81,8 @@ BEGIN
         					insert into	temp ( id_agencia  ,
                                       id_periodo_venta ,
                                       tipo,
-                                      depositos_con_saldos
+                                      depositos_con_saldos,
+                                      periodo
 
 
                                         )
@@ -86,7 +90,8 @@ BEGIN
                                         v_parametros.id_agencia,
                                         v_record.id_periodo_venta,
                                         v_record.tipo,
-                                        v_record.saldos
+                                        v_record.saldos,
+                                        v_record.periodo
 
                                       );
 
@@ -96,17 +101,15 @@ BEGIN
         					Select
                             mo.id_periodo_venta,
                             sum(mo.monto_total) as depositos,
-                            mo.tipo,
-                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+                            mo.tipo
 
                             from obingresos.tmovimiento_entidad mo
-                            LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
                             where mo.tipo = 'credito' and
                                                 mo.id_agencia = v_parametros.id_agencia AND
                                                     mo.estado_reg = 'activo' and
                                                     mo.garantia = 'no' and
                                                     mo.cierre_periodo = 'no'
-                            group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
+                            group by mo.id_periodo_venta,mo.tipo
                             order by mo.id_periodo_venta asc
 
                             )
@@ -118,16 +121,16 @@ BEGIN
                     insert into	temp ( id_agencia  ,
                                       id_periodo_venta ,
                                       tipo,
-                                      depositos,
-                                      periodo
+                                      depositos
+
 
                                         )
                                         values(
                                         v_parametros.id_agencia,
                                         v_depositos.id_periodo_venta,
                                         'depositos',
-                                        v_depositos.depositos,
-                                        v_depositos.periodo
+                                        v_depositos.depositos
+
                                       );
                     end loop;
 
