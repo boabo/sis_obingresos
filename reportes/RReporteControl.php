@@ -108,7 +108,7 @@ class RReporteControl
         $this->docexcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells('A1:H1');
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'AGENCIA: '.$this->objParam->getParametro('nombre'));
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,2,'AGENCIA: '.$this->objParam->getParametro('nombre').' '.'ID_AGENCIA: '.$this->objParam->getParametro('id_agencia'));
         $this->docexcel->getActiveSheet()->getStyle('A2:H2')->applyFromArray($styleTitulos);
         $this->docexcel->getActiveSheet()->mergeCells('A2:H2');
 
