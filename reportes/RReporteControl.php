@@ -140,6 +140,7 @@ class RReporteControl
         $this->docexcel->getActiveSheet()->setCellValue('H6','DIFERENCIA');
         $this->docexcel->getActiveSheet()->getStyle('A6:H6')->applyFromArray($styleTitulos1);
         $this->docexcel->getActiveSheet()->getStyle('A6:H6')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->freezePaneByColumnAndRow(0,7);
 
 
     }
