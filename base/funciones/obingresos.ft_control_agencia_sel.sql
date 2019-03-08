@@ -35,6 +35,13 @@ DECLARE
     v_depositos_vigente	record;
     v_debitos_vigente	record;
     v_arrastre_vigente	record;
+    v_arrastre_vigente_maximo	record;
+    v_saldo_vigente_maximo		record;
+    v_depositos_vigente_maximo	record;
+    v_debitos_vigente_maximo	record;
+    v_maximo_credito	integer;
+    v_maximo_debito		integer;
+    v_valor_maximo		integer;
 
 BEGIN
 
@@ -63,14 +70,37 @@ BEGIN
                                       periodo varchar
                                        )ON COMMIT DROP;
 
+        select  max(mo.id_periodo_venta)
+        into v_maximo_credito
+        from obingresos.tmovimiento_entidad mo
+        where mo.tipo = 'credito' and
+          mo.id_agencia = v_parametros.id_agencia AND
+          mo.estado_reg = 'activo' and
+          mo.garantia = 'no' and
+          mo.id_periodo_venta is not null;
 
+    	Select
+        max(mo.id_periodo_venta)
+        into v_maximo_debito
+        from obingresos.tmovimiento_entidad mo
+        where mo.tipo = 'debito' and
+          mo.id_agencia = v_parametros.id_agencia AND
+          mo.estado_reg = 'activo' and
+          mo.garantia = 'no' and
+          mo.cierre_periodo = 'no' and
+          mo.id_periodo_venta is not null;
 
+        if (v_maximo_credito > v_maximo_debito) then
+        	v_valor_maximo = v_maximo_credito;
+        else
+        	v_valor_maximo = v_maximo_debito ;
+        end if;
 
+		--raise exception 'LLEGA AQUI %',v_valor_maximo;
         FOR v_record in ( select  mo.id_periodo_venta,
                                   Sum(mo.monto_total) as saldos,
                                   mo.tipo,
                                   COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-
                                   from obingresos.tmovimiento_entidad mo
                                   LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
                                   where mo.tipo = 'credito' and
@@ -78,6 +108,7 @@ BEGIN
                                     mo.estado_reg = 'activo' and
                                     mo.garantia = 'no' and
                                     mo.id_periodo_venta is not null
+                                    and mo.id_periodo_venta < v_valor_maximo
                                   group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
                                   order by mo.id_periodo_venta asc
                         )
@@ -115,6 +146,7 @@ BEGIN
                                                     mo.garantia = 'no' and
                                                     mo.cierre_periodo = 'no' and
                                                     mo.id_periodo_venta is not null
+                                                    and mo.id_periodo_venta < v_valor_maximo
                             group by mo.id_periodo_venta,mo.tipo
                             order by mo.id_periodo_venta asc
 
@@ -156,6 +188,7 @@ BEGIN
                                                     mo.garantia = 'no' and
                                                     mo.cierre_periodo = 'no' and
                                                     mo.id_periodo_venta is not null
+                                                    and mo.id_periodo_venta < v_valor_maximo
                             group by mo.id_periodo_venta,pv.fecha_ini, pv.fecha_fin,mo.tipo
                             order by mo.id_periodo_venta asc
 
@@ -190,6 +223,7 @@ BEGIN
                                           mo.garantia = 'no' and
                                           mo.cierre_periodo = 'si' and
                                           mo.id_periodo_venta is not null
+                                          and mo.id_periodo_venta < v_valor_maximo
                                     group by mo.id_periodo_venta
                                     order by mo.id_periodo_venta asc
 
@@ -212,6 +246,103 @@ BEGIN
                                         v_arrastre.arrastre
                                       );
                     end loop;
+
+
+                    select  	  mo.id_periodo_venta,
+                                  Sum(mo.monto_total) as saldos,
+                                  mo.tipo,
+                                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+								  into v_saldo_vigente_maximo
+                                  from obingresos.tmovimiento_entidad mo
+                                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                                  where mo.tipo = 'credito' and
+                                    mo.id_agencia = v_parametros.id_agencia AND
+                                    mo.estado_reg = 'activo' and
+                                    mo.garantia = 'no' and
+                                    mo.id_periodo_venta is not null
+                                    and mo.id_periodo_venta = v_valor_maximo
+                                  group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
+                                  order by mo.id_periodo_venta asc;
+
+                    Select
+                            mo.id_periodo_venta,
+                            sum(mo.monto_total) as depositos,
+                            mo.tipo
+                            into v_depositos_vigente_maximo
+                            from obingresos.tmovimiento_entidad mo
+                            where mo.tipo = 'credito' and
+                                                mo.id_agencia = v_parametros.id_agencia AND
+                                                    mo.estado_reg = 'activo' and
+                                                    mo.garantia = 'no' and
+                                                    mo.cierre_periodo = 'no'and
+                                                    mo.id_periodo_venta is not null
+                                                    and mo.id_periodo_venta = v_valor_maximo
+                            group by mo.id_periodo_venta,mo.tipo
+                            order by mo.id_periodo_venta asc;
+
+                    Select
+                            mo.id_periodo_venta,
+                            sum(mo.monto) as debitos,
+                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                            into v_debitos_vigente_maximo
+                            from obingresos.tmovimiento_entidad mo
+                            LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                            where mo.tipo = 'debito' and
+                                                mo.id_agencia = v_parametros.id_agencia AND
+                                                    mo.estado_reg = 'activo' and
+                                                    mo.garantia = 'no' and
+                                                    mo.cierre_periodo = 'no' and
+                                                    mo.id_periodo_venta is not null
+                                                    and mo.id_periodo_venta = v_valor_maximo
+                            group by mo.id_periodo_venta, pe.fecha_ini, pe.fecha_fin, pe.mes
+                            order by mo.id_periodo_venta asc;
+
+                    select  mo.id_periodo_venta,
+                            		Sum(mo.monto_total) as arrastre
+                                    into v_arrastre_vigente_maximo
+                                    from obingresos.tmovimiento_entidad mo
+                                    where mo.tipo = 'credito' and
+                                      mo.id_agencia = v_parametros.id_agencia AND
+                                          mo.estado_reg = 'activo' and
+                                          mo.garantia = 'no' and
+                                          mo.cierre_periodo = 'si' and
+                                          mo.id_periodo_venta is not null
+                                          and mo.id_periodo_venta = v_valor_maximo
+                                    group by mo.id_periodo_venta
+                                    order by mo.id_periodo_venta asc;
+
+
+                    insert into	temp ( id_agencia,
+                    				   id_periodo_venta,
+                                       tipo,
+                                       depositos_con_saldos,
+                                       depositos,
+                                       debitos,
+                                       saldo_arrastrado,
+                                       periodo
+
+                                        )
+                                        values(
+                                        v_parametros.id_agencia,
+                                        CASE WHEN v_saldo_vigente_maximo.id_periodo_venta is null
+                                        THEN v_debitos_vigente_maximo.id_periodo_venta
+                                              ELSE v_saldo_vigente_maximo.id_periodo_venta
+                                        END,
+                                        'ultimo_periodo',
+                                        v_saldo_vigente_maximo.saldos,
+                                        v_depositos_vigente_maximo.depositos,
+                                        v_debitos_vigente_maximo.debitos,
+                                        v_arrastre_vigente_maximo.arrastre,
+                                        CASE WHEN v_saldo_vigente_maximo.periodo is null
+                                        THEN v_debitos_vigente_maximo.periodo
+                                              ELSE v_saldo_vigente_maximo.periodo
+                                        END
+
+
+                                      );
+
+
 
 
 
