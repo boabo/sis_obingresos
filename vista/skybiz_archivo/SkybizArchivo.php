@@ -16,10 +16,47 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 		this.maestro=config.maestro;
     	//llama al constructor de la clase padre
 		Phx.vista.SkybizArchivo.superclass.constructor.call(this,config);
+		this.tbar.addField(this.cmbBanco);
+		this.bloquearOrdenamientoGrid();
+
+		this.cmbBanco.on('clearcmb', function () {
+				this.DisableSelect();
+				this.store.removeAll();
+		}, this);
+
+
+		this.cmbBanco.on('select', function () {
+				if (this.validarFiltros()) {
+						this.capturaFiltros();
+				}
+		}, this);
 		this.init();
 		this.load({params:{start:0, limit:this.tam_pag}})
 	},
-			
+	capturaFiltros: function (combo, record, index) {
+			this.desbloquearOrdenamientoGrid();
+			this.store.baseParams.bancos = this.cmbBanco.getValue();
+			console.log('LLEGA EL DATO',this.store.baseParams);
+			this.load();
+	},
+	validarFiltros: function () {
+			console.log('values....', this.cmbBanco.getValue())
+			if (this.cmbBanco.getValue() != '' && this.cmbBanco.validate() ) {
+					return true;
+			} else {
+					return false;
+			}
+	},
+	onButtonAct: function () {
+			if (!this.validarFiltros()) {
+					alert('Especifique los Bancos a listar')
+			}
+			else {
+					this.capturaFiltros();
+			}
+	},
+
+
 	Atributos:[
 		{
 			//configuracion del componente
@@ -29,7 +66,7 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 					name: 'id_skybiz_archivo'
 			},
 			type:'Field',
-			form:true 
+			form:true
 		},
 		{
 			config:{
@@ -38,7 +75,7 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 100,
-							format: 'd/m/Y', 
+							format: 'd/m/Y',
 							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
 			},
 				type:'DateField',
@@ -198,7 +235,7 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 100,
-							format: 'd/m/Y', 
+							format: 'd/m/Y',
 							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y H:i:s'):''}
 			},
 				type:'DateField',
@@ -244,7 +281,7 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 				allowBlank: true,
 				anchor: '80%',
 				gwidth: 100,
-							format: 'd/m/Y', 
+							format: 'd/m/Y',
 							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y H:i:s'):''}
 			},
 				type:'DateField',
@@ -254,7 +291,7 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 				form:false
 		}
 	],
-	tam_pag:50,	
+	tam_pag:50,
 	title:'Skybiz Archivo',
 	ActSave:'../../sis_obingresos/control/SkybizArchivo/insertarSkybizArchivo',
 	ActDel:'../../sis_obingresos/control/SkybizArchivo/eliminarSkybizArchivo',
@@ -288,6 +325,21 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 	bsave:false,
 	bnew:false,
 	bedit:false,
+	cmbBanco : new Ext.form.AwesomeCombo({
+			name: 'agt',
+			fieldLabel: 'Seleccione Bancos...',
+			emptyText:'Seleccione los Bancos',
+			typeAhead: true,
+			triggerAction: 'all',
+			lazyRender:true,
+			forceSelection: true,
+			mode: 'local',
+			gwidth: 50,
+			anchor: "10%",
+			store:['TODOS','BCO','BCR','BEC','BIS','BME','BNB','BUN','ECF','TMY'],
+			enableMultiSelect: true,
+	}),
+
 	south: {
 		url: '../../../sis_obingresos/vista/skybiz_archivo_detalle/SkybizArchivoDetalle.php',
 		title: 'SkybizArchivoDetalle',
@@ -297,5 +349,3 @@ Phx.vista.SkybizArchivo=Ext.extend(Phx.gridInterfaz,{
 	}
 )
 </script>
-		
-		
