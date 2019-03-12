@@ -34,7 +34,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 }, this);
 
-                //this.load({params:{start:0, limit:this.tam_pag}});
+                this.load({params:{start:0, limit:this.tam_pag}});
                 this.init();
                 this.iniciarEventos();
 
