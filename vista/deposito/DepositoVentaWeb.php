@@ -16,11 +16,53 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.maestro=config.maestro;
                 //llama al constructor de la clase padre
                 Phx.vista.DepositoVentaWeb.superclass.constructor.call(this,config);
-                this.init();
+
                 this.store.baseParams.tipo = 'banca';
-                this.load({params:{start:0, limit:this.tam_pag}});
+                this.tbar.addField(this.cmbBanco);
+
+                this.bloquearOrdenamientoGrid();
+
+                this.cmbBanco.on('clearcmb', function () {
+                    this.DisableSelect();
+                    this.store.removeAll();
+                }, this);
+
+
+                this.cmbBanco.on('select', function () {
+                    if (this.validarFiltros()) {
+                        this.capturaFiltros();
+                    }
+                }, this);
+
+                //this.load({params:{start:0, limit:this.tam_pag}});
+                this.init();
                 this.iniciarEventos();
 
+
+            },
+
+
+            capturaFiltros: function (combo, record, index) {
+                this.desbloquearOrdenamientoGrid();
+                this.store.baseParams.bancos = this.cmbBanco.getValue();
+                console.log('LLEGA EL DATO',this.store.baseParams);
+                this.load();
+            },
+            validarFiltros: function () {
+                console.log('values....', this.cmbBanco.getValue())
+                if (this.cmbBanco.getValue() != '' && this.cmbBanco.validate() ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            onButtonAct: function () {
+                if (!this.validarFiltros()) {
+                    alert('Especifique los Bancos a listar')
+                }
+                else {
+                    this.capturaFiltros();
+                }
             },
 
             Atributos:[
@@ -338,8 +380,20 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             bdel:true,
             bsave:false,
-
+            cmbBanco : new Ext.form.AwesomeCombo({
+                name: 'agt',
+                fieldLabel: 'Seleccione Bancos...',
+                emptyText:'Seleccione los Bancos',
+                typeAhead: true,
+                triggerAction: 'all',
+                lazyRender:true,
+                forceSelection: true,
+                mode: 'local',
+                gwidth: 50,
+                anchor: "10%",
+                store:['TODOS','BCO','BCR','BEC','BIS','BME','BNB','BUN','ECF','TMY'],
+                enableMultiSelect: true,
+            }),
         }
     )
 </script>
-

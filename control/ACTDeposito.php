@@ -36,6 +36,13 @@ class ACTDeposito extends ACTbase{
             //filto ventas
             $this->objParam->addFiltro(" dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja'));
         }
+        if($this->objParam->getParametro('bancos')!='TODOS'){
+                $this->objParam->addFiltro("dep.agt in (SELECT UNNEST(REGEXP_SPLIT_TO_ARRAY(''".$this->objParam->getParametro('bancos')."'', '','')))");
+        }
+        else{
+                $this->objParam->addFiltro("dep.agt not in (''".$this->objParam->getParametro('bancos')."'')");
+        }
+        //var_dump($this->objParam->getParametro('bancos'));
 
         if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
             $this->objReporte = new Reporte($this->objParam,$this);
