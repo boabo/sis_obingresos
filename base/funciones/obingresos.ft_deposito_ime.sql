@@ -33,7 +33,7 @@ DECLARE
     v_id_agencia			integer;
     v_id_moneda				integer;
     v_pnr					varchar;
-    v_estado				varchar;
+    v_estado				record;
     v_agencia				record;
     v_id_alarma				integer;
     v_monto_total			numeric;
@@ -41,6 +41,8 @@ DECLARE
     v_deposito				record;
     v_aux					varchar;
     v_deposito_boa			varchar;
+    v_verificar_existencia  record;
+
 
 
 
@@ -57,9 +59,9 @@ BEGIN
 	***********************************/
 
 	if(p_transaccion='OBING_DEP_INS')then
-
         begin
         	   --raise exception 'tipo %',v_parametros.tipo;
+
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
 
             	v_id_moneda = v_parametros.id_moneda_deposito;
@@ -73,6 +75,27 @@ BEGIN
                 where m.codigo_internacional = v_parametros.moneda;
                 v_moneda = v_parametros.moneda;
             end if;
+       -- raise exception 'LLEGA AQUI %',v_parametros.monto_deposito;
+       		SELECT per.nombre_completo1,
+                   count(per.nombre) as existe,
+                   depo.estado
+                   into v_verificar_existencia
+            FROM obingresos.tdeposito depo
+            inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+            inner join segu.vpersona per on per.id_persona = usu.id_persona
+            WHERE
+            depo.nro_deposito = v_parametros.nro_deposito and
+            depo.fecha = v_parametros.fecha and
+            depo.monto_deposito = v_parametros.monto_deposito
+            group by per.nombre_completo1, depo.estado;
+
+
+
+
+   /*AUMENTANDO CONDICION*/
+    if (v_verificar_existencia.existe <> 0 and v_verificar_existencia.estado <> 'eliminado') THEN
+    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo1;
+    else
 
         	if (v_parametros.tipo = 'banca') then
             	insert into obingresos.tdeposito(
@@ -247,6 +270,9 @@ BEGIN
                 end if;
             end if;
 
+    /*Finalizando Condicion*/   end if;
+
+
             if (pxp.f_existe_parametro(p_tabla,'id_periodo_venta')) then
 
             	update obingresos.tdeposito
@@ -272,19 +298,23 @@ BEGIN
 
 	elsif(p_transaccion='OBING_DEP_MOD')then
 		begin
+        	    SELECT * into v_estado
+                from obingresos.tdeposito
+                where id_deposito = v_parametros.id_deposito;
+
+
         	if (v_parametros.tipo = 'agencia') then
-            --raise exception 'llega %',v_parametros.tipo;
             	SELECT * into v_deposito
                 from obingresos.tdeposito
                 where id_deposito = v_parametros.id_deposito;
                 --raise exception '%,%,%,%',v_deposito.id_agencia,v_deposito.nro_deposito,v_deposito.fecha,v_deposito.monto_deposito;
 
-                update obingresos.tmovimiento_entidad
+               /* update obingresos.tmovimiento_entidad
                 set  fecha =  v_parametros.fecha,
                 autorizacion__nro_deposito =  v_parametros.nro_deposito
                 where id_agencia = v_deposito.id_agencia and   autorizacion__nro_deposito = v_deposito.nro_deposito
                 and estado_reg = 'activo' and  fecha = v_deposito.fecha and monto = v_deposito.monto_deposito and tipo = 'credito';
-
+               */
 
             end if;
 
@@ -353,6 +383,7 @@ BEGIN
                   v_deposito_boa = '';
             end if;
             	--Sentencia de la modificacion
+                IF (v_estado.estado = 'borrador') then
                 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
                 monto_deposito = v_parametros.monto_deposito,
@@ -366,6 +397,12 @@ BEGIN
                 usuario_ai = v_parametros._nombre_usuario_ai,
                 nro_deposito_boa = v_deposito_boa
                 where id_deposito=v_parametros.id_deposito;
+
+                ELSE
+
+                raise exception 'NO SE PUEDE MODIFICAR DEPOSITOS QUE YA FUERON VALIDADOS!';
+
+                end if;
 
             end if;
 

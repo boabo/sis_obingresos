@@ -19,7 +19,7 @@ class ACTMovimientoEntidad extends ACTbase{
         }
 
         if ($this->objParam->getParametro('fecha_inicio') != '' && $this->objParam->getParametro('fecha_fin') != '') {
-            $this->objParam->addFiltro("moe.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and 
+            $this->objParam->addFiltro("moe.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and
             							moe.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
             $this->objParam->addFiltro("moe.cierre_periodo = ''no'' and moe.garantia = ''no'' ");
         } else if ($this->objParam->getParametro('id_periodo_venta') == '') {

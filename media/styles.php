@@ -17,5 +17,8 @@ header("content-type: text/css; charset=UTF-8");
     color: #900;
     }
 
+    .prioridad_importanteA:hover{
+      background-color : #FFC57F;    
+    }
 
 </style>

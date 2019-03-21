@@ -134,12 +134,12 @@ class RConciliacionBancaInterRes
         //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0,4,'Del: '.  $this->objParam->getParametro('fecha_ini').'   Al: '.  $this->objParam->getParametro('fecha_fin') );
 
         $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
-        $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(8);
-        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(8);
-        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(8);
-        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(8);
-        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(8);
-        $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(8);
+        $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(12);
+        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
+        $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(12);
         $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(60);
 
 
@@ -259,21 +259,28 @@ class RConciliacionBancaInterRes
             if (isset($this->datos[$this->bancos[$i]]['boletos']['BOB']['monto1'])) {
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1,$fila,$this->datos[$this->bancos[$i]]['boletos']['BOB']['monto1']);
                 $boletos_bob =  $this->datos[$this->bancos[$i]]['boletos']['BOB']['monto1'];
+                $this->docexcel->getActiveSheet()->getStyle("B$fila:G$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
             }
 
             if (isset($this->datos[$this->bancos[$i]]['boletos']['USD']['monto1'])) {
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2,$fila,$this->datos[$this->bancos[$i]]['boletos']['USD']['monto1']);
                 $boletos_usd =  $this->datos[$this->bancos[$i]]['boletos']['USD']['monto1'];
+                $this->docexcel->getActiveSheet()->getStyle("B$fila:G$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
             }
 
             if (isset($this->datos[$this->bancos[$i]]['depositos']['BOB']['monto1'])) {
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3,$fila,$this->datos[$this->bancos[$i]]['depositos']['BOB']['monto1']);
                 $depositos_bob =  $this->datos[$this->bancos[$i]]['depositos']['BOB']['monto1'];
+                $this->docexcel->getActiveSheet()->getStyle("B$fila:G$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
             }
 
             if (isset($this->datos[$this->bancos[$i]]['depositos']['USD']['monto1'])) {
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4,$fila,$this->datos[$this->bancos[$i]]['depositos']['USD']['monto1']);
                 $depositos_usd =  $this->datos[$this->bancos[$i]]['depositos']['USD']['monto1'];
+                $this->docexcel->getActiveSheet()->getStyle("B$fila:G$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+
             }
 
             if ($boletos_bob != $depositos_bob) {

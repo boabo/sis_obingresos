@@ -965,7 +965,7 @@ class ACTBoleto extends ACTbase{
         $json_data = json_encode($data);
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'http://skbpruebas.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
+        curl_setopt($s, CURLOPT_URL, 'http://skbproduccion.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -1241,7 +1241,7 @@ class ACTBoleto extends ACTbase{
         $json_data = json_encode($data);
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'http://skbpruebas.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerReserva');
+        curl_setopt($s, CURLOPT_URL, 'http://skbproduccion.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerReserva');
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -1847,6 +1847,7 @@ class ACTBoleto extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
+
     function buscarBoletoAmadeus(){
         
         $this->objParam->defecto('ordenacion','nro_boleto');
@@ -2043,19 +2044,20 @@ class ACTBoleto extends ACTbase{
         //$this->res->imprimirRespuesta($this->res->generarJson());
     }
 
-    function verificarBoletoExch(){
+    function verificarBoletoExch()
+    {
         $respuesta = '';
-        if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
+        if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == '') {
             throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
         }
 
         $pnr = $this->objParam->getParametro('pnr');
-        $data = array("credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
-            "idioma"=>"ES",
-            "pnr"=>$pnr,//'MSB9Z8'
-            "apellido"=>"prueba",
-            "ip"=>"127.0.0.1",
-            "xmlJson"=>false);
+        $data = array("credenciales" => "{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
+            "idioma" => "ES",
+            "pnr" => $pnr,//'MSB9Z8'
+            "apellido" => "prueba",
+            "ip" => "127.0.0.1",
+            "xmlJson" => false);
 
         $json_data = json_encode($data);
         $s = curl_init();
@@ -2076,24 +2078,30 @@ class ACTBoleto extends ACTbase{
 
         curl_close($s);
 
-        $_out = str_replace('\\','',$_out);
-        $_out = substr($_out,27);//23
-        $_out = substr($_out,0,-2);
+        $_out = str_replace('\\', '', $_out);
+        $_out = substr($_out, 27);//23
+        $_out = substr($_out, 0, -2);
 
         $res = json_decode($_out);
 
         $respuesta = [];
         $this->res = new Mensaje();
 
-        if($res->reserva_V2 != null){
-            array_unshift ( $respuesta, array(  'exchange'=>true));
+        if ($res->reserva_V2 != null) {
+            array_unshift($respuesta, array('exchange' => true));
             $this->res->setDatos($respuesta);
             //return $respuesta;
-        }else{
-            array_unshift ( $respuesta, array(  'exchange'=>false));
+        } else {
+            array_unshift($respuesta, array('exchange' => false));
             $this->res->setDatos($respuesta);
             //return $respuesta;
         }
+    }
+    //correo de incidentes detalle venta web
+    function disparaCorreoVentasWeb(){
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->disparaCorreoVentasWeb($this->objParam);
+
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 

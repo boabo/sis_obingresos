@@ -504,7 +504,7 @@ $body$
         	(select ''boletos''::varchar,substring(b.medio_pago from 1 for 3)::varchar, m.codigo_internacional::varchar,sum(b.total),NULL::numeric
             from obingresos.tboleto b
             inner join param.tmoneda m on m.id_moneda = b.id_moneda_boleto
-            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMY'',''TMYU'') and
+            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMYU'') and
             b.estado_reg = ''activo'' and b.voided = ''no''
             group by b.medio_pago,m.codigo_internacional
             order by b.medio_pago,m.codigo_internacional)
@@ -541,7 +541,7 @@ $body$
             inner join param.tmoneda mon on mon.id_moneda = b.id_moneda_boleto
             where  ((a.fecha = ''' || v_fecha_ini || ''' and b.fecha_emision = ''' || (v_fecha_ini - interval '1 day')::date || ''') or
                     (a.fecha = ''' || (v_fecha_fin + interval '1 day')::date || ''' and b.fecha_emision = ''' || v_fecha_fin || ''')) and
-            b.estado_reg = ''activo'' and b.voided = ''no'' and b.medio_pago not in (''OTROS'',''TMY'') and b.id_moneda_boleto = 1
+            b.estado_reg = ''activo'' and b.voided = ''no'' and b.medio_pago not in (''OTROS'') and b.id_moneda_boleto = 1
             group by b.medio_pago , mon.codigo_internacional
             ';
 

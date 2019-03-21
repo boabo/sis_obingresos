@@ -15,7 +15,6 @@ $body$
  COMENTARIOS:
 ***************************************************************************
  HISTORIAL DE MODIFICACIONES:
-
  DESCRIPCION:
  AUTOR:
  FECHA:
@@ -80,7 +79,6 @@ BEGIN
                                 param.f_get_tipo_cambio(' || v_id_moneda_usd ||  ',me.fecha,''O'')
                             end)::numeric as tipo_cambio,me.cierre_periodo
                               from obingresos.tmovimiento_entidad me
-
                               inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
                               where me.id_agencia = ' || v_parametros.id_agencia || ' and me.id_periodo_venta ' || v_id_periodo_venta || ' and
                               me.estado_reg= ''activo'' and me.garantia = ''no''';
@@ -195,12 +193,10 @@ BEGIN
                                     sum(case when me.id_moneda =' ||v_id_moneda_usd || ' then me.comision else 0 end) as total_boletos_usd,
                                     sum(case when me.id_moneda =' ||v_id_moneda_mb || ' then (me.importe - me.comision) else 0 end) as total_debito_mb,
                                     sum(case when me.id_moneda =' ||v_id_moneda_usd || ' then (me.importe - me.comision) else 0 end) as total_debito_usd
-
                                     from obingresos.tperiodo_venta pv
                                     inner join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
                                     inner join obingresos.tperiodo_venta_agencia pva on pva.id_periodo_venta = pv.id_periodo_venta
                                     inner join obingresos.tdetalle_boletos_web me on me.id_periodo_venta = pv.id_periodo_venta
-
                                     where me.estado_reg = ''activo'' and ' || v_filtro_periodo || '
                                     group by  pva.id_periodo_venta_agencia,pva.id_agencia,tp.medio_pago,pv.fecha_ini,
                                     pv.fecha_fin,pv.id_periodo_venta';
@@ -238,16 +234,13 @@ BEGIN
                             and me.id_agencia = ' || v_parametros.id_agencia || ' and me.tipo = ''credito'' and
                             me.garantia = ''si'' and me.id_moneda = ' || v_id_moneda_mb || '
                             union all
-
                             select me.id_agencia,''boleta_garantia''::varchar as tipo,mon.codigo_internacional, me.monto , param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
                             where me.estado_reg = ''activo'' and me.id_periodo_venta is null
                             and me.id_agencia = ' || v_parametros.id_agencia || ' and me.tipo = ''credito'' and
                             me.garantia = ''si'' and me.id_moneda = ' || v_id_moneda_usd || '
-
                             union ALL
-
                             select me.id_agencia,''saldo_anterior''::varchar as tipo,mon.codigo_internacional, me.monto, param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -255,9 +248,7 @@ BEGIN
                             and me.id_agencia = ' || v_parametros.id_agencia || ' and me.tipo = ''credito'' and
                             me.garantia = ''no'' and me.ajuste = ''no'' and me.cierre_periodo = ''si'' and
                             me.id_moneda = ' || v_id_moneda_mb || '
-
                             union all
-
                             select me.id_agencia,''saldo_anterior''::varchar as tipo,mon.codigo_internacional, me.monto, param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -265,9 +256,7 @@ BEGIN
                             and me.id_agencia = ' || v_parametros.id_agencia || ' and me.tipo = ''credito'' and
                             me.garantia = ''no'' and me.ajuste = ''no'' and me.cierre_periodo = ''si'' and
                             me.id_moneda = ' || v_id_moneda_usd || '
-
                             union all
-
                             select me.id_agencia,''deposito''::varchar as tipo,mon.codigo_internacional, sum(me.monto), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -276,9 +265,7 @@ BEGIN
                             me.garantia = ''no'' and me.ajuste = ''no'' and me.cierre_periodo = ''no'' and
                             me.id_moneda = ' || v_id_moneda_mb || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''deposito''::varchar as tipo,mon.codigo_internacional, sum(me.monto), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -287,9 +274,7 @@ BEGIN
                             me.garantia = ''no'' and me.ajuste = ''no'' and me.cierre_periodo = ''no'' and
                             me.id_moneda = ' || v_id_moneda_usd || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''comision''::varchar as tipo,mon.codigo_internacional, sum(me.monto_total-me.monto), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto_total-me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -298,9 +283,7 @@ BEGIN
                             me.ajuste = ''no'' and me.pnr is not null and
                             me.id_moneda = ' || v_id_moneda_mb || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''comision''::varchar as tipo,mon.codigo_internacional, sum(me.monto_total-me.monto), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto_total-me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -309,9 +292,7 @@ BEGIN
                             me.ajuste = ''no'' and me.pnr is not null and
                             me.id_moneda = ' || v_id_moneda_usd || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''otro_credito''::varchar as tipo,mon.codigo_internacional, sum(me.monto), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -320,9 +301,7 @@ BEGIN
                             me.garantia = ''no'' and me.ajuste = ''si'' and me.cierre_periodo = ''no'' and
                             me.id_moneda = ' || v_id_moneda_mb || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''otro_credito''::varchar as tipo,mon.codigo_internacional, sum(me.monto), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -331,9 +310,7 @@ BEGIN
                             me.garantia = ''no'' and me.ajuste = ''si'' and me.cierre_periodo = ''no'' and
                             me.id_moneda = ' || v_id_moneda_usd || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''boleto''::varchar as tipo,mon.codigo_internacional, sum(me.monto_total), sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto_total,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -342,9 +319,7 @@ BEGIN
                             me.ajuste = ''no'' and me.pnr is not null and
                             me.id_moneda = ' || v_id_moneda_mb || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''boleto''::varchar as tipo,mon.codigo_internacional, sum(me.monto_total) as monto, sum(param.f_convertir_moneda(me.id_moneda,' || v_id_moneda_mb || ',me.monto_total,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -353,7 +328,6 @@ BEGIN
                             me.ajuste = ''no'' and me.pnr is not null and
                             me.id_moneda = ' || v_id_moneda_usd || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union ALL
                             select pva.id_agencia,''periodo_adeudado''::varchar as tipo,mon.codigo_internacional,sum(pva.monto_mb * -1) as monto,sum(pva.monto_mb * -1) as monto_mb
                             from obingresos.tperiodo_venta_agencia pva
@@ -361,19 +335,14 @@ BEGIN
                             where pva.estado_reg = ''activo'' and pva.monto_mb < 0
                             and pva.id_agencia = ' || v_parametros.id_agencia || ' and pva.estado = ''abierto''
                             group by pva.id_agencia,mon.codigo_internacional
-
                             union ALL
-
                             select pva.id_agencia,''periodo_adeudado''::varchar as tipo,mon.codigo_internacional,sum(pva.monto_usd * -1) as monto,sum(param.f_convertir_moneda( ' || v_id_moneda_usd || ', ' || v_id_moneda_mb || ',pva.monto_usd * -1,now()::date,''O'',2)) as monto_mb
                             from obingresos.tperiodo_venta_agencia pva
                             inner join param.tmoneda mon on mon.id_moneda = ' || v_id_moneda_usd || '
                             where pva.estado_reg = ''activo'' and pva.monto_usd < 0
                             and pva.id_agencia = ' || v_parametros.id_agencia || ' and pva.estado = ''abierto''
                             group by pva.id_agencia,mon.codigo_internacional
-
-
                             union all
-
                             select me.id_agencia,''otro_debito''::varchar as tipo,mon.codigo_internacional, sum(me.monto), sum(param.f_convertir_moneda(me.id_moneda, ' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -382,9 +351,7 @@ BEGIN
                             me.garantia = ''no'' and me.ajuste = ''si'' and me.cierre_periodo = ''no'' and
                             me.id_moneda =  ' || v_id_moneda_mb || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             union all
-
                             select me.id_agencia,''otro_debito''::varchar as tipo,mon.codigo_internacional, sum(me.monto), sum(param.f_convertir_moneda(me.id_moneda, ' || v_id_moneda_mb || ',me.monto,me.fecha,''O'',2)) as monto_mb
                             from obingresos.tmovimiento_entidad me
                             inner join param.tmoneda mon on mon.id_moneda = me.id_moneda
@@ -393,7 +360,6 @@ BEGIN
                             me.garantia = ''no'' and me.ajuste = ''si'' and me.cierre_periodo = ''no'' and
                             me.id_moneda =  ' || v_id_moneda_usd || '
                             group by me.id_agencia,mon.codigo_internacional
-
                             ';
 
 			raise notice '%',v_consulta;
@@ -449,12 +415,10 @@ BEGIN
                                     sum(case when me.id_moneda =' ||v_id_moneda_usd || ' then me.comision else 0 end) as total_boletos_usd,
                                     sum(case when me.id_moneda =' ||v_id_moneda_mb || ' then (me.importe - me.comision) else 0 end) as total_debito_mb,
                                     sum(case when me.id_moneda =' ||v_id_moneda_usd || ' then (me.importe - me.comision) else 0 end) as total_debito_usd
-
                                     from obingresos.tperiodo_venta pv
                                     inner join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
                                     inner join obingresos.tperiodo_venta_agencia pva on pva.id_periodo_venta = pv.id_periodo_venta
                                     inner join obingresos.tdetalle_boletos_web me on me.id_periodo_venta = pv.id_periodo_venta
-
                                     where me.estado_reg = ''activo'' and ' || v_filtro_periodo || '
                                     group by  pva.id_periodo_venta_agencia,pva.id_agencia,tp.medio_pago,pv.fecha_ini,
                                     pv.fecha_fin,pv.id_periodo_venta';
@@ -545,7 +509,7 @@ BEGIN
             into
             v_peridos
             from obingresos.tperiodo_venta pe
-            where pe.id_gestion = 16 and pe.id_periodo_venta >= 49 ;
+            where pe.id_gestion = 16  ;
 
 
   v_ids_peridos	 = string_to_array(v_peridos,',');
@@ -645,7 +609,7 @@ debito as (select   mo.id_agencia,
             into
             v_peridos
             from obingresos.tperiodo_venta pe
-            where pe.id_gestion = 16 and pe.id_periodo_venta >= 49;
+            where pe.id_gestion = 16;
 
 
               v_ids_peridos	 = string_to_array(v_peridos,',');
@@ -786,7 +750,7 @@ debito as (select   mo.id_agencia,
                               pe.mes,
                               mo.id_periodo_venta,
                               mo.tipo
-                              order by transaccion, fecha_ini;
+                              order by transaccion, id_periodo_venta;
 
 
 
@@ -807,7 +771,6 @@ debito as (select   mo.id_agencia,
                                     tipo,
                                     transaccion
                                     from tempotal_agt
-                                    order by fecha_ini
                                     ';
               return v_consulta;
 

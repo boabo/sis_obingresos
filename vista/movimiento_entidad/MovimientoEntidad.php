@@ -280,9 +280,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             if(record.data.tipo_reg != 'summary'){
                                 return  String.format('{0}', value);
                             }
-                            else{
-                                return '<b><p align="right">'+record.data.pnr+': </p></b>';
-                            }
+                            //else{
+                            //    return '<b><p align="right">'+record.data.pnr+': </p></b>';
+                            //}
                         }
                     },
                     type:'TextField',
@@ -302,12 +302,12 @@ header("content-type: text/javascript; charset=UTF-8");
                         renderer:function (value,p,record){
                             if(record.data.tipo_reg != 'summary'){
                                 return  String.format('{0}', value);
-                            } else if (record.data.debito < 0) {
-                                return  String.format('<p align="right"><b><font size=2 color="red">{0}</font><b></p>', Ext.util.Format.number(record.data.debito*-1,'0,000.00'));
-                            }
-                            else{
-                                return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.debito,'0,000.00'));
-                            }
+                            } //else if (record.data.debito < 0) {
+                              //  return  String.format('<p align="right"><b><font size=2 color="red">{0}</font><b></p>', Ext.util.Format.number(record.data.debito*-1,'0,000.00'));
+                          //  }
+                            //else{
+                              //  return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.debito,'0,000.00'));
+                          //  }
                         },
                         /*renderer:function (value,p,record){
                             if(record.data.tipo_reg != 'summary') {
@@ -339,9 +339,9 @@ header("content-type: text/javascript; charset=UTF-8");
                         renderer:function (value, p, record){
                             if(record.data.tipo_reg != 'summary') {
                                 return String.format('{0}', record.data['moneda']);
-                            }else{
-                                return '<b><p align="right">Deuda P. Anterior: &nbsp;&nbsp; </p></b>';
-                            }
+                             }//else{
+                            //     return '<b><p align="right">Deuda P. Anterior: &nbsp;&nbsp; </p></b>';
+                            // }
                         }
 
                     },
@@ -366,9 +366,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else if (record.data.deudas*-1 > 0) {
                                 return  String.format('<p align="right"><b><font size=2 color="red">{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
                             }
-                            else{
-                                return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
-                            }
+                            // else{
+                            //     return  String.format('<p align="right"><b><font size=2>{0}</font><b></p>', Ext.util.Format.number(record.data.deudas*-1,'0,000.00'));
+                            // }
                         },
                         scope:this
                         /*renderer:function (value,p,record){
@@ -668,4 +668,3 @@ header("content-type: text/javascript; charset=UTF-8");
         }
     )
 </script>
-

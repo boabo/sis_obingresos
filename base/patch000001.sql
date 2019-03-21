@@ -1081,7 +1081,449 @@ ALTER TABLE obingresos.tagencia
 
 
 /********************************************F-SCP-JRR-OBINGRESOS-0-11/12/2017********************************************/
-/********************************************I-SCP-RZM-OBINGRESOS-0-14/08/2018********************************************/
+
+
+/********************************************I-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tarchivo_acm (
+  id_archivo_acm SERIAL,
+  fecha_ini DATE NOT NULL,
+  fecha_fin DATE NOT NULL,
+  nombre VARCHAR(500) NOT NULL,
+  estado VARCHAR(50),
+  ultimo_numero INTEGER,
+  CONSTRAINT tarchivo_acm_pkey PRIMARY KEY(id_archivo_acm)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************F-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tarchivo_acm_det (
+  id_archivo_acm_det SERIAL,
+  officce_id VARCHAR(50) NOT NULL,
+  porcentaje INTEGER NOT NULL,
+  id_agencia INTEGER,
+  importe_total_mb NUMERIC(18,2),
+  importe_total_mt NUMERIC(18,2),
+  id_archivo_acm INTEGER NOT NULL,
+  neto_total_mb NUMERIC(18,2),
+  neto_total_mt NUMERIC(18,2),
+  cant_bol_mb INTEGER,
+  cant_bol_mt INTEGER,
+  CONSTRAINT tarchivo_acm_det_pkey PRIMARY KEY(id_archivo_acm_det),
+  CONSTRAINT tarchivo_acm_det_fk FOREIGN KEY (id_archivo_acm)
+    REFERENCES obingresos.tarchivo_acm(id_archivo_acm)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************I-SCP-RZM-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tacm (
+  id_acm SERIAL,
+  id_archivo_acm_det INTEGER NOT NULL,
+  numero VARCHAR(20) NOT NULL,
+  fecha DATE NOT NULL,
+  ruta VARCHAR(10) NOT NULL,
+  id_moneda INTEGER,
+  importe NUMERIC(18,2),
+  id_movimiento_entidad INTEGER,
+  total_bsp NUMERIC(18,2),
+  CONSTRAINT tacm_pkey PRIMARY KEY(id_acm),
+  CONSTRAINT tacm_fk FOREIGN KEY (id_moneda)
+    REFERENCES param.tmoneda(id_moneda)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tacm_fk1 FOREIGN KEY (id_archivo_acm_det)
+    REFERENCES obingresos.tarchivo_acm_det(id_archivo_acm_det)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tacm_fk2 FOREIGN KEY (id_movimiento_entidad)
+    REFERENCES obingresos.tmovimiento_entidad(id_movimiento_entidad)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tacm
+  ALTER COLUMN numero SET STATISTICS 0;
+/********************************************F-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+CREATE TABLE obingresos.tacm_det (
+  id_acm_det SERIAL,
+  id_detalle_boletos_web INTEGER NOT NULL,
+  neto NUMERIC(18,2) NOT NULL,
+  over_comision NUMERIC(18,2) NOT NULL,
+  id_acm INTEGER NOT NULL,
+  com_bsp NUMERIC(18,2),
+  porcentaje_over INTEGER,
+  moneda VARCHAR(10),
+  td VARCHAR(10),
+  CONSTRAINT tacm_det_pkey PRIMARY KEY(id_acm_det),
+  CONSTRAINT tacm_det_fk FOREIGN KEY (id_acm)
+    REFERENCES obingresos.tacm(id_acm)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tacm_det_fk1 FOREIGN KEY (id_detalle_boletos_web)
+    REFERENCES obingresos.tdetalle_boletos_web(id_detalle_boletos_web)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+/********************************************F-SCP-IRV-OBINGRESOS-0-28/09/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-1-24/10/2018********************************************/
+ALTER TABLE obingresos.tarchivo_acm_det
+ADD COLUMN abonado VARCHAR(2);
+/********************************************F-SCP-RZM-OBINGRESOS-1-24/10/2018********************************************/
+
+/********************************************I-SCP-FEA-OBINGRESOS-1-07/11/2018********************************************/
+
+CREATE TABLE obingresos.tboleto_amadeus (
+  id_boleto_amadeus SERIAL,
+  nro_boleto VARCHAR(50),
+  pasajero VARCHAR(100),
+  fecha_emision DATE,
+  total NUMERIC(18,2),
+  liquido NUMERIC(18,2),
+  id_moneda_boleto INTEGER,
+  neto NUMERIC(18,2),
+  estado VARCHAR(20),
+  id_punto_venta INTEGER,
+  localizador VARCHAR(13),
+  voided VARCHAR(10),
+  forma_pago VARCHAR(3),
+  officeid VARCHAR(10),
+  codigo_iata VARCHAR(10),
+  comision NUMERIC(18,2),
+  moneda VARCHAR(5),
+  tc NUMERIC(18,2),
+  xt NUMERIC(18,2),
+  monto_pagado_moneda_boleto NUMERIC(18,2),
+  agente_venta VARCHAR(7),
+  id_agencia INTEGER,
+  tipo_comision VARCHAR(13) DEFAULT 'ninguno'::character varying,
+  id_usuario_cajero INTEGER,
+  ruta_completa VARCHAR(255),
+  mensaje_error TEXT,
+  estado_informix VARCHAR(20) DEFAULT 'migrado'::character varying,
+  CONSTRAINT tboleto_amadeus_nro_boleto_key UNIQUE(nro_boleto),
+  CONSTRAINT tboleto_amadeus_pkey PRIMARY KEY(id_boleto_amadeus),
+  CONSTRAINT fk_tboleto_amadeus__id_agencia FOREIGN KEY (id_agencia)
+    REFERENCES obingresos.tagencia(id_agencia)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT fk_tboleto_amadeus__id_moneda FOREIGN KEY (id_moneda_boleto)
+    REFERENCES param.tmoneda(id_moneda)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT fk_tboleto_amadeus__id_punto_venta FOREIGN KEY (id_punto_venta)
+    REFERENCES vef.tpunto_venta(id_punto_venta)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT fk_tboleto_amadeus__id_usuario FOREIGN KEY (id_usuario_cajero)
+    REFERENCES segu.tusuario(id_usuario)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+CREATE TABLE obingresos.tboleto_amadeus_forma_pago (
+  id_boleto_amadeus_forma_pago SERIAL,
+  importe NUMERIC(18,2) NOT NULL,
+  id_forma_pago INTEGER NOT NULL,
+  id_boleto_amadeus INTEGER NOT NULL,
+  tipo VARCHAR(20),
+  tarjeta VARCHAR(6),
+  numero_tarjeta VARCHAR(20),
+  ctacte VARCHAR(20),
+  codigo_tarjeta VARCHAR(20),
+  forma_pago_amadeus VARCHAR(3),
+  id_auxiliar INTEGER,
+  id_usuario_fp_corregido INTEGER,
+  registro_mod INTEGER DEFAULT 0,
+  mco VARCHAR(15),
+  CONSTRAINT tboleto_amadeus_forma_pago_pkey PRIMARY KEY(id_boleto_amadeus_forma_pago),
+  CONSTRAINT fk_tboleto_amadeus_forma_pago__id_auxiliar FOREIGN KEY (id_auxiliar)
+    REFERENCES conta.tauxiliar(id_auxiliar)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT fk_tboleto_amadeus_forma_pago__id_boleto_amadeus FOREIGN KEY (id_boleto_amadeus)
+    REFERENCES obingresos.tboleto_amadeus(id_boleto_amadeus)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT fk_tboleto_amadeus_forma_pago__id_forma_pago FOREIGN KEY (id_forma_pago)
+    REFERENCES obingresos.tforma_pago(id_forma_pago)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT fk_tboleto_amadeus_forma_pago__id_usuario FOREIGN KEY (id_usuario_fp_corregido)
+    REFERENCES segu.tusuario(id_usuario)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+CREATE INDEX tboleto_amadeus_forma_pago__id_boleto_idx ON obingresos.tboleto_amadeus_forma_pago
+  USING btree (id_boleto_amadeus);
+
+
+CREATE TABLE obingresos.tconsulta_viajero_frecuente (
+  id_consulta_viajero_frecuente SERIAL,
+  ffid VARCHAR(50),
+  voucher_code VARCHAR(60),
+  message VARCHAR(200),
+  status VARCHAR(20),
+  nro_boleto VARCHAR(50),
+  CONSTRAINT tconsulta_vieajero_frecuente_pkey PRIMARY KEY(id_consulta_viajero_frecuente)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
 ALTER TABLE obingresos.tconsulta_viajero_frecuente
-ADD COLUMN nro_boleto VARCHAR(50);
-/********************************************F-SCP-RZM-OBINGRESOS-0-14/08/2018********************************************/
+  ALTER COLUMN id_consulta_viajero_frecuente SET STATISTICS 0;
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+  ALTER COLUMN ffid SET STATISTICS 0;
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+  ALTER COLUMN voucher_code SET STATISTICS 0;
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+  ALTER COLUMN message SET STATISTICS 0;
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+  ALTER COLUMN status SET STATISTICS 0;
+
+CREATE TABLE obingresos.tdetalle_credito (
+  id_agencia SERIAL,
+  autorizacion__nro_deposito TEXT,
+  fecha DATE,
+  monto_total NUMERIC(18,2),
+  CONSTRAINT tdetalle_credito_pkey PRIMARY KEY(id_agencia)
+)
+WITH (oids = false);
+
+CREATE TABLE obingresos.tdetalle_debito (
+  id_agencia SERIAL,
+  billeta_pnr TEXT,
+  fecha DATE,
+  comision NUMERIC(18,2),
+  importe NUMERIC(18,2),
+  neto NUMERIC(18,2),
+  saldo NUMERIC,
+  CONSTRAINT tdetalle_debito_pkey PRIMARY KEY(id_agencia)
+)
+WITH (oids = false);
+
+CREATE TABLE obingresos.tforma_pago_ant (
+  id_forma_pago_ant SERIAL,
+  id_boleto_amadeus INTEGER,
+  id_forma_pago INTEGER,
+  importe NUMERIC(20,0),
+  CONSTRAINT tforma_pago_ant_pkey PRIMARY KEY(id_forma_pago_ant)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tforma_pago_ant
+  ALTER COLUMN id_forma_pago_ant SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_ant
+  ALTER COLUMN id_boleto_amadeus SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_ant
+  ALTER COLUMN id_forma_pago SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_ant
+  ALTER COLUMN importe SET STATISTICS 0;
+
+
+CREATE TABLE obingresos.tlog_vajero_frecuente (
+  id_log_viajero_frecuente SERIAL,
+  tickert_number VARCHAR(50),
+  pnr VARCHAR(50),
+  importe NUMERIC(20,0),
+  moneda VARCHAR(5),
+  id_boleto_amadeus INTEGER,
+  CONSTRAINT tlog_vajero_frecuente_pkey PRIMARY KEY(id_log_viajero_frecuente)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tlog_vajero_frecuente
+  ALTER COLUMN id_log_viajero_frecuente SET STATISTICS 0;
+
+ALTER TABLE obingresos.tlog_vajero_frecuente
+  ALTER COLUMN tickert_number SET STATISTICS 0;
+
+ALTER TABLE obingresos.tlog_vajero_frecuente
+  ALTER COLUMN pnr SET STATISTICS 0;
+
+ALTER TABLE obingresos.tlog_vajero_frecuente
+  ALTER COLUMN importe SET STATISTICS 0;
+
+ALTER TABLE obingresos.tlog_vajero_frecuente
+  ALTER COLUMN moneda SET STATISTICS 0;
+
+
+CREATE TABLE obingresos.tpnr_forma_pago (
+  id_pnr_forma_pago SERIAL,
+  pnr VARCHAR,
+  id_forma_pago INTEGER,
+  tarjeta VARCHAR(6),
+  numero_tarjeta VARCHAR(20),
+  codigo_tarjeta VARCHAR(20),
+  ctacte VARCHAR(20),
+  importe NUMERIC(18,2),
+  forma_pago_amadeus VARCHAR(3),
+  CONSTRAINT tpnr_forma_pago_pkey PRIMARY KEY(id_pnr_forma_pago),
+  CONSTRAINT fk_tpnr_forma_pago__id_forma_pago FOREIGN KEY (id_forma_pago)
+    REFERENCES obingresos.tforma_pago(id_forma_pago)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+
+CREATE TABLE obingresos.tviajero_frecuente (
+  id_viajero_frecuente SERIAL,
+  id_boleto_amadeus INTEGER,
+  ffid VARCHAR(50),
+  pnr VARCHAR(30),
+  ticket_number VARCHAR(50),
+  voucher_code VARCHAR(50),
+  id_pasajero_frecuente INTEGER,
+  nombre_completo VARCHAR(100),
+  mensaje VARCHAR(200),
+  status VARCHAR(50),
+  CONSTRAINT tviajero_frecuente_pkey PRIMARY KEY(id_viajero_frecuente)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+ALTER TABLE obingresos.tviajero_frecuente
+  ALTER COLUMN id_viajero_frecuente SET STATISTICS 0;
+
+ALTER TABLE obingresos.tviajero_frecuente
+  ALTER COLUMN id_boleto_amadeus SET STATISTICS 0;
+
+ALTER TABLE obingresos.tviajero_frecuente
+  ALTER COLUMN ffid SET STATISTICS 0;
+
+ALTER TABLE obingresos.tviajero_frecuente
+  ALTER COLUMN pnr SET STATISTICS 0;
+
+ALTER TABLE obingresos.tviajero_frecuente
+  ALTER COLUMN ticket_number SET STATISTICS 0;
+
+
+CREATE TABLE obingresos.tventa_web_modificaciones (
+  nro_boleto VARCHAR(20) NOT NULL,
+  tipo VARCHAR(15),
+  nro_boleto_reemision VARCHAR(20),
+  used VARCHAR(2),
+  motivo TEXT NOT NULL,
+  id_venta_web_modificaciones SERIAL,
+  procesado VARCHAR(2) DEFAULT 'no'::character varying NOT NULL,
+  pnr_antiguo VARCHAR(20),
+  fecha_reserva_antigua DATE,
+  banco VARCHAR(5),
+  CONSTRAINT tventa_web_modificaciones_nro_boleto_key UNIQUE(nro_boleto),
+  CONSTRAINT tventa_web_modificaciones_pkey PRIMARY KEY(id_venta_web_modificaciones),
+  CONSTRAINT tventa_web_modificaciones_chk CHECK (((tipo)::text = 'tsu_anulado'::text) OR ((tipo)::text = 'anulado'::text) OR ((tipo)::text = 'reemision'::text) OR ((tipo)::text = 'emision_manual'::text))
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+CREATE UNIQUE INDEX tventa_web_modificaciones_idx ON obingresos.tventa_web_modificaciones
+  USING btree (nro_boleto_reemision COLLATE pg_catalog."default")
+  WHERE ((nro_boleto_reemision IS NOT NULL) AND ((nro_boleto_reemision)::text <> ''::text));
+
+
+CREATE TABLE obingresos.tvisa (
+  id_visa SERIAL,
+  nro_boleto VARCHAR(50),
+  autoriazaion VARCHAR(20),
+  CONSTRAINT tvisa_pkey PRIMARY KEY(id_visa)
+)
+WITH (oids = false);
+
+ALTER TABLE obingresos.tvisa
+  ALTER COLUMN id_visa SET STATISTICS 0;
+
+ALTER TABLE obingresos.tvisa
+  ALTER COLUMN nro_boleto SET STATISTICS 0;
+
+ALTER TABLE obingresos.tvisa
+  ALTER COLUMN autoriazaion SET STATISTICS 0;
+
+
+-------------------------------------------
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN movimiento_activo VARCHAR(2) DEFAULT 'si'::character varying;
+
+ALTER TABLE obingresos.tboleto_forma_pago
+  ADD COLUMN forma_pago_amadeus VARCHAR(3),
+  ADD COLUMN  fp_amadeus_corregido VARCHAR(3),
+  ADD COLUMN  id_usuario_fp_corregido INTEGER,
+  ADD COLUMN  id_auxiliar INTEGER;
+
+
+ALTER TABLE obingresos.tdeposito
+  ADD COLUMN id_apertura_cierre_caja INTEGER,
+  ADD COLUMN nro_deposito_aux VARCHAR(70),
+  ADD COLUMN nro_deposito_boa VARCHAR(70);
+/********************************************F-SCP-FEA-OBINGRESOS-1-07/11/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/
+CREATE TABLE obingresos.tviajero_interno (
+  id_viajero_interno SERIAL,
+  codigo_voucher VARCHAR(60),
+  mensaje VARCHAR(200),
+  estado VARCHAR(20),
+  CONSTRAINT tviajero_interno_pkey PRIMARY KEY(id_viajero_interno)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+
+CREATE TABLE obingresos.tviajero_interno_det (
+  id_viajero_interno_det SERIAL,
+  nombre VARCHAR(100),
+  pnr VARCHAR(50),
+  num_boleto VARCHAR(50),
+  id_viajero_interno INTEGER,
+  solicitud VARCHAR(5),
+  num_documento VARCHAR(15),
+  estado_voucher VARCHAR(50),
+  tarifa VARCHAR(20),
+  CONSTRAINT tviajero_interno_det_pkey PRIMARY KEY(id_viajero_interno_det),
+  CONSTRAINT tviajero_interno_det_fk FOREIGN KEY (id_viajero_interno)
+    REFERENCES obingresos.tviajero_interno(id_viajero_interno)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+/********************************************F-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/

@@ -918,6 +918,7 @@ class MODBoleto extends MODbase{
         return $this->respuesta;
     }
 
+
     function traerReservaBoletoExch(){
         //Definicion de variables para ejecucion del procedimientp
         $this->procedimiento='obingresos.ft_boleto_sel';
@@ -978,35 +979,36 @@ class MODBoleto extends MODbase{
         return $this->respuesta;
     }
 
-    function generarBilleteElectronico(){
+    function generarBilleteElectronico()
+    {
         //Definicion de variables para ejecucion del procedimientp
-        $this->procedimiento='obingresos.ft_boleto_sel';
-        $this->transaccion='OBING_BOL_EXCH_SEL';
-        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->procedimiento = 'obingresos.ft_boleto_sel';
+        $this->transaccion = 'OBING_BOL_EXCH_SEL';
+        $this->tipo_procedimiento = 'SEL';//tipo de transaccion
         //Define los parametros para la funcion
 
 
-        $this->setParametro('pnr','pnr','varchar');
-        $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('pnr', 'pnr', 'varchar');
+        $this->setParametro('tipo', 'tipo', 'varchar');
 
 
         //Definicion de la lista del resultado del query
-        $this->captura('id_vuelo','integer');
-        $this->captura('clase','varchar');
-        $this->captura('linea','varchar');
-        $this->captura('estado','varchar');
-        $this->captura('origen','varchar');
-        $this->captura('destino','varchar');
-        $this->captura('num_vuelo','varchar');
-        $this->captura('hora_salida','varchar');
-        $this->captura('fecha_salida','varchar');
-        $this->captura('hora_llegada','varchar');
+        $this->captura('id_vuelo', 'integer');
+        $this->captura('clase', 'varchar');
+        $this->captura('linea', 'varchar');
+        $this->captura('estado', 'varchar');
+        $this->captura('origen', 'varchar');
+        $this->captura('destino', 'varchar');
+        $this->captura('num_vuelo', 'varchar');
+        $this->captura('hora_salida', 'varchar');
+        $this->captura('fecha_salida', 'varchar');
+        $this->captura('hora_llegada', 'varchar');
 
-        $this->captura('codigo_tarifa','varchar');
-        $this->captura('calculo_tarifa','varchar');
-        $this->captura('tasa','varchar');
-        $this->captura('rc_iva','numeric');
-        $this->captura('forma_identificacion','varchar');
+        $this->captura('codigo_tarifa', 'varchar');
+        $this->captura('calculo_tarifa', 'varchar');
+        $this->captura('tasa', 'varchar');
+        $this->captura('rc_iva', 'numeric');
+        $this->captura('forma_identificacion', 'varchar');
 
         /*$this->captura('lugar_agencia','varchar');
         $this->captura('lugar_cod_agencia','varchar');*/
@@ -1016,6 +1018,20 @@ class MODBoleto extends MODbase{
         $this->armarConsulta();
         //echo($this->consulta);exit;
         $this->ejecutarConsulta();
+    }
+
+    function disparaCorreoVentasWeb(){
+
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_MAIL_DET_VW';
+        $this->tipo_procedimiento='IME';//tipo de transaccion
+        $this->setCount(false);
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        
         //Devuelve la respuesta
         return $this->respuesta;
     }

@@ -130,9 +130,11 @@ DECLARE
 
     v_id_correo_det_vw		varchar;
 
+
     --F.E.A
     v_code 					varchar;
     v_issue_indicator		varchar;
+
 
 
 BEGIN
