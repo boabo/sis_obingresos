@@ -128,6 +128,11 @@ DECLARE
     v_error_mes varchar;
     v_id_boleto_a integer;
 
+    v_id_correo_det_vw		varchar;
+
+    --F.E.A
+    v_code 					varchar;
+    v_issue_indicator		varchar;
 
 
 BEGIN
@@ -1842,6 +1847,7 @@ BEGIN
       RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
 
      	      end if;
+
         	--recuperamos la moneda
         	v_reporte = v_parametros.boletos :: JSON ->> 'queryReportDataDetails';
             v_moneda = v_reporte :: JSON ->>'currencyInfo';
@@ -1871,6 +1877,11 @@ BEGIN
                   --recuperamos estado boleto (voided)
                   v_voided = v_record_json_boletos.json_array_elements::json->> 'transactionDataDetails';
                   v_voided = v_voided::json->>'transactionDetails';
+
+                  --F.E.A
+                  v_code = v_voided::json->>'code';
+                  v_issue_indicator = v_voided::json->>'issueIndicator';
+
                   v_voided = v_voided::json->>'code';
 
                   if v_voided = 'CANX' then
@@ -2032,7 +2043,9 @@ BEGIN
                   id_boleto_amadeus,
                   agente_venta,
                   id_agencia,
-                  forma_pago
+                  forma_pago,
+                  trans_code,
+                  trans_issue_indicator
                   )VALUES(v_nro_boleto::varchar,
                   v_total::numeric,
                   v_comision::numeric,
@@ -2052,7 +2065,9 @@ BEGIN
                   v_id_boleto,
                   v_agente_venta::varchar,
                   v_parametros.id_agencia::integer,
-                  v_tipo_pago_amadeus::varchar
+                  v_tipo_pago_amadeus::varchar,
+                  v_code::varchar,
+                  v_issue_indicator::varchar
                   );
 
                   if(trim(v_tipo_pago_amadeus)='CA')then
@@ -2702,6 +2717,26 @@ BEGIN
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
             v_resp = pxp.f_agrega_clave(v_resp,'id_log_viajero_frecuente',v_id_log_viajero_frecuente::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+	/*********************************
+ 	#TRANSACCION:  'OBING_MAIL_DET_VW'
+ 	#DESCRIPCION:	Envio de correos Error de Detalle Ventas Web
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		08-12-2019 11:42:25
+	***********************************/
+
+	elsif(p_transaccion='OBING_MAIL_DET_VW')then
+
+		begin
+			v_id_correo_det_vw = obingresos.f_send_correo_detalle_diario_vw();
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Correo enviado');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_alarma',v_id_correo_det_vw::varchar);
 
             --Devuelve la respuesta
             return v_resp;
