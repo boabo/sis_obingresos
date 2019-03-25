@@ -28,7 +28,20 @@ DECLARE
 	v_nombre_funcion   	text;
 	v_resp				varchar;
     v_conexion			varchar;
+	--variables boleto exchange
+    v_record_json		jsonb;
+	v_ciudad_o			varchar;
+    v_ciudad_d			varchar;
+    v_record 			record;
+    v_contador_id		integer=1;
 
+    v_array_json		jsonb[];
+    v_oficina			record;
+    v_calculo_tarifa				varchar = '';
+    v_tasa				varchar = '';
+    v_importe			numeric = 0;
+    v_tipo_cambio		numeric;
+    v_cadena			varchar[];
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -292,9 +305,9 @@ BEGIN
                                  cvf.ffid as ffid_consul,
                                  substring(cvf.voucher_code from 9)::varchar as voucher_consul,
 
-                         nr.trans_code,
-                         nr.trans_issue_indicator,
-                         pv.nombre as punto_venta
+                                 nr.trans_code,
+                         		 nr.trans_issue_indicator,
+                         		 pv.nombre as punto_venta
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
                           inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
@@ -308,7 +321,7 @@ BEGIN
             --Definicion de la respuesta
 			--v_consulta:=v_consulta||v_parametros.filtro;
         	v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        	raise notice 'v_consulta %', v_consulta;
+        raise notice 'v_consulta %', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 

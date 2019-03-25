@@ -1853,7 +1853,7 @@ class ACTBoleto extends ACTbase{
         $this->objParam->defecto('ordenacion','nro_boleto');
         $this->objParam->defecto('dir_ordenacion','desc');
 
-        $this->objParam->addFiltro("bol.nro_boleto like ''%". $this->objParam->getParametro('nro_boleto') . "%''::varchar and bol.estado = ''borrador''");
+        $this->objParam->addFiltro("(bol.nro_boleto like ''%". $this->objParam->getParametro('nro_boleto') . "%''::varchar or bol.localizador = ''".$this->objParam->getParametro('nro_boleto')."''::varchar) and bol.estado in (''borrador'', ''caja'', ''finalizado'')");
 
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
@@ -1870,14 +1870,14 @@ class ACTBoleto extends ACTbase{
         //"credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}"
         $data = array("credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
             "idioma"=>"ES",
-            "pnr"=>$pnr,//VDBWIF, VHGDZP, LXUQMP --- LKJK27  MSB9Z8-----N5W923, N5ZRKF, N634RP, N6554Y, N654X2
-            "apellido"=>"prueba",
+            "pnr"=>'S5UBZI',//VDBWIF, VHGDZP, LXUQMP --- LKJK27  MSB9Z8-----N5W923, N5ZRKF, N634RP, N6554Y, N654X2------OUU6PY
+            "apellido"=>"PRUEBAS",
             "ip"=>"127.0.0.1",
             "xmlJson"=>false);
 
         $json_data = json_encode($data);
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'http://skbproduccion.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
+        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -1953,7 +1953,7 @@ class ACTBoleto extends ACTbase{
             $this->objParam->addParametro('vuelo', json_encode($vuelo));
             $this->objParam->addParametro('tipo', 'exchange');
 
-            /*echo('----------------------------------------BOLETO-----------------------------------------------');
+            echo('----------------------------------------BOLETO-----------------------------------------------');
             //var_dump($res->reserva_V2);
             echo('----------------------------------------LOCALIZADOR-----------------------------------------------');
             var_dump($localizador);
@@ -1982,7 +1982,7 @@ class ACTBoleto extends ACTbase{
             echo('-----------------------------------------VUELOS----------------------------------------------');
             var_dump($res->reserva_V2->vuelos);
 
-             exit;*/
+             exit;
 
             $this->objFunc = $this->create('MODBoleto');
             $this->res = $this->objFunc->traerReservaBoletoExch($this->objParam);
@@ -2061,7 +2061,7 @@ class ACTBoleto extends ACTbase{
 
         $json_data = json_encode($data);
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'http://skbproduccion.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
+        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -2083,19 +2083,20 @@ class ACTBoleto extends ACTbase{
         $_out = substr($_out, 0, -2);
 
         $res = json_decode($_out);
-
+        $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision;
         $respuesta = [];
         $this->res = new Mensaje();
 
         if ($res->reserva_V2 != null) {
-            array_unshift($respuesta, array('exchange' => true));
+            array_unshift($respuesta, array('exchange' => true, 'tipo_emision' => $tipo_emision));
             $this->res->setDatos($respuesta);
             //return $respuesta;
         } else {
-            array_unshift($respuesta, array('exchange' => false));
+            array_unshift($respuesta, array('exchange' => false, 'tipo_emision' => $tipo_emision));
             $this->res->setDatos($respuesta);
             //return $respuesta;
         }
+        $this->res->imprimirRespuesta($this->res->generarJson());
     }
     //correo de incidentes detalle venta web
     function disparaCorreoVentasWeb(){

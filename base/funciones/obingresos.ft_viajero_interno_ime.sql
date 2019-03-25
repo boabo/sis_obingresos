@@ -135,7 +135,7 @@ BEGIN
 				null,
 	            v_id_viajero_interno,
     	        cast(v_record_json->>'PsjSolicitudID'as TEXT),
-        	    cast(v_record_json->>'numDocumento'as INT),
+        	    v_record_json->>'numDocumento',
             	v_record_json->>'estadoVoucher',
                 v_record_json->>'tarifa'
 				);
