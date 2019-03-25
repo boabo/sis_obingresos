@@ -384,6 +384,10 @@ class RReporteEstCuentaIng
                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['monto_credito']);
                    array_push($this->montoCredito, $value['monto_credito']);
                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $value['ajuste_credito']);
+                   $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $inicio, $value['periodo']);
+                   $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $inicio, 0);
+                   $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $inicio, 0);
+
                    array_push($this->ajusteCredito, $value['ajuste_credito']);
                    array_push($this->garantia, $value['garantia']);
                    $creditos = $value['monto_credito'];
@@ -393,7 +397,7 @@ class RReporteEstCuentaIng
                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila," ".$value['tipo_agencia']);
 
 
-                   $this->docexcel->getActiveSheet()->getStyle("G$fila:I$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+                   $this->docexcel->getActiveSheet()->getStyle("A$fila:I$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
                   $fila++;
                  }

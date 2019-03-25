@@ -57,6 +57,9 @@ DECLARE
     v_garantia			record;
     v_ajustes			record;
     v_fecha_maxima		date;
+    v_id_periodo_venta_ini integer;
+    v_id_periodo_venta_fin	integer;
+    v_fechas_periodos	record;
 
 BEGIN
 
@@ -1121,11 +1124,39 @@ from detalle';
                                         tipo_agencia varchar
 
                                        )ON COMMIT DROP;
+/*Aumentando la condicion*/
+        select
+        pe.id_periodo_venta
+        into v_id_periodo_venta_ini
+        from obingresos.tperiodo_venta pe
+        where  v_parametros.fecha_ini::date between pe.fecha_ini and pe.fecha_fin;
+
+        select
+        pe.id_periodo_venta
+        into v_id_periodo_venta_fin
+        from obingresos.tperiodo_venta pe
+        where v_parametros.fecha_fin::date between pe.fecha_ini and pe.fecha_fin;
+
+        if (v_id_periodo_venta_fin is null) then
+          select
+          max(pe.id_periodo_venta)
+          into v_id_periodo_venta_fin
+          from obingresos.tperiodo_venta pe;
+        end if;
+
+
+    for v_fechas_periodos in   ( select
+                                pe.fecha_ini,
+                                pe.fecha_fin,
+                                COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+                                from obingresos.tperiodo_venta pe
+                              	where pe.id_periodo_venta between v_id_periodo_venta_ini and v_id_periodo_venta_fin)
+
+   /**********************************************/
 
 
 
-
-    for v_debitos_fecha in (select
+    /*for v_debitos_fecha in (select
                   'debitos':: varchar as tipo,
                   mo.id_agencia,
                   pe.fecha_ini,
@@ -1145,7 +1176,7 @@ from detalle';
 
 
 
-      )
+      )*/
 
 
       loop
@@ -1232,8 +1263,8 @@ select 			'creditos' :: varchar as tipo,
 
         LOOP
 
-
-        if (v_creditos.fecha between v_debitos_fecha.fecha_ini and v_debitos_fecha.fecha_fin)  then
+		--if (v_creditos.fecha between v_debitos_fecha.fecha_ini and v_debitos_fecha.fecha_fin)  then
+        if (v_creditos.fecha between v_fechas_periodos.fecha_ini and v_fechas_periodos.fecha_fin)  then
         insert into temp (
                                         tipo_credito,
                                         fecha_ini,
@@ -1242,18 +1273,20 @@ select 			'creditos' :: varchar as tipo,
                                         monto_credito,
                                         ajuste_credito,
                                         autorizacion__nro_deposito,
-                                        nro_deposito_boa
+                                        nro_deposito_boa,
+                                        periodo/*Aumentando*/
 
         				  )
                                   values (
                                   		v_creditos.tipo,
-                                        v_debitos_fecha.fecha_ini,
-                                        v_debitos_fecha.fecha_fin,
+                                        v_fechas_periodos.fecha_ini,--v_debitos_fecha.fecha_ini,
+                                        v_fechas_periodos.fecha_fin,--v_debitos_fecha.fecha_fin,
                                         v_creditos.fecha,
                                         v_creditos.monto_credito,
                                         v_creditos.ajuste,
                                         v_creditos.autorizacion__nro_deposito,
-                                        v_creditos.nro_deposito_boa
+                                        v_creditos.nro_deposito_boa,
+                                        v_fechas_periodos.periodo/*Aumentando*/
                                   );
                           end if;
 
