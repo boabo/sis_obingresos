@@ -41,7 +41,7 @@ class ACTBoleto extends ACTbase{
 
         if ($this->objParam->getParametro('estado') != '') {
             if ($this->objParam->getParametro('estado') == 'borrador') {
-                $this->objParam->addFiltro("(bol.id_usuario_reg = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1 
+                $this->objParam->addFiltro("(bol.id_usuario_reg = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
 																												from segu.tusuario_rol
 																												where id_rol = 1 and estado_reg = ''activo'' and
 																												id_usuario = ". $_SESSION["ss_id_usuario"] . " ))");
@@ -1849,7 +1849,7 @@ class ACTBoleto extends ACTbase{
 
 
     function buscarBoletoAmadeus(){
-        
+
         $this->objParam->defecto('ordenacion','nro_boleto');
         $this->objParam->defecto('dir_ordenacion','desc');
 
