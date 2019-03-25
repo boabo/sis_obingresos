@@ -1387,7 +1387,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 direction: 'DESC'
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai',
-                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision'],
+                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision', 'trans_code', 'trans_issue_indicator'],
 
             bdel:false,
             bsave:false,
@@ -2060,20 +2060,21 @@ header("content-type: text/javascript; charset=UTF-8");
                 var data = this.getSelectedData();
 
                 //f.e.a verificar si es exchange
-                /*if (data['trans_code'] == 'RENA' || data['trans_code'] == 'RENM' || data['trans_code'] == 'RFND'){
+                if (data['trans_code'] == 'RENA' || data['trans_code'] == 'RENM' || data['trans_code'] == 'RFND'){
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').enable();
                 }else{
-                    /!*this.getBoton('btnImprimir').setVisible(false);
-                    this.getBoton('btnImprimir').disable();*!/
+                    this.getBoton('btnImprimir').setVisible(false);
+                    this.getBoton('btnImprimir').disable();
 
-                    Ext.Ajax.request({
+                    /*Ext.Ajax.request({
                         url : '../../sis_obingresos/control/Boleto/verificarBoletoExch',
                         params : {
                             'pnr' : data.localizador
                         },
                         success : function(resp){
                             var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                            console.log('reg', reg.ROOT.datos);
                             if(reg.ROOT.datos[0].exchange == true){
                                 this.getBoton('btnImprimir').setVisible(true);
                                 this.getBoton('btnImprimir').enable();
@@ -2085,10 +2086,9 @@ header("content-type: text/javascript; charset=UTF-8");
                         failure : this.conexionFailure,
                         timeout : this.timeout,
                         scope : this
-                    });
-                }*/
-                this.getBoton('btnImprimir').setVisible(true);
-                this.getBoton('btnImprimir').enable();
+                    });*/
+                }
+
 
                 if(data['voided']== 'no'){
                     this.getBoton('btnAnularBoleto').setDisabled(false);

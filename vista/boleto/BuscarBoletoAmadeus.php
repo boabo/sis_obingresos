@@ -20,7 +20,7 @@ header("content-type:text/javascript; charset=UTF-8");
             this.txtSearch = new Ext.form.TextField();
             this.txtSearch.enableKeyEvents = true;
 
-            //this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
+            this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
             this.txtSearch.on('keypress', function (field, e) {
                 console.log('keypress', this.txtSearch.getValue(), e.value);
                 if(this.txtSearch.getValue().length >= 10) {
@@ -77,7 +77,7 @@ header("content-type:text/javascript; charset=UTF-8");
         },
 
         liberaMenu:function(tb){
-            Phx.vista.BoletoAmadeus.superclass.liberaMenu.call(this,tb);
+            Phx.vista.BuscarBoletoAmadeus.superclass.liberaMenu.call(this,tb);
             this.getBoton('btnImprimir').disable();
             this.getBoton('btnImprimir').setVisible(false);
 
