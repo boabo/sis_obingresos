@@ -1870,7 +1870,7 @@ class ACTBoleto extends ACTbase{
         //"credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}"
         $data = array("credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
             "idioma"=>"ES",
-            "pnr"=>'S5UBZI',//VDBWIF, VHGDZP, LXUQMP --- LKJK27  MSB9Z8-----N5W923, N5ZRKF, N634RP, N6554Y, N654X2------OUU6PY
+            "pnr"=>$pnr,//VDBWIF, VHGDZP, LXUQMP --- LKJK27  MSB9Z8-----N5W923, N5ZRKF, N634RP, N6554Y, N654X2------OUU6PY
             "apellido"=>"PRUEBAS",
             "ip"=>"127.0.0.1",
             "xmlJson"=>false);
@@ -1953,9 +1953,8 @@ class ACTBoleto extends ACTbase{
             $this->objParam->addParametro('vuelo', json_encode($vuelo));
             $this->objParam->addParametro('tipo', 'exchange');
 
-            echo('----------------------------------------BOLETO-----------------------------------------------');
-            //var_dump($res->reserva_V2);
-            echo('----------------------------------------LOCALIZADOR-----------------------------------------------');
+
+            /*echo('----------------------------------------LOCALIZADOR-----------------------------------------------');
             var_dump($localizador);
             echo('----------------------------------------CTS -> CT-----------------------------------------------');
             var_dump($res->reserva_V2->cts->ct);
@@ -1982,7 +1981,7 @@ class ACTBoleto extends ACTbase{
             echo('-----------------------------------------VUELOS----------------------------------------------');
             var_dump($res->reserva_V2->vuelos);
 
-             exit;
+             exit;*/
 
             $this->objFunc = $this->create('MODBoleto');
             $this->res = $this->objFunc->traerReservaBoletoExch($this->objParam);
@@ -2083,8 +2082,26 @@ class ACTBoleto extends ACTbase{
         $_out = substr($_out, 0, -2);
 
         $res = json_decode($_out);
-        $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision;
-        $respuesta = [];
+
+        if ($res->reserva_V2 != null) {
+            $this->objParam->addParametro('exchange', true);
+
+            $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision;
+            if ($tipo_emision != null) {
+                $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision;
+            }else{
+                $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2;
+            }
+            $this->objParam->addParametro('tipo_emision', json_encode($tipo_emision));
+        } else {
+            $this->objParam->addParametro('exchange', false);
+            $this->objParam->addParametro('tipo_emision', json_encode(array('tipo_emision'=>'tktt')));
+        }
+
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->verificarBoletoExch($this->objParam);
+
+        /*$respuesta = [];
         $this->res = new Mensaje();
 
         if ($res->reserva_V2 != null) {
@@ -2095,7 +2112,7 @@ class ACTBoleto extends ACTbase{
             array_unshift($respuesta, array('exchange' => false, 'tipo_emision' => $tipo_emision));
             $this->res->setDatos($respuesta);
             //return $respuesta;
-        }
+        }*/
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
     //correo de incidentes detalle venta web

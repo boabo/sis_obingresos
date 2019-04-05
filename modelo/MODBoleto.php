@@ -191,6 +191,9 @@ class MODBoleto extends MODbase{
         $this->captura('trans_code','varchar');
         $this->captura('trans_issue_indicator','varchar');
         $this->captura('punto_venta','varchar');
+        $this->captura('trans_code_exch','varchar');
+        $this->captura('impreso','varchar');
+
         //Ejecuta la instruccion
         $this->armarConsulta();//echo($this->consulta); exit;
         $this->ejecutarConsulta();
@@ -940,6 +943,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('update','update','jsonb');
         $this->setParametro('vuelo','vuelo','jsonb');
         $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('id_boletos_amadeus','id_boletos_amadeus','varchar');
+        $this->setParametro('pnr','pnr','varchar');
 
         //Definicion de la lista del resultado del query
         $this->captura('id_vuelo','integer');
@@ -1018,6 +1023,32 @@ class MODBoleto extends MODbase{
         $this->armarConsulta();
         //echo($this->consulta);exit;
         $this->ejecutarConsulta();
+    }
+
+    function verificarBoletoExch(){
+
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_VER_EXCH_IME';
+        $this->tipo_procedimiento='IME';//tipo de transaccion
+
+
+        $this->setParametro('pnr', 'pnr', 'varchar');
+        $this->setParametro('id_boletos_amadeus', 'id_boletos_amadeus', 'varchar');
+        $this->setParametro('fecha_emision', 'fecha_emision', 'date');
+        $this->setParametro('exchange', 'exchange', 'boolean');
+        $this->setParametro('tipo_emision', 'tipo_emision', 'jsonb');
+        $this->setParametro('data_field', 'data_field', 'varchar');
+
+        $this->captura('exchange','boolean');
+        $this->captura('tipo_emision','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
     }
 
     function disparaCorreoVentasWeb(){
