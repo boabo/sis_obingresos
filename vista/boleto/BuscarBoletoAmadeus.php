@@ -21,15 +21,16 @@ header("content-type:text/javascript; charset=UTF-8");
             this.txtSearch.enableKeyEvents = true;
 
             this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
-            this.txtSearch.on('keypress', function (field, e) {
-                console.log('keypress', this.txtSearch.getValue(), e.value);
+            this.txtSearch.on('keyup', function (field, e) {
+
                 if(this.txtSearch.getValue().length >= 10) {
-                    this.store.baseParams.nro_boleto = this.txtSearch.getValue();
+                    this.store.baseParams.nro_boleto = field.getValue();
                     this.load({params: {start: 0, limit: this.tam_pag}});
                 }
             }, this);
 
             this.tbar.add(this.txtSearch);
+
             this.init();
             this.addButton('btnBuscar', {
                 text : 'Buscar',
@@ -47,33 +48,62 @@ header("content-type:text/javascript; charset=UTF-8");
                     tooltip: '<b>Imprimir Boleto</b><br/>Imprime el boleto'
                 }
             );
+            this.getBoton('btnImprimir').setVisible(false);
+            this.getBoton('btnImprimir').disable();
         },
         preparaMenu:function(tb){
             Phx.vista.BuscarBoletoAmadeus.superclass.preparaMenu.call(this,tb);
 
             var data = this.getSelectedData();
 
-            //f.e.a verificar si es exchange
-            Ext.Ajax.request({
-                url : '../../sis_obingresos/control/Boleto/verificarBoletoExch',
-                params : {
-                    'pnr' : data.localizador
-                },
-                success : function(resp){
-                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-                    if(reg.ROOT.datos[0].exchange == true){
-                        this.getBoton('btnImprimir').setVisible(true);
-                        this.getBoton('btnImprimir').enable();
-                    }else{
-                        this.getBoton('btnImprimir').setVisible(false);
-                        this.getBoton('btnImprimir').disable();
-                    }
-                },
-                failure : this.conexionFailure,
-                timeout : this.timeout,
-                scope : this
-            });
+            if (data.trans_code_exch == 'EXCH' && data.trans_code_exch != null) {
+                if(data.impreso == 'si'){
+                    this.getBoton('btnImprimir').setVisible(true);
+                    this.getBoton('btnImprimir').disable();
+                }else {
+                    this.getBoton('btnImprimir').setVisible(true);
+                    this.getBoton('btnImprimir').enable();
+                }
+            }else if(data.trans_code != 'EMDS'){
+                if(data.trans_code_exch != 'ORIG'){
+                    var records = this.grid.getSelectionModel().getSelections();
+                    var rec = '';
+                    Ext.each(records, function (record, index) {
+                        if (rec != '') {
+                            rec = rec + ',' + record.id;
+                        } else {
+                            rec = record.id
+                        }
+                    });
 
+                    //f.e.a verificar si es exchange
+                    Ext.Ajax.request({
+                        url: '../../sis_obingresos/control/Boleto/verificarBoletoExch',
+                        params: {
+                            'pnr': data.localizador,
+                            'id_boletos_amadeus': rec,
+                            'fecha_emision': data.fecha_emision,
+                            'data_field': this.txtSearch.getValue()
+                        },
+                        success: function (resp) {
+                            var reg = Ext.decode(Ext.util.Format.trim(resp.responseText));
+                            //reg.ROOT.datos[0].exchange
+                            if (JSON.parse(reg.ROOT.datos.exchange) == true) {
+                                this.getBoton('btnImprimir').setVisible(true);
+                                this.getBoton('btnImprimir').enable();
+                            } else {
+                                this.getBoton('btnImprimir').setVisible(false);
+                                this.getBoton('btnImprimir').disable();
+                            }
+                            this.store.reload();
+
+                        },
+                        failure: this.conexionFailure,
+                        timeout: this.timeout,
+                        scope: this
+                    });
+                }
+            }
         },
 
         liberaMenu:function(tb){
@@ -87,13 +117,23 @@ header("content-type:text/javascript; charset=UTF-8");
 
             var rec = this.sm.getSelected().data;
 
-            console.log('datos: ',rec);
+            var records = this.grid.getSelectionModel().getSelections();
+            var cad = '';
+            Ext.each(records, function(record, index) {
+                if(cad != ''){
+                    cad = cad +','+record.id;
+                }else{
+                    cad = record.id
+                }
+            });
+
             if (rec) {
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url : '../../sis_obingresos/control/Boleto/traerReservaBoletoExch',
                     params : {
-                        'pnr' : rec.localizador
+                        'pnr' : rec.localizador,
+                        'id_boletos_amadeus': cad
                     },
                     success : this.successExport,
                     failure : this.conexionFailure,
@@ -101,7 +141,9 @@ header("content-type:text/javascript; charset=UTF-8");
                     scope : this
                 });
             }
+            this.onButtonAct();
         },
+
 
         Atributos:[
             {
@@ -1218,6 +1260,8 @@ header("content-type:text/javascript; charset=UTF-8");
             {name:'trans_code', type: 'string'},
             {name:'trans_issue_indicator', type: 'string'},
             {name:'punto_venta', type: 'string'},
+            {name:'trans_code_exch', type: 'string'},
+            {name:'impreso', type: 'string'}
 
         ],
         sortInfo:{

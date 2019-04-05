@@ -2060,7 +2060,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 var data = this.getSelectedData();
 
                 //f.e.a verificar si es exchange
-                if (data['trans_code'] == 'RENA' || data['trans_code'] == 'RENM' || data['trans_code'] == 'RFND'){
+                if (data['trans_code'] == 'EXCH'){
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').enable();
                 }else{
