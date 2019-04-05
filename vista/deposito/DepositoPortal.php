@@ -206,7 +206,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 config: {
                     name: 'nro_deposito_boa',
                     fieldLabel: 'No Deposito Boa',
-                    allowBlank: false,
+                    allowBlank: true,
                     anchor: '80%',
                     gwidth: 150,
                     maxLength: 70
