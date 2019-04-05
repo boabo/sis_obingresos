@@ -42,6 +42,9 @@ DECLARE
     v_aux					varchar;
     v_deposito_boa			varchar;
     v_verificar_existencia  record;
+    v_control_deposito_boa	record;
+    v_num_deposito			varchar;
+    v_num_deposito_boa		varchar;
 
 
 
@@ -75,7 +78,7 @@ BEGIN
                 where m.codigo_internacional = v_parametros.moneda;
                 v_moneda = v_parametros.moneda;
             end if;
-       -- raise exception 'LLEGA AQUI %',v_parametros.monto_deposito;
+       --raise exception 'LLEGA AQUI %',v_parametros.monto_deposito;
        		SELECT per.nombre_completo1,
                    count(per.nombre) as existe,
                    depo.estado
@@ -85,18 +88,31 @@ BEGIN
             inner join segu.vpersona per on per.id_persona = usu.id_persona
             WHERE
             depo.nro_deposito = v_parametros.nro_deposito and
-            depo.fecha = v_parametros.fecha and
-            depo.monto_deposito = v_parametros.monto_deposito
+            depo.fecha = v_parametros.fecha --and
+            --depo.monto_deposito = v_parametros.monto_deposito
             group by per.nombre_completo1, depo.estado;
 
+            /*CONTROL PARA NUM DE DEPOSITO Y LA FECHA*/
+            SELECT per.nombre_completo1,
+                   count(per.nombre) as existe,
+                   depo.estado
+                   into v_verificar_existencia
+            FROM obingresos.tdeposito depo
+            inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+            inner join segu.vpersona per on per.id_persona = usu.id_persona
+            WHERE
+            depo.nro_deposito = v_parametros.nro_deposito and
+            depo.fecha = v_parametros.fecha --and
+            --depo.monto_deposito = v_parametros.monto_deposito
+            group by per.nombre_completo1, depo.estado;
+            /*----------------------------------------------*/
 
 
 
    /*AUMENTANDO CONDICION*/
     if (v_verificar_existencia.existe <> 0 and v_verificar_existencia.estado <> 'eliminado') THEN
-    	raise exception 'El Registro con No Deposito = % , Fecha de Deposito = % y Monto = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,v_parametros.fecha,v_parametros.monto_deposito,v_verificar_existencia.nombre_completo1;
+    	raise exception 'El Registro con No Deposito = % y Fecha de Deposito = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,to_char(v_parametros.fecha::date, 'DD/MM/YYYY'),/*v_parametros.monto_deposito,*/v_verificar_existencia.nombre_completo1;
     else
-
         	if (v_parametros.tipo = 'banca') then
             	insert into obingresos.tdeposito(
                 estado_reg,
@@ -383,7 +399,66 @@ BEGIN
                   v_deposito_boa = '';
             end if;
             	--Sentencia de la modificacion
-                IF (v_estado.estado = 'borrador') then
+
+                --IF (v_estado.estado = 'borrador') then
+
+                /*AUMENTANDO LA CONDICION*/
+
+            /*CONTROL PARA NUM DE DEPOSITO BOA Y LA FECHA*/
+                SELECT per.nombre_completo1,
+                 count(depo.nro_deposito_boa) as existe,
+                 depo.estado
+                 into v_control_deposito_boa
+                FROM obingresos.tdeposito depo
+                inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+                inner join segu.vpersona per on per.id_persona = usu.id_persona
+                WHERE
+                depo.nro_deposito_boa = v_parametros.nro_deposito_boa and
+                depo.fecha = v_parametros.fecha
+                group by per.nombre_completo1, depo.estado;
+            /*-----------------------------------------------------*/
+
+              select depo.nro_deposito,
+                     depo.nro_deposito_boa
+              into v_num_deposito,
+              	   v_num_deposito_boa
+              from obingresos.tdeposito depo
+              where depo.id_deposito = v_parametros.id_deposito;
+
+
+
+            /*CONTROL PARA NUM DE DEPOSITO Y LA FECHA*/
+            SELECT per.nombre_completo1,
+                   count(per.nombre) as existe,
+                   depo.estado
+                   into v_verificar_existencia
+            FROM obingresos.tdeposito depo
+            inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+            inner join segu.vpersona per on per.id_persona = usu.id_persona
+            WHERE
+            depo.nro_deposito = v_parametros.nro_deposito and
+            depo.fecha = v_parametros.fecha --and
+            --depo.monto_deposito = v_parametros.monto_deposito
+            group by per.nombre_completo1, depo.estado;
+            /*----------------------------------------------*/
+
+            IF (v_num_deposito = v_parametros.nro_deposito )  then
+            		v_verificar_existencia.existe = 0;
+            end if;
+
+            IF (v_num_deposito_boa = v_deposito_boa )  then
+            		v_control_deposito_boa.existe = 0;
+            end if;
+
+            IF (v_deposito_boa <> '' and v_control_deposito_boa.existe <> 0 and v_control_deposito_boa.estado <> 'eliminado') then
+
+                raise exception 'El Registro con No Deposito Boa = % y Fecha de Deposito = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_deposito_boa,to_char(v_parametros.fecha::date, 'DD/MM/YYYY'),/*v_parametros.monto_deposito,*/v_control_deposito_boa.nombre_completo1;
+
+            else
+
+            if (v_verificar_existencia.existe <> 0 and v_verificar_existencia.estado <> 'eliminado') THEN
+                raise exception 'El Registro con No Deposito = % y Fecha de Deposito = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,to_char(v_parametros.fecha::date, 'DD/MM/YYYY'),/*v_parametros.monto_deposito,*/v_verificar_existencia.nombre_completo1;
+            else
                 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
                 monto_deposito = v_parametros.monto_deposito,
@@ -397,12 +472,18 @@ BEGIN
                 usuario_ai = v_parametros._nombre_usuario_ai,
                 nro_deposito_boa = v_deposito_boa
                 where id_deposito=v_parametros.id_deposito;
+            end if;
+           end if;
 
-                ELSE
+
+
+
+
+                /*ELSE
 
                 raise exception 'NO SE PUEDE MODIFICAR DEPOSITOS QUE YA FUERON VALIDADOS!';
 
-                end if;
+                end if;*/
 
             end if;
 

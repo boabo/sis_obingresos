@@ -1475,7 +1475,7 @@ select 			'creditos' :: varchar as tipo,
                                         fecha,
                                         monto_credito,
                                         garantia,
-                                        ajuste_debito,
+                                        ajuste_credito,
                                         autorizacion__nro_deposito,
                                         nro_deposito_boa
 
