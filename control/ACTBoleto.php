@@ -1341,7 +1341,7 @@ class ACTBoleto extends ACTbase{
             $officeid = $this->objParam->getParametro('officeId_agencia');
         }else{
             $this->objParam->addParametro('fecha', $fecha);
-            $this->objParam->addParametro('moneda', "BOB");
+            $this->objParam->addParametro('moneda', "ARS");
             $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
             $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
@@ -1358,9 +1358,9 @@ class ACTBoleto extends ACTbase{
                 $identificador_reporte = 0;
             }
         }
-
+        //var_dump('peticion');exit;
         //boletos en bolivianos
-        $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"");
+        $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"ARS","statusVoid"=>"");
         $data_string = json_encode($data);
         $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
         $session = curl_init($request);
@@ -1372,7 +1372,7 @@ class ACTBoleto extends ACTbase{
                 'Content-Length: ' . strlen($data_string))
         );
 
-        $result = curl_exec($session);
+        $result = curl_exec($session);//var_dump($result);exit;
         curl_close($session);
 
         $respuesta = json_decode($result);
