@@ -57,13 +57,13 @@ header("content-type:text/javascript; charset=UTF-8");
             var data = this.getSelectedData();
 
             if (data.trans_code_exch == 'EXCH' && data.trans_code_exch != null) {
-                if(data.impreso == 'si'){
+                /*if(data.impreso == 'si'){
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').disable();
-                }else {
+                }else {*/
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').enable();
-                }
+                //}
             }else if(data.trans_code != 'EMDS'){
                 if(data.trans_code_exch != 'ORIG'){
                     var records = this.grid.getSelectionModel().getSelections();
