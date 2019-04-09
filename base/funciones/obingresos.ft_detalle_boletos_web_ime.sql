@@ -106,7 +106,21 @@ $body$
           end if;
 
           if (v_error != '') then
-            v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',v_error,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+            --v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',v_error,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+
+            insert into obingresos.tdetalle_diario_error_vw(
+            	id_usuario,
+                asunto,
+                desc_error,
+                correos,
+                fecha_venta
+            )values(
+            	coalesce(p_id_usuario, 1),
+                'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',
+                v_error,
+                'aldo.zeballos@boa.bo, franklin.espinoza@boa.bo',
+               	v_parametros.fecha
+            );
             raise exception '%, Fecha : %',v_error,v_parametros.fecha;
           end if;
 
@@ -352,7 +366,20 @@ $body$
 
     WHEN OTHERS THEN
       if(p_transaccion='OBING_DETBOWEB_INS')then
-      	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+      	--v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+        insert into obingresos.tdetalle_diario_error_vw(
+            	id_usuario,
+                asunto,
+                desc_error,
+                correos,
+                fecha_venta
+            )values(
+            	coalesce(p_id_usuario, 1),
+                'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,
+                SQLERRM,
+                'aldo.zeballos@boa.bo, franklin.espinoza@boa.bo',
+               	v_parametros.fecha
+        );
       end if;
       v_resp='';
       v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);

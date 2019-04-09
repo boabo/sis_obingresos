@@ -53,6 +53,7 @@ DECLARE
     v_datos_boletos			record;
     v_suma_bsp				FLOAT;
     v_acms					record;
+    v_auxacm				integer;
 
 BEGIN
 
@@ -173,7 +174,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           boletos.tipdoc
                           --acmd.id_agencia
                           from obingresos.tmovimiento_entidad mov
-                          inner join obingresos.tdetalle_boletos_web bole on (bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
+                          inner join obingresos.tdetalle_boletos_web bole on (bole.id_agencia=mov.id_agencia and bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
                           inner join obingresos.tboleto boletos on (bole.billete = boletos.nro_boleto and boletos.estado_reg='activo')
                           where
                           mov.id_agencia = v_registros.id_agencia and
@@ -341,7 +342,7 @@ FOR 	v_registros in (select 	arch.id_agencia,
                           boletos.tipdoc
                           --acmd.id_agencia
                           from obingresos.tmovimiento_entidad mov
-                          inner join obingresos.tdetalle_boletos_web bole on (bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=1)
+                          inner join obingresos.tdetalle_boletos_web bole on (bole.id_agencia=mov.id_agencia and bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=1)
                           inner join obingresos.tboleto boletos on bole.billete = boletos.nro_boleto and boletos.estado_reg='activo'
                           where mov.id_agencia = v_registros.id_agencia
                           and mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin
@@ -589,6 +590,14 @@ end loop;
 	elsif(p_transaccion='OBING_ACM_LIMPIO_ELI')then
 
 		begin
+
+        	select ar.id_archivo_acm
+            into v_auxacm
+            from obingresos.tarchivo_acm ar
+            where ar.estado = 'generado'
+            order by ar.id_archivo_acm desc
+            limit 1;
+            IF(v_parametros.id_archivo_acm = v_auxacm)then
           --v_arreglo = string_to_array(v_parametros.id_archivo_acm,',');
                       v_length = array_length(v_arreglo,1);
 
@@ -625,9 +634,11 @@ end loop;
             arch.ultimo_numero
             into v_resetear
             from obingresos.tarchivo_acm arch
-            where arch.id_archivo_acm = (v_parametros.id_archivo_acm-1);
+            where arch.id_archivo_acm < (v_parametros.id_archivo_acm)
+            order by arch.id_archivo_acm desc
+			limit 1;
 
-            if v_resetear is null then
+            if(v_resetear is null)then
             v_resetear = 0;
 
             UPDATE param.tcorrelativo corre
@@ -635,13 +646,12 @@ end loop;
             			num_siguiente=(v_resetear+1)
 
           	WHERE id_documento=41;
-
-            end if;
-
+            ELSE
             UPDATE param.tcorrelativo corre
  			SET 		num_actual = v_resetear,
             			num_siguiente=(v_resetear+1)
             WHERE id_documento=41;
+            end if;
             -----------------------------------------
 
 
@@ -672,7 +682,9 @@ FOR 	v_registros in (select 	arch.id_agencia, arch.porcentaje, arch.id_archivo_a
 
 
 end loop;
-
+else
+   raise exception 'Revertir solo el ultimo proceso generado';
+end if;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Archivo ACM Detalle eliminado(a)');
