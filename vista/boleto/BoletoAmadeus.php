@@ -34,7 +34,6 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 var rec = this.sm.getSelected().data;
 
-                console.log('datos: ',rec);
                 if (rec) {
                     Phx.CP.loadingShow();
                     Ext.Ajax.request({
@@ -589,8 +588,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config:{
-                        name: 'trans_issue_indicator',
-                        fieldLabel: 'Issue',
+                        name: 'trans_code_exch',
+                        fieldLabel: 'Tipo',
                         allowBlank: false,
                         anchor: '80%',
                         gwidth: 50,
@@ -599,7 +598,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         enableKeyEvents:true,
                         renderer : function(value, p, record) {
 
-                            return '<tpl for="."><p><font color="green">' + record.data['trans_issue_indicator'] + '</tpl>';
+                            return '<tpl for="."><p><font color="green">' + record.data['trans_code_exch'] + '</tpl>';
                         }
                     },
                     type:'TextField',
@@ -1380,6 +1379,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'voucher_consu', type: 'string'},
                 {name:'trans_code', type: 'string'},
                 {name:'trans_issue_indicator', type: 'string'},
+                {name:'trans_code_exch', type: 'string'},
+                {name:'impreso', type: 'string'}
 
             ],
             sortInfo:{
@@ -1387,7 +1388,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 direction: 'DESC'
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai',
-                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision', 'trans_code', 'trans_issue_indicator'],
+                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision', 'trans_code', 'trans_code_exch'],
 
             bdel:false,
             bsave:false,

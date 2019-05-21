@@ -32,8 +32,8 @@ DECLARE
     v_record_json		jsonb;
 
     v_record_json_aux	jsonb;
-	v_ciudad_o			varchar;
-    v_ciudad_d			varchar;
+	v_ciudad_o			record;
+    v_ciudad_d			record;
     v_record 			record;
     v_contador_id		integer=1;
 
@@ -45,6 +45,10 @@ DECLARE
     v_tipo_cambio		numeric;
     v_cadena			varchar[];
     v_exch_sel			integer[];
+    v_cont_nacional		integer = 0;
+    v_cont_regional		integer = 0;
+    v_cont_inter		integer = 0;
+    v_tipo_emision		varchar='F';
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -326,7 +330,7 @@ BEGIN
             --Definicion de la respuesta
 			--v_consulta:=v_consulta||v_parametros.filtro;
         	v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        raise notice 'v_consulta %', v_consulta;
+        	raise notice 'v_consulta %', v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
@@ -713,10 +717,6 @@ BEGIN
 
             v_exch_sel = string_to_array(v_parametros.id_boletos_amadeus,',');
 
-            update  obingresos.tboleto_amadeus set
-                impreso = 'si'/*,
-                trans_code_exch = 'EXCH'*/
-            where id_boleto_amadeus = any(v_exch_sel);
 
             /*trans_code in ('TKTT') and fecha_emision = v_parametros.localizador->>'fecha_creacion'::date
             and localizador = v_parametros.localizador->>'localizador_resiber';*/
@@ -788,7 +788,7 @@ BEGIN
                 v_parametros.fn_V2->>'num_pax',
                 v_parametros.fn_V2->>'inf'
               );
-
+			  v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
             else
             	for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
 
@@ -847,6 +847,7 @@ BEGIN
                       v_record_json->>'num_pax',
                       v_record_json->>'inf'
                     );
+                    v_tipo_emision = v_record_json->>'tipo_emision';
                     v_contador_id = v_contador_id + 1;
 
               end loop;
@@ -897,12 +898,16 @@ BEGIN
 
               for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
 
-                  select tl.nombre
+                  select tl.nombre, tl.codigo
                   into v_ciudad_o
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
 
-                  select tl.nombre
+                  /*case v_ciudad_o.codigo when  'MIA','MAD') then v_cont_inter = v_cont_inter + 1
+                   	   when  v_ciudad_o.codigo in ('GRU','AR') then v_cont_regional = v_cont_regional + 1
+					   else v_cont_nacional = v_cont_nacional + 1 end;*/
+
+                  select tl.nombre, tl.codigo
                   into v_ciudad_d
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
@@ -924,8 +929,8 @@ BEGIN
                       (v_record_json->>'clase')::varchar,
                       (v_record_json->>'linea')::varchar,
                       (v_record_json->>'estado')::varchar,
-                      (v_ciudad_o||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
-                      (v_ciudad_d||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
+                      (v_ciudad_o.nombre||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
+                      (v_ciudad_d.nombre||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
                       (v_record_json->>'num_vuelo')::varchar,
                       (v_record_json->>'hora_salida')::varchar,
                       (v_record_json->>'fecha_salida')::varchar,
@@ -937,12 +942,12 @@ BEGIN
               end loop;
             else
 
-                 select tl.nombre
+                 select tl.nombre, tl.codigo
                   into v_ciudad_o
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
 
-                  select tl.nombre
+                  select tl.nombre, tl.codigo
                   into v_ciudad_d
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
@@ -964,8 +969,8 @@ BEGIN
                       (v_parametros.vuelo->>'clase')::varchar,
                       (v_parametros.vuelo->>'linea')::varchar,
                       (v_parametros.vuelo->>'estado')::varchar,
-                      (v_ciudad_o||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
-                      (v_ciudad_d||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
+                      (v_ciudad_o.nombre||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
+                      (v_ciudad_d.nombre||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
                       (v_parametros.vuelo->>'num_vuelo')::varchar,
                       (v_parametros.vuelo->>'hora_salida')::varchar,
                       (v_parametros.vuelo->>'fecha_salida')::varchar,
@@ -974,6 +979,18 @@ BEGIN
                      -- v_cadena[v_contador_id]
                   );
 
+            end if;
+            --raise exception 'v_tipo_emision %',v_tipo_emision;
+            if v_tipo_emision = 'R' then
+                update  obingresos.tboleto_amadeus set
+                    impreso = 'si',
+                    trans_code_exch = 'EXCH'
+                where id_boleto_amadeus = any(v_exch_sel);
+            else
+            	update  obingresos.tboleto_amadeus set
+                  impreso = 'si',
+                  trans_code_exch = 'ORIG'
+              where id_boleto_amadeus = any(v_exch_sel);
             end if;
 
 			/*select tba.tc
@@ -1046,7 +1063,9 @@ BEGIN
                           '||COALESCE(v_tipo_cambio,0)||'::numeric as tipo_cambio,
                           '''||coalesce((v_parametros.localizador->'endosos'->'endoso'->>'texto'),'')||'''::varchar as endoso,
                           '''||to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy')||'''::date as fecha_create,
-                          ts.moneda_tarifa::varchar as moneda_iva
+                          ts.moneda_tarifa::varchar as moneda_iva,
+                          '''||v_tipo_emision||'''::varchar as tipo_emision,
+                          ts.moneda_tarifa
                           from tvuelos tv
                           cross join ttasa ts
             ';
@@ -1057,6 +1076,122 @@ BEGIN
           else
 
           end if;
+		end;
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_SAL_BOL_SEL'
+ 	#DESCRIPCION:	Consulta de Boletos Vendidos
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		09-04-2019 20:28:10
+	***********************************/
+
+	elsif(p_transaccion='OBING_SAL_BOL_SEL')then
+
+       begin
+    		--Sentencia de la consulta
+
+			v_consulta:='with forma_pago_temporal as(
+                                          select bol.id_boleto_amadeus,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
+                                                 array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                          where bol.fecha_emision = '''||v_parametros.fecha||'''::date
+                                          group by bol.id_boleto_amadeus)
+
+                          select nr.id_boleto_amadeus,
+                          		 nr.pasajero as pasajero,
+                          		 nr.localizador as localizador,
+                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                 nr.forma_pago as forma_pago_amadeus,
+                                 nr.moneda,
+                                 nr.total as precio_total,
+                                 nr.agente_venta as codigo_agente,
+                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                 nr.fecha_emision,
+                                 nr.trans_code,
+                         		 nr.trans_issue_indicator,
+                         		 pv.nombre as punto_venta,
+                                 nr.trans_code_exch,
+                                 nr.impreso
+
+                          from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
+                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          where usuex.id_usuario = '||p_id_usuario||' and ';
+
+            --Definicion de la respuesta
+			v_consulta = v_consulta||v_parametros.filtro;
+        	v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+
+            raise notice 'v_consulta: %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_SAL_BOL_CONT'
+ 	#DESCRIPCION:	Conteo de boletos vendidos
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		09-04-2019 20:28:10
+	***********************************/
+
+	elsif(p_transaccion='OBING_SAL_BOL_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='with forma_pago_temporal as(
+                                          select bol.id_boleto_amadeus,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
+                                                 array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                          where bol.fecha_emision = '''||v_parametros.fecha||'''::date
+                                          group by bol.id_boleto_amadeus)
+
+                          select
+                          	count(nr.id_boleto_amadeus) as total,
+                        	sum(nr.total) as precio_total
+                          from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
+                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          where usuex.id_usuario = '||p_id_usuario||' and ';
+
+			v_consulta:=v_consulta||v_parametros.filtro;
+			--Devuelve la respuesta
+			return v_consulta;
+
 		end;
 
     else

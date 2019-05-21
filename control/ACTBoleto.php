@@ -957,8 +957,8 @@ class ACTBoleto extends ACTbase{
         }
         $data = array(	"credenciales"=>$_SESSION['_CREDENCIALES_RESIBER'],
             "idioma"=>"ES",
-            "tkt"=>'9302401106714',//$this->objParam->getParametro('nro_boleto')
-            "pnr"=>'LWIIVQ',//$this->objParam->getParametro('pnr')
+            "tkt"=>$this->objParam->getParametro('nro_boleto'),
+            "pnr"=>$this->objParam->getParametro('pnr'),
             "ip"=>"127.0.0.1",
             "xmlJson"=>false);
 
@@ -984,7 +984,7 @@ class ACTBoleto extends ACTbase{
         curl_close($s);
         $res = json_decode($_out);
         $cadena = str_replace('"terminal_salida":{,},', '', $res->TraerTktResult);
-        //var_dump($res->TraerTktResult);exit;
+
         if(strpos($cadena, 'Error') !== false) {
             throw new Exception('No se encontro el numero de billete indicado.');
 
@@ -1359,7 +1359,7 @@ class ACTBoleto extends ACTbase{
                 $identificador_reporte = 0;
             }
         }
-
+        //var_dump('peticion');exit;
         //boletos en bolivianos
         $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"");
         $data_string = json_encode($data);
@@ -1373,11 +1373,11 @@ class ACTBoleto extends ACTbase{
                 'Content-Length: ' . strlen($data_string))
         );
 
-        $result = curl_exec($session);
+        $result = curl_exec($session);//var_dump($result);exit;
         curl_close($session);
 
         $respuesta = json_decode($result);
-        //echo($respuesta->Boa_RITRetrieveSales_JSResult);exit;
+        //var_dump($respuesta);exit;
         if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
             $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
@@ -1467,9 +1467,9 @@ class ACTBoleto extends ACTbase{
                 exit;
             }
         }
-
         //var_dump($this->objParam->getParametro('tipoReporte'));exit;
         if ($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid') {
+
             if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
 
                 $this->objReporte = new Reporte($this->objParam,$this);
@@ -1660,7 +1660,6 @@ class ACTBoleto extends ACTbase{
             $array_fechas = explode(',',$datos['fecha']);
         }
 
-
         if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
             throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
         }
@@ -1683,15 +1682,13 @@ class ACTBoleto extends ACTbase{
                     'Content-Type: application/json',
                     'Content-Length: ' . strlen($json_data))
             );
-            $_out = curl_exec($s);
 
+            $_out = curl_exec($s);            
             $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
-
             if (!$status) {
                 throw new Exception("No se pudo conectar con Resiber");
             }
             curl_close($s);
-
             if (strpos($_out,'spAppConciliacionDiariaBoA_Result')) {
                 $_out = substr($_out, 109);
                 $_out = substr($_out, 0, -4);
@@ -1700,21 +1697,16 @@ class ACTBoleto extends ACTbase{
                 $this->objParam->addParametro('fecha', $fecha);
                 $this->objParam->addParametro('detalle_boletos', $_out);
 
-
                 $this->objFunc = $this->create('MODBoleto');
 
                 $this->res = $this->objFunc->detalleDiarioBoletosWeb($this->objParam);
-
-
 
                 if ($this->res->getTipo()=='ERROR') {
                     $this->res->imprimirRespuesta($this->res->generarJson());
                 }
             }
+        }//fin for
 
-
-
-        }
         $this->res->imprimirRespuesta($this->res->generarJson());
         exit;
 
@@ -1853,7 +1845,7 @@ class ACTBoleto extends ACTbase{
         $this->objParam->defecto('ordenacion','nro_boleto');
         $this->objParam->defecto('dir_ordenacion','desc');
 
-        $this->objParam->addFiltro("(bol.nro_boleto like ''%". $this->objParam->getParametro('nro_boleto') . "%''::varchar or bol.localizador = ''".$this->objParam->getParametro('nro_boleto')."''::varchar) and bol.estado in (''borrador'', ''caja'', ''finalizado'')");
+        $this->objParam->addFiltro("/*bol.fecha_emision = ''". $this->objParam->getParametro('fecha_actual') ."''::date and*/ (bol.nro_boleto like ''%". $this->objParam->getParametro('nro_boleto') . "%''::varchar or bol.localizador = ''".$this->objParam->getParametro('nro_boleto')."''::varchar) and bol.estado in (''borrador'', ''caja'', ''revisado'', ''finalizado'')");
 
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
@@ -1908,7 +1900,8 @@ class ACTBoleto extends ACTbase{
                 'hora_creacion' => $res->reserva_V2->hora_creacion,
                 'localizador_resiber' => $res->reserva_V2->localizador_resiber,
                 'osis' => $res->reserva_V2->osis,
-                'pv' => $res->reserva_V2->pv
+                'pv' => $res->reserva_V2->pv,
+                'nit_cliente' => $res->reserva_V2->endosos->endoso->texto,
             );
 
             $localizador = json_decode(json_encode($localizador));
@@ -2004,10 +1997,15 @@ class ACTBoleto extends ACTbase{
             $this->objReporteFormato->generarReporte();
             $this->objReporteFormato->output($this->objReporteFormato->url_archivo, 'F');
 
+
+            //$this->extraData['tipo_emision'] = $datos[0]['tipo_emision'];
+
             $this->mensajeExito = new Mensaje();
+
             $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
                 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
             $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+            $this->mensajeExito->setDatos(array("tipo_emision"=>$datos[0]['tipo_emision']));
             $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
         }else{
 
@@ -2095,7 +2093,7 @@ class ACTBoleto extends ACTbase{
             $this->objParam->addParametro('tipo_emision', json_encode($tipo_emision));
         } else {
             $this->objParam->addParametro('exchange', false);
-            $this->objParam->addParametro('tipo_emision', json_encode(array('tipo_emision'=>'tktt')));
+            $this->objParam->addParametro('tipo_emision', json_encode(array('tipo_emision'=>'F')));
         }
 
         $this->objFunc=$this->create('MODBoleto');
@@ -2119,6 +2117,36 @@ class ACTBoleto extends ACTbase{
     function disparaCorreoVentasWeb(){
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->disparaCorreoVentasWeb($this->objParam);
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    //(f.e.a)ventas por dia counter
+    function listarVentasCounter(){
+
+        $this->objParam->defecto('ordenacion','nro_boleto');
+        $this->objParam->defecto('dir_ordenacion','desc');
+
+        //$this->objParam->addFiltro(" bol.fecha_emision = ''".$this->objParam->getParametro('fecha')."''::date");
+
+        //$this->objParam->addParametro('id_usuario', $_SESSION["ss_id_usuario"]);
+
+
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->listarVentasCounter($this->objParam);
+
+        //adicionar una fila al resultado con el summario
+		$temp = Array();
+        $temp['id_boleto_amadeus'] = 0;
+		$temp['precio_total'] ='<b style="font-size: 15px; color: green">'.$this->res->extraData['precio_total'].'</b>';
+		$temp['monto_forma_pago'] ='<b style="font-size: 15px; color: green">'.$this->res->extraData['precio_total'].'</b>';
+        $temp['nro_boleto'] = '<b style="font-size: 20px; color: green">Total</b>';
+		//$temp['tipo_reg'] = 'summary';
+
+
+		$this->res->total++;
+
+		$this->res->addLastRecDatos($temp);
 
         $this->res->imprimirRespuesta($this->res->generarJson());
     }

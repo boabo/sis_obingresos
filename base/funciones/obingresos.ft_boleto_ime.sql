@@ -2062,6 +2062,7 @@ BEGIN
                   forma_pago,
                   trans_code,
                   trans_issue_indicator
+                  --trans_code_exch
                   )VALUES(v_nro_boleto::varchar,
                   v_total::numeric,
                   v_comision::numeric,
@@ -2084,6 +2085,7 @@ BEGIN
                   v_tipo_pago_amadeus::varchar,
                   v_code::varchar,
                   v_issue_indicator::varchar
+                  --case when v_voided = 'EMDS' then 'EMDS' else 'ORIG' end
                   );
 
                   if(trim(v_tipo_pago_amadeus)='CA')then
@@ -2770,7 +2772,10 @@ BEGIN
 		begin
 
         	if jsonb_typeof(v_parametros.tipo_emision) = 'string' then
-            	v_tipo_emision = v_parametros.tipo_emision;
+            	v_tipo_emision = v_parametros.tipo_emision::varchar;
+                /*SELECT value
+                into v_tipo_emision
+   				FROM jsonb_array_elements_text(v_parametros.tipo_emision);*/
             else
                 for v_exchange_json in SELECT * FROM jsonb_array_elements(v_parametros.tipo_emision)  loop
                     v_tipo_emision = v_exchange_json->>'tipo_emision';
@@ -2822,8 +2827,8 @@ BEGIN
                 end if;
 
             end if;
-
-            if v_parametros.exchange = true  then
+--RAISE EXCEPTION 'v_tipo_emision:%',v_tipo_emision = '"R"';
+            if v_parametros.exchange = true and v_tipo_emision = '"R"' then
               update  obingresos.tboleto_amadeus set
                   trans_code_exch = 'EXCH'
               where trans_code in ('TKTT') and fecha_emision = v_parametros.fecha_emision::date

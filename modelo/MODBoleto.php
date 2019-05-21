@@ -974,6 +974,8 @@ class MODBoleto extends MODbase{
         $this->captura('endoso','varchar');
         $this->captura('fecha_create','date');
         $this->captura('moneda_iva','varchar');
+        $this->captura('tipo_emision','varchar');
+        $this->captura('moneda_tarifa','varchar');
 
 
         //Ejecuta la instruccion
@@ -1063,6 +1065,43 @@ class MODBoleto extends MODbase{
         $this->armarConsulta();
         $this->ejecutarConsulta();
         
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function listarVentasCounter(){
+
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_sel';
+        $this->transaccion='OBING_SAL_BOL_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('fecha', 'fecha', 'varchar');
+        //captura parametros adicionales para el count
+        $this->capturaCount('precio_total','numeric');
+
+        $this->captura('id_boleto_amadeus','integer');
+        $this->captura('pasajero','varchar');
+        $this->captura('localizador','varchar');
+        $this->captura('nro_boleto','varchar');
+        $this->captura('forma_pago_amadeus','varchar');
+        $this->captura('moneda','varchar');
+        $this->captura('precio_total','numeric');
+        $this->captura('codigo_agente','varchar');
+        $this->captura('id_forma_pago','int4');
+        $this->captura('monto_forma_pago','numeric');
+        $this->captura('forma_pago','varchar');
+        $this->captura('fecha_emision','date');
+        $this->captura('trans_code','varchar');
+        $this->captura('trans_issue_indicator','varchar');
+        $this->captura('punto_venta','varchar');
+        $this->captura('trans_code_exch','varchar');
+        $this->captura('impreso','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();//echo $this->consulta;exit;
+        $this->ejecutarConsulta();
+
         //Devuelve la respuesta
         return $this->respuesta;
     }

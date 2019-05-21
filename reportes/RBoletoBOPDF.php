@@ -61,11 +61,11 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->Cell(15,5,'NOMBRE',0,0,'R');
         $this->Cell(80,5,': ' . $datos_detalle->pasajeros->pasajeroDR->apdos_nombre,0,1,'L');
         $this->SetFont('Courier','',10);
-        $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,1,'L');
+        $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');
 
-        /*$this->SetFont('Courier','',10);
-        $this->Cell(15,5,'DOCUMENTO',0,0,'R');
-        $this->Cell(80,5,': ' . 'definir'$datos_maestro[0]['identificacion'],0,1,'L');*/
+        $this->SetFont('Courier','B',10);
+        $this->Cell(15,5,'NIT',0,0,'R');
+        $this->Cell(80,5,': ' . substr($datos[0]['endoso'], 2),0,1,'L');
 
         $this->SetFont('Courier','',10);
 
@@ -234,12 +234,12 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->Cell(45,5,'EN FACTURACIÓN, DEBERA PRESENTAR UN DOCUMENTO DE IDENTIDAD CON IDENTIDAD CON FOTOGRAFIA Y',0,1,'L');
         $this->Cell(100,5,'EL DOCUMENTO USADO COMO REFERENCIA AL HACER LA RESERVA.',0,1,'L');
 
-        if($datos[0]['endoso'] != null || $datos[0]['endoso'] != '') {
+        /*if($datos[0]['endoso'] != null || $datos[0]['endoso'] != '') {
             $this->Cell(45, 5, 'ENDOSO', 0, 0, 'L');
             $this->Cell(100, 5, ': ' . $datos[0]['endoso'], 0, 1, 'L');
-        }
+        }*/
 
-        if($datos[0]['tipo_cambio'] != null || $datos[0]['tipo_cambio'] != '') {
+        if(($datos[0]['tipo_cambio'] != null || $datos[0]['tipo_cambio'] != '') && $datos[0]['moneda_tarifa']=='USD') {
             $this->Cell(45, 5, 'TARIFA DE INTERCAMBIO', 0, 0, 'L');
             $this->Cell(100, 5, ': ' .number_format($datos[0]['tipo_cambio'], 2, ',', '.'), 0, 1, 'L');
         }
@@ -274,6 +274,34 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->ln();
 
         $this->SetFont('Courier','',8);
+        //////texto
+        /*$this->Cell(45,5,'AVISO',0,1,'L');
+        $this->Cell(45,5,'EL TRANSPORTE Y OTROS SERVICIOS PROVISTOS POR LA COMPAÑÍA ESTÁN SUJETOS A LAS
+                            CONDICIONES DE TRANSPORTE, LAS CUÁLES SE INCORPORAN POR REFERENCIA. ESTAS
+                            CONDICIONES PUEDEN SER OBTENIDAS DE LA COMPAÑÍA EMISORA.
+                            ' . $validez,0,1,'L');
+        $this->Cell(45,5,'EL ITINERARIO/RECIBO CONSTITUYE EL BILLETE DE PASAJE A EFECTOS DEL ARTÍCULO 3
+                            DE LA CONVENCIÓN DE VARSOVIA, A MENOS QUE EL TRANSPORTISTA ENTREGUE AL
+                            PASAJERO OTRO DOCUMENTO QUE CUMPLA CON LOS REQUISITOS DEL ARTÍCULO 3.
+                            ' . $validez,0,1,'L');
+        $this->Cell(45,5,'SE INFORMA A LOS PASAJEROS QUE REALICEN VIAJES EN LOS QUE EL PUNTO DE DESTINO
+                            O UNA O MAS ESCALAS INTERMEDIAS SE EFECTUEN EN UN PAIS QUE NO SEA EL DE
+                            PARTIDA DE SU VUELO, QUE PUEDEN SER DE APLICACION A LA TOTALIDAD DE SU VIAJE,
+                            INCLUIDA CUALQUIER PARTE DEL MISMO DENTRO DE UN PAIS, LOS TRATADOS
+                            INTERNACIONALES COMO LA CONVENCION DE MONTREAL O SU PREDECESOR LA CONVENCION
+                             DE VARSOVIA, INCLUYENDO SUS MODIFICACIONES (EL SISTEMA DE CONVENCION DE
+                            VARSOVIA).  EN EL CASO DE AQUELLOS PASAJEROS, EL TRATADO APLICABLE, INCLUYENDO
+                            LAS CONDICIONES ESPECIALES DEL TRANSPORTE INCORPORADAS A CUALQUIER TARIFA
+                            APLICABLE, RIGE Y PUEDE LIMITAR LA RESPONSABILIDAD DEL TRANSPORTISTA EN CASOS
+                            DE MUERTE O LESIONES PERSONALES, PERDIDA O DANOS AL EQUIPAJE Y RETRASOS.
+                            ' . $validez,0,1,'L');
+        $this->Cell(45,5,'EL TRANSPORTE DE MATERIALES PELIGROSOS TALES COMO AEROSOLES, FUEGOS
+                            ARTIFICIALES Y LÍQUIDOS INFLAMABLES A BORDO DEL AVIÓN QUEDA ESTRICTAMENTE
+                            PROHIBIDO. SI USTED NO COMPRENDE ESTAS RESTRICCIONES, SÍRVASE OBTENER MAYOR
+                            INFORMACIÓN A TRAVÉS DE SU COMPAÑÍA AÉREA.
+                            ' . $validez,0,1,'L');*/
+
+        ////////texto
 
         $this->Cell(45,5,'VALIDEZ DEL BILLETE',0,0,'L');
         $this->Cell(150,5,': 1 AñO',0,1,'L');

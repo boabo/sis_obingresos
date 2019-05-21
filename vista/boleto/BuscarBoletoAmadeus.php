@@ -21,12 +21,16 @@ header("content-type:text/javascript; charset=UTF-8");
             this.txtSearch.enableKeyEvents = true;
 
             this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
+            //this.txtSearch.on('keydown', this.onCombinacion,this);
             this.txtSearch.on('keyup', function (field, e) {
 
-                if(this.txtSearch.getValue().length >= 10) {
+                if(this.txtSearch.getValue().length == 13) {
                     this.store.baseParams.nro_boleto = field.getValue();
                     this.load({params: {start: 0, limit: this.tam_pag}});
+                    //this.grid.getSelectionModel().selectFirstRow();
                 }
+                //this.grid.getSelectionModel().selectFirstRow();
+
             }, this);
 
             this.tbar.add(this.txtSearch);
@@ -48,7 +52,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     tooltip: '<b>Imprimir Boleto</b><br/>Imprime el boleto'
                 }
             );
-            this.getBoton('btnImprimir').setVisible(false);
+            this.getBoton('btnImprimir').setVisible(true);
             this.getBoton('btnImprimir').disable();
         },
         preparaMenu:function(tb){
@@ -56,7 +60,7 @@ header("content-type:text/javascript; charset=UTF-8");
 
             var data = this.getSelectedData();
 
-            if (data.trans_code_exch == 'EXCH' && data.trans_code_exch != null) {
+            //if (data.trans_code_exch == 'EXCH' && data.trans_code_exch != null) {
                 /*if(data.impreso == 'si'){
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').disable();
@@ -64,7 +68,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').enable();
                 //}
-            }else if(data.trans_code != 'EMDS'){
+            /*}else if(data.trans_code != 'EMDS'){
                 if(data.trans_code_exch != 'ORIG'){
                     var records = this.grid.getSelectionModel().getSelections();
                     var rec = '';
@@ -88,14 +92,23 @@ header("content-type:text/javascript; charset=UTF-8");
                         success: function (resp) {
                             var reg = Ext.decode(Ext.util.Format.trim(resp.responseText));
                             //reg.ROOT.datos[0].exchange
-                            if (JSON.parse(reg.ROOT.datos.exchange) == true) {
+                            if (JSON.parse(reg.ROOT.datos.exchange) == true && reg.ROOT.datos.tipo_emision=='R') {
                                 this.getBoton('btnImprimir').setVisible(true);
                                 this.getBoton('btnImprimir').enable();
                             } else {
                                 this.getBoton('btnImprimir').setVisible(false);
                                 this.getBoton('btnImprimir').disable();
+                                Ext.Msg.show({
+                                    title: 'Alerta',
+                                    msg: '<div><b>Estimado Usuario:</b> <br> Informarle que el boleto que acaba de buscar no corresponde a un Exchange. </div>',
+                                    buttons: Ext.Msg.OK,
+                                    width: 600,
+                                    maxWidth:1024,
+                                    icon: Ext.Msg.WARNING
+                                });
                             }
                             this.store.reload();
+
 
                         },
                         failure: this.conexionFailure,
@@ -103,13 +116,13 @@ header("content-type:text/javascript; charset=UTF-8");
                         scope: this
                     });
                 }
-            }
+            }*/
         },
 
         liberaMenu:function(tb){
             Phx.vista.BuscarBoletoAmadeus.superclass.liberaMenu.call(this,tb);
             this.getBoton('btnImprimir').disable();
-            this.getBoton('btnImprimir').setVisible(false);
+            this.getBoton('btnImprimir').setVisible(true);
 
         },
         imprimirBoleto: function(){
@@ -141,9 +154,36 @@ header("content-type:text/javascript; charset=UTF-8");
                     scope : this
                 });
             }
-            this.onButtonAct();
+
         },
 
+        successExport: function (resp) {
+
+            this.onButtonAct();
+            Phx.CP.loadingHide();
+            var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+            //console.log('objRes',objRes);
+            var objetoDatos = (objRes.ROOT == undefined)?objRes.datos:objRes.ROOT.datos;
+            var objetoDetalle = (objRes.ROOT == undefined)?objRes.detalle:objRes.ROOT.detalle;
+            if (objRes.ROOT.datos.tipo_emision == 'R') { //"archivo_generado" in objetoDetalle
+                window.open('../../../lib/lib_control/Intermediario.php?r=' + objetoDetalle.archivo_generado + '&t='+new Date().toLocaleTimeString())
+            } else {
+                /*var wnd = window.open("about:blank", "", "_blank");
+                wnd.document.write(objetoDatos.html);*/
+                Phx.CP.loadingHide();
+                Ext.Msg.show({
+                    title: 'Alerta',
+                    msg: '<div><b>Estimado Usuario:</b> <br><br> Informarle que el boleto seleccionado no corresponde a un Exchange. </div>',
+                    buttons: Ext.Msg.OK,
+                    width: 500,
+                    maxWidth:1024,
+                    icon: Ext.Msg.WARNING
+                });
+            }
+
+
+
+        },
 
         Atributos:[
             {
@@ -457,8 +497,8 @@ header("content-type:text/javascript; charset=UTF-8");
             },
             {
                 config:{
-                    name: 'trans_issue_indicator',
-                    fieldLabel: 'Issue',
+                    name: 'trans_code_exch',
+                    fieldLabel: 'Tipo',
                     allowBlank: false,
                     anchor: '80%',
                     gwidth: 50,
@@ -466,8 +506,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     minLength:10,
                     enableKeyEvents:true,
                     renderer : function(value, p, record) {
-
-                        return '<tpl for="."><p><font color="green">' + record.data['trans_issue_indicator'] + '</tpl>';
+                        return '<tpl for="."><p><font color="green">' + record.data['trans_code_exch'] + '</tpl>';
                     }
                 },
                 type:'TextField',
@@ -1278,12 +1317,22 @@ header("content-type:text/javascript; charset=UTF-8");
 
         onBtnBuscar : function() {
             this.store.baseParams.nro_boleto = this.txtSearch.getValue();
+            this.store.baseParams.fecha_actual =  new Date();;
             this.load({params: {start: 0, limit: this.tam_pag}});
-
+            //this.grid.getSelectionModel().selectFirstRow();
         },
 
         onTxtSearchSpecialkey : function(field, e) {
+
             if (e.getKey() == e.ENTER) {
+                this.onBtnBuscar();
+            }
+        },
+
+        onCombinacion: function(e) {
+
+            if (e.getKey() == 17) {
+                console.log('especial');
                 this.onBtnBuscar();
             }
         }
