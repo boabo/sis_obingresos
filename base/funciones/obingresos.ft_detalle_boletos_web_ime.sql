@@ -58,6 +58,7 @@ $body$
     if(p_transaccion='OBING_DETBOWEB_INS')then
 
       begin
+
         for v_registros in (select *
                             from json_populate_recordset(null::obingresos.detalle_boletos,v_parametros.detalle_boletos::json))loop
 
@@ -292,9 +293,10 @@ $body$
         else
           v_fecha = v_fecha +  interval '1 day';
         end if;
-        --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        from generate_series('01/08/2017'::date,
+        --from generate_series('01/08/2017'::date,
+        from generate_series('01/04/2019'::date,
+                             --'02/04/2019', '1 day'::interval) i;
                              now()::date - interval '1 day', '1 day'::interval) i;
 
 
@@ -318,8 +320,10 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        from generate_series('01/08/2017'::date,
+        --from generate_series('01/08/2017'::date,
+        from generate_series('01/04/2019'::date,
 
+                             --'01/04/2019', '1 day'::interval) i loop
                              now()::date - interval '1 day', '1 day'::interval) i loop
 
 
@@ -329,10 +333,17 @@ $body$
               for v_registros in
               select  *
               from obingresos.tdetalle_boletos_web d
-              where origen = 'web' and procesado = 'no' and fecha = v_fecha loop
+              where origen = 'web' and procesado = 'no' and fecha = v_fecha
+              --limit 1
+              loop
+                --raise exception 'verificar billete:%.',v_registros.billete;
+                --execute ('select informix.f_modificar_datos_web(''9302402518751'')');
+                --raise exception 'llega aqui billete desde ingresso %',v_registros.billete;
+                execute ('select informix.f_modificar_datos_web('''||v_registros.billete::varchar||''')');
+                --execute ('select informix.f_modificar_datos_web(ltrim(rtrim((''' || v_registros.billete || '''))))');
 
 
-                execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
+
               end loop;
           end if;
         end loop;
@@ -377,7 +388,7 @@ $body$
             	coalesce(p_id_usuario, 1),
                 'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,
                 SQLERRM,
-                'aldo.zeballos@boa.bo, franklin.espinoza@boa.bo',
+                'aldo.zeballos@boa.bo, franklin.espinoza@boa.bo, ismael.valdivia@boa.bo',
                	v_parametros.fecha
         );
       end if;
