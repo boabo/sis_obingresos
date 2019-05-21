@@ -342,7 +342,7 @@ $body$
         	v_banco_aux = v_parametros.banco;
         end if;
         --Sentencia de la consulta
-        v_consulta:='(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar,sum(b.total),''ingresos''::varchar as tipo
+        v_consulta:='(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar,sum(bfp.importe),''ingresos''::varchar as tipo
                       from obingresos.tboleto  b
                       inner join obingresos.tboleto_forma_pago bfp on b.id_boleto =bfp.id_boleto
                       inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
@@ -419,7 +419,7 @@ $body$
 
 
             ingresos as
-            		(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar as fecha_texto,b.fecha_emision as fecha,b.localizador as pnr,sum(b.total) as monto,
+            		(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar as fecha_texto,b.fecha_emision as fecha,b.localizador as pnr,sum(bfp.importe) as monto,
                     	(case when anu.localizador is not null then
                         	(''[Por anular ingresos] ''|| anu.observaciones)::varchar
                         when ree.localizador is not null then
