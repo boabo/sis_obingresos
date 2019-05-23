@@ -320,8 +320,8 @@ $body$
 
       begin
       	for v_fecha in select i::date
-        --from generate_series('01/08/2017'::date,
-        from generate_series('01/04/2019'::date,
+        from generate_series('01/08/2017'::date,
+        --from generate_series('01/04/2019'::date,
 
                              --'01/04/2019', '1 day'::interval) i loop
                              now()::date - interval '1 day', '1 day'::interval) i loop
