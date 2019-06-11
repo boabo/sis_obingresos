@@ -54,6 +54,7 @@ DECLARE
     v_suma_bsp				FLOAT;
     v_acms					record;
     v_auxacm				integer;
+    v_id_gestion			integer;
 
 BEGIN
 
@@ -209,47 +210,54 @@ FOR 	v_registros in (select 	arch.id_agencia,
 
            --INSERTAMOS DATOS EN ACM
               --Sentencia de la insercion
-           if v_registros.tipo_agencia = 'noiata' THEN
+               if v_registros.tipo_agencia = 'noiata' THEN
 
-              insert into obingresos.tacm(
-              id_moneda,
-              id_archivo_acm_det,
-              fecha,
-              numero,
-              ruta,
-              estado_reg,
-              id_usuario_reg,
-              fecha_reg
-              ) values(
-              2,
-              v_registros.id_archivo_acm_det,
-              now(),
-              v_correlativo,--generar correlativo
-              'ruta',--recuperar de tablas
-              --v_suma_importe.comision_total,
-              'activo',
-              p_id_usuario,
-              now()
-              )RETURNING id_acm into v_id_acm_sus;
+                  insert into obingresos.tacm(
+                  id_moneda,
+                  id_archivo_acm_det,
+                  fecha,
+                  numero,
+                  ruta,
+                  estado_reg,
+                  id_usuario_reg,
+                  fecha_reg
+                  ) values(
+                  2,
+                  v_registros.id_archivo_acm_det,
+                  now(),
+                  v_correlativo,--generar correlativo
+                  'ruta',--recuperar de tablas
+                  --v_suma_importe.comision_total,
+                  'activo',
+                  p_id_usuario,
+                  now()
+                  )RETURNING id_acm into v_id_acm_sus;
 
-          --OBTENEMOS EL ULTIMO NUMERO PARA LA INSERCION CUANDO SE REVIERTA
-          Select corre.num_actual
-          into
-          v_ultimo_numero
-          from param.tcorrelativo corre
-          inner join param.tdocumento d on d.id_documento = corre.id_documento
-          inner join segu.tsubsistema s on s.id_subsistema = d.id_subsistema
-          and s.codigo = 'OBINGRESOS'
-          WHERE d.estado_reg='activo' and d.codigo = 'ACM';
+                  --OBTENEMOS EL ULTIMO NUMERO PARA LA INSERCION CUANDO SE REVIERTA
+                  /*select ges.id_gestion
+                      into v_id_gestion
+                      from param.tgestion ges
+                      where ges.gestion = extract(YEAR FROM now());  */
 
-          UPDATE obingresos.tarchivo_acm ac SET
-		  ultimo_numero = (v_ultimo_numero)
-		  Where ac.id_archivo_acm = v_parametros.id_archivo_acm::INTEGER;
+                  Select corre.num_actual
+                  into
+                  v_ultimo_numero
+                  from param.tcorrelativo corre
+                  inner join param.tdocumento d on d.id_documento = corre.id_documento
+                  inner join segu.tsubsistema s on s.id_subsistema = d.id_subsistema
+                  and s.codigo = 'OBINGRESOS'
+                  WHERE d.estado_reg='activo' and d.codigo = 'ACM'
+                  order by corre.id_correlativo DESC
+                  limit 1; --and corre.id_gestion=v_id_gestion;
 
-          --------------------------------------------------------------------
-      	  ELSE
-          		raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
-          end if;
+                  UPDATE obingresos.tarchivo_acm ac SET
+                  ultimo_numero = (v_ultimo_numero)
+                  Where ac.id_archivo_acm = v_parametros.id_archivo_acm::INTEGER;
+
+              --------------------------------------------------------------------
+              ELSE
+                    raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
+              end if;
 
          -- raise exception 'EL ultimo numero es: %', v_ultimo_numero;
           end if; --fin acm dolares
@@ -257,75 +265,38 @@ FOR 	v_registros in (select 	arch.id_agencia,
           --INSERTAMOS DATOS RECUPERADOS EN ACM DET
               if v_registros.porcentaje = 2 or v_registros.porcentaje = 4 then
 
-              insert into obingresos.tacm_det(
-              id_acm,
-              id_detalle_boletos_web,
-              neto,
-              over_comision,
-              fecha_reg,
-              id_usuario_reg,
-              com_bsp,
-              moneda,
-              td,
-              porcentaje_over
-              )
-              VALUES(
-              v_id_acm_sus,
-              v_boletos_sus.id_detalle_boletos_web,
-              v_boletos_sus.neto,
-              (v_boletos_sus.neto * v_registros.porcentaje)/100,
-              now(),
-              p_id_usuario,
-              v_boletos_sus.comision*(-1),
-              v_boletos_sus.moneda,
-              v_boletos_sus.tipdoc,
-              v_registros.porcentaje
-              );
+                insert into obingresos.tacm_det(
+                id_acm,
+                id_detalle_boletos_web,
+                neto,
+                over_comision,
+                fecha_reg,
+                id_usuario_reg,
+                com_bsp,
+                moneda,
+                td,
+                porcentaje_over
+                )
+                VALUES(
+                v_id_acm_sus,
+                v_boletos_sus.id_detalle_boletos_web,
+                v_boletos_sus.neto,
+                (v_boletos_sus.neto * v_registros.porcentaje)/100,
+                now(),
+                p_id_usuario,
+                v_boletos_sus.comision*(-1),
+                v_boletos_sus.moneda,
+                v_boletos_sus.tipdoc,
+                v_registros.porcentaje
+                );
 
-          --OBTENEMOS LA SUMA DE LA COMISION Y LO ALMACENAMOS EN EL CAMPO IMPORTE DE ACM
-          select round (sum(acmdet.over_comision),2)
-           						into v_suma_importe
-								from obingresos.tacm_det acmdet
-                        		where id_acm = v_id_acm_sus;
+                ELSE
+                      raise exception 'El porcentaje es: %  y no se encuentra no son de porcentajes (2 y 4) ',v_registros.porcentaje ;
+                end if;
 
-           UPDATE obingresos.tacm SET
-		   importe = v_suma_importe
-		   Where id_acm = v_id_acm_sus;
-          -----------------------------------------------------------------------------
+          end loop;
 
-           ---ACTUALIZAMOS EL CAMPO IMPORTE TOTAL MT EN LA TABLA ARCHIVO ACM DET
-           UPDATE obingresos.tarchivo_acm_det SET
-		   importe_total_mt = v_suma_importe
-		   Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
 
-           select round (sum(acmdet.neto),2)
-           						into v_suma_neto
-								from obingresos.tacm_det acmdet
-                        		where id_acm = v_id_acm_sus;
-          ------------------------------------------------------------------------------
-
-           --ACTUALIZAMOS EL NETO TOTAL MT EN LA TABLA ARCHIVO ACM DET
-           UPDATE obingresos.tarchivo_acm_det SET
-		   neto_total_mt = v_suma_neto
-		   Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-           -------------------------------------------------------------------------------
-
-           --OBTENEMOS LA CANTIDAD DE BOLETOS Y ACTUALIZAMOS EN EL CAMPO CAT_BOL_MT EN ARCHIVO ACM DET
-           select count(acmdet.id_acm)
-           into v_contador_boletos
-           from obingresos.tacm_det acmdet
-           where acmdet.id_acm = v_id_acm_sus;
-
-           UPDATE obingresos.tarchivo_acm_det SET
-		   cant_bol_mt = v_contador_boletos
-		   Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-          ------------------------------------------------------------------------------------------
-          -- raise exception 'Los datos son: %', v_contador_boletos;
-          ELSE
-          		raise exception 'El porcentaje es: %  y no se encuentra no son de porcentajes (2 y 4) ',v_registros.porcentaje ;
-          end if;
-
-         end loop;
 	--############################################################################--
 
 
@@ -378,140 +349,145 @@ FOR 	v_registros in (select 	arch.id_agencia,
                         NULL,--formato
                         1); --id_empresa
 
-              --INSERTAMOS DATOS EN ACM
-               --Sentencia de la insercion
-              if v_registros.tipo_agencia = 'noiata' THEN
+                    --INSERTAMOS DATOS EN ACM
+                     --Sentencia de la insercion
+                    if v_registros.tipo_agencia = 'noiata' THEN
 
-              insert into obingresos.tacm(
-              id_moneda,
-              id_archivo_acm_det,
-              fecha,
-              numero,
-              ruta,
-              estado_reg,
-              id_usuario_reg,
-              fecha_reg
-              ) values(
-              1,
-              v_registros.id_archivo_acm_det,
-              now(),
-              v_correlativo,--generar correlativo
-              v_boletos_bs.ruta,--recuperar de tablas
-              --v_suma_importe.comision_total,
-              'activo',
-              p_id_usuario,
-              now()
-              )RETURNING id_acm into v_id_acm_bs;
+                          insert into obingresos.tacm(
+                          id_moneda,
+                          id_archivo_acm_det,
+                          fecha,
+                          numero,
+                          ruta,
+                          estado_reg,
+                          id_usuario_reg,
+                          fecha_reg
+                          ) values(
+                          1,
+                          v_registros.id_archivo_acm_det,
+                          now(),
+                          v_correlativo,--generar correlativo
+                          v_boletos_bs.ruta,--recuperar de tablas
+                          --v_suma_importe.comision_total,
+                          'activo',
+                          p_id_usuario,
+                          now()
+                          )RETURNING id_acm into v_id_acm_bs;
 
+                       /*UPDATE obingresos.tacm SET
+                       numero = v_correlativo
+                       Where id_acm = v_id_acm_bs;*/
 
+                     /* select ges.id_gestion
+                      into v_id_gestion
+                      from param.tgestion ges
+                      where ges.gestion = extract(YEAR FROM now());*/
 
-           /*UPDATE obingresos.tacm SET
-		   numero = v_correlativo
-		   Where id_acm = v_id_acm_bs;*/
+                      Select corre.num_actual
+                      into
+                      v_ultimo_numero
+                      from param.tcorrelativo corre
+                      inner join param.tdocumento d on d.id_documento = corre.id_documento
+                      inner join segu.tsubsistema s on s.id_subsistema = d.id_subsistema
+                      and s.codigo = 'OBINGRESOS'
+                      WHERE d.estado_reg='activo' and d.codigo = 'ACM'
+                      order by corre.id_correlativo DESC
+                      limit 1; --and corre.id_gestion = v_id_gestion;
 
-          Select corre.num_actual
-          into
-          v_ultimo_numero
-          from param.tcorrelativo corre
-          inner join param.tdocumento d on d.id_documento = corre.id_documento
-          inner join segu.tsubsistema s on s.id_subsistema = d.id_subsistema
-          and s.codigo = 'OBINGRESOS'
-          WHERE d.estado_reg='activo' and d.codigo = 'ACM';
+                      UPDATE obingresos.tarchivo_acm ac SET
+                      ultimo_numero = (v_ultimo_numero)
+                      Where ac.id_archivo_acm = v_parametros.id_archivo_acm::INTEGER;
 
-          UPDATE obingresos.tarchivo_acm ac SET
-		  ultimo_numero = (v_ultimo_numero)
-		  Where ac.id_archivo_acm = v_parametros.id_archivo_acm::INTEGER;
-
-          ELSE
-          		raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
-          end if;
+                  ELSE
+                        raise exception 'La Agencia: % es del tipo: % el ACM se genera solo con Agencias del Tipo NOIATA',v_registros.nombre, v_registros.tipo_agencia;
+                  end if;
 
          -- raise exception 'EL ultimo numero es: %', v_ultimo_numero;
-    end if;
+   			 end if;
 
-              if v_registros.porcentaje = 2 or v_registros.porcentaje = 4 then
-              insert into obingresos.tacm_det(
-              id_acm,
-              id_detalle_boletos_web,
-              neto,
-              over_comision,
-              fecha_reg,
-              id_usuario_reg,
-              com_bsp,
-              moneda,
-              td,
-              porcentaje_over
-              )
-              VALUES(
-              v_id_acm_bs,
-              v_boletos_bs.id_detalle_boletos_web,
-              v_boletos_bs.neto,
-              (v_boletos_bs.neto * v_registros.porcentaje)/100,
-              now(),
-              p_id_usuario,
-              v_boletos_bs.comision*(-1),
-              v_boletos_bs.moneda,
-              v_boletos_bs.tipdoc,
-              v_registros.porcentaje
-              );
+           if v_registros.porcentaje = 2 or v_registros.porcentaje = 4 then
+                    insert into obingresos.tacm_det(
+                    id_acm,
+                    id_detalle_boletos_web,
+                    neto,
+                    over_comision,
+                    fecha_reg,
+                    id_usuario_reg,
+                    com_bsp,
+                    moneda,
+                    td,
+                    porcentaje_over
+                    )
+                    VALUES(
+                    v_id_acm_bs,
+                    v_boletos_bs.id_detalle_boletos_web,
+                    v_boletos_bs.neto,
+                    (v_boletos_bs.neto * v_registros.porcentaje)/100,
+                    now(),
+                    p_id_usuario,
+                    v_boletos_bs.comision*(-1),
+                    v_boletos_bs.moneda,
+                    v_boletos_bs.tipdoc,
+                    v_registros.porcentaje
+                    );
 
-          select round (sum(acmdet.over_comision),2)
-           						into v_suma_importe
-								from obingresos.tacm_det acmdet
-                        		where id_acm = v_id_acm_bs;
-
-           UPDATE obingresos.tacm SET
-		   importe = v_suma_importe
-		   Where id_acm = v_id_acm_bs;
-
-           UPDATE obingresos.tarchivo_acm_det SET
-		   importe_total_mb = v_suma_importe
-		   Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-
-           select round (sum(acmdet.neto),2)
-           						into v_suma_neto
-								from obingresos.tacm_det acmdet
-                        		where id_acm = v_id_acm_bs;
-
-           UPDATE obingresos.tarchivo_acm_det SET
-		   neto_total_mb = v_suma_neto
-		   Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-
-           select count(acmdet.id_acm)
-           into v_contador_boletos
-           from obingresos.tacm_det acmdet
-           where acmdet.id_acm = v_id_acm_bs;
-
-           UPDATE obingresos.tarchivo_acm_det SET
-		   cant_bol_mb = v_contador_boletos
-		   Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
-
-          -- raise exception 'Los datos son: %', v_contador_boletos;
-
-
-          select round (sum(acmdet.com_bsp),2)
-           						into v_suma_bsp
-								from obingresos.tacm_det acmdet
-                        		where id_acm = v_id_acm_bs;
-
-           UPDATE obingresos.tacm SET
-		   total_bsp = v_suma_bsp
-		   Where id_acm = v_id_acm_bs;
-
-           ELSE
+		   ELSE
            		raise exception 'El porcentaje es: %  y no se encuentra en el rango de porcentajes permitidos: 2 o 4. ',v_registros.porcentaje ;
            end if;
 
 
          end loop;
 
+
+
+          --OBTENEMOS LA SUMA DE LA COMISION Y LO ALMACENAMOS EN EL CAMPO IMPORTE DE ACM
+                select round (sum(acmdet.over_comision),2), round (sum(acmdet.neto),2), count(acmdet.id_acm)
+                        into v_suma_importe, v_suma_neto, v_contador_boletos
+                        from obingresos.tacm_det acmdet
+                        where id_acm = v_id_acm_sus;
+
+
+
+
+               select round (sum(acmdet.over_comision),2), round (sum(acmdet.neto),2), count(acmdet.id_acm), round (sum(acmdet.com_bsp),2)
+           						into v_suma_importe, v_suma_neto, v_contador_boletos, v_suma_bsp
+								from obingresos.tacm_det acmdet
+                        		where id_acm = v_id_acm_bs;
+
+
+
+                  --OBTENEMOS LA CANTIDAD DE BOLETOS Y ACTUALIZAMOS EN EL CAMPO CAT_BOL_MT EN ARCHIVO ACM DET
+                 /*select count(acmdet.id_acm)
+                 into v_contador_boletos
+                 from obingresos.tacm_det acmdet
+                 where acmdet.id_acm = v_id_acm_sus;*/
+
+
+                 UPDATE obingresos.tacm SET
+                 importe = v_suma_importe
+                 Where id_acm = v_id_acm_sus;
+
+                 UPDATE obingresos.tacm SET
+                 importe = v_suma_importe,
+                 total_bsp = v_suma_bsp
+                 Where id_acm = v_id_acm_bs;
+                -----------------------------------------------------------------------------
+
+                 ---ACTUALIZAMOS EL CAMPO IMPORTE TOTAL MT EN LA TABLA ARCHIVO ACM DET
+                 UPDATE obingresos.tarchivo_acm_det SET
+                 importe_total_mt = v_suma_importe,
+                 neto_total_mt = v_suma_neto,
+                 cant_bol_mt = v_contador_boletos,
+
+                 importe_total_mb = v_suma_importe,
+                 neto_total_mb = v_suma_neto,
+                 cant_bol_mb = v_contador_boletos
+                 Where id_archivo_acm_det=v_registros.id_archivo_acm_det;
+
+
          --################################################################################--
 
-end loop;
-
-
-
-
+end loop;/*FIN RECUPERAR AGENCIAS*/
 
 
 			--Definicion de la respuesta
@@ -602,26 +578,11 @@ end loop;
                       v_length = array_length(v_arreglo,1);
 
         	update obingresos.tarchivo_acm_det ac set
-            importe_total_mt = null
-            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
-
-            update obingresos.tarchivo_acm_det ac set
-            neto_total_mt = null
-            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
-
-            update obingresos.tarchivo_acm_det ac set
-            cant_bol_mt = null
-            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
-
-            update obingresos.tarchivo_acm_det ac set
-            importe_total_mb = null
-            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
-
-            update obingresos.tarchivo_acm_det ac set
-            neto_total_mb = null
-            where ac.id_archivo_acm = v_parametros.id_archivo_acm;
-
-            update obingresos.tarchivo_acm_det ac set
+            importe_total_mt = null,
+            neto_total_mt = null,
+            cant_bol_mt = null,
+            importe_total_mb = null,
+            neto_total_mb = null,
             cant_bol_mb = null
             where ac.id_archivo_acm = v_parametros.id_archivo_acm;
 
@@ -630,7 +591,7 @@ end loop;
             where ac.id_archivo_acm = v_parametros.id_archivo_acm::integer;
 
             ---RESETEAR CORRELATIVO
-             Select
+            Select
             arch.ultimo_numero
             into v_resetear
             from obingresos.tarchivo_acm arch
@@ -639,19 +600,19 @@ end loop;
 			limit 1;
 
             if(v_resetear is null)then
-            v_resetear = 0;
-
-            UPDATE param.tcorrelativo corre
- 			SET 		num_actual = v_resetear,
-            			num_siguiente=(v_resetear+1)
-
-          	WHERE id_documento=41;
-            ELSE
-            UPDATE param.tcorrelativo corre
- 			SET 		num_actual = v_resetear,
-            			num_siguiente=(v_resetear+1)
-            WHERE id_documento=41;
+            	v_resetear = 0;
             end if;
+
+            /*select ges.id_gestion
+            into v_id_gestion
+            from param.tgestion ges
+            where ges.gestion = extract(YEAR FROM now());*/
+
+            UPDATE param.tcorrelativo corre
+            SET 		num_actual = v_resetear,
+                        num_siguiente=(v_resetear+1)
+            WHERE id_documento=41;-- and id_gestion = v_id_gestion;
+
             -----------------------------------------
 
 
@@ -718,3 +679,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_acm_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

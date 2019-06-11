@@ -1131,6 +1131,15 @@ from detalle';
         from obingresos.tperiodo_venta pe
         where  v_parametros.fecha_ini::date between pe.fecha_ini and pe.fecha_fin;
 
+        if (v_id_periodo_venta_ini is null) then
+            select pe.id_periodo_venta
+            into v_id_periodo_venta_ini
+            from obingresos.tperiodo_venta pe
+            where pe.fecha_ini >= v_parametros.fecha_ini::date
+            order by pe.id_periodo_venta ASC
+            limit 1;
+        end if;
+
         select
         pe.id_periodo_venta
         into v_id_periodo_venta_fin
@@ -1869,3 +1878,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_reporte_cuenta_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

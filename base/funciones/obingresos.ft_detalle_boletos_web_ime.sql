@@ -294,8 +294,8 @@ $body$
           v_fecha = v_fecha +  interval '1 day';
         end if;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
-        --from generate_series('01/08/2017'::date,
-        from generate_series('01/04/2019'::date,
+        from generate_series('01/08/2017'::date,
+        --from generate_series('01/04/2019'::date,
                              --'02/04/2019', '1 day'::interval) i;
                              now()::date - interval '1 day', '1 day'::interval) i;
 
@@ -319,7 +319,8 @@ $body$
     elsif(p_transaccion='OBING_BOWEBPROC_MOD')then
 
       begin
-      	for v_fecha in select i::date
+       /*COMENTAR EL LLAMADO PARA QUE NO EJECUTE LA ACTUALIZACION A FUTURO DESCOMENTAR*/
+      /*	for v_fecha in select i::date
         from generate_series('01/08/2017'::date,
         --from generate_series('01/04/2019'::date,
 
@@ -336,25 +337,24 @@ $body$
               where origen = 'web' and procesado = 'no' and fecha = v_fecha
               --limit 1
               loop
-                --raise exception 'verificar billete:%.',v_registros.billete;
-                --execute ('select informix.f_modificar_datos_web(''9302402518751'')');
-                --raise exception 'llega aqui billete desde ingresso %',v_registros.billete;
-                execute ('select informix.f_modificar_datos_web('''||v_registros.billete::varchar||''')');
-                --execute ('select informix.f_modificar_datos_web(ltrim(rtrim((''' || v_registros.billete || '''))))');
+
+                --execute ('select informix.f_modificar_datos_web('''||v_registros.billete::varchar||''')');
+
 
 
 
               end loop;
           end if;
-        end loop;
+        end loop;*/
 
-        for v_registros in
+       /* for v_registros in
         select  *
         from obingresos.tventa_web_modificaciones vwm
         where tipo = 'reemision' and procesado = 'no' loop
 
           execute ('select informix.f_modificar_datos_web_reemision(''' || v_registros.nro_boleto_reemision || ''',''' || v_registros.nro_boleto || ''')');
-        end loop;
+        end loop;*/
+ /*****************************************************************************************/
 
 
         --Definicion de la respuesta
@@ -405,3 +405,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_detalle_boletos_web_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

@@ -53,8 +53,29 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
                 this.store.baseParams.pes_estado = 'no_revisados';
                 this.store.baseParams.todos = 'no';
-                this.init();
 
+                /********************************OBTENEMOS LA MONEDA BASE*******************************************/
+                this.tipo_cambio = 0;
+                var fecha = new Date();
+                var dd = fecha.getDate();
+                var mm = fecha.getMonth() + 1; //January is 0!
+                var yyyy = fecha.getFullYear();
+                this.fecha_actual = dd + '/' + mm + '/' + yyyy;        ;
+                Ext.Ajax.request({
+                    url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/getTipoCambio',
+                    params:{fecha_cambio:this.fecha_actual},
+                    success: function(resp){
+                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                        //this.tipo_cambio = reg.ROOT.datos.v_tipo_cambio;
+                        this.store.baseParams.moneda_base = reg.ROOT.datos.v_codigo_moneda;
+                    },
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+                /***********************************************************************************/
+
+                this.init();
                 this.addButton('btnAnularBoleto',
                     {
                         //text: 'Anular Boleto',
@@ -1396,7 +1417,6 @@ header("content-type: text/javascript; charset=UTF-8");
             bedit:false,
 
             iniciarEventos : function () {
-
                 this.Cmp.monto_forma_pago.on('change',function(field,newValue,oldValue){
                     var valueOld = this.getMontoMonBol(oldValue, this.Cmp.moneda_fp1.getValue());
                     var valueNew = this.getMontoMonBol(newValue, this.Cmp.moneda_fp1.getValue());
