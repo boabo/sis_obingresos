@@ -19,6 +19,9 @@ header("content-type:text/javascript; charset=UTF-8");
 
             this.txtSearch = new Ext.form.TextField();
             this.txtSearch.enableKeyEvents = true;
+            this.txtSearch.maxLength = 13;
+            this.txtSearch.maxLengthText = 'Ha exedido el numero de caracteres permitidos';
+            this.txtSearch.msgTarget = 'under';
 
             this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
             //this.txtSearch.on('keydown', this.onCombinacion,this);
@@ -65,8 +68,11 @@ header("content-type:text/javascript; charset=UTF-8");
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').disable();
                 }else {*/
+                if(data.trans_code !='EMDS'){
                     this.getBoton('btnImprimir').setVisible(true);
                     this.getBoton('btnImprimir').enable();
+                }
+
                 //}
             /*}else if(data.trans_code != 'EMDS'){
                 if(data.trans_code_exch != 'ORIG'){
@@ -146,7 +152,8 @@ header("content-type:text/javascript; charset=UTF-8");
                     url : '../../sis_obingresos/control/Boleto/traerReservaBoletoExch',
                     params : {
                         'pnr' : rec.localizador,
-                        'id_boletos_amadeus': cad
+                        'id_boletos_amadeus': cad,
+                        'nro_boleto' : rec.nro_boleto
                     },
                     success : this.successExport,
                     failure : this.conexionFailure,

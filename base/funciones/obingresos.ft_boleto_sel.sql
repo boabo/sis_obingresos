@@ -49,6 +49,11 @@ DECLARE
     v_cont_regional		integer = 0;
     v_cont_inter		integer = 0;
     v_tipo_emision		varchar='F';
+    v_contador_exch		integer = 0;
+    v_record_exch		record;
+    v_max_exch			varchar;
+    v_nro_boleto		varchar;
+    v_code_exch			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -715,8 +720,14 @@ BEGIN
             inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
             where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';
 
+
+
             v_exch_sel = string_to_array(v_parametros.id_boletos_amadeus,',');
 
+            select tba.*
+            into v_record_exch
+            from obingresos.tboleto_amadeus tba
+            where tba.id_boleto_amadeus = any(v_exch_sel);
 
             /*trans_code in ('TKTT') and fecha_emision = v_parametros.localizador->>'fecha_creacion'::date
             and localizador = v_parametros.localizador->>'localizador_resiber';*/
@@ -980,17 +991,57 @@ BEGIN
                   );
 
             end if;
-            --raise exception 'v_tipo_emision %',v_tipo_emision;
-            if v_tipo_emision = 'R' then
-                update  obingresos.tboleto_amadeus set
-                    impreso = 'si',
-                    trans_code_exch = 'EXCH'
-                where id_boleto_amadeus = any(v_exch_sel);
+
+            select count(tba.id_boleto_amadeus)
+            into v_contador_exch
+            from obingresos.tboleto_amadeus tba
+            where tba.localizador = v_parametros.pnr and tba.trans_code_exch = 'EXCH';
+
+
+
+            v_nro_boleto = ('930'||v_parametros.nro_boleto);
+
+            select tba.trans_code_exch
+            into v_code_exch
+            from obingresos.tboleto_amadeus tba
+            where tba.nro_boleto = v_nro_boleto;
+
+            if v_tipo_emision = 'R' and v_record_exch.trans_code = 'TKTT' and v_contador_exch = 0 and (v_code_exch is null or v_code_exch = '') then
+
+                select max(tba.nro_boleto)
+            	into v_max_exch
+            	from obingresos.tboleto_amadeus tba
+            	where tba.localizador = v_parametros.pnr and tba.trans_code != 'EMDS';
+
+                if v_nro_boleto  > v_max_exch then
+                  	update  obingresos.tboleto_amadeus set
+                      impreso = 'si',
+                      trans_code_exch = 'EXCH'
+                    where nro_boleto = v_nro_boleto::varchar;
+                  	--where id_boleto_amadeus = any(v_exch_sel);
+                else
+                	update  obingresos.tboleto_amadeus set
+                      impreso = 'si',
+                      trans_code_exch = 'EXCH'
+                  	where nro_boleto = v_max_exch::varchar;
+                    --where id_boleto_amadeus = any(v_exch_sel);
+                end if;
+
             else
-            	update  obingresos.tboleto_amadeus set
-                  impreso = 'si',
-                  trans_code_exch = 'ORIG'
-              where id_boleto_amadeus = any(v_exch_sel);
+
+            	if v_code_exch = 'EXCH' then
+                  	update  obingresos.tboleto_amadeus set
+                    	impreso = 'si',
+                    	trans_code_exch = 'EXCH'
+                    where nro_boleto = v_nro_boleto::varchar;
+                  	--where id_boleto_amadeus = any(v_exch_sel);
+                else
+                	update  obingresos.tboleto_amadeus set
+                    	impreso = 'si',
+                    	trans_code_exch = 'ORIG'
+                    where nro_boleto = v_nro_boleto::varchar;
+                  	--where id_boleto_amadeus = any(v_exch_sel);
+                end if;
             end if;
 
 			/*select tba.tc

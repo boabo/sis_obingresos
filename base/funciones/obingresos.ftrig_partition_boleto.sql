@@ -144,7 +144,7 @@ $body$
                  coalesce ('''' || NEW.agente_venta || '''','NULL')||','||
                  coalesce ('''' || NEW.forma_pago || '''','NULL')||','||
                  coalesce ('''' || NEW.fare_calc || '''','NULL');
-        raise notice 'valores %',valores;
+        --raise notice 'valores %',valores;
         consulta='INSERT INTO obingresos.'||nombre_tabla||' (' || campos || ') VALUES ('||valores||');';
 
         EXECUTE(consulta);

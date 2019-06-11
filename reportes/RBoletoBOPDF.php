@@ -275,8 +275,8 @@ class RBoletoBOPDF extends  ReportePDF {
 
         $this->SetFont('Courier','',8);
         //////texto
-        /*$this->Cell(45,5,'AVISO',0,1,'L');
-        $this->Cell(45,5,'EL TRANSPORTE Y OTROS SERVICIOS PROVISTOS POR LA COMPAÑÍA ESTÁN SUJETOS A LAS
+        $this->Cell(45,5,'AVISO',0,1,'L');
+        /*$this->Cell(45,5,'EL TRANSPORTE Y OTROS SERVICIOS PROVISTOS POR LA COMPAÑÍA ESTÁN SUJETOS A LAS
                             CONDICIONES DE TRANSPORTE, LAS CUÁLES SE INCORPORAN POR REFERENCIA. ESTAS
                             CONDICIONES PUEDEN SER OBTENIDAS DE LA COMPAÑÍA EMISORA.
                             ' . $validez,0,1,'L');
@@ -303,7 +303,40 @@ class RBoletoBOPDF extends  ReportePDF {
 
         ////////texto
 
-        $this->Cell(45,5,'VALIDEZ DEL BILLETE',0,0,'L');
+        $tbl = '<table border="0" style="font-size: 8pt; text-align: justify">
+                <tr><td>EL TRANSPORTE Y OTROS SERVICIOS PROVISTOS POR LA COMPAÑÍA ESTÁN SUJETOS A LAS
+                        CONDICIONES DE TRANSPORTE, LAS CUÁLES SE INCORPORAN POR REFERENCIA. ESTAS
+                        CONDICIONES PUEDEN SER OBTENIDAS DE LA COMPAÑÍA EMISORA.
+                </td></tr><br>
+                <tr><td>EL ITINERARIO/RECIBO CONSTITUYE EL BILLETE DE PASAJE A EFECTOS DEL ARTÍCULO 3
+                        DE LA CONVENCIÓN DE VARSOVIA, A MENOS QUE EL TRANSPORTISTA ENTREGUE AL
+                        PASAJERO OTRO DOCUMENTO QUE CUMPLA CON LOS REQUISITOS DEL ARTÍCULO 3.
+                </td></tr><br>
+                <tr><td>SE INFORMA A LOS PASAJEROS QUE REALICEN VIAJES EN LOS QUE EL PUNTO DE DESTINO
+                        O UNA O MAS ESCALAS INTERMEDIAS SE EFECTUEN EN UN PAIS QUE NO SEA EL DE
+                        PARTIDA DE SU VUELO, QUE PUEDEN SER DE APLICACION A LA TOTALIDAD DE SU VIAJE,
+                        INCLUIDA CUALQUIER PARTE DEL MISMO DENTRO DE UN PAIS, LOS TRATADOS
+                        INTERNACIONALES COMO LA CONVENCION DE MONTREAL O SU PREDECESOR LA CONVENCION
+                         DE VARSOVIA, INCLUYENDO SUS MODIFICACIONES (EL SISTEMA DE CONVENCION DE
+                        VARSOVIA).  EN EL CASO DE AQUELLOS PASAJEROS, EL TRATADO APLICABLE, INCLUYENDO
+                        LAS CONDICIONES ESPECIALES DEL TRANSPORTE INCORPORADAS A CUALQUIER TARIFA
+                        APLICABLE, RIGE Y PUEDE LIMITAR LA RESPONSABILIDAD DEL TRANSPORTISTA EN CASOS
+                        DE MUERTE O LESIONES PERSONALES, PERDIDA O DANOS AL EQUIPAJE Y RETRASOS.
+
+                </td></tr><br>
+                <tr><td>EL TRANSPORTE DE MATERIALES PELIGROSOS TALES COMO AEROSOLES, FUEGOS
+                        ARTIFICIALES Y LÍQUIDOS INFLAMABLES A BORDO DEL AVIÓN QUEDA ESTRICTAMENTE
+                        PROHIBIDO. SI USTED NO COMPRENDE ESTAS RESTRICCIONES, SÍRVASE OBTENER MAYOR
+                        INFORMACIÓN A TRAVÉS DE SU COMPAÑÍA AÉREA.
+
+                </td></tr>
+                </table>
+                ';
+
+        //$this->Ln(5);
+        $this->writeHTML ($tbl);
+
+        /*$this->Cell(45,5,'VALIDEZ DEL BILLETE',0,0,'L');
         $this->Cell(150,5,': 1 AñO',0,1,'L');
 
         if ($validez == '1') {
@@ -317,7 +350,7 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->Cell(45,5,'VALIDEZ DE LA TARIFA',0,0,'L');
         $this->Cell(150,5,': ' . $validez,0,1,'L');
 
-        $impuestos = /*$datos_maestro[0]['origen']*/'BO'=='BO'?' +  IMPUESTO BOLIVIANO RETENIDO':'';
+        $impuestos = $datos_maestro[0]['origen']'BO'=='BO'?' +  IMPUESTO BOLIVIANO RETENIDO':'';
 
         $this->Cell(45,5,'REEMBOLSO',0,0,'L');
         $this->Cell(3,5,':',0,0,'R');
@@ -375,7 +408,7 @@ class RBoletoBOPDF extends  ReportePDF {
             $this->Cell(150, 5, ': 1 PIEZA 20 KG', 0, 1, 'L');
         } else {
             $this->Cell(150, 5, ': 1 PIEZA 30 KG', 0, 1, 'L');
-        }
+        }*/
 
 
     }
