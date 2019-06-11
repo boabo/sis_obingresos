@@ -39,15 +39,28 @@ class ACTReporteCuenta extends ACTbase{
         }
 
     }
+    function AnteriorCierrePeriodo(){
+        $this->objFunc=$this->create('MODReporteCuenta');
+        $cbteHeader = $this->objFunc->AnteriorCierrePeriodo($this->objParam);
+        if($cbteHeader->getTipo() == 'EXITO'){
+            return $cbteHeader;
+        }
+        else{
+            $cbteHeader->imprimirRespuesta($cbteHeader->generarJson());
+            exit;
+        }
+
+    }
     function listarReporteCuenta(){
 
         $dataSource = $this->EstadoCuenta();
         $resumen = $this->ResumenEstadoCC();
+        $anteriorCierrePeriodo= $this->AnteriorCierrePeriodo();
        // var_dump($resumen);exit;
         $nombreArchivo = uniqid(md5(session_id()).'Estado Cuentas').'.xls';
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $reporte =new REstadoCuentaCorriente($this->objParam);
-        $reporte->datosHeader($dataSource->getDatos(),$resumen->getDatos());
+        $reporte->datosHeader($dataSource->getDatos(),$resumen->getDatos(),$anteriorCierrePeriodo->getDatos());
         $reporte->generarReporte();
         $this->mensajeExito=new Mensaje();
         $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado','Se generó con éxito el reporte: '.$nombreArchivo,'control');
@@ -79,7 +92,8 @@ class ACTReporteCuenta extends ACTbase{
              $temp['monto_credito'] = $this->res->extraData['total_creditos'];
              $temp['monto_debito'] = $this->res->extraData['total_debitos'];
              $temp['monto_ajustes'] = $this->res->extraData['total_ajustes'];
-             $temp['saldo'] = $this->res->extraData['total_saldo'];
+             $temp['saldo_con_boleto'] = $this->res->extraData['total_saldo_con_boleto'];
+             $temp['saldo_sin_boleto'] = $this->res->extraData['total_saldo_sin_boleto'];
              $temp['tipo_reg'] = 'summary';
              $temp['id_agencia'] = 0;
              $this->res->total++;
@@ -99,13 +113,28 @@ class ACTReporteCuenta extends ACTbase{
         }
 
     }
+    function PeriodoAnterior(){
+        $this->objFunc=$this->create('MODReporteCuenta');
+        $cbteHeader = $this->objFunc->PeriodoAnterior($this->objParam);
+        if($cbteHeader->getTipo() == 'EXITO'){
+            return $cbteHeader;
+        }
+        else{
+            $cbteHeader->imprimirRespuesta($cbteHeader->generarJson());
+            exit;
+        }
+
+    }
+
     function listarReporteCuentaIng(){
         $dataSource = $this->EstadoCuentaIng();
+        $periodoAnterior = $this->PeriodoAnterior();
+
         // var_dump($resumen);exit;
         $nombreArchivo = uniqid(md5(session_id()).'Estado Cuentas').'.xls';
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $reporte =new RReporteEstCuentaIng($this->objParam);
-        $reporte->datosHeader($dataSource->getDatos());
+      $reporte->datosHeader($dataSource->getDatos(),$periodoAnterior->getDatos());
         $reporte->generarReporte();
         $this->mensajeExito=new Mensaje();
         $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado','Se generó con éxito el reporte: '.$nombreArchivo,'control');
@@ -125,13 +154,26 @@ class ACTReporteCuenta extends ACTbase{
         }
 
     }
+    function PeriodoAnteriorMov(){
+        $this->objFunc=$this->create('MODReporteCuenta');
+        $cbteHeader = $this->objFunc->PeriodoAnteriorMov($this->objParam);
+        if($cbteHeader->getTipo() == 'EXITO'){
+            return $cbteHeader;
+        }
+        else{
+            $cbteHeader->imprimirRespuesta($cbteHeader->generarJson());
+            exit;
+        }
+
+    }
     function listarReporteMovimientos(){
         $dataSource = $this->Movimientos();
+        $periodoAnteriorMov = $this->PeriodoAnteriorMov();
         // var_dump($resumen);exit;
         $nombreArchivo = uniqid(md5(session_id()).'Estado Cuentas').'.xls';
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $reporte =new RMovimientos($this->objParam);
-        $reporte->datosHeader($dataSource->getDatos());
+        $reporte->datosHeader($dataSource->getDatos(),$periodoAnteriorMov->getDatos());
         $reporte->generarReporte();
         $this->mensajeExito=new Mensaje();
         $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado','Se generó con éxito el reporte: '.$nombreArchivo,'control');

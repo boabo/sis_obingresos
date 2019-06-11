@@ -128,8 +128,18 @@ DECLARE
     v_error_mes varchar;
     v_id_boleto_a integer;
 
+    v_id_correo_det_vw		varchar;
 
-
+    --F.E.A
+    v_code 					varchar;
+    v_issue_indicator		varchar;
+	v_cont_canje			integer = 1;
+	v_exchange				varchar[];
+    v_exch_sel				integer[];
+    v_exch_orig_exch		record;
+    v_exchange_json			jsonb;
+    v_tipo_emision			varchar;
+    v_nombre_pasajero		varchar = '';
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -1842,6 +1852,7 @@ BEGIN
       RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
 
      	      end if;
+
         	--recuperamos la moneda
         	v_reporte = v_parametros.boletos :: JSON ->> 'queryReportDataDetails';
             v_moneda = v_reporte :: JSON ->>'currencyInfo';
@@ -1871,6 +1882,11 @@ BEGIN
                   --recuperamos estado boleto (voided)
                   v_voided = v_record_json_boletos.json_array_elements::json->> 'transactionDataDetails';
                   v_voided = v_voided::json->>'transactionDetails';
+
+                  --F.E.A
+                  v_code = v_voided::json->>'code';
+                  v_issue_indicator = v_voided::json->>'issueIndicator';
+
                   v_voided = v_voided::json->>'code';
 
                   if v_voided = 'CANX' then
@@ -2011,6 +2027,17 @@ BEGIN
                   '||v_parametros.id_agencia||'::integer,
                   '''||v_tipo_pago_amadeus||'''::varchar
                   )';*/
+                  if v_voided = 'EMDS' then
+                    if (select 1 from obingresos.tboleto_amadeus tba
+                    			where tba.trans_code = 'TKTT' and tba.fecha_emision = v_parametros.fecha_emision::date
+                                and tba.localizador = v_localizador::varchar and tba.pasajero = v_pasajero::varchar) then
+
+                                update  obingresos.tboleto_amadeus set
+                                	trans_code_exch = 'EXCH'
+                                where trans_code = 'TKTT' and fecha_emision = v_parametros.fecha_emision::date
+                                and localizador = v_localizador::varchar and pasajero = v_pasajero::varchar;
+                    end if;
+                  end if;
 
                   INSERT INTO obingresos.tboleto_amadeus
                   (nro_boleto,
@@ -2032,7 +2059,10 @@ BEGIN
                   id_boleto_amadeus,
                   agente_venta,
                   id_agencia,
-                  forma_pago
+                  forma_pago,
+                  trans_code,
+                  trans_issue_indicator
+                  --trans_code_exch
                   )VALUES(v_nro_boleto::varchar,
                   v_total::numeric,
                   v_comision::numeric,
@@ -2052,7 +2082,10 @@ BEGIN
                   v_id_boleto,
                   v_agente_venta::varchar,
                   v_parametros.id_agencia::integer,
-                  v_tipo_pago_amadeus::varchar
+                  v_tipo_pago_amadeus::varchar,
+                  v_code::varchar,
+                  v_issue_indicator::varchar
+                  --case when v_voided = 'EMDS' then 'EMDS' else 'ORIG' end
                   );
 
                   if(trim(v_tipo_pago_amadeus)='CA')then
@@ -2702,6 +2735,112 @@ BEGIN
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
             v_resp = pxp.f_agrega_clave(v_resp,'id_log_viajero_frecuente',v_id_log_viajero_frecuente::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+	/*********************************
+ 	#TRANSACCION:  'OBING_MAIL_DET_VW'
+ 	#DESCRIPCION:	Envio de correos Error de Detalle Ventas Web
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		08-12-2019 11:42:25
+	***********************************/
+
+	elsif(p_transaccion='OBING_MAIL_DET_VW')then
+
+		begin
+			v_id_correo_det_vw = obingresos.f_send_correo_detalle_diario_vw();
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Correo enviado');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_alarma',v_id_correo_det_vw::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+	/*********************************
+ 	#TRANSACCION:  'OBING_VER_EXCH_IME'
+ 	#DESCRIPCION:	Verificar y actualizar si es un exchange.
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		02-02-2019 11:42:25
+	***********************************/
+
+	elsif(p_transaccion='OBING_VER_EXCH_IME')then
+
+		begin
+
+        	if jsonb_typeof(v_parametros.tipo_emision) = 'string' then
+            	v_tipo_emision = v_parametros.tipo_emision::varchar;
+                /*SELECT value
+                into v_tipo_emision
+   				FROM jsonb_array_elements_text(v_parametros.tipo_emision);*/
+            else
+                for v_exchange_json in SELECT * FROM jsonb_array_elements(v_parametros.tipo_emision)  loop
+                    v_tipo_emision = v_exchange_json->>'tipo_emision';
+                end loop;
+            end if;
+
+            v_exch_sel = string_to_array(v_parametros.id_boletos_amadeus,',');
+
+
+            if v_parametros.data_field similar to '[0-9]%' then
+            	select array_agg(tba.nro_boleto)
+            	into v_exchange
+            	from obingresos.tboleto_amadeus tba
+            	where tba.nro_boleto = v_parametros.data_field::varchar;
+            else
+            	if v_parametros.exchange = true and array_length(v_exch_sel,1) = 1 then
+
+
+                	for v_record in select tba.nro_boleto, tba.pasajero
+                                            from obingresos.tboleto_amadeus tba
+                                            where tba.localizador = v_parametros.data_field::varchar and tba.trans_code != 'EMDS' loop
+
+                        if 	v_record.pasajero != v_nombre_pasajero then
+                        	v_exchange[v_cont_canje] = v_record.nro_boleto;
+                        	v_nombre_pasajero = v_record.pasajero;
+                            v_cont_canje = v_cont_canje + 1;
+                        end if;
+                    end loop;
+
+                    if array_length(v_exchange,1) = 1 then
+
+                    	select max(tba.nro_boleto) as exchange, min(tba.nro_boleto) as original
+                        into v_exch_orig_exch
+                        from obingresos.tboleto_amadeus tba
+                        where tba.localizador = v_parametros.data_field::varchar and tba.trans_code != 'EMDS';
+
+                    	v_exchange = string_to_array(v_exch_orig_exch.exchange,',');
+
+                        update obingresos.tboleto_amadeus set
+                            trans_code_exch = 'ORIG'
+                        where nro_boleto = v_exch_orig_exch.original::varchar;
+                    end if;
+
+                else
+                	select array_agg(tba.nro_boleto)
+                  	into v_exchange
+                  	from obingresos.tboleto_amadeus tba
+                  	where tba.localizador = v_parametros.data_field::varchar and tba.trans_code != 'EMDS';
+                end if;
+
+            end if;
+--RAISE EXCEPTION 'v_tipo_emision:%',v_tipo_emision = '"R"';
+            if v_parametros.exchange = true and v_tipo_emision = '"R"' then
+              update  obingresos.tboleto_amadeus set
+                  trans_code_exch = 'EXCH'
+              where trans_code in ('TKTT') and fecha_emision = v_parametros.fecha_emision::date
+              and /*(localizador = v_parametros.pnr or */nro_boleto = any(v_exchange);
+
+            end if;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Actualización Exitosa');
+            v_resp = pxp.f_agrega_clave(v_resp,'exchange', v_parametros.exchange::varchar);
+            v_resp = pxp.f_agrega_clave(v_resp,'tipo_emision',v_tipo_emision::varchar);
+
 
             --Devuelve la respuesta
             return v_resp;

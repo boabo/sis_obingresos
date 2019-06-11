@@ -58,6 +58,7 @@ $body$
     if(p_transaccion='OBING_DETBOWEB_INS')then
 
       begin
+
         for v_registros in (select *
                             from json_populate_recordset(null::obingresos.detalle_boletos,v_parametros.detalle_boletos::json))loop
 
@@ -106,7 +107,21 @@ $body$
           end if;
 
           if (v_error != '') then
-            v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',v_error,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+            --v_id_alarma = (select param.f_inserta_alarma_dblink (p_id_usuario,'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',v_error,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+
+            insert into obingresos.tdetalle_diario_error_vw(
+            	id_usuario,
+                asunto,
+                desc_error,
+                correos,
+                fecha_venta
+            )values(
+            	coalesce(p_id_usuario, 1),
+                'Error al actualizar desde https://ef.boa.bo/Servicios/ServicioInterno.svc/DetalleDiario',
+                v_error,
+                'aldo.zeballos@boa.bo, franklin.espinoza@boa.bo',
+               	v_parametros.fecha
+            );
             raise exception '%, Fecha : %',v_error,v_parametros.fecha;
           end if;
 
@@ -278,9 +293,10 @@ $body$
         else
           v_fecha = v_fecha +  interval '1 day';
         end if;
-        --raise exception '%',v_fecha;
         select pxp.list(to_char(i::date,'MM/DD/YYYY')) into v_fecha_text
         from generate_series('01/08/2017'::date,
+        --from generate_series('01/04/2019'::date,
+                             --'02/04/2019', '1 day'::interval) i;
                              now()::date - interval '1 day', '1 day'::interval) i;
 
 
@@ -303,9 +319,12 @@ $body$
     elsif(p_transaccion='OBING_BOWEBPROC_MOD')then
 
       begin
-      	for v_fecha in select i::date
+       /*COMENTAR EL LLAMADO PARA QUE NO EJECUTE LA ACTUALIZACION A FUTURO DESCOMENTAR*/
+      /*	for v_fecha in select i::date
         from generate_series('01/08/2017'::date,
+        --from generate_series('01/04/2019'::date,
 
+                             --'01/04/2019', '1 day'::interval) i loop
                              now()::date - interval '1 day', '1 day'::interval) i loop
 
 
@@ -315,21 +334,27 @@ $body$
               for v_registros in
               select  *
               from obingresos.tdetalle_boletos_web d
-              where origen = 'web' and procesado = 'no' and fecha = v_fecha loop
+              where origen = 'web' and procesado = 'no' and fecha = v_fecha
+              --limit 1
+              loop
+
+                --execute ('select informix.f_modificar_datos_web('''||v_registros.billete::varchar||''')');
 
 
-                execute ('select informix.f_modificar_datos_web(''' || v_registros.billete || ''')');
+
+
               end loop;
           end if;
-        end loop;
+        end loop;*/
 
-        for v_registros in
+       /* for v_registros in
         select  *
         from obingresos.tventa_web_modificaciones vwm
         where tipo = 'reemision' and procesado = 'no' loop
 
           execute ('select informix.f_modificar_datos_web_reemision(''' || v_registros.nro_boleto_reemision || ''',''' || v_registros.nro_boleto || ''')');
-        end loop;
+        end loop;*/
+ /*****************************************************************************************/
 
 
         --Definicion de la respuesta
@@ -352,7 +377,20 @@ $body$
 
     WHEN OTHERS THEN
       if(p_transaccion='OBING_DETBOWEB_INS')then
-      	v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+      	--v_id_alarma = (select param.f_inserta_alarma_dblink (1,'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,SQLERRM,'miguel.mamani@boa.bo,aldo.zeballos@boa.bo'));
+        insert into obingresos.tdetalle_diario_error_vw(
+            	id_usuario,
+                asunto,
+                desc_error,
+                correos,
+                fecha_venta
+            )values(
+            	coalesce(p_id_usuario, 1),
+                'Error al leer informacion desde venta web para la fecha ' || v_parametros.fecha,
+                SQLERRM,
+                'aldo.zeballos@boa.bo, franklin.espinoza@boa.bo, ismael.valdivia@boa.bo',
+               	v_parametros.fecha
+        );
       end if;
       v_resp='';
       v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
@@ -367,3 +405,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_detalle_boletos_web_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

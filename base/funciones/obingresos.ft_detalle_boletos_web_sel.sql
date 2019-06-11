@@ -342,7 +342,7 @@ $body$
         	v_banco_aux = v_parametros.banco;
         end if;
         --Sentencia de la consulta
-        v_consulta:='(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar,sum(b.total),''ingresos''::varchar as tipo
+        v_consulta:='(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar,sum(bfp.importe),''ingresos''::varchar as tipo
                       from obingresos.tboleto  b
                       inner join obingresos.tboleto_forma_pago bfp on b.id_boleto =bfp.id_boleto
                       inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
@@ -419,7 +419,7 @@ $body$
 
 
             ingresos as
-            		(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar as fecha_texto,b.fecha_emision as fecha,b.localizador as pnr,sum(b.total) as monto,
+            		(select to_char(b.fecha_emision,''DD/MM/YYYY'')::varchar as fecha_texto,b.fecha_emision as fecha,b.localizador as pnr,sum(bfp.importe) as monto,
                     	(case when anu.localizador is not null then
                         	(''[Por anular ingresos] ''|| anu.observaciones)::varchar
                         when ree.localizador is not null then
@@ -504,7 +504,7 @@ $body$
         	(select ''boletos''::varchar,substring(b.medio_pago from 1 for 3)::varchar, m.codigo_internacional::varchar,sum(b.total),NULL::numeric
             from obingresos.tboleto b
             inner join param.tmoneda m on m.id_moneda = b.id_moneda_boleto
-            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'',''TMY'',''TMYU'') and
+            where b.fecha_emision between ''' || v_fecha_ini || ''' and ''' || v_fecha_fin || ''' and b.medio_pago not in (''OTROS'') and
             b.estado_reg = ''activo'' and b.voided = ''no''
             group by b.medio_pago,m.codigo_internacional
             order by b.medio_pago,m.codigo_internacional)
@@ -541,7 +541,7 @@ $body$
             inner join param.tmoneda mon on mon.id_moneda = b.id_moneda_boleto
             where  ((a.fecha = ''' || v_fecha_ini || ''' and b.fecha_emision = ''' || (v_fecha_ini - interval '1 day')::date || ''') or
                     (a.fecha = ''' || (v_fecha_fin + interval '1 day')::date || ''' and b.fecha_emision = ''' || v_fecha_fin || ''')) and
-            b.estado_reg = ''activo'' and b.voided = ''no'' and b.medio_pago not in (''OTROS'',''TMY'') and b.id_moneda_boleto = 1
+            b.estado_reg = ''activo'' and b.voided = ''no'' and b.medio_pago not in (''OTROS'') and b.id_moneda_boleto = 1
             group by b.medio_pago , mon.codigo_internacional
             ';
 

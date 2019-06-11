@@ -181,7 +181,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 type: 'ComboBox',
                 id_grupo: 1,
-                filters: {pfiltro: 'age.nombre#age.codigo_int', type: 'string'},                
+                filters: {pfiltro: 'age.nombre#age.codigo_int', type: 'string'},
                 bottom_filter: true,
                 grid: true,
                 form: true
@@ -206,7 +206,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 config: {
                     name: 'nro_deposito_boa',
                     fieldLabel: 'No Deposito Boa',
-                    allowBlank: false,
+                    allowBlank: true,
                     anchor: '80%',
                     gwidth: 150,
                     maxLength: 70
@@ -252,8 +252,8 @@ header("content-type: text/javascript; charset=UTF-8");
 						else{
 							return '<b><p align="right">Total: &nbsp;&nbsp; </p></b>';
 						}
-					}   
-                    
+					}
+
                 },
                 type: 'ComboRec',
                 id_grupo: 1,
@@ -280,7 +280,7 @@ header("content-type: text/javascript; charset=UTF-8");
 						else{
 							return  String.format('<b><font size=2 >{0}</font><b>', Ext.util.Format.number(record.data.total_deposito,'0,000.00'));
 						}
-					} 
+					}
                 },
                 type: 'NumberField',
                 filters: {pfiltro: 'dep.monto_deposito', type: 'numeric'},
@@ -493,7 +493,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
         },
         bdel: true,
-        beditGroups:[0],
+        beditGroups:[0,1],
         bsave: false,
         bnew: false,
         preparaMenu: function () {
@@ -518,14 +518,14 @@ header("content-type: text/javascript; charset=UTF-8");
         },
         onButtonDel : function () {
         	Ext.MessageBox.prompt('Observaciones','Ingrese las observaciones para la agencia',
-		        function (option,value) { 
+		        function (option,value) {
 		        	if (option == 'ok') {
-			        	this.argumentExtraSubmit = { 
+			        	this.argumentExtraSubmit = {
 	                        'observaciones':value};
 	                	Phx.vista.DepositoPortal.superclass.onButtonDel.call(this);
 	                }
 			    } ,this);
-        	
+
         },
         onButtonNew : function () {
         	this.Cmp.id_agencia.enable();
@@ -534,10 +534,10 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Cmp.fecha.enable();
     		//this.Cmp.id_periodo_venta.enable();
         	Phx.vista.DepositoPortal.superclass.onButtonNew.call(this);
-        	
+
         },
         onButtonEdit : function () {
-        	
+
         	var rec = this.sm.getSelected();
         	/*if (rec.data.estado == 'validado') {
         		this.Cmp.id_agencia.disable();
@@ -557,9 +557,8 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Cmp.id_moneda_deposito.disable();
         	Phx.vista.DepositoPortal.superclass.onButtonEdit.call(this);
         	this.Cmp.tipo.setValue('agencia');
-        	
-        	
+
+
         }
     })
 </script>
-

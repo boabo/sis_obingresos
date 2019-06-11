@@ -873,34 +873,34 @@ CREATE TYPE obingresos.detalle_boletos_portal AS (
 
 ALTER TABLE obingresos.tdetalle_boletos_web
   ADD COLUMN id_periodo_venta INTEGER;
-  
+
 ALTER TABLE obingresos.tboleto_retweb
   ADD COLUMN id_moneda INTEGER;
-  
+
 ALTER TABLE obingresos.tboleto_retweb
   ADD COLUMN comision NUMERIC(18,2);
-  
+
 ALTER TABLE obingresos.tboleto_retweb
   ADD COLUMN pnr VARCHAR(20);
-  
+
 ALTER TABLE obingresos.tmovimiento_entidad
   ADD COLUMN billete VARCHAR(20);
-  
+
  ALTER TABLE obingresos.tboleto_retweb
   ADD COLUMN id_agencia INTEGER;
-  
+
 ALTER TABLE obingresos.tdetalle_boletos_web
   ADD COLUMN id_moneda INTEGER;
-  
+
 ALTER TABLE obingresos.tperiodo_venta_agencia
   ALTER COLUMN deposito_mb SET DEFAULT 0;
 
 ALTER TABLE obingresos.tperiodo_venta_agencia
   ALTER COLUMN deposito_usd SET DEFAULT 0;
-  
+
 ALTER TABLE obingresos.tperiodo_venta_agencia
   DROP COLUMN total_mb_cierre;
-  
+
 ALTER TABLE obingresos.tperiodo_venta_agencia
   DROP COLUMN total_mb_pagado;
 /********************************************F-SCP-JRR-OBINGRESOS-0-24/07/2017********************************************/
@@ -909,27 +909,27 @@ ALTER TABLE obingresos.tperiodo_venta_agencia
 /********************************************I-SCP-JRR-OBINGRESOS-0-04/08/2017********************************************/
 ALTER TABLE obingresos.tagencia
   ADD COLUMN nit VARCHAR(30);
-  
+
 ALTER TABLE obingresos.tdetalle_boletos_web
   ADD COLUMN neto NUMERIC(18,2);
-  
+
 ALTER TABLE obingresos.tboleto_retweb
   ALTER COLUMN tarjeta DROP NOT NULL;
-  
+
 ALTER TABLE obingresos.tboleto_retweb
   ADD COLUMN forma_pago VARCHAR(100);
 
 ALTER TABLE obingresos.tboleto_retweb
   ADD COLUMN neto NUMERIC(18,2);
-  
+
 CREATE TABLE obingresos.tobservaciones_portal (
   id_observaciones_portal SERIAL NOT NULL,
   billete VARCHAR(15) ,
   pnr VARCHAR(15) ,
   total NUMERIC(18,2) NOT NULL,
-  moneda VARCHAR(3),  
+  moneda VARCHAR(3),
   tipo_observacion VARCHAR(20) NOT NULL,
-  observacion TEXT NOT NULL,  
+  observacion TEXT NOT NULL,
   PRIMARY KEY(id_observaciones_portal)
 ) INHERITS (pxp.tbase)
 ;
@@ -1058,24 +1058,24 @@ ALTER TABLE obingresos.tboleto
 CREATE UNIQUE INDEX tdeposito_nro_deposito_agencia ON obingresos.tdeposito
   USING btree (nro_deposito COLLATE pg_catalog."default", id_agencia)
   WHERE tipo='agencia';
-  
+
 CREATE INDEX tdetalle_boletos_web_idx ON obingresos.tdetalle_boletos_web
   USING btree (fecha);
-  
+
 CREATE INDEX tdetalle_boletos_web_idx1 ON obingresos.tdetalle_boletos_web
   USING btree (numero_autorizacion COLLATE pg_catalog."default")
   WHERE origen = 'portal';
-  
+
 /********************************************F-SCP-JRR-OBINGRESOS-0-30/10/2017********************************************/
 
 
 /********************************************I-SCP-JRR-OBINGRESOS-0-11/12/2017********************************************/
 ALTER TABLE obingresos.tagencia
   ADD COLUMN controlar_periodos_pago VARCHAR(2) NOT NULL DEFAULT 'si';
-  
+
 ALTER TABLE obingresos.tagencia
   ADD COLUMN validar_boleta VARCHAR(2) NOT NULL DEFAULT 'si';
-  
+
 ALTER TABLE obingresos.tagencia
   ADD COLUMN bloquear_emision VARCHAR(2) NOT NULL DEFAULT 'no';
 
@@ -1494,3 +1494,40 @@ ALTER TABLE obingresos.tdeposito
   ADD COLUMN nro_deposito_aux VARCHAR(70),
   ADD COLUMN nro_deposito_boa VARCHAR(70);
 /********************************************F-SCP-FEA-OBINGRESOS-1-07/11/2018********************************************/
+/********************************************I-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/
+CREATE TABLE obingresos.tviajero_interno (
+  id_viajero_interno SERIAL,
+  codigo_voucher VARCHAR(60),
+  mensaje VARCHAR(200),
+  estado VARCHAR(20),
+  CONSTRAINT tviajero_interno_pkey PRIMARY KEY(id_viajero_interno)
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+
+CREATE TABLE obingresos.tviajero_interno_det (
+  id_viajero_interno_det SERIAL,
+  nombre VARCHAR(100),
+  pnr VARCHAR(50),
+  num_boleto VARCHAR(50),
+  id_viajero_interno INTEGER,
+  solicitud VARCHAR(5),
+  num_documento VARCHAR(15),
+  estado_voucher VARCHAR(50),
+  tarifa VARCHAR(20),
+  CONSTRAINT tviajero_interno_det_pkey PRIMARY KEY(id_viajero_interno_det),
+  CONSTRAINT tviajero_interno_det_fk FOREIGN KEY (id_viajero_interno)
+    REFERENCES obingresos.tviajero_interno(id_viajero_interno)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+
+WITH (oids = false);
+
+/********************************************F-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/
+/********************************************I-SCP-IRVA-OBINGRESOS-1-02/01/2019********************************************/
+ALTER TABLE obingresos.tagencia
+  ALTER COLUMN boaagt SET NOT NULL;
+/********************************************F-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/

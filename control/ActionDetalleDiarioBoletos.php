@@ -18,8 +18,6 @@ include(dirname(__FILE__).'/../../lib/DatosGenerales.php');
 $pxpRestClient = PxpRestClient::connect('127.0.0.1',substr($_SESSION["_FOLDER"], 1) .'pxp/lib/rest/')
             ->setCredentialsPxp($_GET['user'],$_GET['pw']);
 
-
-
 $res = $pxpRestClient->doPost('obingresos/Boleto/detalleDiarioBoletosWeb',
     array(	"prueba"=>'prueba'));
 

@@ -7,6 +7,7 @@
  *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
  */
 include(dirname(__FILE__).'/../reportes/RBoleto.php');
+include(dirname(__FILE__).'/../reportes/RBoletoBOPDF.php');
 include(dirname(__FILE__).'/../reportes/RBoletoBRPDF.php');
 include(dirname(__FILE__).'/../reportes/RReporteBoletoResiberVentasWeb.php');
 
@@ -40,7 +41,7 @@ class ACTBoleto extends ACTbase{
 
         if ($this->objParam->getParametro('estado') != '') {
             if ($this->objParam->getParametro('estado') == 'borrador') {
-                $this->objParam->addFiltro("(bol.id_usuario_reg = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1 
+                $this->objParam->addFiltro("(bol.id_usuario_reg = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
 																												from segu.tusuario_rol
 																												where id_rol = 1 and estado_reg = ''activo'' and
 																												id_usuario = ". $_SESSION["ss_id_usuario"] . " ))");
@@ -270,12 +271,14 @@ class ACTBoleto extends ACTbase{
             $this->objFunc = $this->create('MODBoleto');
             $this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
         }
-
+        if ($this->objParam->getParametro('moneda_base') != '') {
+            $mone_base = $this->objParam->getParametro('moneda_base');
+        }
         if ($this->objParam->getParametro('officeId_agencia') != '') {
             $officeid = $this->objParam->getParametro('officeId_agencia');
         }else{
             $this->objParam->addParametro('fecha', $fecha);
-            $this->objParam->addParametro('moneda', "BOB");
+            $this->objParam->addParametro('moneda', $mone_base);
             $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
             $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
@@ -286,7 +289,7 @@ class ACTBoleto extends ACTbase{
             $identificador_reporte = $datos[0]['identificador_reporte'];
         }
         //boletos en bolivianos
-        $data = array("numberItems"=>"5","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB");
+        $data = array("numberItems"=>"5","lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>$mone_base);
         $data_string = json_encode($data);
         $request =  'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales_JS';
         $session = curl_init($request);
@@ -688,12 +691,17 @@ class ACTBoleto extends ACTbase{
                 $this->objFunc = $this->create('MODBoleto');
                 $this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
             }
+
+            if ($this->objParam->getParametro('moneda_base') != '') {
+                $mone_base = $this->objParam->getParametro('moneda_base');
+            }
+
             $this->objFunc=$this->create('MODAgencia');
             $this->res=$this->objFunc->obtenerOfficeIDsAgencias($this->objParam);
             $datos = $this->res->getDatos();
 
             foreach($datos as $agencia) {
-                $data = array("numberItems" => "0", "lastItemNumber" => "0", "officeID" => $agencia['officeid'], "dateFrom" => $fecha, "dateTo" => $fecha, "monetary" => "BOB");
+                $data = array("numberItems" => "0", "lastItemNumber" => "0", "officeID" => $agencia['officeid'], "dateFrom" => $fecha, "dateTo" => $fecha, "monetary" => $mone_base);
                 $data_string = json_encode($data);
                 $request = 'http://172.17.58.45/esb/RITISERP.svc/Boa_RITRetrieveSales';
                 $session = curl_init($request);
@@ -964,7 +972,7 @@ class ACTBoleto extends ACTbase{
         $json_data = json_encode($data);
 
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'http://skbpruebas.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
+        curl_setopt($s, CURLOPT_URL, 'http://skbproduccion.cloudapp.net/ServicioINT/ServicioInterno.svc/TraerTkt');
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -1337,11 +1345,19 @@ class ACTBoleto extends ACTbase{
             //$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
         }
 
+        if ($this->objParam->getParametro('moneda_base') != '') {
+            $mone_base = $this->objParam->getParametro('moneda_base');
+        }
+
         if ($this->objParam->getParametro('officeId_agencia') != '') {
             $officeid = $this->objParam->getParametro('officeId_agencia');
         }else{
             $this->objParam->addParametro('fecha', $fecha);
+<<<<<<< HEAD
             $this->objParam->addParametro('moneda', "ARS");
+=======
+            $this->objParam->addParametro('moneda', $mone_base);
+>>>>>>> d7fcf0cceae3e6cf383833c0d26264dc06461aa7
             $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
             $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
@@ -1358,9 +1374,15 @@ class ACTBoleto extends ACTbase{
                 $identificador_reporte = 0;
             }
         }
+<<<<<<< HEAD
         //var_dump('peticion');exit;
         //boletos en bolivianos
         $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"ARS","statusVoid"=>"");
+=======
+        //var_dump($mone_base);exit;
+        //boletos en bolivianos
+        $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>$mone_base,"statusVoid"=>"");
+>>>>>>> d7fcf0cceae3e6cf383833c0d26264dc06461aa7
         $data_string = json_encode($data);
         $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
         $session = curl_init($request);
@@ -1511,8 +1533,12 @@ class ACTBoleto extends ACTbase{
             $fecha = $this->objParam->getParametro('fecha');
         }
 
+        if ($this->objParam->getParametro('moneda_base') != '') {
+            $mone_base = $this->objParam->getParametro('moneda_base');
+        }
+
         $this->objParam->addParametro('fecha', $fecha);
-        $this->objParam->addParametro('moneda', "BOB");
+        $this->objParam->addParametro('moneda', $mone_base);
         $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
         $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
@@ -1524,7 +1550,7 @@ class ACTBoleto extends ACTbase{
         $identificador_reporte = 0;
 
         //boletos en bolivianos
-        $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"BOB","statusVoid"=>"V");
+        $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>$mone_base,"statusVoid"=>"V");
         $data_string = json_encode($data);
         $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
         $session = curl_init($request);
@@ -1659,7 +1685,6 @@ class ACTBoleto extends ACTbase{
             $array_fechas = explode(',',$datos['fecha']);
         }
 
-
         if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
             throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
         }
@@ -1682,15 +1707,13 @@ class ACTBoleto extends ACTbase{
                     'Content-Type: application/json',
                     'Content-Length: ' . strlen($json_data))
             );
+
             $_out = curl_exec($s);
-
             $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
-
             if (!$status) {
                 throw new Exception("No se pudo conectar con Resiber");
             }
             curl_close($s);
-
             if (strpos($_out,'spAppConciliacionDiariaBoA_Result')) {
                 $_out = substr($_out, 109);
                 $_out = substr($_out, 0, -4);
@@ -1699,21 +1722,16 @@ class ACTBoleto extends ACTbase{
                 $this->objParam->addParametro('fecha', $fecha);
                 $this->objParam->addParametro('detalle_boletos', $_out);
 
-
                 $this->objFunc = $this->create('MODBoleto');
 
                 $this->res = $this->objFunc->detalleDiarioBoletosWeb($this->objParam);
-
-
 
                 if ($this->res->getTipo()=='ERROR') {
                     $this->res->imprimirRespuesta($this->res->generarJson());
                 }
             }
+        }//fin for
 
-
-
-        }
         $this->res->imprimirRespuesta($this->res->generarJson());
         exit;
 
@@ -1843,6 +1861,318 @@ class ACTBoleto extends ACTbase{
     function logViajeroFrecuente (){
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->logViajeroFrecuente($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+
+    function buscarBoletoAmadeus(){
+
+        $this->objParam->defecto('ordenacion','nro_boleto');
+        $this->objParam->defecto('dir_ordenacion','desc');
+
+        $this->objParam->addFiltro("/*bol.fecha_emision = ''". $this->objParam->getParametro('fecha_actual') ."''::date and*/ (bol.nro_boleto like ''%". $this->objParam->getParametro('nro_boleto') . "%''::varchar or bol.localizador = ''".$this->objParam->getParametro('nro_boleto')."''::varchar) and bol.estado in (''borrador'', ''caja'', ''revisado'', ''finalizado'')");
+
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    function traerReservaBoletoExch(){
+        $respuesta = '';
+        if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
+            throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
+        }
+
+        $pnr = $this->objParam->getParametro('pnr');
+        //"credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}"
+        $data = array("credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
+            "idioma"=>"ES",
+            "pnr"=>$pnr,//VDBWIF, VHGDZP, LXUQMP --- LKJK27  MSB9Z8-----N5W923, N5ZRKF, N634RP, N6554Y, N654X2------OUU6PY
+            "apellido"=>"PRUEBAS",
+            "ip"=>"127.0.0.1",
+            "xmlJson"=>false);
+
+        $json_data = json_encode($data);
+        $s = curl_init();
+        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+        $_out = curl_exec($s);
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        if (!$status) {
+            throw new Exception("No se pudo conectar con Resiber");
+        }
+
+        curl_close($s);
+
+        $_out = str_replace('\\','',$_out);
+        $_out = substr($_out,27);//23
+        $_out = substr($_out,0,-2);
+
+        $res = json_decode($_out);
+
+        if ($res->reserva_V2 != null) {
+
+            $localizador = array(
+                'endosos' => $res->reserva_V2->endosos,
+                'fecha_creacion' => $res->reserva_V2->fecha_creacion,
+                'hora_creacion' => $res->reserva_V2->hora_creacion,
+                'localizador_resiber' => $res->reserva_V2->localizador_resiber,
+                'osis' => $res->reserva_V2->osis,
+                'pv' => $res->reserva_V2->pv,
+                'nit_cliente' => $res->reserva_V2->endosos->endoso->texto,
+            );
+
+            $localizador = json_decode(json_encode($localizador));
+            $ct = $res->reserva_V2->cts->ct;
+            $fc = $res->reserva_V2->elementosTkt->fcs->fc;
+            $pasajeros = $res->reserva_V2->pasajeros;
+            $tasa = $res->reserva_V2->elementosTkt->fns->fn_V2->Fntaxs->tasa;
+            $fn_V2 = $res->reserva_V2->elementosTkt->fns->fn_V2;
+            $ssrs = $res->reserva_V2->ssrs;
+            $tl = $res->reserva_V2->tl;
+            $responsable = $res->reserva_V2->responsable;
+            $tipo_pv = $res->reserva_V2->tipo_pv;
+            $update = $res->reserva_V2->update;
+            $vuelo = $res->reserva_V2->vuelos->vuelo;
+
+            $importes = array(
+                'inf' => $res->reserva_V2->elementosTkt->fns->fn_V2->inf,
+                'num_pax' => $res->reserva_V2->elementosTkt->fns->fn_V2->num_pax,
+                'codigo_tarifa' => $res->reserva_V2->elementosTkt->fns->fn_V2->codigo_tarifa,
+                'importe_tarifa' => $res->reserva_V2->elementosTkt->fns->fn_V2->importe_tarifa,
+                'importe_total' => $res->reserva_V2->elementosTkt->fns->fn_V2->importe_total,
+                'moneda_tarifa' => $res->reserva_V2->elementosTkt->fns->fn_V2->moneda_tarifa,
+                'moneda_total' => $res->reserva_V2->elementosTkt->fns->fn_V2->moneda_total,
+                'tipo_emision' => $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision,
+                'tipo_tarifa' => $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_tarifa,
+                'tipo_total' => $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_total
+            );
+            $importes = json_decode(json_encode($importes));
+
+            $this->objParam->addParametro('localizador', json_encode($localizador));
+            $this->objParam->addParametro('ct', json_encode($ct));
+            $this->objParam->addParametro('fc', json_encode($fc));
+            $this->objParam->addParametro('pasajeros', json_encode($pasajeros));
+            $this->objParam->addParametro('tasa', json_encode($tasa));
+            $this->objParam->addParametro('importes', json_encode($importes));
+            $this->objParam->addParametro('fn_V2', json_encode($fn_V2));
+            $this->objParam->addParametro('ssrs', json_encode($ssrs));
+            $this->objParam->addParametro('tl', json_encode($tl));
+            $this->objParam->addParametro('responsable', json_encode($responsable));
+            $this->objParam->addParametro('tipo_pv', json_encode($tipo_pv));
+            $this->objParam->addParametro('update', json_encode($update));
+            $this->objParam->addParametro('vuelo', json_encode($vuelo));
+            $this->objParam->addParametro('tipo', 'exchange');
+
+
+            /*echo('----------------------------------------LOCALIZADOR-----------------------------------------------');
+            var_dump($localizador);
+            echo('----------------------------------------CTS -> CT-----------------------------------------------');
+            var_dump($res->reserva_V2->cts->ct);
+            echo('----------------------------------------FCS-----------------------------------------------');
+            var_dump($res->reserva_V2->elementosTkt->fcs->fc);
+            echo('-----------------------------------------PASAJERO----------------------------------------------');
+            var_dump($res->reserva_V2->pasajeros);
+            echo('-------------------------------------------TASAS--------------------------------------------');
+            var_dump($res->reserva_V2->elementosTkt->fns->fn_V2->Fntaxs->tasa);
+            echo('-------------------------------------------IMPORTES--------------------------------------------');
+            var_dump($importes);
+            echo('-------------------------------------------FNS TASAS--------------------------------------------');
+            var_dump($res->reserva_V2->elementosTkt->fns->fn_V2);
+            echo('-----------------------------------------SSRS----------------------------------------------');
+            var_dump($res->reserva_V2->ssrs);
+            echo('-----------------------------------------TL----------------------------------------------');
+            var_dump($res->reserva_V2->tl);
+            echo('-----------------------------------------RESPONSABLE----------------------------------------------');
+            var_dump($res->reserva_V2->responsable);
+            echo('-----------------------------------------TIPO PV----------------------------------------------');
+            var_dump($res->reserva_V2->tipo_pv);
+            echo('-----------------------------------------UPDATE----------------------------------------------');
+            var_dump($res->reserva_V2->update);
+            echo('-----------------------------------------VUELOS----------------------------------------------');
+            var_dump($res->reserva_V2->vuelos);
+
+             exit;*/
+
+            $this->objFunc = $this->create('MODBoleto');
+            $this->res = $this->objFunc->traerReservaBoletoExch($this->objParam);
+            $datos = $this->res->getDatos();
+
+            $this->objParam->addParametro('datos_detalle', $res->reserva_V2);
+            $this->objParam->addParametro('datos', $datos);
+
+            $nombreArchivo = uniqid(md5(session_id()) . 'Boleto BO');
+
+
+            $this->objParam->addParametro('titulo_archivo', 'Boleto');
+            $nombreArchivo .= '.pdf';
+            $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
+            $this->objParam->addParametro('orientacion', 'P');
+            $this->objParam->addParametro('tamano', 'A4');
+
+            //Instancia la clase de pdf
+            $this->objReporteFormato = new RBoletoBOPDF($this->objParam);
+            $this->objReporteFormato->generarReporte();
+            $this->objReporteFormato->output($this->objReporteFormato->url_archivo, 'F');
+
+
+            //$this->extraData['tipo_emision'] = $datos[0]['tipo_emision'];
+
+            $this->mensajeExito = new Mensaje();
+
+            $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
+                'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+            $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+            $this->mensajeExito->setDatos(array("tipo_emision"=>$datos[0]['tipo_emision']));
+            $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+        }else{
+
+            $this->objParam->addParametro('tipo', 'normal');
+            $this->objFunc = $this->create('MODBoleto');
+
+            $this->res = $this->objFunc->generarBilleteElectronico($this->objParam);
+
+            $datos = $this->res->getDatos();
+
+            $this->objParam->addParametro('datos', $datos);
+
+            $nombreArchivo = uniqid(md5(session_id()) . 'Boleto BO');
+
+
+            $this->objParam->addParametro('titulo_archivo', 'Boleto');
+            $nombreArchivo .= '.pdf';
+            $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
+            $this->objParam->addParametro('orientacion', 'P');
+            $this->objParam->addParametro('tamano', 'A4');
+
+            //Instancia la clase de pdf
+            $this->objReporteFormato = new RBoletoBOPDF($this->objParam);
+            $this->objReporteFormato->generarReporte();
+            $this->objReporteFormato->output($this->objReporteFormato->url_archivo, 'F');
+
+            $this->mensajeExito = new Mensaje();
+            $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
+                'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+            $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+            $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+        }
+        //$this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    function verificarBoletoExch()
+    {
+        $respuesta = '';
+        if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == '') {
+            throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
+        }
+
+        $pnr = $this->objParam->getParametro('pnr');
+        $data = array("credenciales" => "{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}",
+            "idioma" => "ES",
+            "pnr" => $pnr,//'MSB9Z8'
+            "apellido" => "prueba",
+            "ip" => "127.0.0.1",
+            "xmlJson" => false);
+
+        $json_data = json_encode($data);
+        $s = curl_init();
+        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+        $_out = curl_exec($s);
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        if (!$status) {
+            throw new Exception("No se pudo conectar con Resiber");
+        }
+
+        curl_close($s);
+
+        $_out = str_replace('\\', '', $_out);
+        $_out = substr($_out, 27);//23
+        $_out = substr($_out, 0, -2);
+
+        $res = json_decode($_out);
+
+        if ($res->reserva_V2 != null) {
+            $this->objParam->addParametro('exchange', true);
+
+            $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision;
+            if ($tipo_emision != null) {
+                $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2->tipo_emision;
+            }else{
+                $tipo_emision = $res->reserva_V2->elementosTkt->fns->fn_V2;
+            }
+            $this->objParam->addParametro('tipo_emision', json_encode($tipo_emision));
+        } else {
+            $this->objParam->addParametro('exchange', false);
+            $this->objParam->addParametro('tipo_emision', json_encode(array('tipo_emision'=>'F')));
+        }
+
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->verificarBoletoExch($this->objParam);
+
+        /*$respuesta = [];
+        $this->res = new Mensaje();
+
+        if ($res->reserva_V2 != null) {
+            array_unshift($respuesta, array('exchange' => true, 'tipo_emision' => $tipo_emision));
+            $this->res->setDatos($respuesta);
+            //return $respuesta;
+        } else {
+            array_unshift($respuesta, array('exchange' => false, 'tipo_emision' => $tipo_emision));
+            $this->res->setDatos($respuesta);
+            //return $respuesta;
+        }*/
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    //correo de incidentes detalle venta web
+    function disparaCorreoVentasWeb(){
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->disparaCorreoVentasWeb($this->objParam);
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    //(f.e.a)ventas por dia counter
+    function listarVentasCounter(){
+
+        $this->objParam->defecto('ordenacion','nro_boleto');
+        $this->objParam->defecto('dir_ordenacion','desc');
+
+        //$this->objParam->addFiltro(" bol.fecha_emision = ''".$this->objParam->getParametro('fecha')."''::date");
+
+        //$this->objParam->addParametro('id_usuario', $_SESSION["ss_id_usuario"]);
+
+
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->listarVentasCounter($this->objParam);
+
+        //adicionar una fila al resultado con el summario
+		$temp = Array();
+        $temp['id_boleto_amadeus'] = 0;
+		$temp['precio_total'] ='<b style="font-size: 15px; color: green">'.$this->res->extraData['precio_total'].'</b>';
+		$temp['monto_forma_pago'] ='<b style="font-size: 15px; color: green">'.$this->res->extraData['precio_total'].'</b>';
+        $temp['nro_boleto'] = '<b style="font-size: 20px; color: green">Total</b>';
+		//$temp['tipo_reg'] = 'summary';
+
+
+		$this->res->total++;
+
+		$this->res->addLastRecDatos($temp);
+
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 

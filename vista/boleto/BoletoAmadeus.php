@@ -26,14 +26,56 @@ header("content-type: text/javascript; charset=UTF-8");
                     timeout:this.timeout,
                     scope:this
                 });
+
+            },
+
+            imprimirBoleto: function(){
+                //Ext.Msg.confirm('Confirmación','¿Está seguro de Imprimir el Comprobante?',function(btn){
+
+                var rec = this.sm.getSelected().data;
+
+                if (rec) {
+                    Phx.CP.loadingShow();
+                    Ext.Ajax.request({
+                        url : '../../sis_obingresos/control/Boleto/traerReservaBoletoExch',
+                        params : {
+                            'pnr' : rec.localizador
+                        },
+                        success : this.successExport,
+                        failure : this.conexionFailure,
+                        timeout : this.timeout,
+                        scope : this
+                    });
+                }
             },
             successGetVariables : function (response,request) {
                 //llama al constructor de la clase padre
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
                 this.store.baseParams.pes_estado = 'no_revisados';
                 this.store.baseParams.todos = 'no';
-                this.init();
 
+                /********************************OBTENEMOS LA MONEDA BASE*******************************************/
+                this.tipo_cambio = 0;
+                var fecha = new Date();
+                var dd = fecha.getDate();
+                var mm = fecha.getMonth() + 1; //January is 0!
+                var yyyy = fecha.getFullYear();
+                this.fecha_actual = dd + '/' + mm + '/' + yyyy;        ;
+                Ext.Ajax.request({
+                    url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/getTipoCambio',
+                    params:{fecha_cambio:this.fecha_actual},
+                    success: function(resp){
+                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                        //this.tipo_cambio = reg.ROOT.datos.v_tipo_cambio;
+                        this.store.baseParams.moneda_base = reg.ROOT.datos.v_codigo_moneda;
+                    },
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+                /***********************************************************************************/
+
+                this.init();
                 this.addButton('btnAnularBoleto',
                     {
                         //text: 'Anular Boleto',
@@ -53,6 +95,17 @@ header("content-type: text/javascript; charset=UTF-8");
                         disabled: true,
                         handler: this.onGrupo,
                         tooltip: 'Paga todos los boletos seleccionados'
+                    }
+                );
+
+                this.addButton('btnImprimir',
+                    {
+                        text: 'Imprimir',
+                        iconCls: 'bpdf32',
+                        grupo: [0,1],
+                        disabled: true,
+                        handler: this.imprimirBoleto,
+                        tooltip: '<b>Imprimir Boleto</b><br/>Imprime el boleto'
                     }
                 );
 
@@ -532,6 +585,50 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true,
                     bottom_filter: true
                 },
+
+                {
+                    config:{
+                        name: 'trans_code',
+                        fieldLabel: 'Code',
+                        allowBlank: false,
+                        anchor: '80%',
+                        gwidth: 50,
+                        maxLength:10,
+                        minLength:10,
+                        enableKeyEvents:true,
+                        renderer : function(value, p, record) {
+
+                            return '<tpl for="."><p><font color="#20b2aa">' + record.data['trans_code'] + '</tpl>';
+                        }
+                    },
+                    type:'TextField',
+                    id_grupo:0,
+                    grid:true,
+                    form:false,
+                    bottom_filter: true
+                },
+                {
+                    config:{
+                        name: 'trans_code_exch',
+                        fieldLabel: 'Tipo',
+                        allowBlank: false,
+                        anchor: '80%',
+                        gwidth: 50,
+                        maxLength:10,
+                        minLength:10,
+                        enableKeyEvents:true,
+                        renderer : function(value, p, record) {
+
+                            return '<tpl for="."><p><font color="green">' + record.data['trans_code_exch'] + '</tpl>';
+                        }
+                    },
+                    type:'TextField',
+                    id_grupo:0,
+                    grid:true,
+                    form:false,
+                    bottom_filter: true
+                },
+
                 {
                     config:{
                         name: 'nro_boleto',
@@ -1300,7 +1397,11 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'mco', type: 'string'},
                 {name:'mco2', type: 'string'},
                 {name:'ffid_consul', type: 'string'},
-                {name:'voucher_consu', type: 'string'}
+                {name:'voucher_consu', type: 'string'},
+                {name:'trans_code', type: 'string'},
+                {name:'trans_issue_indicator', type: 'string'},
+                {name:'trans_code_exch', type: 'string'},
+                {name:'impreso', type: 'string'}
 
             ],
             sortInfo:{
@@ -1308,7 +1409,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 direction: 'DESC'
             },
             arrayDefaultColumHidden:['estado_reg','usuario_ai',
-                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision'],
+                'fecha_reg','fecha_mod','usr_reg','usr_mod','codigo_agencia','nombre_agencia','neto','comision', 'trans_code', 'trans_code_exch'],
 
             bdel:false,
             bsave:false,
@@ -1316,7 +1417,6 @@ header("content-type: text/javascript; charset=UTF-8");
             bedit:false,
 
             iniciarEventos : function () {
-
                 this.Cmp.monto_forma_pago.on('change',function(field,newValue,oldValue){
                     var valueOld = this.getMontoMonBol(oldValue, this.Cmp.moneda_fp1.getValue());
                     var valueNew = this.getMontoMonBol(newValue, this.Cmp.moneda_fp1.getValue());
@@ -2012,8 +2112,41 @@ header("content-type: text/javascript; charset=UTF-8");
 
             preparaMenu:function(tb){
                 Phx.vista.BoletoAmadeus.superclass.preparaMenu.call(this,tb);
+
                 this.getBoton('btnPagarGrupo').enable();
                 var data = this.getSelectedData();
+
+                //f.e.a verificar si es exchange
+                if (data['trans_code'] == 'EXCH'){
+                    this.getBoton('btnImprimir').setVisible(true);
+                    this.getBoton('btnImprimir').enable();
+                }else{
+                    this.getBoton('btnImprimir').setVisible(false);
+                    this.getBoton('btnImprimir').disable();
+
+                    /*Ext.Ajax.request({
+                        url : '../../sis_obingresos/control/Boleto/verificarBoletoExch',
+                        params : {
+                            'pnr' : data.localizador
+                        },
+                        success : function(resp){
+                            var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                            console.log('reg', reg.ROOT.datos);
+                            if(reg.ROOT.datos[0].exchange == true){
+                                this.getBoton('btnImprimir').setVisible(true);
+                                this.getBoton('btnImprimir').enable();
+                            }else{
+                                this.getBoton('btnImprimir').setVisible(false);
+                                this.getBoton('btnImprimir').disable();
+                            }
+                        },
+                        failure : this.conexionFailure,
+                        timeout : this.timeout,
+                        scope : this
+                    });*/
+                }
+
+
                 if(data['voided']== 'no'){
                     this.getBoton('btnAnularBoleto').setDisabled(false);
                 }
@@ -2025,12 +2158,14 @@ header("content-type: text/javascript; charset=UTF-8");
                 }else{
                     this.getBoton('btnVoucherCode').disable();
                 }
-
+                //this.getBoton('btnImprimir').enable();
             },
 
             liberaMenu:function(tb){
                 Phx.vista.BoletoAmadeus.superclass.liberaMenu.call(this,tb);
                 this.getBoton('btnPagarGrupo').disable();
+                this.getBoton('btnImprimir').disable();
+                this.getBoton('btnImprimir').setVisible(false);
                 this.getBoton('btnAnularBoleto').setDisabled(true);
 
             },
