@@ -945,6 +945,7 @@ class MODBoleto extends MODbase{
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('id_boletos_amadeus','id_boletos_amadeus','varchar');
         $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('nro_boleto','nro_boleto','varchar');
 
         //Definicion de la lista del resultado del query
         $this->captura('id_vuelo','integer');
