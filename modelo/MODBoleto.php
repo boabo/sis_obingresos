@@ -188,11 +188,11 @@ class MODBoleto extends MODbase{
         $this->captura('ffid_consul','varchar');
         $this->captura('voucher_consu','varchar');
 
-        $this->captura('trans_code','varchar');
+        /*$this->captura('trans_code','varchar');
         $this->captura('trans_issue_indicator','varchar');
         $this->captura('punto_venta','varchar');
         $this->captura('trans_code_exch','varchar');
-        $this->captura('impreso','varchar');
+        $this->captura('impreso','varchar');*/
 
         //Ejecuta la instruccion
         $this->armarConsulta();//echo($this->consulta); exit;

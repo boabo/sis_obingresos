@@ -957,8 +957,8 @@ class ACTBoleto extends ACTbase{
         }
         $data = array(	"credenciales"=>$_SESSION['_CREDENCIALES_RESIBER'],
             "idioma"=>"ES",
-            "tkt"=>'9302401106714',//$this->objParam->getParametro('nro_boleto')
-            "pnr"=>'LWIIVQ',//$this->objParam->getParametro('pnr')
+            "tkt"=>$this->objParam->getParametro('nro_boleto'),
+            "pnr"=>$this->objParam->getParametro('pnr'),
             "ip"=>"127.0.0.1",
             "xmlJson"=>false);
 
