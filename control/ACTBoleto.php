@@ -1348,7 +1348,7 @@ class ACTBoleto extends ACTbase{
         if ($this->objParam->getParametro('moneda_base') != '') {
             $mone_base = $this->objParam->getParametro('moneda_base');
         }
-
+        //var_dump("llega:",$this->objParam->getParametro('moneda_base'));
         if ($this->objParam->getParametro('officeId_agencia') != '') {
             $officeid = $this->objParam->getParametro('officeId_agencia');
         }else{
