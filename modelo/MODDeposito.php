@@ -93,10 +93,11 @@ class MODDeposito extends MODbase{
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
-        if($this->aParam->getParametro('tipo') == 'venta_propia'){
+        /* Replica al sistema Ingresos Franklin Espinoza Alvarez
+         * if($this->aParam->getParametro('tipo') == 'venta_propia'){
 
             $this->insertatDepositoInformix();
-        }
+        }*/
         //Devuelve la respuesta
         return $this->respuesta;
     }
