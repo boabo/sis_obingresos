@@ -53,29 +53,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
                 this.store.baseParams.pes_estado = 'no_revisados';
                 this.store.baseParams.todos = 'no';
-
-                /********************************OBTENEMOS LA MONEDA BASE*******************************************/
-                this.tipo_cambio = 0;
-                var fecha = new Date();
-                var dd = fecha.getDate();
-                var mm = fecha.getMonth() + 1; //January is 0!
-                var yyyy = fecha.getFullYear();
-                this.fecha_actual = dd + '/' + mm + '/' + yyyy;        ;
-                Ext.Ajax.request({
-                    url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/getTipoCambio',
-                    params:{fecha_cambio:this.fecha_actual},
-                    success: function(resp){
-                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-                        //this.tipo_cambio = reg.ROOT.datos.v_tipo_cambio;
-                        this.store.baseParams.moneda_base = reg.ROOT.datos.v_codigo_moneda;
-                    },
-                    failure: this.conexionFailure,
-                    timeout:this.timeout,
-                    scope:this
-                });
-                /***********************************************************************************/
-
                 this.init();
+                this.recuperarBase();
                 this.addButton('btnAnularBoleto',
                     {
                         //text: 'Anular Boleto',
@@ -292,6 +271,29 @@ header("content-type: text/javascript; charset=UTF-8");
                 });
 
 
+
+            },
+
+            recuperarBase : function () {
+              /******************************OBTENEMOS LA MONEDA BASE*******************************************/
+              var fecha = new Date();
+              var dd = fecha.getDate();
+              var mm = fecha.getMonth() + 1; //January is 0!
+              var yyyy = fecha.getFullYear();
+              this.fecha_actual = dd + '/' + mm + '/' + yyyy;       
+              Ext.Ajax.request({
+                  url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/getTipoCambio',
+                  params:{fecha_cambio:this.fecha_actual},
+                  success: function(resp){
+                      var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                      //this.tipo_cambio = reg.ROOT.datos.v_tipo_cambio;
+                      this.store.baseParams.moneda_base = reg.ROOT.datos.v_codigo_moneda;
+                  },
+                  failure: this.conexionFailure,
+                  timeout:this.timeout,
+                  scope:this
+              });
+              /***********************************************************************************/
 
             },
 
@@ -1786,9 +1788,10 @@ header("content-type: text/javascript; charset=UTF-8");
 
             onTraerBoletosTodos : function () {
                 Phx.CP.loadingShow();
+                console.log("llega aqui el boleto",this);
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
-                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
+                    params: {moneda_base:this.store.baseParams.moneda_base,id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
                     success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
@@ -1800,6 +1803,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.loadingHide();
                 var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                 this.reload();
+
             },
 
             /* preparaCerrarCaja:function(){

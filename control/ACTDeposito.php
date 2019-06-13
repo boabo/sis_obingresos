@@ -91,6 +91,12 @@ class ACTDeposito extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
+    function sincronizarDeposito(){
+        $this->objFunc=$this->create('MODDeposito');
+        $this->res=$this->objFunc->sincronizarDeposito($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
     function eliminarDepositoPortal(){
         $this->objFunc=$this->create('MODDeposito');
         $this->res=$this->objFunc->eliminarDeposito($this->objParam);

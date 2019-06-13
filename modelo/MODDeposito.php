@@ -93,11 +93,11 @@ class MODDeposito extends MODbase{
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
-        /* Replica al sistema Ingresos Franklin Espinoza Alvarez
-         * if($this->aParam->getParametro('tipo') == 'venta_propia'){
+        /* Replica al sistema Ingresos Franklin Espinoza Alvarez*/
+          if($this->aParam->getParametro('tipo') == 'venta_propia'){
 
             $this->insertatDepositoInformix();
-        }*/
+        }
         //Devuelve la respuesta
         return $this->respuesta;
     }
@@ -317,6 +317,101 @@ class MODDeposito extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+    function sincronizarDeposito (){
+      try {
+          $hora= date ("h:i:s");
+          $codigo_padre = $this->aParam->getParametro('codigo_padre');
+          $estacion = $this->aParam->getParametro('estacion');
+          $codigo = $this->aParam->getParametro('codigo');
+          $tipo_cambio = $this->aParam->getParametro('tipo_cambio');
+          $fechaventa =  $this->aParam->getParametro('fecha_venta');
+          $this->informix->beginTransaction();
+          $sql_in = "INSERT INTO ingresos:deposito ( pais,
+                                                        estacion,
+                                                        agt,
+                                                        fecini,
+                                                        fecfin,
+                                                        tcambio,
+                                                        montoitf,
+                                                        observa,
+                                                        fechareg,
+                                                        horareg
+                                                       )
+                                                       VALUES
+                                                       (
+                                                       '".$codigo_padre."',
+                                                       '".$estacion."' ,
+                                                       '".$codigo."' ,
+                                                       '".$fechaventa."',
+                                                       '".$fechaventa."',
+                                                       '".$tipo_cambio."',
+                                                       0,
+                                                       'ERP BOA',
+                                                       TODAY,
+                                                       '".$hora."' )";
+          $info_nota_ins = $this->informix->prepare($sql_in);
+
+          $info_nota_ins->execute();
+          $this->informix->commit();
+          $this->insertarDepositoSincronizado();
+          return true;
+      } catch (Exception $e) {
+          $this->informix->rollBack();
+      }
+    }
+
+    function insertarDepositoSincronizado(){
+        try{
+            $codigo_padre = $this->aParam->getParametro('codigo_padre');
+            $estacion = $this->aParam->getParametro('estacion');
+            $codigo = $this->aParam->getParametro('codigo');
+            $fechaventa =  $this->aParam->getParametro('fecha_venta');
+            $nro_deposito =  $this->aParam->getParametro('nro_deposito');
+            $monto_deposito =  $this->aParam->getParametro('monto_deposito');
+            $fecha = str_replace('/','-',$this->aParam->getParametro('fecha'));
+            $this->informix->beginTransaction();
+            $sql_in = "INSERT INTO ingresos:deposito_boleta(
+					  pais,
+					  estacion,
+					  agt,
+					  fecini,
+					  fecfin,
+					  nroboleta,
+					  fecha,
+					  ctabanco,
+					  moneda,
+					  monto,
+					  usuario,
+					  tipdoc,
+					  documento
+					 )
+					 VALUES
+					 (
+					 '".$codigo_padre."' ,
+					 '".$estacion."' ,
+					 '".$codigo."',
+					 '".$fechaventa."' ,
+					 '".$fechaventa."' ,
+					 '".$nro_deposito."' ,
+					 '".$fecha."',
+					 '".$this->nroCuenta()."',
+					 '".$this->tipoMoneda()."' ,
+					 '".$monto_deposito."' ,
+					 '".$_SESSION['_LOGIN']."',
+					 'DPENDE',
+					 '0'
+					 )";
+            $info_nota_ins = $this->informix->prepare($sql_in);
+            $info_nota_ins->execute();
+            $this->informix->commit();
+            return true;
+        }catch (Exception $e){
+            $this->informix->rollBack();
+        }
+
+    }
+
     function insertatDepositoInformix (){
         try {
             $hora= date ("h:i:s");
@@ -324,15 +419,15 @@ class MODDeposito extends MODbase{
             $this->informix->beginTransaction();
             $sql_in = "INSERT INTO ingresos:deposito ( pais,
                                                           estacion,
-                                                          agt,             
+                                                          agt,
                                                           fecini,
                                                           fecfin,
                                                           tcambio,
                                                           montoitf,
                                                           observa,
                                                           fechareg,
-                                                          horareg            
-                                                         ) 
+                                                          horareg
+                                                         )
                                                          VALUES
                                                          (
                                                          '".$this->aParam->getParametro('codigo_padre')."',
@@ -362,7 +457,7 @@ class MODDeposito extends MODbase{
             $sql_in = "INSERT INTO ingresos:deposito_boleta(
 					  pais,
 					  estacion,
-					  agt, 
+					  agt,
 					  fecini,
 					  fecfin,
 					  nroboleta,
@@ -373,7 +468,7 @@ class MODDeposito extends MODbase{
 					  usuario,
 					  tipdoc,
 					  documento
-					 ) 
+					 )
 					 VALUES
 					 (
 					 '".$this->aParam->getParametro('codigo_padre')."' ,
@@ -388,7 +483,7 @@ class MODDeposito extends MODbase{
 					 '".$this->aParam->getParametro('monto_deposito')."' ,
 					 '".$_SESSION['_LOGIN']."',
 					 'DPENDE',
-					 '0' 
+					 '0'
 					 )";
             $info_nota_ins = $this->informix->prepare($sql_in);
             $info_nota_ins->execute();
@@ -454,10 +549,10 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
                   nroboleta =  '".$this->aParam->getParametro('nro_deposito')."' ,
                   fecha =   '".$fecha."',
                   moneda = '".$this->tipoMoneda()."',
-                  monto =  '" . $this->aParam->getParametro('monto_deposito') . "'                  
-              WHERE               
-                  
-                  nroboleta =  '".$this->recuperarNumberDeposito()."'                  
+                  monto =  '" . $this->aParam->getParametro('monto_deposito') . "'
+              WHERE
+
+                  nroboleta =  '".$this->recuperarNumberDeposito()."'
                   ";
             $info_nota_ins = $this->informix->prepare($sql);
             //var_dump($info_nota_ins);exit;
