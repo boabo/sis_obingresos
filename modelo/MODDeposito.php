@@ -14,12 +14,12 @@ class MODDeposito extends MODbase{
     var $tabla_deposito_informix;
     var $nro_deposito;
 
-    // function __construct(CTParametro $pParam){
-    //     parent::__construct($pParam);
-    //     $this->cone = new conexion();
-    //     $this->informix = $this->cone->conectarPDOInformix();
-    //     $this->link = $this->cone->conectarpdo(); //conexion a pxp(postgres)
-    // }
+    function __construct(CTParametro $pParam){
+        parent::__construct($pParam);
+        $this->cone = new conexion();
+        $this->informix = $this->cone->conectarPDOInformix();
+        $this->link = $this->cone->conectarpdo(); //conexion a pxp(postgres)
+    }
 
     function listarDeposito(){
         //Definicion de variables para ejecucion del procedimientp
