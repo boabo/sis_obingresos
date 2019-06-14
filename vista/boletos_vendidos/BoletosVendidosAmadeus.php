@@ -35,6 +35,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 //llama al constructor de la clase padre
                 Phx.vista.BoletosVendidosAmadeus.superclass.constructor.call(this,request.arguments);
                 this.init();
+                this.recuperarBase();
+
 /*
                 this.addButton('btnImprimir',
                     {
@@ -67,6 +69,28 @@ header("content-type: text/javascript; charset=UTF-8");
                     });
                 }
             },*/
+            recuperarBase : function () {
+              /******************************OBTENEMOS LA MONEDA BASE*******************************************/
+              var fecha = new Date();
+              var dd = fecha.getDate();
+              var mm = fecha.getMonth() + 1; //January is 0!
+              var yyyy = fecha.getFullYear();
+              this.fecha_actual = dd + '/' + mm + '/' + yyyy;
+              Ext.Ajax.request({
+                  url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/getTipoCambio',
+                  params:{fecha_cambio:this.fecha_actual},
+                  success: function(resp){
+                      var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                      //this.tipo_cambio = reg.ROOT.datos.v_tipo_cambio;
+                      this.store.baseParams.moneda_base = reg.ROOT.datos.v_codigo_moneda;
+                  },
+                  failure: this.conexionFailure,
+                  timeout:this.timeout,
+                  scope:this
+              });
+              /***********************************************************************************/
+
+            },
 
             Atributos:[
                 {
