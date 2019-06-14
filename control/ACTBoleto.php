@@ -1354,6 +1354,7 @@ class ACTBoleto extends ACTbase{
         }else{
             $this->objParam->addParametro('fecha', $fecha);
             $this->objParam->addParametro('moneda', $mone_base);
+
             $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
             $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
 
@@ -1370,9 +1371,11 @@ class ACTBoleto extends ACTbase{
                 $identificador_reporte = 0;
             }
         }
+
         //var_dump($mone_base);exit;
         //boletos en bolivianos
         $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>$mone_base,"statusVoid"=>"");
+
         $data_string = json_encode($data);
         $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
         $session = curl_init($request);
