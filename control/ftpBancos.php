@@ -41,10 +41,12 @@ $local_file = dirname(__FILE__).'/../../uploaded_files/sis_obingresos/';
 $server_file = 'SkyBiz/20170201 SPP_BCO BOB.xlsx';
 
 // establecer una conexión básica
-$conn_id = ftp_connect("172.17.45.4");
+//$conn_id = ftp_connect("172.17.45.4");
+$conn_id = ftp_connect("ftp.boa.aero"); /**/
+//$conn_id = ftp_connect("172.17.58.28");
 
 
-
+ 
 // iniciar sesión con nombre de usuario y contraseña
 $login_result = ftp_login($conn_id,"Skybizr", "xdbskybizr");
 ftp_pasv($conn_id, true);
@@ -54,7 +56,6 @@ $contents_on_server = ftp_nlist($conn_id, $folder_ftp); //Returns an array of fi
 //obtenemos en un array los archivos que estan registrados concatenando la ruta de archivo para poder comparar con la lista del ftp
 foreach ($resp_datos->datos as $datos){
     $arra_archivos_registrados[] = 'SkyBiz/'.$datos->nombre_archivo;
-
 }
 
 $arra_excel_registrados = array();
@@ -87,7 +88,7 @@ foreach ($contents_on_server as $archivo_server) {
 
 
         // intenta descargar $server_file y guardarlo en $local_file
-       
+
         if (ftp_get($conn_id, $local_file.$archivo_server,$archivo_server , FTP_BINARY)) {
             echo "Se ha guardado satisfactoriamente en $local_file\n";
 
@@ -142,10 +143,10 @@ $resp_root = json_decode($res);*/
 
 
 
-           
+
             $archivoExcel = new ExcelInput($local_file.'SkyBiz/'.$registrados["nombre_archivo"], "SKYBIZR");
             $res = $archivoExcel->recuperarColumnasExcel();
-            
+
 
             $arrayArchivo = $archivoExcel->leerColumnasArchivoExcel();
 
@@ -187,7 +188,7 @@ $resp_root = json_decode($res);*/
 
             $resp_root = json_decode($res);
 
-            
+
 
 
             echo '<br>';
