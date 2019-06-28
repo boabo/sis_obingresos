@@ -313,6 +313,8 @@ BEGIN
 	***********************************/
 
 	elsif(p_transaccion='OBING_DEP_MOD')then
+
+
 		begin
         	    SELECT * into v_estado
                 from obingresos.tdeposito
@@ -404,6 +406,7 @@ BEGIN
 
                 /*AUMENTANDO LA CONDICION*/
 
+
             /*CONTROL PARA NUM DE DEPOSITO BOA Y LA FECHA*/
                 SELECT per.nombre_completo1,
                  count(depo.nro_deposito_boa) as existe,
@@ -413,7 +416,7 @@ BEGIN
                 inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
                 inner join segu.vpersona per on per.id_persona = usu.id_persona
                 WHERE
-                depo.nro_deposito_boa = v_parametros.nro_deposito_boa and
+                depo.nro_deposito_boa = v_deposito_boa and
                 depo.fecha = v_parametros.fecha
                 group by per.nombre_completo1, depo.estado;
             /*-----------------------------------------------------*/
@@ -759,4 +762,8 @@ LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
+PARALLEL UNSAFE
 COST 100;
+
+ALTER FUNCTION obingresos.ft_deposito_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
