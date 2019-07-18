@@ -20,7 +20,7 @@ class MODDeposito extends MODbase{
           $this->cone = new conexion();
           $this->informix = $this->cone->conectarPDOInformix();
           $this->link = $this->cone->conectarpdo(); //conexion a pxp(postgres)
-        }      
+        }
 
     }
 
@@ -73,7 +73,6 @@ class MODDeposito extends MODbase{
         $this->transaccion='OBING_DEP_INS';
         $this->tipo_procedimiento='IME';
 
-
         //Define los parametros para la funcion
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('nro_deposito','nro_deposito','varchar');
@@ -93,20 +92,42 @@ class MODDeposito extends MODbase{
         $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
         $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
         //Ejecuta la instruccion
+        $this->monedaBase();
+
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
+        if ($this->monedaBase() == 'BOB') {
         /* Replica al sistema Ingresos Franklin Espinoza Alvarez*/
           if($this->aParam->getParametro('tipo') == 'venta_propia'){
 
             $this->insertatDepositoInformix();
         }
+      }
         //Devuelve la respuesta
         return $this->respuesta;
     }
 
+
+    function monedaBase(){
+
+      $cone = new conexion();
+      $link = $cone->conectarpdo();
+      $copiado = false;
+
+      $consulta ="select m.codigo_internacional
+                                        from param.tmoneda m
+                                        where m.tipo_moneda =  'base'";
+
+      $res = $link->prepare($consulta);
+      $res->execute();
+      $result = $res->fetchAll(PDO::FETCH_ASSOC);
+      return $result[0]['codigo_internacional'];
+
+    }
     function modificarDeposito(){
         //Definicion de variables para ejecucion del procedimiento
+
         $this->procedimiento='obingresos.ft_deposito_ime';
         $this->transaccion='OBING_DEP_MOD';
         $this->tipo_procedimiento='IME';
@@ -129,12 +150,18 @@ class MODDeposito extends MODbase{
         $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');
 
+        $this->monedaBase();
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
-        if($this->aParam->getParametro('tipo') == 'venta_propia'){
-            $this->modificarDepositoInformix();
+
+        if ($this->monedaBase() == 'BOB') {
+            if($this->aParam->getParametro('tipo') == 'venta_propia'){
+              $this->modificarDepositoInformix();
+            }
         }
+
+
         //Devuelve la respuesta
         return $this->respuesta;
     }
@@ -580,7 +607,11 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
         $this->setParametro('monto_deposito','monto_deposito','numeric');
         $this->setParametro('desc_moneda','desc_moneda','varchar');
 
-        $this->eliminarDepositoInformix();
+        $this->monedaBase();
+
+        if ($this->monedaBase() == 'BOB') {
+          $this->eliminarDepositoInformix();
+        }
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
