@@ -45,6 +45,7 @@ DECLARE
     v_control_deposito_boa	record;
     v_num_deposito			varchar;
     v_num_deposito_boa		varchar;
+    v_monto_deposito		numeric;
 
 
 
@@ -680,12 +681,20 @@ BEGIN
 
 		begin
 			--Sentencia de la eliminacion
-			update obingresos.tdeposito
-            set
-            estado = 'validado',
-            id_usuario_mod = p_id_usuario,
-            fecha_mod = now()
-            where id_deposito=v_parametros.id_deposito;
+            select de.monto_deposito into v_monto_deposito
+            from obingresos.tdeposito de
+            where de.id_deposito = v_parametros.id_deposito;
+
+            if (v_monto_deposito > 0) then
+                update obingresos.tdeposito
+                set
+                estado = 'validado',
+                id_usuario_mod = p_id_usuario,
+                fecha_mod = now()
+                where id_deposito=v_parametros.id_deposito;
+            else
+            	raise exception 'No se puede Validar un Deposito con monto 0, Verifique!';
+            end if;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos validado(a)');
