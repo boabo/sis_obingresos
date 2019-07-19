@@ -16,7 +16,8 @@ class MODDeposito extends MODbase{
 
     function __construct(CTParametro $pParam){
         parent::__construct($pParam);
-        if ( $this->objParam->getParametro('mone_base') == 'BOB') {
+        $this->monedaBase();
+        if ($this->monedaBase() == 'BOB') {
           $this->cone = new conexion();
           $this->informix = $this->cone->conectarPDOInformix();
           $this->link = $this->cone->conectarpdo(); //conexion a pxp(postgres)
