@@ -75,6 +75,10 @@ class MODDeposito extends MODbase{
         $this->tipo_procedimiento='IME';
 
         //Define los parametros para la funcion
+        /*RECUPERAMOS EL ID_PUNTO_VENTA PARA CONSULTAR LA CUENTABANCARIA*/
+        $this->setParametro('id_punto_venta','id_punto_venta','integer');
+        $this->setParametro('id_usuario_cajero','id_usuario_cajero','integer');
+        /*---------------------------------------------------------------*/
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('nro_deposito','nro_deposito','varchar');
         //$this->setParametro('nro_deposito_boa','nro_deposito_boa','varchar');
@@ -132,6 +136,10 @@ class MODDeposito extends MODbase{
         $this->procedimiento='obingresos.ft_deposito_ime';
         $this->transaccion='OBING_DEP_MOD';
         $this->tipo_procedimiento='IME';
+
+        /*RECUPERAMOS EL ID_PUNTO_VENTA PARA CONSULTAR LA CUENTABANCARIA*/
+        $this->setParametro('id_punto_venta','id_punto_venta','integer');
+        /*---------------------------------------------------------------*/
 
         //Define los parametros para la funcion
         $this->setParametro('id_deposito','id_deposito','int4');

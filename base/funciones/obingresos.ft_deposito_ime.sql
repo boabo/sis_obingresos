@@ -47,6 +47,39 @@ DECLARE
     v_num_deposito_boa		varchar;
     v_monto_deposito		numeric;
 
+    v_nro_cuenta			varchar;
+    v_nombre_departamento	varchar;
+    v_tabla					record;
+    v_id_cuenta_bancaria	integer;
+    v_id_departamento		integer;
+    v_lugar					varchar;
+    v_id_libro_bancos		integer;
+    v_libro_bancos			record;
+
+    v_id_proceso_wf			integer;
+    v_codigo_estado			varchar;
+    v_origen				varchar;
+    v_nro_deposito			varchar;
+    v_tipo					varchar;
+    g_fecha					date;
+    g_indice				numeric;
+    v_id_estado_wf			integer;
+	v_id_tipo_estado		integer;
+    v_pedir_obs				varchar;
+    v_codigo_estado_siguiente	varchar;
+    v_id_estado_depositado	integer;
+    v_acceso_directo		varchar;
+    v_clase					varchar;
+    v_parametros_ad			varchar;
+    v_tipo_noti				varchar;
+    v_titulo				varchar;
+    v_id_depto				integer;
+    v_obs					text;
+    v_id_funcionario		integer;
+    v_id_estado_actual		integer;
+    v_id_finalidad			integer;
+    v_cajero				varchar;
+    v_id_forma_pago			integer;
 
 
 
@@ -64,7 +97,6 @@ BEGIN
 
 	if(p_transaccion='OBING_DEP_INS')then
         begin
-        	   --raise exception 'tipo %',v_parametros.tipo;
 
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
 
@@ -79,7 +111,7 @@ BEGIN
                 where m.codigo_internacional = v_parametros.moneda;
                 v_moneda = v_parametros.moneda;
             end if;
-       --raise exception 'LLEGA AQUI %',v_parametros.monto_deposito;
+
        		SELECT per.nombre_completo1,
                    count(per.nombre) as existe,
                    depo.estado
@@ -149,7 +181,33 @@ BEGIN
                 v_parametros.monto_total
                 )RETURNING id_deposito into v_id_deposito;
 
-        	elsif(v_parametros.tipo = 'venta_propia') then
+        elsif(v_parametros.tipo = 'venta_propia') then
+
+        /****************************Recuperamos el numero de cuenta en cuenta bancaria***********************************/
+        select cuenta.nro_cuenta,
+        	   pv.nombre,
+               cuenta.id_cuenta_bancaria,
+               cuen.id_depto,
+               lu.codigo into v_nro_cuenta, v_nombre_departamento, v_id_cuenta_bancaria, v_id_departamento, v_lugar
+        from vef.tpunto_venta pv
+        inner join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
+        inner join tes.tdepto_cuenta_bancaria cuen on cuen.id_depto = su.id_depto
+        inner join tes.tcuenta_bancaria cuenta on cuenta.id_cuenta_bancaria = cuen.id_cuenta_bancaria
+        inner join param.tlugar lu on lu.id_lugar = su.id_lugar
+        where pv.id_punto_venta = v_parametros.id_punto_venta and cuenta.id_moneda = v_id_moneda;
+
+        SELECT per.nombre_completo2 into v_cajero
+        from segu.tusuario usu
+        inner join segu.vpersona2 per on per.id_persona = usu.id_persona
+        where usu.id_usuario = v_parametros.id_usuario_cajero;
+
+
+        /*---------------------------------------------------------------------------------------------*/
+
+        if (v_nro_cuenta is null) then
+        	raise exception 'No existe el numero de cuenta para la sucursal %, consulte con el departamento de ventas.',v_nombre_departamento;
+        end if;
+
            insert into obingresos.tdeposito(
                 estado_reg,
                 nro_deposito,
@@ -182,7 +240,150 @@ BEGIN
                 v_parametros.monto_deposito
                 )RETURNING id_deposito into v_id_deposito;
 
-                elsif(v_parametros.tipo = 'venta_agencia') then
+           /*recuperamos el id_finalidad para venta_propia*/
+           select fi.id_finalidad into v_id_finalidad
+           from tes.tfinalidad fi
+           where fi.nombre_finalidad = 'Venta Propia';
+
+           select pa.id_forma_pago into v_id_forma_pago
+                 from param.tforma_pago pa
+                 where pa.desc_forma_pago = 'Deposito';
+
+           /*************Creamos los parametros para enviar a la funcion que insertara al libro de bancos*****************/
+                select 'deposito'::varchar as tipo,
+                       v_parametros.nro_deposito as nro_deposito,
+                       v_parametros.fecha::date as fecha_pago,
+                       v_id_cuenta_bancaria as id_cuenta_bancaria,
+                       v_id_departamento as id_depto,
+                       v_parametros.monto_deposito as importe_deposito,
+                       'Boliviana de Aviacion(BoA)'::varchar as a_favor,
+                       ('Punto de venta: '||v_nombre_departamento||' Cajero: '||v_cajero)::varchar as detalle,
+                       v_lugar as origen,
+                       v_id_finalidad::integer as id_finalidad,
+                       0::numeric as importe_cheque,
+                       v_parametros.fecha::date as fecha,
+                       v_id_forma_pago::integer as id_forma_pago,
+                       v_id_deposito::integer as id_deposito
+                 into v_tabla;
+        	v_id_libro_bancos = tes.f_inserta_libro_bancos(p_administrador,p_id_usuario,hstore(v_tabla));
+
+    		/*Cambio de estado*/
+                select
+                  lb.id_proceso_wf,
+                  lb.id_estado_wf,
+                  lb.sistema_origen,
+                  lb.nro_cheque,
+                  lb.tipo,
+                  lb.id_cuenta_bancaria,
+                  lb.fecha,
+                  lb.indice
+              into
+                  v_id_proceso_wf,
+                  v_id_estado_wf,
+                  v_origen,
+                  v_nro_deposito,
+                  v_tipo,
+                  v_id_cuenta_bancaria,
+                  g_fecha,
+                  g_indice
+              from tes.tts_libro_bancos  lb
+              --inner  join tes.tobligacion_pago op on op.id_obligacion_pago = pp.id_obligacion_pago
+              where lb.id_libro_bancos  = v_id_libro_bancos;
+
+
+              select
+                ew.id_tipo_estado,
+                te.pedir_obs,
+                ew.id_funcionario
+               into
+                v_id_tipo_estado,
+                v_pedir_obs,
+                v_id_funcionario
+              from wf.testado_wf ew
+              inner join wf.ttipo_estado te on te.id_tipo_estado = ew.id_tipo_estado
+              where ew.id_estado_wf =  v_id_estado_wf;
+
+              /*Obtenemos el id del estado finalizado*/
+              v_id_estado_depositado = (v_id_tipo_estado+1);
+              /****************************************/
+
+              /*Obtenemnos el codigo depositado*/
+                select te.codigo into v_codigo_estado
+                from wf.ttipo_estado te
+                where te.id_tipo_estado=v_id_estado_depositado;
+                /******************************************/
+
+              IF  pxp.f_existe_parametro(p_tabla,'id_depto_wf') THEN
+
+               v_id_depto = v_parametros.id_depto_wf;
+
+             END IF;
+
+
+
+             IF  pxp.f_existe_parametro(p_tabla,'obs') THEN
+                  v_obs=v_parametros.obs;
+             ELSE
+                   v_obs='---';
+
+             END IF;
+
+             --configurar acceso directo para la alarma
+             v_acceso_directo = '';
+             v_clase = '';
+             v_parametros_ad = '';
+             v_tipo_noti = '';
+             v_titulo  = '';
+
+             v_id_estado_actual =  wf.f_registra_estado_wf(v_id_tipo_estado,
+                                                             v_id_funcionario,
+                                                             v_id_estado_wf,
+                                                             v_id_proceso_wf,
+                                                             p_id_usuario,
+                                                             v_parametros._id_usuario_ai,
+                                                             v_parametros._nombre_usuario_ai,
+                                                             v_id_depto,
+                                                             ' Obs:'||v_obs,
+                                                             --NULL,
+                                                             v_acceso_directo,
+                                                             --NULL,
+                                                             v_clase,
+                                                             --NULL,
+                                                             v_parametros_ad,
+                                                             --NULL,
+                                                             v_tipo_noti,
+                                                             --NULL);
+                                                             v_titulo);
+
+              /************************************************************/
+
+              update tes.tts_libro_bancos  t set
+               id_estado_wf =  v_id_estado_actual,
+               estado = v_codigo_estado,
+               id_usuario_mod=p_id_usuario,
+               fecha_mod=now()
+               where id_libro_bancos = v_id_libro_bancos;
+
+
+               --Obtenemos el numero de indice que sera asignado al nuevo registro
+                    Select max(lb.indice)
+                    Into g_indice
+                    From tes.tts_libro_bancos lb
+                    Where lb.id_cuenta_bancaria = v_id_cuenta_bancaria
+                    and lb.fecha = g_fecha;
+
+                    If(g_indice is null )Then
+                        g_indice = 0;
+                    end if;
+
+                    UPDATE tes.tts_libro_bancos SET
+                        indice = g_indice + 1
+                    WHERE tes.tts_libro_bancos.id_libro_bancos= v_id_libro_bancos;
+
+
+
+
+        elsif(v_parametros.tipo = 'venta_agencia') then
            insert into obingresos.tdeposito(
                 estado_reg,
                 nro_deposito,
@@ -216,6 +417,25 @@ BEGIN
                 )RETURNING id_deposito into v_id_deposito;
 
             else
+
+            /****************************Recuperamos el numero de cuenta en cuenta bancaria para el tipo AGENCIA***********************************/
+                select cuenta.nro_cuenta,
+                   ag.nombre,
+                   cuenta.id_cuenta_bancaria,
+                   cuen.id_depto,
+                   lu.codigo into v_nro_cuenta, v_nombre_departamento, v_id_cuenta_bancaria, v_id_departamento, v_lugar
+            from obingresos.tagencia ag
+            inner join vef.tsucursal su on su.id_lugar = ag.id_lugar
+            inner join tes.tdepto_cuenta_bancaria cuen on cuen.id_depto = su.id_depto
+            inner join tes.tcuenta_bancaria cuenta on cuenta.id_cuenta_bancaria = cuen.id_cuenta_bancaria
+            inner join param.tlugar lu on lu.id_lugar = su.id_lugar
+            where ag.id_agencia = v_parametros.id_agencia and cuenta.id_moneda = v_id_moneda;
+            /*****************************************************************************************************************************************/
+            /*Controlamos que el nro de cuenta exista*/
+             if (v_nro_cuenta is null) then
+        		raise exception 'No existe el numero de cuenta para la sucursal %, consulte con el departamento de ventas.',v_nombre_departamento;
+              end if;
+            /**************************************/
                 insert into obingresos.tdeposito(
                 estado_reg,
                 nro_deposito,
@@ -236,7 +456,7 @@ BEGIN
                 v_parametros.nro_deposito,
                 v_parametros.monto_deposito,
                 v_id_moneda,
-               v_parametros.id_agencia,
+               	v_parametros.id_agencia,
                 v_parametros.fecha,
                 v_parametros.saldo,
                 p_id_usuario,
@@ -247,6 +467,35 @@ BEGIN
                 null,
                 'borrador'
                 )RETURNING id_deposito into v_id_deposito;
+
+                /*recuperamos el id_finalidad para venta_propia*/
+                 select fi.id_finalidad into v_id_finalidad
+                 from tes.tfinalidad fi
+                 where fi.nombre_finalidad = 'Venta Agencia';
+
+                 /*Recuperamos el id_forma_pago*/
+                 select pa.id_forma_pago into v_id_forma_pago
+                 from param.tforma_pago pa
+                 where pa.desc_forma_pago = 'Deposito';
+
+                /*************Creamos los parametros para enviar a la funcion que insertara al libro de bancos*****************/
+                select 'deposito'::varchar as tipo,
+                       v_parametros.nro_deposito as nro_deposito,
+                       v_parametros.fecha::date as fecha_pago,
+                       v_id_cuenta_bancaria as id_cuenta_bancaria,
+                       v_id_departamento as id_depto,
+                       v_parametros.monto_deposito as importe_deposito,
+                       'Boliviana de Aviacion(BoA)'::varchar as a_favor,
+                       ('Agencia: '||v_nombre_departamento)::varchar as detalle,
+                       v_lugar as origen,
+                       v_id_finalidad::integer as id_finalidad,
+                       0::numeric as importe_cheque,
+                       v_parametros.fecha::date as fecha,
+                       v_id_forma_pago::integer as id_forma_pago,
+                       v_id_deposito::integer as id_deposito
+                 into v_tabla;
+        		v_id_libro_bancos = tes.f_inserta_libro_bancos(p_administrador,p_id_usuario,hstore(v_tabla));
+              /***************************************************************************************************************/
 
                 if (v_parametros.id_agencia is not null) then
                 	--generar alerta para ingresos
@@ -300,6 +549,7 @@ BEGIN
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Depositos almacenado(a) con exito (id_deposito'||v_id_deposito||')');
             v_resp = pxp.f_agrega_clave(v_resp,'id_deposito',v_id_deposito::varchar);
+            v_resp = pxp.f_agrega_clave(v_resp,'id_libro_bancos',v_id_libro_bancos::varchar);
 
             --Devuelve la respuesta
             return v_resp;
@@ -321,9 +571,8 @@ BEGIN
                 from obingresos.tdeposito
                 where id_deposito = v_parametros.id_deposito;
 
-
         	if (v_parametros.tipo = 'agencia') then
-            	SELECT * into v_deposito
+                SELECT * into v_deposito
                 from obingresos.tdeposito
                 where id_deposito = v_parametros.id_deposito;
                 --raise exception '%,%,%,%',v_deposito.id_agencia,v_deposito.nro_deposito,v_deposito.fecha,v_deposito.monto_deposito;
@@ -382,6 +631,36 @@ BEGIN
                 id_usuario_ai = v_parametros._id_usuario_ai,
                 usuario_ai = v_parametros._nombre_usuario_ai
                 where id_deposito=v_parametros.id_deposito;
+
+            /*Modificaremos el dato en el libro de ventas tambien se controlara la cuenta bancaria si es dolar o bs*/
+
+            /****************************Recuperamos el numero de cuenta en cuenta bancaria***********************************/
+              select cuenta.nro_cuenta,
+                     pv.nombre,
+                     cuenta.id_cuenta_bancaria,
+                     cuen.id_depto,
+                     lu.codigo into v_nro_cuenta, v_nombre_departamento, v_id_cuenta_bancaria, v_id_departamento, v_lugar
+              from vef.tpunto_venta pv
+              inner join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
+              inner join tes.tdepto_cuenta_bancaria cuen on cuen.id_depto = su.id_depto
+              inner join tes.tcuenta_bancaria cuenta on cuenta.id_cuenta_bancaria = cuen.id_cuenta_bancaria
+              inner join param.tlugar lu on lu.id_lugar = su.id_lugar
+              where pv.id_punto_venta = v_parametros.id_punto_venta and cuenta.id_moneda = v_id_moneda;
+            /*---------------------------------------------------------------------------------------------*/
+
+              update tes.tts_libro_bancos set
+                nro_deposito = v_parametros.nro_deposito,
+                importe_deposito = v_parametros.monto_deposito,
+                fecha = v_parametros.fecha,
+                fecha_pago = v_parametros.fecha,
+                id_cuenta_bancaria = v_id_cuenta_bancaria,
+                id_usuario_mod = p_id_usuario,
+                fecha_mod = now(),
+                id_usuario_ai = v_parametros._id_usuario_ai,
+                usuario_ai = v_parametros._nombre_usuario_ai
+                where id_deposito=v_parametros.id_deposito;
+            /***********************************************************************************************************************************/
+
            elsif (v_parametros.tipo = 'venta_agencia')then
         		 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
@@ -463,6 +742,35 @@ BEGIN
             if (v_verificar_existencia.existe <> 0 and v_verificar_existencia.estado <> 'eliminado') THEN
                 raise exception 'El Registro con No Deposito = % y Fecha de Deposito = % ya se encuentra registrado por el Usuario: % por favor elimine el registro existente para registrar el actual',v_parametros.nro_deposito,to_char(v_parametros.fecha::date, 'DD/MM/YYYY'),/*v_parametros.monto_deposito,*/v_verificar_existencia.nombre_completo1;
             else
+
+
+            /****************************Recuperamos el numero de cuenta en cuenta bancaria para el tipo AGENCIA***********************************/
+                select cuenta.nro_cuenta,
+                   ag.nombre,
+                   cuenta.id_cuenta_bancaria,
+                   cuen.id_depto,
+                   lu.codigo into v_nro_cuenta, v_nombre_departamento, v_id_cuenta_bancaria, v_id_departamento, v_lugar
+            from obingresos.tagencia ag
+            inner join vef.tsucursal su on su.id_lugar = ag.id_lugar
+            inner join tes.tdepto_cuenta_bancaria cuen on cuen.id_depto = su.id_depto
+            inner join tes.tcuenta_bancaria cuenta on cuenta.id_cuenta_bancaria = cuen.id_cuenta_bancaria
+            inner join param.tlugar lu on lu.id_lugar = su.id_lugar
+            where ag.id_agencia = v_parametros.id_agencia and cuenta.id_moneda = v_id_moneda;
+            /*****************************************************************************************************************************************/
+          	/*Actualizamos el libro de bancos*/
+        	 update tes.tts_libro_bancos set
+                nro_deposito = v_parametros.nro_deposito,
+                importe_deposito = v_parametros.monto_deposito,
+                fecha = v_parametros.fecha,
+                fecha_pago = v_parametros.fecha,
+                id_cuenta_bancaria = v_id_cuenta_bancaria,
+                id_usuario_mod = p_id_usuario,
+                fecha_mod = now(),
+                id_usuario_ai = v_parametros._id_usuario_ai,
+                usuario_ai = v_parametros._nombre_usuario_ai
+                where id_deposito=v_parametros.id_deposito;
+            /*-------------------------------------------------*/
+
                 update obingresos.tdeposito set
                 nro_deposito = v_parametros.nro_deposito,
                 monto_deposito = v_parametros.monto_deposito,
@@ -662,10 +970,35 @@ BEGIN
             id_usuario_mod = p_id_usuario,
             fecha_mod = now()
             where id_deposito=v_parametros.id_deposito;
-          else
 
-            delete from obingresos.tdeposito
-            where id_deposito=v_parametros.id_deposito;
+            delete from tes.tts_libro_bancos
+            where id_deposito = v_parametros.id_deposito;
+
+          else
+			/*Recuperamos el estado del libro de bancos*/
+			select  libro.estado,
+                    libro.id_libro_bancos into v_libro_bancos
+            from tes.tts_libro_bancos libro
+            where  libro.id_deposito = v_parametros.id_deposito;
+			/*-----------------------------------------*/
+
+            /*Si el deposito no esta insertado en el libro de bancos se puede eliminar*/
+            if (v_libro_bancos.id_libro_bancos is null) then
+            	delete from obingresos.tdeposito
+            	where id_deposito=v_parametros.id_deposito;
+            else --Si el deposito se encuentra en el libro de ventas controlamos que el estado este en borrador para eliminar
+            	--if (v_libro_bancos.estado <> 'borrador') then
+                 --raise exception 'El deposito seleccionado no se puede eliminar ya que se encuentra en estado: % en el libro de bancos. Solo se pueden eliminar depositos en estado borrador',v_libro_bancos.estado;
+                 --ELSE
+                 		delete from tes.tts_libro_bancos
+                        where id_deposito = v_parametros.id_deposito;
+
+                 		delete from obingresos.tdeposito
+                        where id_deposito=v_parametros.id_deposito;
+            	--end if;
+
+            end if;
+
         end if;
 
 
@@ -692,6 +1025,123 @@ BEGIN
                 id_usuario_mod = p_id_usuario,
                 fecha_mod = now()
                 where id_deposito=v_parametros.id_deposito;
+
+                /*Cambio de estado*/
+                select
+                  lb.id_libro_bancos,
+                  lb.id_proceso_wf,
+                  lb.id_estado_wf,
+                  lb.sistema_origen,
+                  lb.nro_cheque,
+                  lb.tipo,
+                  lb.id_cuenta_bancaria,
+                  lb.fecha,
+                  lb.indice
+              into
+                  v_id_libro_bancos,
+                  v_id_proceso_wf,
+                  v_id_estado_wf,
+                  v_origen,
+                  v_nro_deposito,
+                  v_tipo,
+                  v_id_cuenta_bancaria,
+                  g_fecha,
+                  g_indice
+              from tes.tts_libro_bancos  lb
+              --inner  join tes.tobligacion_pago op on op.id_obligacion_pago = pp.id_obligacion_pago
+              where lb.id_deposito  = v_parametros.id_deposito;
+
+
+              select
+                ew.id_tipo_estado,
+                te.pedir_obs,
+                ew.id_funcionario
+               into
+                v_id_tipo_estado,
+                v_pedir_obs,
+                v_id_funcionario
+              from wf.testado_wf ew
+              inner join wf.ttipo_estado te on te.id_tipo_estado = ew.id_tipo_estado
+              where ew.id_estado_wf =  v_id_estado_wf;
+
+              /*Obtenemos el id del estado finalizado*/
+              v_id_estado_depositado = (v_id_tipo_estado+1);
+              /****************************************/
+
+              /*Obtenemnos el codigo depositado*/
+                select te.codigo into v_codigo_estado
+                from wf.ttipo_estado te
+                where te.id_tipo_estado=v_id_estado_depositado;
+                /******************************************/
+
+              IF  pxp.f_existe_parametro(p_tabla,'id_depto_wf') THEN
+
+               v_id_depto = v_parametros.id_depto_wf;
+
+             END IF;
+
+
+
+             IF  pxp.f_existe_parametro(p_tabla,'obs') THEN
+                  v_obs=v_parametros.obs;
+             ELSE
+                   v_obs='---';
+
+             END IF;
+
+             --configurar acceso directo para la alarma
+             v_acceso_directo = '';
+             v_clase = '';
+             v_parametros_ad = '';
+             v_tipo_noti = '';
+             v_titulo  = '';
+
+             v_id_estado_actual =  wf.f_registra_estado_wf(v_id_tipo_estado,
+                                                             v_id_funcionario,
+                                                             v_id_estado_wf,
+                                                             v_id_proceso_wf,
+                                                             p_id_usuario,
+                                                             v_parametros._id_usuario_ai,
+                                                             v_parametros._nombre_usuario_ai,
+                                                             v_id_depto,
+                                                             ' Obs:'||v_obs,
+                                                             --NULL,
+                                                             v_acceso_directo,
+                                                             --NULL,
+                                                             v_clase,
+                                                             --NULL,
+                                                             v_parametros_ad,
+                                                             --NULL,
+                                                             v_tipo_noti,
+                                                             --NULL);
+                                                             v_titulo);
+
+              /************************************************************/
+
+              update tes.tts_libro_bancos  t set
+               id_estado_wf =  v_id_estado_actual,
+               estado = v_codigo_estado,
+               id_usuario_mod=p_id_usuario,
+               fecha_mod=now()
+               where id_proceso_wf = v_id_proceso_wf;
+
+
+               --Obtenemos el numero de indice que sera asignado al nuevo registro
+                    Select max(lb.indice)
+                    Into g_indice
+                    From tes.tts_libro_bancos lb
+                    Where lb.id_cuenta_bancaria = v_id_cuenta_bancaria
+                    and lb.fecha = g_fecha;
+
+                    If(g_indice is null )Then
+                        g_indice = 0;
+                    end if;
+
+                    UPDATE tes.tts_libro_bancos SET
+                        indice = g_indice + 1
+                    WHERE tes.tts_libro_bancos.id_libro_bancos= v_id_libro_bancos;
+
+
             else
             	raise exception 'No se puede Validar un Deposito con monto 0, Verifique!';
             end if;
@@ -772,3 +1222,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_deposito_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
