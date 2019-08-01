@@ -893,12 +893,11 @@ group by me.id_agencia,mon.codigo_internacional
         v_consulta ='with credito as (	select  mo.id_agencia,
 		sum(case when mo.ajuste = ''no'' and  mo.garantia = ''no''   then
             	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+
+                                mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -907,12 +906,9 @@ group by me.id_agencia,mon.codigo_internacional
 
 		 sum(case when  mo.garantia = ''si'' and mo.id_periodo_venta is null then
            	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -921,12 +917,11 @@ group by me.id_agencia,mon.codigo_internacional
 
         sum(case when mo.ajuste = ''si''  then
             	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
+
 
                                 end)
         else
@@ -941,12 +936,10 @@ group by me.id_agencia,mon.codigo_internacional
 debitos as (select  mo.id_agencia,
 sum(case when mo.ajuste = ''no'' then
           	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -954,12 +947,10 @@ sum(case when mo.ajuste = ''no'' then
         end) as monto_debito,
         sum(case when mo.ajuste = ''si'' then
           	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -1011,12 +1002,11 @@ contrato as( select max(id_contrato) as ultimo_contrato,
       	v_consulta = 'with credito as (	select  mo.id_agencia,
 		sum(case when mo.ajuste = ''no'' and  mo.garantia = ''no''   then
             	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
+
 
                                 end)
         else
@@ -1025,12 +1015,10 @@ contrato as( select max(id_contrato) as ultimo_contrato,
 
 		 sum(case when  mo.garantia = ''si'' and mo.id_periodo_venta is null then
            	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -1039,12 +1027,9 @@ contrato as( select max(id_contrato) as ultimo_contrato,
 
         sum(case when mo.ajuste = ''si''  then
             	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -1060,12 +1045,9 @@ contrato as( select max(id_contrato) as ultimo_contrato,
 debitos as (select  mo.id_agencia,
 sum(case when mo.ajuste = ''no'' then
           	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
                                 end)
         else
@@ -1073,12 +1055,11 @@ sum(case when mo.ajuste = ''no'' then
         end) as monto_debito,
         sum(case when mo.ajuste = ''si'' then
           	(case when mo.id_moneda = 1 then
-                            	/*Cambiando esta condicion*/
-                                --mo.monto
-                                  mo.monto_total
+                            	mo.monto
+
                             else
-                            	--param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
-                                param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,''O'',2)
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
+
 
                                 end)
         else
@@ -1838,9 +1819,7 @@ end if;
 debitos as (select  mo.id_agencia,
 sum(case when mo.ajuste = ''no'' then
           	(case when mo.id_moneda = 1 then
-            					/*Cambiamos esta condicion*/
-                            	--mo.monto
-                                mo.monto_total
+            					mo.monto
                             else
                             	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
@@ -1850,9 +1829,7 @@ sum(case when mo.ajuste = ''no'' then
         end) as monto_debito,
         sum(case when mo.ajuste = ''si'' then
           	(case when mo.id_moneda = 1 then
-                            	/*Cambiamos esta condicion*/
-                                --mo.monto
-                                mo.monto_total
+                            	mo.monto
                             else
                             	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,''O'',2)
 
