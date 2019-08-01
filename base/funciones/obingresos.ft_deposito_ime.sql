@@ -1026,6 +1026,7 @@ BEGIN
                 fecha_mod = now()
                 where id_deposito=v_parametros.id_deposito;
 
+
                 /*Cambio de estado*/
                 select
                   lb.id_libro_bancos,
@@ -1051,6 +1052,7 @@ BEGIN
               --inner  join tes.tobligacion_pago op on op.id_obligacion_pago = pp.id_obligacion_pago
               where lb.id_deposito  = v_parametros.id_deposito;
 
+              if (v_id_libro_bancos is not null) then
 
               select
                 ew.id_tipo_estado,
@@ -1140,7 +1142,7 @@ BEGIN
                     UPDATE tes.tts_libro_bancos SET
                         indice = g_indice + 1
                     WHERE tes.tts_libro_bancos.id_libro_bancos= v_id_libro_bancos;
-
+               end if;
 
             else
             	raise exception 'No se puede Validar un Deposito con monto 0, Verifique!';
