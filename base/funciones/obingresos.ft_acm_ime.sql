@@ -293,7 +293,7 @@ BEGIN
                          importe_total_mb = v_suma_importe,
                          neto_total_mb = v_suma_neto,
                          cant_bol_mb = v_contador_boletos
-                         Where id_agencia=v_id_agencia;
+                         Where id_archivo_acm_det=v_registros.id_archivo_acm_det and id_agencia=v_id_agencia;
 
 	--############################################################################--
 
@@ -460,7 +460,7 @@ BEGIN
                  importe_total_mb = v_suma_importe,
                  neto_total_mb = v_suma_neto,
                  cant_bol_mb = v_contador_boletos
-                 Where id_agencia=v_id_agencia;
+                 Where id_archivo_acm_det=v_registros.id_archivo_acm_det and id_agencia=v_id_agencia;
 
 
          --################################################################################--
