@@ -192,7 +192,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 storeCombo.load({params:{start:0,limit:this.tam_pag},
                     callback : function (r) {
-                        if (r.length == 1 ) {
+                      /*Cambiando la condicion para cuando el usuario solo tenga un punto de venta 1 por 0*/
+                      //if (r.length == 1 ) {
+                        if (r.length == 0 ) {
                             this.id_punto_venta = r[0].data.id_punto_venta;
                             this.store.baseParams.id_punto_venta = r[0].data.id_punto_venta;
                             this.Cmp.id_forma_pago.store.baseParams.id_punto_venta = this.id_punto_venta;
@@ -280,7 +282,7 @@ header("content-type: text/javascript; charset=UTF-8");
               var dd = fecha.getDate();
               var mm = fecha.getMonth() + 1; //January is 0!
               var yyyy = fecha.getFullYear();
-              this.fecha_actual = dd + '/' + mm + '/' + yyyy;       
+              this.fecha_actual = dd + '/' + mm + '/' + yyyy;
               Ext.Ajax.request({
                   url:'../../sis_ventas_facturacion/control/AperturaCierreCaja/getTipoCambio',
                   params:{fecha_cambio:this.fecha_actual},
@@ -994,7 +996,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     },
                     type:'TextField',
                     id_grupo:1,
-                    grid:true,
+                    grid:false,
                     form:true
                 },
                 {
@@ -1040,6 +1042,46 @@ header("content-type: text/javascript; charset=UTF-8");
                     id_grupo: 1,
                     grid: true,
                     form: true
+                },
+                {
+                    config:{
+                        name: 'nro_cupon',
+                        fieldLabel: 'Nro Cupon',
+                        //labelStyle:'color:blue; font-weight:bold;',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        //minLength:15,
+                        //maxLength:20,
+                        style:{
+                          background:'#B6E7CE',
+                        } ,
+                        gwidth: 110
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:false,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'nro_cuota',
+                        fieldLabel: 'Nro Cuota',
+                        //labelStyle:'color:blue; font-weight:bold;',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        //minLength:15,
+                        //maxLength:20,
+                        style:{
+                          background:'#B6E7CE',
+                        } ,
+                        gwidth: 110
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:false,
+                    form:true
                 },
                 {
                     config: {
@@ -1193,6 +1235,46 @@ header("content-type: text/javascript; charset=UTF-8");
                     id_grupo: 4,
                     grid: true,
                     form: true
+                },
+                {
+                    config:{
+                        name: 'nro_cupon_2',
+                        fieldLabel: 'Nro Cupon 2',
+                        //labelStyle:'color:blue; font-weight:bold;',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        // minLength:15,
+                        // maxLength:20,
+                        style:{
+                          background:'#B6E7CE',
+                        } ,
+                        gwidth: 110
+                    },
+                    type:'TextField',
+                    id_grupo:4,
+                    grid:false,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'nro_cuota_2',
+                        fieldLabel: 'Nro Cuota 2',
+                        //labelStyle:'color:blue; font-weight:bold;',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        // minLength:15,
+                        // maxLength:20,
+                        style:{
+                          background:'#B6E7CE',
+                        } ,
+                        gwidth: 110
+                    },
+                    type:'TextField',
+                    id_grupo:4,
+                    grid:false,
+                    form:true
                 },
                 {
                     config:{
@@ -1578,7 +1660,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             }
                         }
                         var valueNew = this.Cmp.monto_forma_pago.getValue();
-                        
+
                         if (valueNew < valueOld) {
 
                             this.Cmp.id_forma_pago2.setDisabled(false);
@@ -2009,6 +2091,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             },
             calculoFp2Grupo : function (record) {
+              console.log("llega aqui calculo de grupo");
                 this.moneda_grupo_fp2 = record.data.desc_moneda;
                 if (this.moneda_grupo_fp1 == '') {
                     console.log('sin moneda fp 1');
@@ -2277,72 +2360,212 @@ header("content-type: text/javascript; charset=UTF-8");
                 return Math.floor(value*100)/100;
             },
             manejoComponentesFp1 : function (id_fp1,codigo_fp1){
-                //forma de pago 1
-                if (id_fp1 == 0) {
-                    this.Cmp.id_forma_pago.setDisabled(true);
-                    this.Cmp.monto_forma_pago.setDisabled(true);
-                    this.ocultarComponente(this.Cmp.numero_tarjeta);
-                    this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                    this.ocultarComponente(this.Cmp.mco);
-                    this.ocultarComponente(this.Cmp.id_auxiliar);
-                    this.Cmp.numero_tarjeta.allowBlank = true;
-                    this.Cmp.numero_tarjeta.allowBlank = true;
-                    this.Cmp.mco.allowBlank = true;
-                    this.Cmp.id_auxiliar.allowBlank = true;
+                if (this.store.baseParams.moneda_base == 'ARS') {
+                  if (id_fp1 == 0) {
+                      this.Cmp.id_forma_pago.setDisabled(true);
+                      this.Cmp.monto_forma_pago.setDisabled(true);
+                      this.ocultarComponente(this.Cmp.numero_tarjeta);
+                      this.ocultarComponente(this.Cmp.codigo_tarjeta);
+
+                      /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                      this.ocultarComponente(this.Cmp.nro_cupon);
+                      this.ocultarComponente(this.Cmp.nro_cuota);
+                      /**********************************************/
+
+                      this.ocultarComponente(this.Cmp.mco);
+                      this.ocultarComponente(this.Cmp.id_auxiliar);
+                      this.Cmp.numero_tarjeta.allowBlank = true;
+                      this.Cmp.numero_tarjeta.allowBlank = true;
+                      this.Cmp.mco.allowBlank = true;
+                      this.Cmp.id_auxiliar.allowBlank = true;
+                  } else {
+                      this.Cmp.id_forma_pago.setDisabled(false);
+                      this.Cmp.monto_forma_pago.setDisabled(true);
+                      if (codigo_fp1.startsWith("CC") ||
+                          codigo_fp1.startsWith("SF")) {
+                          this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.ocultarComponente(this.Cmp.mco);
+                          this.Cmp.id_auxiliar.reset();
+                          this.mostrarComponente(this.Cmp.numero_tarjeta);
+                          this.mostrarComponente(this.Cmp.codigo_tarjeta);
+
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.mostrarComponente(this.Cmp.nro_cupon);
+                          this.mostrarComponente(this.Cmp.nro_cuota);
+                          /***********************************************/
+                          this.Cmp.numero_tarjeta.allowBlank = false;
+                          this.Cmp.codigo_tarjeta.allowBlank = false;
+                          this.Cmp.id_auxiliar.allowBlank = true;
+                          this.Cmp.mco.allowBlank = true;
+
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.Cmp.nro_cupon.allowBlank = true;
+                          this.Cmp.nro_cuota.allowBlank = true;
+                          /***********************************************/
+
+                          //tarjeta de credito
+                      } else if (codigo_fp1.startsWith("CT")) {
+                          //cuenta corriente
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                          this.ocultarComponente(this.Cmp.mco);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta);
+
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon);
+                          this.ocultarComponente(this.Cmp.nro_cuota);
+                          /***********************************************/
+
+                          this.mostrarComponente(this.Cmp.id_auxiliar);
+                          this.Cmp.numero_tarjeta.reset();
+                          this.Cmp.codigo_tarjeta.reset();
+
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.Cmp.nro_cupon.reset();
+                          this.Cmp.nro_cuota.reset();
+                          this.Cmp.nro_cupon.allowBlank = true;
+                          this.Cmp.nro_cuota.allowBlank = true;
+                          /***********************************************/
+
+                          this.Cmp.numero_tarjeta.allowBlank = true;
+                          this.Cmp.mco2.allowBlank = true;
+                          this.Cmp.codigo_tarjeta.allowBlank = true;
+                          this.Cmp.id_auxiliar.allowBlank = false;
+                      } else if (codigo_fp1.startsWith("MCO")) {
+                          //mco
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.Cmp.id_auxiliar.reset();
+                          this.mostrarComponente(this.Cmp.mco);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.Cmp.mco.allowBlank = false;
+                          this.Cmp.codigo_tarjeta.allowBlank = true;
+                          this.Cmp.id_auxiliar.allowBlank = true;
+                          this.Cmp.numero_tarjeta.allowBlank = true;
+                      }else {
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon);
+                          this.ocultarComponente(this.Cmp.nro_cuota);
+                          this.Cmp.nro_cupon.reset();
+                          this.Cmp.nro_cuota.reset();
+                          this.Cmp.nro_cupon.allowBlank = true;
+                          this.Cmp.nro_cuota.allowBlank = true;
+                          /******************************************/
+                          this.ocultarComponente(this.Cmp.mco);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.Cmp.numero_tarjeta.reset();
+                          this.Cmp.codigo_tarjeta.reset();
+                          this.Cmp.id_auxiliar.reset();
+                          this.Cmp.numero_tarjeta.allowBlank = true;
+                          this.Cmp.mco.allowBlank = true;
+                          this.Cmp.codigo_tarjeta.allowBlank = true;
+                          this.Cmp.id_auxiliar.allowBlank = true;
+                      }
+                  }
                 } else {
-                    this.Cmp.id_forma_pago.setDisabled(false);
-                    this.Cmp.monto_forma_pago.setDisabled(true);
-                    if (codigo_fp1.startsWith("CC") ||
-                        codigo_fp1.startsWith("SF")) {
-                        this.ocultarComponente(this.Cmp.id_auxiliar);
-                        this.ocultarComponente(this.Cmp.mco);
-                        this.Cmp.id_auxiliar.reset();
-                        this.mostrarComponente(this.Cmp.numero_tarjeta);
-                        this.mostrarComponente(this.Cmp.codigo_tarjeta);
-                        this.Cmp.numero_tarjeta.allowBlank = false;
-                        this.Cmp.codigo_tarjeta.allowBlank = false;
-                        this.Cmp.id_auxiliar.allowBlank = true;
-                        this.Cmp.mco.allowBlank = true;
-                        //tarjeta de credito
-                    } else if (codigo_fp1.startsWith("CT")) {
-                        //cuenta corriente
-                        this.ocultarComponente(this.Cmp.numero_tarjeta);
-                        this.ocultarComponente(this.Cmp.mco);
-                        this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                        this.mostrarComponente(this.Cmp.id_auxiliar);
-                        this.Cmp.numero_tarjeta.reset();
-                        this.Cmp.codigo_tarjeta.reset();
-                        this.Cmp.numero_tarjeta.allowBlank = true;
-                        this.Cmp.mco2.allowBlank = true;
-                        this.Cmp.codigo_tarjeta.allowBlank = true;
-                        this.Cmp.id_auxiliar.allowBlank = false;
-                    } else if (codigo_fp1.startsWith("MCO")) {
-                        //mco
-                        this.ocultarComponente(this.Cmp.numero_tarjeta);
-                        this.ocultarComponente(this.Cmp.id_auxiliar);
-                        this.Cmp.id_auxiliar.reset();
-                        this.mostrarComponente(this.Cmp.mco);
-                        this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                        this.Cmp.mco.allowBlank = false;
-                        this.Cmp.codigo_tarjeta.allowBlank = true;
-                        this.Cmp.id_auxiliar.allowBlank = true;
-                        this.Cmp.numero_tarjeta.allowBlank = true;
-                    }else {
-                        this.ocultarComponente(this.Cmp.numero_tarjeta);
-                        this.ocultarComponente(this.Cmp.mco);
-                        this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                        this.ocultarComponente(this.Cmp.id_auxiliar);
-                        this.Cmp.numero_tarjeta.reset();
-                        this.Cmp.codigo_tarjeta.reset();
-                        this.Cmp.id_auxiliar.reset();
-                        this.Cmp.numero_tarjeta.allowBlank = true;
-                        this.Cmp.mco.allowBlank = true;
-                        this.Cmp.codigo_tarjeta.allowBlank = true;
-                        this.Cmp.id_auxiliar.allowBlank = true;
-                    }
+                  if (id_fp1 == 0) {
+                      this.Cmp.id_forma_pago.setDisabled(true);
+                      this.Cmp.monto_forma_pago.setDisabled(true);
+                      this.ocultarComponente(this.Cmp.numero_tarjeta);
+                      this.ocultarComponente(this.Cmp.codigo_tarjeta);
+
+                      /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                      this.ocultarComponente(this.Cmp.nro_cupon);
+                      this.ocultarComponente(this.Cmp.nro_cuota);
+                      this.Cmp.nro_cupon.allowBlank = true;
+                      this.Cmp.nro_cuota.allowBlank = true;
+                      /******************************************/
+
+                      this.ocultarComponente(this.Cmp.mco);
+                      this.ocultarComponente(this.Cmp.id_auxiliar);
+                      this.Cmp.numero_tarjeta.allowBlank = true;
+                      this.Cmp.numero_tarjeta.allowBlank = true;
+                      this.Cmp.mco.allowBlank = true;
+                      this.Cmp.id_auxiliar.allowBlank = true;
+                  } else {
+                      this.Cmp.id_forma_pago.setDisabled(false);
+                      this.Cmp.monto_forma_pago.setDisabled(true);
+                      if (codigo_fp1.startsWith("CC") ||
+                          codigo_fp1.startsWith("SF")) {
+                          this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.ocultarComponente(this.Cmp.mco);
+                          this.Cmp.id_auxiliar.reset();
+                          this.mostrarComponente(this.Cmp.numero_tarjeta);
+                          this.mostrarComponente(this.Cmp.codigo_tarjeta);
+
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon);
+                          this.ocultarComponente(this.Cmp.nro_cuota);
+                          this.Cmp.nro_cupon.allowBlank = true;
+                          this.Cmp.nro_cuota.allowBlank = true;
+                          /******************************************/
+                          this.Cmp.numero_tarjeta.allowBlank = false;
+                          this.Cmp.codigo_tarjeta.allowBlank = false;
+                          this.Cmp.id_auxiliar.allowBlank = true;
+                          this.Cmp.mco.allowBlank = true;
+
+
+                          //tarjeta de credito
+                      } else if (codigo_fp1.startsWith("CT")) {
+                          //cuenta corriente
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                          this.ocultarComponente(this.Cmp.mco);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta);
+
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon);
+                          this.ocultarComponente(this.Cmp.nro_cuota);
+                          this.Cmp.nro_cupon.allowBlank = true;
+                          this.Cmp.nro_cuota.allowBlank = true;
+                          /******************************************/
+
+                          this.mostrarComponente(this.Cmp.id_auxiliar);
+                          this.Cmp.numero_tarjeta.reset();
+                          this.Cmp.codigo_tarjeta.reset();
+
+
+                          this.Cmp.numero_tarjeta.allowBlank = true;
+                          this.Cmp.mco2.allowBlank = true;
+                          this.Cmp.codigo_tarjeta.allowBlank = true;
+                          this.Cmp.id_auxiliar.allowBlank = false;
+                      } else if (codigo_fp1.startsWith("MCO")) {
+                          //mco
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.Cmp.id_auxiliar.reset();
+                          this.mostrarComponente(this.Cmp.mco);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.Cmp.mco.allowBlank = false;
+                          this.Cmp.codigo_tarjeta.allowBlank = true;
+                          this.Cmp.id_auxiliar.allowBlank = true;
+                          this.Cmp.numero_tarjeta.allowBlank = true;
+                      }else {
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon);
+                          this.ocultarComponente(this.Cmp.nro_cuota);
+                          this.Cmp.nro_cupon.allowBlank = true;
+                          this.Cmp.nro_cuota.allowBlank = true;
+                          /******************************************/
+                          this.ocultarComponente(this.Cmp.mco);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.Cmp.numero_tarjeta.reset();
+                          this.Cmp.codigo_tarjeta.reset();
+                          this.Cmp.id_auxiliar.reset();
+                          this.Cmp.numero_tarjeta.allowBlank = true;
+                          this.Cmp.mco.allowBlank = true;
+                          this.Cmp.codigo_tarjeta.allowBlank = true;
+                          this.Cmp.id_auxiliar.allowBlank = true;
+                      }
+                  }
+
                 }
+
             },
             manejoComponentesFp2 : function (id_fp2,codigo_fp2){
+              if (this.store.baseParams.moneda_base == 'ARS') {
                 if (id_fp2) {
                     //forma de pago 2
                     if (id_fp2 == 0) {
@@ -2352,6 +2575,14 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.ocultarComponente(this.Cmp.mco2);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                         this.ocultarComponente(this.Cmp.id_auxiliar2);
+
+                        /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                        this.ocultarComponente(this.Cmp.nro_cupon_2);
+                        this.ocultarComponente(this.Cmp.nro_cuota_2);
+                        this.Cmp.nro_cupon_2.allowBlank = true;
+                        this.Cmp.nro_cuota_2.allowBlank = true;
+                        /**********************************************/
+
                         this.Cmp.numero_tarjeta2.allowBlank = true;
                         this.Cmp.mco2.allowBlank = true;
                         this.Cmp.codigo_tarjeta2.allowBlank = true;
@@ -2370,6 +2601,14 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.mco2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.mostrarComponente(this.Cmp.nro_cupon_2);
+                            this.mostrarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
                             this.Cmp.numero_tarjeta2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
                             this.Cmp.id_auxiliar2.allowBlank = true;
@@ -2381,6 +2620,16 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.mostrarComponente(this.Cmp.id_auxiliar2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.reset();
+                            this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.allowBlank = true;
@@ -2394,6 +2643,15 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
+
                             this.Cmp.mco2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
@@ -2403,6 +2661,16 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.reset();
+                            this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = true;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
@@ -2417,6 +2685,14 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.mco2);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
+
+                    /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                    this.ocultarComponente(this.Cmp.nro_cupon_2);
+                    this.ocultarComponente(this.Cmp.nro_cuota_2);
+                    this.Cmp.nro_cupon_2.allowBlank = true;
+                    this.Cmp.nro_cuota_2.allowBlank = true;
+                    /**********************************************/
+
                     this.Cmp.numero_tarjeta2.allowBlank = true;
                     this.Cmp.mco2.allowBlank = true;
                     this.Cmp.codigo_tarjeta2.allowBlank = true;
@@ -2424,6 +2700,149 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.id_forma_pago2.setDisabled(true);
                     this.Cmp.monto_forma_pago2.setDisabled(true);
                 }
+              } else {
+                if (id_fp2) {
+                    //forma de pago 2
+                    if (id_fp2 == 0) {
+                        this.Cmp.id_forma_pago2.setDisabled(true);
+                        this.Cmp.monto_forma_pago2.setDisabled(true);
+                        this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                        this.ocultarComponente(this.Cmp.mco2);
+                        this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                        this.ocultarComponente(this.Cmp.id_auxiliar2);
+
+                        /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                        this.ocultarComponente(this.Cmp.nro_cupon_2);
+                        this.ocultarComponente(this.Cmp.nro_cuota_2);
+                        this.Cmp.nro_cupon_2.reset();
+                        this.Cmp.nro_cuota_2.reset();
+                        this.Cmp.nro_cupon_2.allowBlank = true;
+                        this.Cmp.nro_cuota_2.allowBlank = true;
+                        /**********************************************/
+
+                        this.Cmp.numero_tarjeta2.allowBlank = true;
+                        this.Cmp.mco2.allowBlank = true;
+                        this.Cmp.codigo_tarjeta2.allowBlank = true;
+                        this.Cmp.id_auxiliar2.allowBlank = true;
+                        this.Cmp.numero_tarjeta2.reset();
+                        this.Cmp.codigo_tarjeta2.reset();
+                        this.Cmp.id_auxiliar2.reset();
+                    } else {
+                        this.Cmp.id_forma_pago2.setDisabled(false);
+                        this.Cmp.monto_forma_pago2.setDisabled(false);
+                        if (codigo_fp2.startsWith("CC") ||
+                            codigo_fp2.startsWith("SF")) {
+                            //tarjeta de credito
+                            this.Cmp.id_auxiliar2.reset();
+                            this.mostrarComponente(this.Cmp.numero_tarjeta2);
+                            this.mostrarComponente(this.Cmp.codigo_tarjeta2);
+                            this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.ocultarComponente(this.Cmp.mco2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.reset();
+                            this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
+                            this.Cmp.numero_tarjeta2.allowBlank = false;
+                            this.Cmp.codigo_tarjeta2.allowBlank = false;
+                            this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
+
+                        } else if (codigo_fp2.startsWith("CT")) {
+                            //cuenta corriente
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.mco2);
+                            this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                            this.mostrarComponente(this.Cmp.id_auxiliar2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.reset();
+                            this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
+                            this.Cmp.numero_tarjeta2.reset();
+                            this.Cmp.numero_tarjeta2.reset();
+                            this.Cmp.numero_tarjeta2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
+                            this.Cmp.numero_tarjeta2.allowBlank = true;
+                            this.Cmp.id_auxiliar2.allowBlank = false;
+                        } else if (codigo_fp2.startsWith("MCO")) {
+                            //mco
+                            this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.Cmp.id_auxiliar2.reset();
+                            this.mostrarComponente(this.Cmp.mco2);
+                            this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.reset();
+                            this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
+                            this.Cmp.mco2.allowBlank = false;
+                            this.Cmp.codigo_tarjeta2.allowBlank = true;
+                            this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.numero_tarjeta2.allowBlank = true;
+                        }else {
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.mco2);
+                            this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                            this.ocultarComponente(this.Cmp.id_auxiliar2);
+
+                            /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                            this.ocultarComponente(this.Cmp.nro_cupon_2);
+                            this.ocultarComponente(this.Cmp.nro_cuota_2);
+                            this.Cmp.nro_cupon_2.reset();
+                            this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.nro_cupon_2.allowBlank = true;
+                            this.Cmp.nro_cuota_2.allowBlank = true;
+                            /**********************************************/
+
+                            this.Cmp.numero_tarjeta2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
+                            this.Cmp.codigo_tarjeta2.allowBlank = true;
+                            this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.numero_tarjeta2.reset();
+                            this.Cmp.codigo_tarjeta2.reset();
+                            this.Cmp.id_auxiliar2.reset();
+                        }
+                    }
+                } else {
+                    this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                    this.ocultarComponente(this.Cmp.mco2);
+                    this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                    this.ocultarComponente(this.Cmp.id_auxiliar2);
+
+                    /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                    this.ocultarComponente(this.Cmp.nro_cupon_2);
+                    this.ocultarComponente(this.Cmp.nro_cuota_2);
+                    this.Cmp.nro_cupon_2.reset();
+                    this.Cmp.nro_cuota_2.reset();
+                    this.Cmp.nro_cupon_2.allowBlank = true;
+                    this.Cmp.nro_cuota_2.allowBlank = true;
+                    /**********************************************/
+
+                    this.Cmp.numero_tarjeta2.allowBlank = true;
+                    this.Cmp.mco2.allowBlank = true;
+                    this.Cmp.codigo_tarjeta2.allowBlank = true;
+                    this.Cmp.id_auxiliar2.allowBlank = true;
+                    this.Cmp.id_forma_pago2.setDisabled(true);
+                    this.Cmp.monto_forma_pago2.setDisabled(true);
+                }
+              }
 
             },
             formViajeroFrecuente: function () {

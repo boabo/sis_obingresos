@@ -164,6 +164,38 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true
                 },
                 {
+                    config:{
+                        name: 'nro_cupon',
+                        fieldLabel: 'Nro Cupon',
+                        allowBlank: true,
+                        anchor: '60%',
+                        gwidth: 150,
+                        minLength:15,
+                        maxLength:20,
+                        style: 'background-color: #A6F5C2;  background-image: none;'
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
+                    form:false
+                },
+                {
+                    config:{
+                        name: 'nro_cuota',
+                        fieldLabel: 'Nro Cuota',
+                        allowBlank: true,
+                        anchor: '60%',
+                        gwidth: 150,
+                        minLength:15,
+                        maxLength:20,
+                        style: 'background-color: #A6F5C2;  background-image: none;'
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
+                    form:false
+                },
+                {
                     config: {
                         name: 'id_auxiliar',
                         fieldLabel: 'Cuenta Corriente',
@@ -351,7 +383,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'usr_mod', type: 'string'},
                 {name:'moneda', type: 'string'},
                 {name:'mco', type: 'string'} ,
-                {name:'codigo', type: 'string'}
+                {name:'codigo', type: 'string'},
+                {name:'nro_cuota', type: 'string'},
+                {name:'nro_cupon', type: 'string'}
 
             ],
             sortInfo:{

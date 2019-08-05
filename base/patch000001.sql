@@ -1531,3 +1531,11 @@ WITH (oids = false);
 ALTER TABLE obingresos.tagencia
   ALTER COLUMN boaagt SET NOT NULL;
 /********************************************F-SCP-RZM-OBINGRESOS-1-02/01/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-1-05/08/2019********************************************/
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ADD COLUMN nro_cupon VARCHAR(50);
+
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ADD COLUMN nro_cuota VARCHAR(50);
+/********************************************F-SCP-RZM-OBINGRESOS-1-05/08/2019********************************************/

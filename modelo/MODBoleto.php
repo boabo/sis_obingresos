@@ -362,6 +362,13 @@ class MODBoleto extends MODbase{
         $this->setParametro('monto_forma_pago','monto_forma_pago','numeric');
         $this->setParametro('numero_tarjeta','numero_tarjeta','varchar');
         $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
+
+        /*-------------Aumentando el nro_cupon y nro_cuota---------------*/
+        $this->setParametro('nro_cupon','nro_cupon','varchar');
+        $this->setParametro('nro_cuota','nro_cuota','varchar');
+        $this->setParametro('nro_cupon_2','nro_cupon_2','varchar');
+        $this->setParametro('nro_cuota_2','nro_cuota_2','varchar');
+        /*--------------------------------------------------------------*/
         $this->setParametro('ctacte','ctacte','varchar');
         $this->setParametro('id_forma_pago2','id_forma_pago2','integer');
         $this->setParametro('monto_forma_pago2','monto_forma_pago2','numeric');
@@ -1065,7 +1072,7 @@ class MODBoleto extends MODbase{
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
-        
+
         //Devuelve la respuesta
         return $this->respuesta;
     }

@@ -119,7 +119,9 @@ BEGIN
                         aux.nombre_auxiliar,
                         bfp.codigo_tarjeta,
                         bfp.mco,
-                        fp.codigo
+                        fp.codigo,
+                        bfp.nro_cuota,
+                        bfp.nro_cupon
                         from obingresos.tboleto_amadeus_forma_pago bfp
 						inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
@@ -212,3 +214,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_boleto_forma_pago_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

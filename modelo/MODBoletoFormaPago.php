@@ -84,6 +84,8 @@ class MODBoletoFormaPago extends MODbase{
         $this->captura('codigo_tarjeta','varchar');
         $this->captura('mco','varchar');
         $this->captura('codigo','varchar');
+        $this->captura('nro_cuota','varchar');
+        $this->captura('nro_cupon','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
