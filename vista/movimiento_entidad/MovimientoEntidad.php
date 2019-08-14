@@ -72,7 +72,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     'Archivo',
                     {
                         width: 900,
-                        height: 400
+                        height: 600
                     }, rec, this.idContenedor, 'Archivo');
             },
             onButtonReporte:function(){
@@ -601,17 +601,18 @@ header("content-type: text/javascript; charset=UTF-8");
 
             ],
             preparaMenu: function () {
+              //this.getBoton('archivo').disable();
                 Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
                 var tb = this.tbar;
                 //console.log('rec',rec,this.idContenedor,this.tbar,Ext.getCmp('b-edit-' + this.idContenedor));
                 if (this.sm.getSelected().data['ajuste'] == 'si'){
                     //Phx.vista.MovimientoEntidad.superclass.preparaMenu.call(this);
-                    tb.items.get('b-edit-' + this.idContenedor).enable();}else{tb.items.get('b-edit-' + this.idContenedor).disable();}
-                this.getBoton('archivo').enable();
+                    tb.items.get('b-edit-' + this.idContenedor).enable();}//else{tb.items.get('b-edit-' + this.idContenedor).disable();}
+
             },
 
             liberaMenu: function () {
-                this.getBoton('archivo').disable();
+                //this.getBoton('archivo').enable();
                 Phx.vista.MovimientoEntidad.superclass.liberaMenu.call(this);
             },
             arrayDefaultColumHidden:[
