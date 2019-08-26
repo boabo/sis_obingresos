@@ -84,6 +84,12 @@ BEGIN
                         left join obingresos.tagencia age on age.id_agencia = dep.id_agencia
                         left join obingresos.tperiodo_venta pv on pv.id_periodo_venta = dep.id_periodo_venta
                         left join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
+
+                        /************RECUPERANDO*************/
+                        left join vef.tapertura_cierre_caja_asociada aper on aper.id_deposito = dep.id_deposito
+                        left join vef.tapertura_cierre_caja caja on caja.id_apertura_cierre_caja = aper.id_apertura_cierre_caja
+                        /***********************************/
+
 				        where  ';
 
 
@@ -211,7 +217,7 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_deposito),sum(dep.monto_deposito)
+			v_consulta:='select count(dep.id_deposito),sum(dep.monto_deposito)
 					    from obingresos.tdeposito dep
 					    inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
@@ -219,6 +225,13 @@ BEGIN
 					    left join obingresos.tperiodo_venta pv on pv.id_periodo_venta = dep.id_periodo_venta
                         left join obingresos.tagencia age on age.id_agencia = dep.id_agencia
                         left join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
+
+                        /*Recuperando*/
+                        left join vef.tapertura_cierre_caja_asociada aper on aper.id_deposito = dep.id_deposito
+                        left join vef.tapertura_cierre_caja caja on caja.id_apertura_cierre_caja = aper.id_apertura_cierre_caja
+                        /*************/
+
+
                         where ';
 
 			--Definicion de la respuesta
@@ -280,6 +293,67 @@ BEGIN
 			return v_consulta;
 
 		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEPAG_SEL'
+ 	#DESCRIPCION:	Listar depositos
+ 	#AUTOR:		ivaldivia
+ 	#FECHA:		16-08-2019 08:43:28
+	***********************************/
+
+	elsif(p_transaccion='OBING_DEPAG_SEL')then
+
+		begin
+    		--Sentencia de la consulta
+			v_consulta:='select dep.id_deposito,
+                                dep.estado_reg,
+                                dep.nro_deposito,
+                                dep.nro_deposito_boa,
+                                dep.monto_deposito,
+                                dep.id_moneda_deposito,
+                                dep.id_agencia,
+                                dep.fecha,
+                                dep.saldo,
+                                dep.id_usuario_reg,
+                                dep.fecha_reg,
+                                dep.id_usuario_ai,
+                                dep.usuario_ai,
+                                dep.id_usuario_mod,
+                                dep.fecha_mod,
+                                dep.usr_reg,
+                                dep.usr_mod,
+                                dep.desc_moneda,
+                                dep.agt,
+                                dep.fecha_venta,
+                                dep.monto_total,
+                                dep.nombre_agencia,
+                                dep.desc_periodo,
+                                dep.estado,
+                                dep.id_apertura_cierre_caja,
+                                dep.nro_cuenta,
+                                dep.monto_total_ml,
+                                dep.monto_total_me,
+                                dep.diferencia_ml,
+                                dep.diferencia_me
+            			 from vef.vdepositos_agrupados dep
+
+                        where dep.id_usuario_reg = '||p_id_usuario||' and ';
+
+
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+
+
+
+			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+
+
   	else
 
 		raise exception 'Transaccion inexistente';
@@ -301,3 +375,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_deposito_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
