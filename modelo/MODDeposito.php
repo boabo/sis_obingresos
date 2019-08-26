@@ -68,6 +68,54 @@ class MODDeposito extends MODbase{
         return $this->respuesta;
     }
 
+    function listarDepositoAgrupado(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_deposito_sel';
+        $this->transaccion='OBING_DEPAG_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setCount(false);
+        //Definicion de la lista del resultado del query
+        $this->captura('id_deposito','int4');
+        $this->captura('estado_reg','varchar');
+        $this->captura('nro_deposito','varchar');
+        $this->captura('nro_deposito_boa','varchar');
+        $this->captura('monto_deposito','numeric');
+        $this->captura('id_moneda_deposito','int4');
+        $this->captura('id_agencia','int4');
+        $this->captura('fecha','date');
+        $this->captura('saldo','numeric');
+        $this->captura('id_usuario_reg','int4');
+        $this->captura('fecha_reg','timestamp');
+        $this->captura('id_usuario_ai','int4');
+        $this->captura('usuario_ai','varchar');
+        $this->captura('id_usuario_mod','int4');
+        $this->captura('fecha_mod','timestamp');
+        $this->captura('usr_reg','varchar');
+        $this->captura('usr_mod','varchar');
+        $this->captura('desc_moneda','varchar');
+        $this->captura('agt','varchar');
+        $this->captura('fecha_venta','date');
+        $this->captura('monto_total','numeric');
+        $this->captura('nombre_agencia','varchar');
+        $this->captura('desc_periodo','text');
+        $this->captura('estado','varchar');
+        $this->captura('id_apertura_cierre_caja','int4');
+        $this->captura('nro_cuenta','varchar');
+        $this->captura('monto_total_ml','numeric');
+        $this->captura('monto_total_me','numeric');
+        $this->captura('diferencia_ml','numeric');
+        $this->captura('diferencia_me','numeric');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
     function insertarDeposito(){
         //Definicion de variables para ejecucion del procedimiento
         $this->procedimiento='obingresos.ft_deposito_ime';
@@ -78,6 +126,8 @@ class MODDeposito extends MODbase{
         /*RECUPERAMOS EL ID_PUNTO_VENTA PARA CONSULTAR LA CUENTABANCARIA*/
         $this->setParametro('id_punto_venta','id_punto_venta','integer');
         $this->setParametro('id_usuario_cajero','id_usuario_cajero','integer');
+        $this->setParametro('relacion_deposito','relacion_deposito','varchar');
+        $this->setParametro('detalle','detalle','varchar');
         /*---------------------------------------------------------------*/
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('nro_deposito','nro_deposito','varchar');
@@ -166,7 +216,7 @@ class MODDeposito extends MODbase{
 
         if ($this->monedaBase() == 'BOB') {
             if($this->aParam->getParametro('tipo') == 'venta_propia'){
-              $this->modificarDepositoInformix();
+             $this->modificarDepositoInformix();
             }
         }
 

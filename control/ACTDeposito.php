@@ -20,13 +20,15 @@ class ACTDeposito extends ACTbase{
         if ($this->objParam->getParametro('id_agencia') != '') {
             $this->objParam->addFiltro("dep.id_agencia = ". $this->objParam->getParametro('id_agencia'));
         }
+        /****************************Listar depositos************************************/
 
+          if ($this->objParam->getParametro('tipo') != '') {
+              $this->objParam->addFiltro("dep.tipo = ''". $this->objParam->getParametro('tipo')."''");
+          }
+
+        /********************************************************************************/
         if ($this->objParam->getParametro('id_deposito') != '') {
             $this->objParam->addFiltro("dep.id_deposito = ". $this->objParam->getParametro('id_deposito'));
-        }
-
-        if ($this->objParam->getParametro('tipo') != '') {
-            $this->objParam->addFiltro("dep.tipo = ''". $this->objParam->getParametro('tipo')."''");
         }
 
         if ($this->objParam->getParametro('estado') != '') {
@@ -34,7 +36,7 @@ class ACTDeposito extends ACTbase{
         }
         if($this->objParam->getParametro('id_apertura_cierre_caja') != '') {
             //filto ventas
-            $this->objParam->addFiltro(" dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja'));
+            $this->objParam->addFiltro(" (dep.id_apertura_cierre_caja = " . $this->objParam->getParametro('id_apertura_cierre_caja')." or aper.id_apertura_cierre_caja =" . $this->objParam->getParametro('id_apertura_cierre_caja').")");
         }
         if($this->objParam->getParametro('bancos')!=''){
           if($this->objParam->getParametro('bancos')!='TODOS'){
@@ -45,10 +47,6 @@ class ACTDeposito extends ACTbase{
                 }
 
         }
-        // else{
-        //         //$this->objParam->addFiltro("dep.agt not in (''".$this->objParam->getParametro('bancos')."'')");
-        // }
-        //var_dump($this->objParam->getParametro('bancos'));
 
         if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
             $this->objReporte = new Reporte($this->objParam,$this);
@@ -72,6 +70,43 @@ class ACTDeposito extends ACTbase{
         }
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+
+    function listarDepositoAgrupado(){
+
+        $this->objParam->defecto('ordenacion','id_deposito');
+        $this->objParam->defecto('dir_ordenacion','desc');
+
+        /****************************Listar depositos************************************/
+        if ($this->objParam->getParametro('pes_estado') == 'pendiente') {
+
+            $this->objParam->addFiltro("(dep.diferencia_ml <>  0 and  dep.diferencia_me <> 0
+                                          OR
+                                          dep.diferencia_ml <> 0   and  dep.diferencia_me  = 0
+                                          OR
+                                          dep.diferencia_ml =  0  and  dep.diferencia_me <> 0
+                                          OR
+                                          dep.diferencia_ml is null and dep.diferencia_me = 0
+                                          OR
+                                          dep.diferencia_ml = 0 and dep.diferencia_me is null )");
+        }else{
+            $this->objParam->addFiltro("(dep.diferencia_ml =  0  and  dep.diferencia_me = 0)");
+        }
+        /********************************************************************************/
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODDeposito','listarDeposito');
+        } else{
+            $this->objFunc=$this->create('MODDeposito');
+
+                $this->res=$this->objFunc->listarDepositoAgrupado($this->objParam);
+
+            }
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+
 
     function insertarDeposito(){
 

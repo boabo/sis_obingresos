@@ -81,6 +81,8 @@ DECLARE
     v_cajero				varchar;
     v_id_forma_pago			integer;
 
+    v_tipo_deposito			varchar;
+
 
 
 BEGIN
@@ -183,6 +185,11 @@ BEGIN
 
         elsif(v_parametros.tipo = 'venta_propia') then
 
+        if (pxp.f_existe_parametro(p_tabla,'relacion_deposito')) then
+        	v_tipo_deposito = v_parametros.relacion_deposito;
+        else
+        	v_tipo_deposito = v_parametros.tipo;
+        end if;
         /****************************Recuperamos el numero de cuenta en cuenta bancaria***********************************/
         select cuenta.nro_cuenta,
         	   pv.nombre,
@@ -196,10 +203,14 @@ BEGIN
         inner join param.tlugar lu on lu.id_lugar = su.id_lugar
         where pv.id_punto_venta = v_parametros.id_punto_venta and cuenta.id_moneda = v_id_moneda;
 
-        SELECT per.nombre_completo2 into v_cajero
-        from segu.tusuario usu
-        inner join segu.vpersona2 per on per.id_persona = usu.id_persona
-        where usu.id_usuario = v_parametros.id_usuario_cajero;
+        if (pxp.f_existe_parametro(p_tabla,'id_usuario_cajero')) then
+          SELECT per.nombre_completo2 into v_cajero
+          from segu.tusuario usu
+          inner join segu.vpersona2 per on per.id_persona = usu.id_persona
+          where usu.id_usuario = v_parametros.id_usuario_cajero;
+        else
+        	v_cajero = 'Varios';
+        end if;
 
 
         /*---------------------------------------------------------------------------------------------*/
@@ -235,7 +246,7 @@ BEGIN
                 v_parametros._nombre_usuario_ai,
                 null,
                 null,
-                v_parametros.tipo,
+                v_tipo_deposito,
                 v_parametros.id_apertura_cierre_caja,
                 v_parametros.monto_deposito
                 )RETURNING id_deposito into v_id_deposito;
