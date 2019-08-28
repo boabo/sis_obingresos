@@ -311,9 +311,9 @@ BEGIN
                           where ur.id_usuario = p_id_usuario) into v_admin;
 
         	if (v_admin <> 'true') then
-            	v_condicion = '';
-            else
             	v_condicion = 'dep.id_usuario_reg = '||p_id_usuario||' and ';
+            else
+            	v_condicion = '';
             end if;
 
 
