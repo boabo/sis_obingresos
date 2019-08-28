@@ -31,6 +31,8 @@ DECLARE
 	v_fecha_in				date;
     v_fecha_fi				date;
     v_id_deposito			integer;
+    v_admin				varchar;
+    v_condicion			varchar;
 
 BEGIN
 
@@ -304,6 +306,17 @@ BEGIN
 	elsif(p_transaccion='OBING_DEPAG_SEL')then
 
 		begin
+
+        	select 1 in (select id_rol from segu.tusuario_rol ur
+                          where ur.id_usuario = p_id_usuario) into v_admin;
+
+        	if (v_admin <> 'true') then
+            	v_condicion = '';
+            else
+            	v_condicion = 'dep.id_usuario_reg = '||p_id_usuario||' and ';
+            end if;
+
+
     		--Sentencia de la consulta
 			v_consulta:='select dep.id_deposito,
                                 dep.estado_reg,
@@ -336,8 +349,7 @@ BEGIN
                                 dep.diferencia_ml,
                                 dep.diferencia_me
             			 from vef.vdepositos_agrupados dep
-
-                        where dep.id_usuario_reg = '||p_id_usuario||' and ';
+                        where '||v_condicion||'';
 
 
 			--Definicion de la respuesta
