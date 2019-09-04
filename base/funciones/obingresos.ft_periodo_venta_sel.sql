@@ -441,7 +441,7 @@ BEGIN
 						perven.nro_periodo_mes,
 						perven.fecha_fin,
 						perven.fecha_ini,
-						tp.tipo,
+						tp.tipo as tipo_periodo,
                         tp.medio_pago,
                         tp.tipo_cc,
 						perven.estado_reg,
@@ -798,3 +798,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_periodo_venta_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
