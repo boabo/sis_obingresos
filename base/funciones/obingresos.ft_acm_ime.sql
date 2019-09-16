@@ -549,12 +549,27 @@ BEGIN
 
 		begin
 
+        	select count (mov.*) into v_contador
+            from obingresos.tmovimiento_entidad mov
+            where mov.fecha >= v_parametros.fecha
+            	  and mov.id_agencia = v_parametros.id_agencia
+                  and mov.tipo = 'debito';
+
+        	 if (v_contador > 0) then
+             	raise exception 'La agencia cuenta con Débitos posteriores a la fecha, por lo tanto no es posible eliminar el ACM seleccionado';
+             end if;
+
+
         	update obingresos.tacm set
             id_movimiento_entidad = NULL
             where id_acm = v_parametros.id_acm;
 
-            delete from obingresos.tmovimiento_entidad
-            where id_movimiento_entidad = v_parametros.id_movimiento_entidad;
+            if (v_parametros.id_movimiento_entidad is null) then
+            	raise exception 'El ACM ya ha sido eliminado o no fue Acreditado';
+            else
+                    delete from obingresos.tmovimiento_entidad
+                    where id_movimiento_entidad = v_parametros.id_movimiento_entidad;
+            end if;
 
             update obingresos.tarchivo_acm_det set
             abonado = 'no'
