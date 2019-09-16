@@ -1394,18 +1394,18 @@ end loop;
 
 end loop;
 
-select
-                  max(pe.fecha_fin)
-                  into v_fecha_maxima
+		/*******Obtenemos la fecha maxima del periodo*******/
+		select
+        max(pe.fecha_fin)
+        into v_fecha_maxima
+        from obingresos.tmovimiento_entidad mo
+        LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+        where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
+              mo.id_agencia = v_parametros.id_agencia;
+        /***********************************************************/
 
-      from obingresos.tmovimiento_entidad mo
-      LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
-      where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
 
-            mo.id_agencia = v_parametros.id_agencia;
-
-
-
+		/*Obtenemos los creditos qeu no estan dentro de ese periodo*/
 		for v_creditos_fuera in (  (with credito as (select  mo.id_agencia,
         pe.fecha_ini,
         pe.fecha_fin,
@@ -1488,8 +1488,17 @@ select 			'creditos' :: varchar as tipo,
 
         LOOP
 
+		/*Verificamos si ya se encuentra en la tabla temporal*/
 
-
+        if (NOT exists(
+        		select 1
+                from temp
+                where tipo_credito = v_creditos_fuera.tipo
+                and fecha = v_creditos_fuera.fecha
+                and monto_credito = v_creditos_fuera.monto_credito
+                and autorizacion__nro_deposito = v_creditos_fuera.autorizacion__nro_deposito)
+        	) then
+        /*****************************************************/
 
         insert into temp (
                                         tipo_credito,
@@ -1519,7 +1528,7 @@ select 			'creditos' :: varchar as tipo,
 
 
 
-
+	end if;
 
   end loop;
 
