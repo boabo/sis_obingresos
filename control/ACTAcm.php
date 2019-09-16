@@ -56,6 +56,11 @@ class ACTAcm extends ACTbase{
 		$this->res=$this->objFunc->eliminarAcm($this->objParam);
 		$this->res->imprimirRespuesta($this->res->generarJson());
 	}
+	function eliminarAcmMV(){
+			$this->objFunc=$this->create('MODAcm');
+		$this->res=$this->objFunc->eliminarAcmMV($this->objParam);
+		$this->res->imprimirRespuesta($this->res->generarJson());
+	}
 	function eliminarAcmGenerado(){
 		//var_dump($this->objParam->getParametro('id_archivo_acm'));
 			$this->objFunc=$this->create('sis_obingresos/MODAcm');

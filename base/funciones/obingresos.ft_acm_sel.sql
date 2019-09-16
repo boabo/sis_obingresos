@@ -70,7 +70,10 @@ BEGIN
                         acmdet.neto_total_mb,
                         acmdet.neto_total_mt,
                         acmdet.officce_id,
-                        lugar.codigo_largo
+                        lugar.codigo_largo,
+
+                        agen.id_agencia
+
 						from obingresos.tacm acm
 						inner join segu.tusuario usu1 on usu1.id_usuario = acm.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = acm.id_usuario_mod
@@ -208,3 +211,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_acm_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

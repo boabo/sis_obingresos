@@ -538,6 +538,41 @@ BEGIN
 		end;
 
 
+    /*********************************
+ 	#TRANSACCION:  'OBING_ACM_ELI_MV'
+ 	#DESCRIPCION:	Eliminacion de registros
+ 	#AUTOR:		ivaldivia
+ 	#FECHA:		10-09-2019 17:05:00
+	***********************************/
+
+	elsif(p_transaccion='OBING_ACM_ELI_MV')then
+
+		begin
+
+        	update obingresos.tacm set
+            id_movimiento_entidad = NULL
+            where id_acm = v_parametros.id_acm;
+
+            delete from obingresos.tmovimiento_entidad
+            where id_movimiento_entidad = v_parametros.id_movimiento_entidad;
+
+            update obingresos.tarchivo_acm_det set
+            abonado = 'no'
+            where id_archivo_acm_det = 	v_parametros.id_archivo_acm_det;
+
+
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','ACM eliminado(a)');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_acm',v_parametros.id_acm::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+
+
 /*********************************
  	#TRANSACCION:  'OBING_ACM_LIMPIO_ELI'
  	#DESCRIPCION:	Eliminacion de Archivos ACM

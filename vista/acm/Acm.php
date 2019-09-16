@@ -34,9 +34,9 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 		Phx.vista.Acm.superclass.constructor.call(this,config);
 		this.init();
 		var that = this;
-
 		this.iniciarEventos();
-
+    console.log("llega auqi",that.mov_ent);
+    console.log("llega auqi",that);
 		this.addButton('btnReporteAcm',
 					{
 							text: 'Reporte Excel',
@@ -46,6 +46,18 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 							tooltip: '<b>Generar Reporte</b><br/>Generar Reporte de ACM.'
 					}
 			);
+      //if (that.mov_ent == 'SI' ) {
+        this.addButton('btnEliminarAcm',
+              {
+                  text: 'Eliminar ACM',
+                  iconCls: 'bdel',
+                  disabled: true,
+                  handler: this.onButtonEliminarACM,
+                  tooltip: '<b>Eliminar</b><br/>ACM seleccionado.'
+              }
+          );
+      //}
+
         if(that.acm==undefined){
             this.store.baseParams.acm = 'general';
             //this.load({params:{start:0, limit:this.tam_pag}});
@@ -63,18 +75,19 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 
 	preparaMenu: function () {
 			var rec = this.sm.getSelected();
-			this.getBoton('btnReporteAcm').enable();
+      this.getBoton('btnReporteAcm').enable();
+			this.getBoton('btnEliminarAcm').enable();
 			Phx.vista.Acm.superclass.preparaMenu.call(this);
 		},
 
 		liberaMenu : function(){
 				var rec = this.sm.getSelected();
-				this.getBoton('btnReporteAcm').disable();
+        this.getBoton('btnReporteAcm').disable();
+				this.getBoton('btnEliminarAcm').disable();
 				Phx.vista.Acm.superclass.liberaMenu.call(this);
 		},
 
-
-		onButtonReporte: function() {
+    onButtonReporte: function() {
 			Phx.CP.loadingShow();
 			var d = this.sm.getSelected().data;
 			console.log('codigo:',d.id_acm);
@@ -100,6 +113,62 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 			});
 				console.log('EL OFFICE ID:',d.office_id);
 		},
+
+		onButtonEliminarACM: function() {
+			//Phx.CP.loadingShow();
+			var d = this.sm.getSelected().data;
+      console.log("llega auqi ACM",d);
+      //console.log("llega auqi dsadasd",Phx.CP.getPagina(this.idContenedorPadre));
+			Ext.Ajax.request({
+							url:'../../sis_obingresos/control/Acm/eliminarAcmMV',
+							params:{id_acm:d.id_acm,
+                      id_movimiento_entidad:d.id_movimiento_entidad,
+                      id_archivo_acm_det:d.id_archivo_acm_det,
+                      id_agencia:d.id_agencia,
+                      fecha:d.fecha.dateFormat('d/m/Y'),
+              	      },
+							success: this.successEliminacion,
+							failure: this.successEliminacion,
+							timeout:this.timeout,
+							scope:this
+			});
+
+		},
+
+    successEliminacion:function(resp){
+        Phx.CP.loadingHide();
+        var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+        if(!reg.ROOT.error){
+            Ext.Msg.show({
+             width:'100%',
+             height:'100%',
+             title:'<b style="color:Blue; font-size:15px;"><i style="color:green; font-size:20px;" class="fa fa-check" aria-hidden="true"></i> Eliminacion ACM</b>',
+             msg: '<b style="color:green; font-size:12px;">El ACM se eliminó correctamente</b>',
+             buttons: Ext.Msg.OK,
+             fn: function () {
+                Phx.CP.getPagina(this.idContenedorPadre).reload();
+                this.panel.close();
+             },
+             scope:this
+          });
+          } else {
+            Ext.Msg.show({
+              width:'100%',
+              height:'100%',
+             title:'<center><p style="color:Blue; font-size:15px;"><i style="color:red; font-size:20px;" class="fa fa-exclamation-triangle" aria-hidden="true"></i> Eliminacion ACM</p></center>',
+             msg: '<b style="color:black; font-size:12px;">'+reg.ROOT.detalle.mensaje+'</b>',
+             buttons: Ext.Msg.OK,
+             fn: function () {
+                Phx.CP.getPagina(this.idContenedorPadre).reload();
+                this.panel.close();
+             },
+             scope:this
+          });
+             // Phx.CP.getPagina(this.idContenedorPadre).reload();
+             // this.panel.close();
+          };
+
+    },
 
 
 	Atributos:[
@@ -617,7 +686,8 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
 		{name:'neto_total_mt', type: 'numeric'},
 		{name:'total_bsp', type: 'numeric'},
 		{name:'office_id', type: 'string'},
-		{name:'codigo_largo', type: 'string'},
+    {name:'codigo_largo', type: 'string'},
+		{name:'id_agencia', type: 'numeric'},
 
 
 	],

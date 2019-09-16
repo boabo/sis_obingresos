@@ -78,6 +78,7 @@ header("content-type: text/javascript; charset=UTF-8");
             //Phx.vista.ArchivoAcmDet.superclass.onButtonAcm.call(this);
             var rec = {maestro: this.sm.getSelected().data}
             rec.acm='funcional';
+            rec.mov_ent='SI';
             console.log('VALOR', rec.acm);
 
             Phx.CP.loadWindows('../../../sis_obingresos/vista/acm/Acm.php',

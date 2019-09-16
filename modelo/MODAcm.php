@@ -48,6 +48,8 @@ class MODAcm extends MODbase{
 		$this->captura('officce_id','varchar');
 		$this->captura('codigo_largo','varchar');
 
+		$this->captura('id_agencia','int4');
+
 
 
 
@@ -147,6 +149,28 @@ class MODAcm extends MODbase{
 		//Devuelve la respuesta
 		return $this->respuesta;
 	}
+
+	function eliminarAcmMV(){
+		//Definicion de variables para ejecucion del procedimiento
+		$this->procedimiento='obingresos.ft_acm_ime';
+		$this->transaccion='OBING_ACM_ELI_MV';
+		$this->tipo_procedimiento='IME';
+
+		//Define los parametros para la funcion
+		$this->setParametro('id_acm','id_acm','int4');
+		$this->setParametro('id_movimiento_entidad','id_movimiento_entidad','int4');
+		$this->setParametro('id_archivo_acm_det','id_archivo_acm_det','int4');
+		$this->setParametro('id_agencia','id_agencia','int4');
+		$this->setParametro('fecha','fecha','date');
+
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+
+		//Devuelve la respuesta
+		return $this->respuesta;
+	}
+
 	function eliminarAcmGenerado(){
 			//Definicion de variables para ejecucion del procedimiento
 			$this->procedimiento='obingresos.ft_acm_ime';
