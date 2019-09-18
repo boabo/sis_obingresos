@@ -1539,3 +1539,8 @@ ALTER TABLE obingresos.tboleto_amadeus_forma_pago
 ALTER TABLE obingresos.tboleto_amadeus_forma_pago
   ADD COLUMN nro_cuota VARCHAR(50);
 /********************************************F-SCP-RZM-OBINGRESOS-1-05/08/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-18/09/2019********************************************/
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN fk_id_movimiento_entidad INTEGER;
+/********************************************F-SCP-RZM-OBINGRESOS-0-18/09/2019********************************************/
