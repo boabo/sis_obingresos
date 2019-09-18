@@ -450,7 +450,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
             				config: {
             						name: 'fk_id_movimiento_entidad',
-            						fieldLabel: 'Relacionar Movimiento',
+            						fieldLabel: 'Movimiento Relacionado',
             						allowBlank: true,
             						width:200,
                         anchor: '80%',
@@ -483,7 +483,16 @@ header("content-type: text/javascript; charset=UTF-8");
             						queryDelay: 1000,
             						disabled:false,
             						minChars: 2,
-                        listWidth:'500'
+                        gwidth: 200,
+                        listWidth:'500',
+                        renderer: function(value, p, record){
+                          if (record.data['fk_id_movimiento_entidad'] != null && record.data['fk_id_movimiento_entidad'] != '') {
+                            return String.format('<b style="color:blue; ">{0}</b>', record.data['desc_asociar']);
+                          } else {
+                            return String.format('<b>{0}</b>', '');
+                          }
+
+                        },
             				},
             				type: 'ComboBox',
             				id_grupo: 1,
