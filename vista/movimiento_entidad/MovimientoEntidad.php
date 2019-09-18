@@ -464,16 +464,16 @@ header("content-type: text/javascript; charset=UTF-8");
             										direction: 'DESC'
             								},
             								totalProperty: 'total',
-            								fields: ['id_movimiento_entidad', 'tipo','autorizacion__nro_deposito', 'desc_asociar', 'monto'],
+            								fields: ['id_movimiento_entidad', 'tipo','autorizacion__nro_deposito', 'desc_asociar', 'monto', 'nro_deposito_boa'],
             								remoteSort: true,
-            								baseParams: {par_filtro: 'moe.autorizacion__nro_deposito'
+            								baseParams: {par_filtro: 'moe.autorizacion__nro_deposito#depo.nro_deposito_boa'
                                         }
             						}),
             						valueField: 'id_movimiento_entidad',
             						gdisplayField : 'desc_asociar',
             						displayField: 'autorizacion__nro_deposito',
             						hiddenName: 'id_movimiento_entidad',
-            						tpl:'<tpl for="."><div class="x-combo-list-item"><p style="color:red; font-weight:bold;"><b style="color:Black">ID:</b> {id_movimiento_entidad}</p><p style="color:green; font-weight:bold;"><b style="color:Black">TIPO:</b> {tipo}</p><p style="color:blue; font-weight:bold;"><b style="color:black; font-weight:bold;">Nro Déposito:</b> {autorizacion__nro_deposito}</p><p style="color:green; font-weight:bold;"><b style="color:black; ">Monto:</b> {monto}</p></div></tpl>',
+            						tpl:'<tpl for="."><div class="x-combo-list-item"><p style="color:red; font-weight:bold;"><b style="color:Black">ID:</b> {id_movimiento_entidad}</p><p style="color:green; font-weight:bold;"><b style="color:Black">TIPO:</b> {tipo}</p><p style="color:blue; font-weight:bold;"><b style="color:black; font-weight:bold;">Nro Déposito:</b> {autorizacion__nro_deposito}</p><p style="color:blue; font-weight:bold;"><b style="color:black; font-weight:bold;">Nro Déposito BOA:</b> {nro_deposito_boa}</p><p style="color:green; font-weight:bold;"><b style="color:black; ">Monto:</b> {monto}</p></div></tpl>',
             						forceSelection: true,
             						typeAhead: false,
                         triggerAction: 'all',

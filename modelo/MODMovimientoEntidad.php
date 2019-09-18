@@ -86,6 +86,7 @@ class MODMovimientoEntidad extends MODbase{
         $this->captura('estado_reg','varchar');
         $this->captura('monto','numeric');
         $this->captura('tipo','varchar');
+        $this->captura('nro_deposito_boa', 'varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();

@@ -115,6 +115,7 @@ BEGIN
             			moe.fk_id_movimiento_entidad,
                         ent.autorizacion__nro_deposito as desc_asociar
 
+
 						from obingresos.tmovimiento_entidad moe
 						inner join segu.tusuario usu1 on usu1.id_usuario = moe.id_usuario_reg
 						inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
@@ -234,7 +235,8 @@ end::varchar)as tipo,
 					    from obingresos.tmovimiento_entidad moe
               inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
 					    inner join segu.tusuario usu1 on usu1.id_usuario = moe.id_usuario_reg
-						  left join segu.tusuario usu2 on usu2.id_usuario = moe.id_usuario_mod
+						left join segu.tusuario usu2 on usu2.id_usuario = moe.id_usuario_mod
+
               left join obingresos.tdeposito depo on depo.nro_deposito = moe.autorizacion__nro_deposito
 					    where moe.estado_reg = ''activo'' and
               (moe.cierre_periodo = ''no'' or (moe.cierre_periodo = ''si'' and moe.tipo = ''credito'')) and ';
@@ -267,8 +269,10 @@ end::varchar)as tipo,
                                 moe.autorizacion__nro_deposito,
                                 moe.estado_reg,
                                 moe.monto,
-                                moe.tipo
+                                moe.tipo,
+                                depo.nro_deposito_boa
                         from obingresos.tmovimiento_entidad moe
+                        left join obingresos.tdeposito depo on depo.nro_deposito = moe.autorizacion__nro_deposito
                         where moe.estado_reg = ''activo'' and ';
 
 			--Definicion de la respuesta
@@ -299,6 +303,7 @@ end::varchar)as tipo,
 			v_consulta:='select
                                 count (moe.id_movimiento_entidad)
                         from obingresos.tmovimiento_entidad moe
+                        left join obingresos.tdeposito depo on depo.nro_deposito = moe.autorizacion__nro_deposito
                         where moe.estado_reg = ''activo'' and';
 
 			--Definicion de la respuesta
