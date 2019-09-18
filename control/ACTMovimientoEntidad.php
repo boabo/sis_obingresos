@@ -9,6 +9,27 @@
 
 class ACTMovimientoEntidad extends ACTbase{
 
+  function listarMovimientoEntidadAsociar(){
+    $this->objParam->defecto('ordenacion','fecha');
+
+    $this->objParam->defecto('dir_ordenacion','asc');
+
+    if ($this->objParam->getParametro('id_entidad') != '') {
+        $this->objParam->addFiltro("moe.id_agencia = ". $this->objParam->getParametro('id_entidad'));
+    }   
+
+    if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+        $this->objReporte = new Reporte($this->objParam,$this);
+        $this->res = $this->objReporte->generarReporteListado('MODMovimientoEntidad','listarMovimientoEntidadAsociar');
+    } else{
+        $this->objFunc=$this->create('MODMovimientoEntidad');
+
+        $this->res=$this->objFunc->listarMovimientoEntidadAsociar($this->objParam);
+    }
+    $this->res->imprimirRespuesta($this->res->generarJson());
+  }
+
+
     function listarMovimientoEntidad(){
         $this->objParam->defecto('ordenacion','fecha');
 
@@ -17,7 +38,6 @@ class ACTMovimientoEntidad extends ACTbase{
         if ($this->objParam->getParametro('id_entidad') != '') {
             $this->objParam->addFiltro("moe.id_agencia = ". $this->objParam->getParametro('id_entidad'));
         }
-
         if ($this->objParam->getParametro('fecha_inicio') != '' && $this->objParam->getParametro('fecha_fin') != '') {
             $this->objParam->addFiltro("moe.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and
             							moe.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");

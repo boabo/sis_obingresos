@@ -35,6 +35,7 @@ BEGIN
 	v_nombre_funcion = 'obingresos.ft_movimiento_entidad_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
+
 	/*********************************
  	#TRANSACCION:  'OBING_MOE_SEL'
  	#DESCRIPCION:	Consulta de datos
@@ -109,13 +110,18 @@ BEGIN
                         end)::numeric as tipo_cambio,
                         moe.monto,
                         depo.nro_deposito,
-                        depo.id_deposito
+                        depo.id_deposito,
+
+            			moe.fk_id_movimiento_entidad,
+                        ent.autorizacion__nro_deposito as desc_asociar
+
 						from obingresos.tmovimiento_entidad moe
 						inner join segu.tusuario usu1 on usu1.id_usuario = moe.id_usuario_reg
 						inner join param.tmoneda mon on mon.id_moneda = moe.id_moneda
                         left join segu.tusuario usu2 on usu2.id_usuario = moe.id_usuario_mod
                         left join obingresos.tdeposito depo on depo.nro_deposito = moe.autorizacion__nro_deposito
-				        where  moe.estado_reg = ''activo'' and
+				        left join obingresos.tmovimiento_entidad ent on ent.id_movimiento_entidad = moe.fk_id_movimiento_entidad
+                        where  moe.estado_reg = ''activo'' and
                         (moe.cierre_periodo = ''no'' or (moe.cierre_periodo = ''si'' and moe.tipo = ''credito'')) and ';
 
 			--Definicion de la respuesta
@@ -238,7 +244,68 @@ end::varchar)as tipo,
 			raise notice '-> %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
+		end;
 
+	/*********************************
+ 	#TRANSACCION:  'OBING_MOVE_SEL'
+ 	#DESCRIPCION:	Consulta de datos
+ 	#AUTOR:		jrivera
+ 	#FECHA:		17-05-2017 15:53:35
+	***********************************/
+
+	elsif(p_transaccion='OBING_MOVE_SEL')then
+
+    	begin
+        	v_id_moneda_base = (select param.f_get_moneda_base());
+            select m.id_moneda into v_id_moneda_usd
+            from param.tmoneda m
+            where m.codigo_internacional = 'USD';
+
+    		--Sentencia de la consulta
+			v_consulta:='select
+                                moe.id_movimiento_entidad,
+                                moe.autorizacion__nro_deposito,
+                                moe.estado_reg,
+                                moe.monto,
+                                moe.tipo
+                        from obingresos.tmovimiento_entidad moe
+                        where moe.estado_reg = ''activo'' and ';
+
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_MOVE_CONT'
+ 	#DESCRIPCION:	Conteo de registros
+ 	#AUTOR:		jrivera
+ 	#FECHA:		17-05-2017 15:53:35
+	***********************************/
+
+	elsif(p_transaccion='OBING_MOVE_CONT')then
+
+		begin
+        	v_id_moneda_base = (select param.f_get_moneda_base());
+            select m.id_moneda into v_id_moneda_usd
+            from param.tmoneda m
+            where m.codigo_internacional = 'USD';
+
+			--Sentencia de la consulta de conteo de registros
+			v_consulta:='select
+                                count (moe.id_movimiento_entidad)
+                        from obingresos.tmovimiento_entidad moe
+                        where moe.estado_reg = ''activo'' and';
+
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			raise notice '-> %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
 		end;
 
 	else
@@ -262,3 +329,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_movimiento_entidad_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

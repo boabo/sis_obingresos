@@ -37,6 +37,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.store.baseParams.id_entidad = this.maestro.id_agencia;
                 if('id_periodo_venta' in this.maestro){
                     this.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
+                    this.Cmp.fk_id_movimiento_entidad.store.baseParams.id_periodo_venta = this.maestro.id_periodo_venta;
                 }
                 this.load({params:{start:0, limit:this.tam_pag}})
             },
@@ -446,8 +447,49 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:false,
                     form:true
                 },
-
-
+                {
+            				config: {
+            						name: 'fk_id_movimiento_entidad',
+            						fieldLabel: 'Relacionar Movimiento',
+            						allowBlank: true,
+            						width:200,
+                        anchor: '80%',
+            						emptyText: 'Elija un Movimiento...',
+            						store: new Ext.data.JsonStore({
+            								url: '../../sis_obingresos/control/MovimientoEntidad/listarMovimientoEntidadAsociar',
+            								id: 'id_movimiento_entidad',
+            								root: 'datos',
+            								sortInfo: {
+            										field: 'id_movimiento_entidad',
+            										direction: 'DESC'
+            								},
+            								totalProperty: 'total',
+            								fields: ['id_movimiento_entidad', 'tipo','autorizacion__nro_deposito', 'desc_asociar', 'monto'],
+            								remoteSort: true,
+            								baseParams: {par_filtro: 'moe.autorizacion__nro_deposito'
+                                        }
+            						}),
+            						valueField: 'id_movimiento_entidad',
+            						gdisplayField : 'desc_asociar',
+            						displayField: 'autorizacion__nro_deposito',
+            						hiddenName: 'id_movimiento_entidad',
+            						tpl:'<tpl for="."><div class="x-combo-list-item"><p style="color:red; font-weight:bold;"><b style="color:Black">ID:</b> {id_movimiento_entidad}</p><p style="color:green; font-weight:bold;"><b style="color:Black">TIPO:</b> {tipo}</p><p style="color:blue; font-weight:bold;"><b style="color:black; font-weight:bold;">Nro Déposito:</b> {autorizacion__nro_deposito}</p><p style="color:green; font-weight:bold;"><b style="color:black; ">Monto:</b> {monto}</p></div></tpl>',
+            						forceSelection: true,
+            						typeAhead: false,
+                        triggerAction: 'all',
+            						lazyRender: true,
+            						mode: 'remote',
+            						pageSize: 15,
+            						queryDelay: 1000,
+            						disabled:false,
+            						minChars: 2,
+                        listWidth:'500'
+            				},
+            				type: 'ComboBox',
+            				id_grupo: 1,
+            				form: true,
+                    grid:true
+            		},
                 {
                     config:{
                         name: 'estado_reg',
@@ -463,9 +505,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:true,
                     form:false
                 },
-
-
-
                 {
                     config:{
                         name: 'usr_reg',
@@ -597,7 +636,10 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'monto', type: 'numeric'},
                 {name:'saldo_actual', type: 'numeric'},
                 {name:'nro_deposito', type: 'string'},
-                {name:'id_deposito', type: 'numeric'}
+                {name:'id_deposito', type: 'numeric'},
+                {name:'desc_asociar', type: 'string'},
+                {name:'fk_id_movimiento_entidad', type: 'numeric'},
+
 
             ],
             preparaMenu: function () {
@@ -629,6 +671,7 @@ header("content-type: text/javascript; charset=UTF-8");
             loadValoresIniciales:function(){
                 this.Cmp.id_agencia.setValue(this.maestro.id_agencia);
                 this.Cmp.garantia.setValue('no');
+                this.Cmp.fk_id_movimiento_entidad.store.baseParams.id_entidad = this.maestro.id_agencia;
 
             },
             onButtonNew: function(){
@@ -652,6 +695,17 @@ header("content-type: text/javascript; charset=UTF-8");
                 if(data.ajuste == 'si'){
                     this.Cmp.fecha.disable();
                     Phx.vista.MovimientoEntidad.superclass.onButtonEdit.call(this);
+
+                    /*Para editar si es que existe*/
+                    //this.Cmp.fk_id_movimiento_entidad.setValue(data.fk_id_movimiento_entidad);
+                      console.log('es ajuste', data);
+                      this.Cmp.fk_id_movimiento_entidad.setValue(data.fk_id_movimiento_entidad);
+                      this.Cmp.fk_id_movimiento_entidad.store.load({params:{start:0,limit:50},
+                         callback : function (r) {
+                            this.Cmp.fk_id_movimiento_entidad.fireEvent('select',this.Cmp.fk_id_movimiento_entidad, this.Cmp.fk_id_movimiento_entidad.store.getById(data.fk_id_movimiento_entidad));
+                          }, scope : this
+                      });
+                    /*******************************************/
                     console.log('es ajuste', data.ajuste);
 
                 }else

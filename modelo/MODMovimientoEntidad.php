@@ -61,7 +61,31 @@ class MODMovimientoEntidad extends MODbase{
         $this->captura('monto','numeric');
         $this->captura('nro_deposito', 'varchar');
         $this->captura('id_deposito', 'int4');
+        $this->captura('fk_id_movimiento_entidad', 'int4');
+        $this->captura('desc_asociar', 'varchar');
 
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function listarMovimientoEntidadAsociar(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_movimiento_entidad_sel';
+        $this->transaccion='OBING_MOVE_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        //$this->setCount(false);
+        //$this->setParametro('id_agencia','id_entidad','int4');
+        $this->setParametro('id_agencia','id_entidad','int4');
+        //Definicion de la lista del resultado del query
+        $this->captura('id_movimiento_entidad','int4');
+        $this->captura('autorizacion__nro_deposito','varchar');
+        $this->captura('estado_reg','varchar');
+        $this->captura('monto','numeric');
+        $this->captura('tipo','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -90,6 +114,7 @@ class MODMovimientoEntidad extends MODbase{
         $this->setParametro('fecha','fecha','date');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('apellido','apellido','varchar');
+        $this->setParametro('fk_id_movimiento_entidad','fk_id_movimiento_entidad','int4');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -120,6 +145,7 @@ class MODMovimientoEntidad extends MODbase{
         $this->setParametro('fecha','fecha','date');
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('apellido','apellido','varchar');
+        $this->setParametro('fk_id_movimiento_entidad','fk_id_movimiento_entidad','int4');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
