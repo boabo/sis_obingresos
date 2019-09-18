@@ -466,7 +466,7 @@ header("content-type: text/javascript; charset=UTF-8");
             								totalProperty: 'total',
             								fields: ['id_movimiento_entidad', 'tipo','autorizacion__nro_deposito', 'desc_asociar', 'monto', 'nro_deposito_boa'],
             								remoteSort: true,
-            								baseParams: {par_filtro: 'moe.autorizacion__nro_deposito#depo.nro_deposito_boa'
+            								baseParams: {par_filtro: 'moe.id_movimiento_entidad#moe.autorizacion__nro_deposito#depo.nro_deposito_boa'
                                         }
             						}),
             						valueField: 'id_movimiento_entidad',
@@ -708,6 +708,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     /*Para editar si es que existe*/
                     //this.Cmp.fk_id_movimiento_entidad.setValue(data.fk_id_movimiento_entidad);
                       console.log('es ajuste', data);
+                      this.Cmp.fk_id_movimiento_entidad.store.baseParams.id_entidad = data.id_agencia;
                       this.Cmp.fk_id_movimiento_entidad.setValue(data.fk_id_movimiento_entidad);
                       this.Cmp.fk_id_movimiento_entidad.store.load({params:{start:0,limit:50},
                          callback : function (r) {
