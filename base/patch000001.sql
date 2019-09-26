@@ -1543,4 +1543,12 @@ ALTER TABLE obingresos.tboleto_amadeus_forma_pago
 /********************************************I-SCP-IRVA-OBINGRESOS-0-18/09/2019********************************************/
 ALTER TABLE obingresos.tmovimiento_entidad
   ADD COLUMN fk_id_movimiento_entidad INTEGER;
-/********************************************F-SCP-RZM-OBINGRESOS-0-18/09/2019********************************************/
+/********************************************F-SCP-IRVA-OBINGRESOS-0-18/09/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-26/09/2019********************************************/
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN id_void INTEGER;
+
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN tipo_void VARCHAR(50);
+/********************************************F-SCP-IRVA-OBINGRESOS-0-26/09/2019********************************************/
