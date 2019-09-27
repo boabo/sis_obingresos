@@ -160,7 +160,7 @@ BEGIN
                       'no',
                       'no',
                       v_parametros.id_agencia::integer,
-                      v_parametros.monto::numeric,
+                      v_parametros.monto_comision::numeric,
                       v_parametros.billete::varchar,
                       v_parametros.id_void,
                       v_parametros.tipo_void,
