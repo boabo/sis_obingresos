@@ -91,7 +91,7 @@ BEGIN
                                 /*****************************RECUPERAMOS LA DIFERENCIA DE SALDOS PARA INGRESAR AL CREDITO*********************/
                                 /**************************************************************************************************************/
 
-                                if (v_datos_movimiento is not null) then
+                                if (v_datos_movimiento.id_periodo_venta is not null) then
 
                                         select Sum(mo.monto_total) into v_creditos
                                         from obingresos.tmovimiento_entidad mo
