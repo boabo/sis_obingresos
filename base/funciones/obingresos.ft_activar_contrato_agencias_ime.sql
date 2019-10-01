@@ -91,6 +91,8 @@ BEGIN
                                 /*****************************RECUPERAMOS LA DIFERENCIA DE SALDOS PARA INGRESAR AL CREDITO*********************/
                                 /**************************************************************************************************************/
 
+                                if (v_datos_movimiento is not null) then
+
                                         select Sum(mo.monto_total) into v_creditos
                                         from obingresos.tmovimiento_entidad mo
                                         LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
@@ -218,7 +220,7 @@ BEGIN
                                                       );
 
                                                       v_respuesta = 'Actualización y Arrastre de saldo correctamente verifique';
-
+									end if;
 
                                 end if;
                             /*************************************************************************************************/
