@@ -65,7 +65,7 @@ BEGIN
 
                             /*******************Poniendo control para verificar si se hara el UPDATE***************************/
 
-                            				select c.estado into v_estado_contrato
+                            	/*			select c.estado into v_estado_contrato
                                             from leg.tcontrato c
                                             where c.id_agencia = v_record.id_agencia and c.fecha_fin >= now()::date;
 
@@ -74,7 +74,7 @@ BEGIN
 
                                elsif (	v_estado_contrato is NULL ) then
                             		   raise exception 'No se encontro un contrato vigente para realizar la actualizacion';
-                               else
+                               else*/
                                                       update leg.tcontrato set
                                                       estado = 'finalizado'
                                                       where id_agencia = v_record.id_agencia and fecha_fin >= now()::date;
@@ -222,7 +222,7 @@ BEGIN
                                                       v_respuesta = 'Actualización y Arrastre de saldo correctamente verifique';
 									end if;
 
-                                end if;
+                                --end if;
                             /*************************************************************************************************/
 
                             else
