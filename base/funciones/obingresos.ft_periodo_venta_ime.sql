@@ -63,32 +63,46 @@ BEGIN
 
         begin
 
+        	/*Verificamos si el tipo de periodo (BSP) se encuentra inactivo o activo*/
         	if (exists (select 1
                         from obingresos.ttipo_periodo tp
                         where tp.estado = 'inactivo' and
                         tp.id_tipo_periodo = v_parametros.id_tipo_periodo )) then
             	raise exception 'No es posible generar el periodo debido a que el tipo periodo seleccionado se encuentra inactivo';
             end if;
+            /***********************************************************************/
 
+            /*Recuperamos todos los datos del tipo periodo de la tabla obingresos.ttipo_periodo*/
             select *  into v_tipo_periodo
             from obingresos.ttipo_periodo
             where id_tipo_periodo = v_parametros.id_tipo_periodo;
+            /***********************************************************************************/
 
+            /*Recuperamos la fecha maxima del periodo venta de acuerdo al tipo periodo y el medio de pago*/
             select max(pv.fecha_fin) into v_max_fecha_fin
             from obingresos.tperiodo_venta pv
             inner join obingresos.ttipo_periodo tp on tp.id_tipo_periodo = pv.id_tipo_periodo
             where tp.tipo = v_tipo_periodo.tipo and tp.medio_pago = v_tipo_periodo.medio_pago;
+			/********************************************************************************************************************/
 
+            /*Si en la tabla obingresos.tperiodo_venta no se encuentra una fecha max tomamos la fecha ini primer periodo**/
             if (v_max_fecha_fin is null) then
             	v_max_fecha_fin = v_tipo_periodo.fecha_ini_primer_periodo - interval '1 day';
             end if;
+            /*************************************************************************************************************/
 
+			/*La fecha ini para el nuevo periodo es la fecha maximo del periodo venta mas el intervalo de 1 día, tambien
+              se obtiene el ultimo dia del mes*/
             v_fecha_ini = v_max_fecha_fin + interval '1 day';
             v_fecha_ultimo_dia_mes = pxp.f_obtener_ultimo_dia_mes(to_char(v_fecha_ini,'MM')::numeric,to_char(v_fecha_ini,'YYYY')::numeric);
+            /****************************************************************************************************************/
+
+            /*Vamos controlando el tiempo para la fecha final del cierre del periodo*/
             if (v_tipo_periodo.tiempo = '1d') then
             	v_fecha_fin = v_fecha_ini;
             elsif (v_tipo_periodo.tiempo = '2d') then
             	v_fecha_fin = v_fecha_ini + interval '1 day';
+                --Si la fecha fin del periodo cae en dia 30, 31, 28, 29 tomaremos la fecha del ultimo mes
                 if ((to_char(v_fecha_fin,'DD') = '30' and to_char(v_fecha_ultimo_dia_mes,'DD') = '31') or
                 	(to_char(v_fecha_fin,'DD') = '28' and to_char(v_fecha_ultimo_dia_mes,'DD') = '29')) then
                 	v_fecha_fin = v_fecha_ultimo_dia_mes;
@@ -98,6 +112,14 @@ BEGIN
                 if (to_char(v_fecha_fin,'DD') = '25') then
                 	v_fecha_fin = v_fecha_ultimo_dia_mes;
                 end if;
+            /***************************************************************************/
+
+            /******************************Usado actualmente*********************************/
+            /*Si el tiempo del tipo_periodo es BSP tomamos los siguientes intervalos de fecha:
+            		01 al 08.
+                    09 al 15.
+                    16 al 23.
+                    y del 24 al ultimo dia del mes*/
             elsif (v_tipo_periodo.tiempo = 'bsp') then
 
             	if (to_char (v_fecha_ini,'DD') = '01') then
@@ -109,34 +131,43 @@ BEGIN
                 elsif  (to_char (v_fecha_ini,'DD') = '24') then
                 	v_fecha_fin = v_fecha_ultimo_dia_mes;
                 end if;
+            /*********************************************************************************/
+            /*********************************************************************************/
+
+            /*Se va obteniendo los dias de la semana (6-Sabado y 0-Domingo)*/
             elsif (v_tipo_periodo.tiempo = 'lun_mie_vie') then
             	v_fecha_fin = v_fecha_ini;
+                --Si el dia de la fecha ini es lunes o martes procedemos a verificar que la fecha ini sea lunes para que la fecha fin sea martes
             	if (extract(dow from  v_fecha_ini)::integer in (1,2)) then
                 	if (extract(dow from  v_fecha_ini)::integer in (1)) then
                     	v_fecha_fin = v_fecha_ini + interval '1 day';
                     end if;
-
+				------------------------------------------------------------------------------------------------
+                --Si el dia de la fecha ini es miercoles o jueves procedemos a verificar que la fecha ini sea miercoles para que la fecha fin sea jueves
                 elsif (extract(dow from  v_fecha_ini)::integer in (3,4)) then
                 	if (extract(dow from  v_fecha_ini)::integer in (3)) then
                     	v_fecha_fin = v_fecha_ini + interval '1 day';
                     end if;
+                ------------------------------------------------------------------------------------------------
                 else
+                	--Si el dia de la fecha ini es viernes la fecha fin sera domingo
                 	if (extract(dow from  v_fecha_ini)::integer in (5)) then
                     	v_fecha_fin = v_fecha_ini + interval '2 day';
+                	--Si el dia de la fecha ini es sabado la fecha fin sera domingo
                     elsif (extract(dow from  v_fecha_ini)::integer in (6)) then
                     	v_fecha_fin = v_fecha_ini + interval '1 day';
                     end if;
+                    --------------------------------------------------------------------
                 end if;
-
             end if;
+            /***************************************************************/
 
-            --si llega el parametro fecha y la feha fin es mayor a esa fecha no se inserta el prediodo y se devuelve la respuesta
+            --si llega el parametro fecha y la feha fin es mayor a esa fecha no se inserta el periodo y se devuelve la respuesta
             if (pxp.f_existe_parametro(p_tabla,'fecha')) then
             	if (v_parametros.fecha < v_fecha_fin) then
                 	--no es necesario generar el periodo a esta fecha
                 	v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Periodo de Venta no generado porque todavia no corresponde a esta fecha');
             		v_resp = pxp.f_agrega_clave(v_resp,'fecha',to_char(v_parametros.fecha,'DD/MM/YYYY')::varchar);
-
             		--Devuelve la respuesta
             		return v_resp;
                 end if;
@@ -144,7 +175,8 @@ BEGIN
             v_mes = pxp.f_obtener_literal_periodo(to_char(v_fecha_ini,'MM')::integer,0);
             v_codigo_periodo = obingresos.f_get_codigo_periodo(v_parametros.id_tipo_periodo,v_fecha_ini);
 
-		INSERT INTO
+        /*Con los datos recuperados anteriormente Creamos un nuevo periodo en la tabla obingresos.tperiodo_venta*/
+        INSERT INTO
               obingresos.tperiodo_venta
             (
               id_usuario_reg,
@@ -172,7 +204,9 @@ BEGIN
               v_parametros.id_tipo_periodo,
               v_codigo_periodo
             )returning id_periodo_venta into v_id_periodo_venta;
+        /***********************************************************************************************************/
 
+			/*Recuperamos el id de la moneda base y el id de la moneda DOLAR*/
             v_id_moneda_base = (select param.f_get_moneda_base());
             select m.id_moneda into v_id_moneda_usd
             from param.tmoneda m
@@ -181,14 +215,17 @@ BEGIN
             if (v_id_moneda_usd is null) then
             	raise exception 'No se ha definido la moneda USD';
             end if;
+            /****************************************************************/
 
             /*Actualizar los movimientos relacionados a boletos de manera correcta con el id_periodo_venta*/
-            --si el medio_pago es cuenta_corriente
+
+            --Recuperamos la fecha maxima de los boletos emitidos
             select max(b.fecha_emision) into v_fecha_max_boleto
             from obingresos.tboleto b
             where b.estado_reg = 'activo';
+			----------------------------------------------------
 
-
+			--si el medio_pago es cuenta_corriente
             if (v_tipo_periodo.medio_pago = 'cuenta_corriente') then
 
             	--actualizar boletos que esten relacionados por boleto
@@ -208,7 +245,7 @@ BEGIN
                 dbw.numero_autorizacion = m.autorizacion__nro_deposito and
                 m.id_periodo_venta is null and m.estado_reg = 'activo' and
                 m.monto_total = dbw.importe and m.fecha <= v_fecha_fin;
-
+				---------------------------------------------------------
 
         /*        with temp_bol as (
                     select dbw.numero_autorizacion,dbw.fecha,dbw.moneda,sum(dbw.importe) as importe
@@ -252,6 +289,18 @@ BEGIN
                 set id_periodo_venta = v_id_periodo_venta
                 where (m.tipo = 'credito') and
                 m.id_periodo_venta is null and m.estado_reg = 'activo';
+
+
+                /*Aumentando condicion para actualizar los id_periodo_venta de los tipo debito y comisión*/
+                update obingresos.tmovimiento_entidad m
+                set id_periodo_venta = v_id_periodo_venta
+                where (m.tipo = 'debito')
+                and m.id_periodo_venta is null
+                and m.estado_reg = 'activo'
+                and (m.tipo_void = 'BOLETO' or m.tipo_void = 'RESERVA');
+                /*****************************************************************************************/
+
+
 
                 --actualizar los debitos de tipo ajuste
                 update obingresos.tmovimiento_entidad m
@@ -398,7 +447,7 @@ BEGIN
                                 group by me.id_agencia,c.moneda_restrictiva )loop
 
             	--si la moneda es restrictiva registrar los saldos por pagar en periodo_venta_agencia
-                --y si existe saldo a favor d ela agenicia llevar como movimiento al siguient eperiodo
+                --y si existe saldo a favor d ela agencia llevar como movimiento al siguiente periodo
 
                 	INSERT INTO
                       obingresos.tperiodo_venta_agencia
@@ -1024,3 +1073,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_periodo_venta_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
