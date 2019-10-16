@@ -1642,7 +1642,7 @@ from detalle';
                                           group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
                                           pe.fecha_fin, pe.mes)
 
-                                      select 		  'voids' :: varchar as tipo,
+                                      select 		  'void' :: varchar as tipo,
                                                       ag.id_agencia,
                                                       COALESCE ( cr.monto_credito, 0 )as monto,
                                                       cr.garantia as boleta_garantia,
@@ -1659,7 +1659,49 @@ from detalle';
                                                       where ag.id_agencia = v_parametros.id_agencia
                                                       and cr.fecha > v_fecha_maxima::date
                                                       and cr.fecha <= v_parametros.fecha_fin::date
-                                                      );
+                                                      )
+                                      UNION
+                                              (select
+                                                    'comision':: varchar as tipo,
+                                                    mo.id_agencia,
+                                                    sum(case when mo.ajuste = 'no' then
+                                                        (case when mo.id_moneda = 1 then
+                                                                        mo.monto
+                                                                    else
+                                                                        param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                        end)
+                                                  else
+                                                      0
+                                                  end) as monto,
+                                                  0::numeric as boleta_garantia,
+                                                  mo.autorizacion__nro_deposito,
+                                                  mo.fecha,
+                                                  ''::varchar as nro_deposito_boa,
+                                                  0::numeric as ajuste,
+                                                    pe.fecha_ini,
+                                                    pe.fecha_fin,
+
+
+
+                                                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                                                  from obingresos.tmovimiento_entidad mo
+                                                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                                                  where mo.fecha >= v_fecha_maxima::date and mo.fecha <= v_parametros.fecha_fin::date and
+                                                        mo.tipo = 'debito' and
+                                                        mo.id_agencia = v_parametros.id_agencia and
+                                                        mo.cierre_periodo = 'no' and
+                                                        mo.estado_reg = 'activo' and
+                                                        (mo.tipo_void = 'BOLETO' OR mo.tipo_void = 'RESERVA')
+
+                                                  group by mo.id_agencia,
+                                                  pe.fecha_ini,
+                                                  pe.fecha_fin,
+                                                  pe.mes,
+                                                  mo.autorizacion__nro_deposito,
+                                                  mo.fecha
+                                                  );
 
 
 
