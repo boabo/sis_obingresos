@@ -61,6 +61,9 @@ DECLARE
     v_id_periodo_venta_fin	integer;
     v_fechas_periodos	record;
 
+    v_comisiones		record;
+    v_voids				record;
+
 BEGIN
 
 	v_nombre_funcion = 'obingresos.ft_reporte_cuenta_sel';
@@ -1117,18 +1120,224 @@ from detalle';
     elsif(p_transaccion='OBING_CUT_SEL')then
 
     begin
-     CREATE TEMPORARY TABLE temp ( tipo_credito varchar,
-          								tipo_debito varchar,
-                                        total numeric,
+    CREATE TEMPORARY TABLE tbl_1 ( 		tipo varchar,
           								id_agencia int4,
-                                        monto_credito numeric,
-                                        monto_debito numeric,
+                                        monto numeric,
                                         garantia NUMERIC,
                                         autorizacion__nro_deposito varchar,
                                         fecha date,
                                         nro_deposito_boa varchar,
-                                        ajuste_credito NUMERIC,
-                                        ajuste_debito numeric,
+                                        ajuste NUMERIC,
+                                        fecha_ini date,
+                                        fecha_fin date,
+                                        periodo text
+                                       )ON COMMIT DROP;
+
+
+      ------------------------------------------------
+      insert into tbl_1
+
+    ((with credito as (select  mo.id_agencia,
+                    pe.fecha_ini,
+                    pe.fecha_fin,
+                    sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
+                            (case when mo.id_moneda = 1 then
+                                            mo.monto
+                                        else
+                                            param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                            end)
+                    else
+                        0
+                    end) as monto_credito,
+
+                     sum(case when  mo.garantia = 'si' and mo.id_periodo_venta is null then
+                        (case when mo.id_moneda = 1 then
+                                            mo.monto
+                                        else
+                                            param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                            end)
+                    else
+                        0
+                    end) as garantia,
+
+                    sum(case when mo.ajuste = 'si'  then
+                            (case when mo.id_moneda = 1 then
+                                            mo.monto
+                                        else
+                                            param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                            end)
+                    else
+                        0
+                    end) as ajuste_credito,
+                    mo.autorizacion__nro_deposito,
+                    mo.fecha,
+                    dep.nro_deposito_boa,
+
+                    COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                    from obingresos.tmovimiento_entidad mo
+                    left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
+                    left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+
+                    where mo.fecha >= '1/1/2017' and
+                     mo.cierre_periodo = 'no' and
+                     mo.estado_reg = 'activo' and
+                     mo.tipo = 'credito'
+                     and  mo.id_agencia = v_parametros.id_agencia
+                     /*Aumentando para no tomar en cuenta los voids para separarlos*/
+                     and mo.tipo_void is null
+                     /**************************************************************/
+                    group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
+                    pe.fecha_fin, pe.mes)
+
+            select 			'creditos' :: varchar as tipo,
+                            ag.id_agencia,
+
+                            COALESCE ( cr.monto_credito, 0 )as monto,
+                            cr.garantia as boleta_garantia,
+                            cr.autorizacion__nro_deposito,
+                            cr.fecha,
+                            cr.nro_deposito_boa,
+                            cr.ajuste_credito as ajuste,
+                            cr.fecha_ini,
+                            cr.fecha_fin,
+                            cr.periodo
+
+                            from obingresos.tagencia ag
+                            left join credito cr on cr.id_agencia = ag.id_agencia
+                            where ag.id_agencia = v_parametros.id_agencia
+                            and cr.fecha >= v_parametros.fecha_ini::date
+                            and cr.fecha <= v_parametros.fecha_fin::date)
+
+
+
+            UNION
+
+
+            (with voids as (select  mo.id_agencia,
+                            pe.fecha_ini,
+                            pe.fecha_fin,
+                            sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
+                                    (case when mo.id_moneda = 1 then
+                                                    mo.monto
+                                                else
+                                                    param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                    end)
+                            else
+                                0
+                            end) as monto_void,
+
+                             sum(case when  mo.garantia = 'si' and mo.id_periodo_venta is null then
+                                (case when mo.id_moneda = 1 then
+                                                    mo.monto
+                                                else
+                                                    param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                    end)
+                            else
+                                0
+                            end) as garantia,
+
+                            mo.autorizacion__nro_deposito,
+                            mo.fecha,
+                            dep.nro_deposito_boa,
+
+                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                            from obingresos.tmovimiento_entidad mo
+                            left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
+                            left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+
+                            where mo.fecha >= '1/1/2017' and
+                             mo.cierre_periodo = 'no' and
+                             mo.estado_reg = 'activo' and
+                             mo.tipo = 'credito' and
+                             mo.id_agencia = v_parametros.id_agencia and
+                             (mo.tipo_void = 'BOLETO' OR mo.tipo_void = 'RESERVA')
+                            group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
+                            pe.fecha_fin, pe.mes
+                            )
+
+                            select 			'void':: varchar as tipo,
+                                            ag.id_agencia,
+                                            COALESCE ( cr.monto_void, 0 )as monto,
+                                            cr.garantia as boleta_garantia,
+                                            cr.autorizacion__nro_deposito,
+                                            cr.fecha,
+                                            cr.nro_deposito_boa,
+                                            0::numeric as ajuste,
+                                            cr.fecha_ini,
+                                            cr.fecha_fin,
+                                            cr.periodo
+                                            from obingresos.tagencia ag
+                                            left join voids cr on cr.id_agencia = ag.id_agencia
+                                            where ag.id_agencia = v_parametros.id_agencia
+                                            and cr.fecha >= v_parametros.fecha_ini::date
+                                            and cr.fecha <= v_parametros.fecha_fin::date)
+
+
+
+
+            UNION
+
+            (select
+                              'comision':: varchar as tipo,
+                              mo.id_agencia,
+                              sum(case when mo.ajuste = 'no' then
+                                  (case when mo.id_moneda = 1 then
+                                                  mo.monto
+                                              else
+                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                  end)
+                            else
+                                0
+                            end) as monto,
+                            0::numeric as boleta_garantia,
+                            mo.autorizacion__nro_deposito,
+                            mo.fecha,
+                            ''::varchar as nro_deposito_boa,
+                            0::numeric as ajuste,
+                              pe.fecha_ini,
+                              pe.fecha_fin,
+
+
+
+                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                  from obingresos.tmovimiento_entidad mo
+                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                  where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
+                        mo.tipo = 'debito' and
+                        mo.id_agencia = v_parametros.id_agencia and
+                        mo.cierre_periodo = 'no' and
+                        mo.estado_reg = 'activo' and
+                        (mo.tipo_void = 'BOLETO' OR mo.tipo_void = 'RESERVA')
+
+                  group by mo.id_agencia,
+                  pe.fecha_ini,
+                  pe.fecha_fin,
+                  pe.mes,
+                  mo.autorizacion__nro_deposito,
+                  mo.fecha
+                  )
+
+            ORDER BY fecha )
+            ;
+      ------------------------------------------------ hast aqui
+
+
+     CREATE TEMPORARY TABLE temp ( 		tipo varchar,
+                                        monto numeric,
+                                        garantia NUMERIC,
+                                        autorizacion__nro_deposito varchar,
+                                        fecha date,
+                                        nro_deposito_boa varchar,
+                                        ajuste numeric,
                                         id_periodo_venta int4,
                                         fecha_ini date,
                                         fecha_fin date,
@@ -1136,34 +1345,36 @@ from detalle';
                                         tipo_agencia varchar
 
                                        )ON COMMIT DROP;
-/*Aumentando la condicion*/
-        select
-        pe.id_periodo_venta
-        into v_id_periodo_venta_ini
-        from obingresos.tperiodo_venta pe
-        where  v_parametros.fecha_ini::date between pe.fecha_ini and pe.fecha_fin;
-
-        if (v_id_periodo_venta_ini is null) then
-            select pe.id_periodo_venta
+		/*Aumentando la condicion*/
+        --Condicion para Inciar en el periodo mas cercano si la fecha ini es menor
+            select
+            pe.id_periodo_venta
             into v_id_periodo_venta_ini
             from obingresos.tperiodo_venta pe
-            where pe.fecha_ini >= v_parametros.fecha_ini::date
-            order by pe.id_periodo_venta ASC
-            limit 1;
-        end if;
+            where  v_parametros.fecha_ini::date between pe.fecha_ini and pe.fecha_fin;
 
-        select
-        pe.id_periodo_venta
-        into v_id_periodo_venta_fin
-        from obingresos.tperiodo_venta pe
-        where v_parametros.fecha_fin::date between pe.fecha_ini and pe.fecha_fin;
+            if (v_id_periodo_venta_ini is null) then
+                select pe.id_periodo_venta
+                into v_id_periodo_venta_ini
+                from obingresos.tperiodo_venta pe
+                where pe.fecha_ini >= v_parametros.fecha_ini::date
+                order by pe.id_periodo_venta ASC
+                limit 1;
+            end if;
 
-        if (v_id_periodo_venta_fin is null) then
-          select
-          max(pe.id_periodo_venta)
-          into v_id_periodo_venta_fin
-          from obingresos.tperiodo_venta pe;
-        end if;
+            select
+            pe.id_periodo_venta
+            into v_id_periodo_venta_fin
+            from obingresos.tperiodo_venta pe
+            where v_parametros.fecha_fin::date between pe.fecha_ini and pe.fecha_fin;
+
+            if (v_id_periodo_venta_fin is null) then
+              select
+              max(pe.id_periodo_venta)
+              into v_id_periodo_venta_fin
+              from obingresos.tperiodo_venta pe;
+            end if;
+        /********************************************/
 
 
     for v_fechas_periodos in   ( select
@@ -1174,225 +1385,103 @@ from detalle';
                               	where pe.id_periodo_venta between v_id_periodo_venta_ini and v_id_periodo_venta_fin)
 
    /**********************************************/
+      		loop
+
+              for v_creditos in (
+                                  select *
+                                  from tbl_1
+                             )
+                    LOOP
+                                      if (v_creditos.fecha between v_fechas_periodos.fecha_ini and v_fechas_periodos.fecha_fin)  then
+                                              insert into temp (
+                                                                  tipo,
+                                                                  fecha_ini,
+                                                                  fecha_fin,
+                                                                  fecha,
+                                                                  monto,
+                                                                  ajuste,
+                                                                  autorizacion__nro_deposito,
+                                                                  nro_deposito_boa,
+                                                                  periodo/*Aumentando*/
+
+                                                                )
+                                              values (
+                                                                  v_creditos.tipo,
+                                                                  v_fechas_periodos.fecha_ini,--v_debitos_fecha.fecha_ini,
+                                                                  v_fechas_periodos.fecha_fin,--v_debitos_fecha.fecha_fin,
+                                                                  v_creditos.fecha,
+                                                                  v_creditos.monto,
+                                                                  v_creditos.ajuste,
+                                                                  v_creditos.autorizacion__nro_deposito,
+                                                                  v_creditos.nro_deposito_boa,
+                                                                  v_fechas_periodos.periodo/*Aumentando*/
+                                              );
+                                      end if;
+             		end loop;
+            end loop;
 
 
+           for v_debitos in (select
+                            'debitos':: varchar as tipo,
+                            mo.id_agencia,
+                            pe.fecha_ini,
+                            pe.fecha_fin,
 
-    /*for v_debitos_fecha in (select
-                  'debitos':: varchar as tipo,
-                  mo.id_agencia,
-                  pe.fecha_ini,
-                  pe.fecha_fin
+                            sum(case when mo.ajuste = 'no' then
+                                (case when mo.id_moneda = 1 then
+                                                mo.monto
+                                            else
+                                                param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
 
-      from obingresos.tmovimiento_entidad mo
-      LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
-      where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
-
-            mo.id_agencia = v_parametros.id_agencia
-
-
-      group by mo.id_agencia,
-      pe.fecha_ini,
-      pe.fecha_fin,
-      pe.mes
-
-
-
-      )*/
-
-
-      loop
-
-   for v_creditos in (  (with credito as (select  mo.id_agencia,
-        pe.fecha_ini,
-        pe.fecha_fin,
-		sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
-            	(case when mo.id_moneda = 1 then
-                            	mo.monto
+                                                end)
                             else
-                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                0
+                            end) as monto_debito,
+                            sum(case when mo.ajuste = 'si' then
+                                (case when mo.id_moneda = 1 then
+                                                    mo.monto
+                                                else
+                                                    param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
 
-                                end)
-        else
-            0
-        end) as monto_credito,
-
-		 sum(case when  mo.garantia = 'si' and mo.id_periodo_venta is null then
-           	(case when mo.id_moneda = 1 then
-                            	mo.monto
+                                                    end)
                             else
-                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                0
+                            end) as ajuste_debito,
 
-                                end)
-        else
-            0
-        end) as garantia,
+                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
 
-        sum(case when mo.ajuste = 'si'  then
-            	(case when mo.id_moneda = 1 then
-                            	mo.monto
-                            else
-                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                            from obingresos.tmovimiento_entidad mo
+                            LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                            where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
+                                  mo.tipo = 'debito' and
+                                  mo.id_agencia = v_parametros.id_agencia and
+                                  mo.cierre_periodo = 'no' and
+                                  mo.estado_reg = 'activo' and mo.tipo_void is null
 
-                                end)
-        else
-            0
-        end) as ajuste_credito,
-        mo.autorizacion__nro_deposito,
-        mo.fecha,
-        dep.nro_deposito_boa,
+                            group by mo.id_agencia,
+                            pe.fecha_ini,
+                            pe.fecha_fin,
+                            pe.mes
+                			)
+                            loop
+                                   insert into temp (
+                                                      tipo,
+                                                      fecha_ini,
+                                                      fecha_fin,
+                                                      periodo,
+                                                      monto,
+                                                      ajuste
+                                   					)
+                                                      values (
+                                                            v_debitos.tipo,
+                                                            v_debitos.fecha_ini,
+                                                            v_debitos.fecha_fin,
+                                                            v_debitos.periodo,
+                                                            v_debitos.monto_debito,
+                                                            v_debitos.ajuste_debito
+                                                    );
 
-        COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-
-        from obingresos.tmovimiento_entidad mo
-        left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
-        left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
-
-		where mo.fecha >= '1/1/2017' and
-         mo.cierre_periodo = 'no' and
-      	 mo.estado_reg = 'activo' and
-         mo.tipo = 'credito'
-         and  mo.id_agencia = v_parametros.id_agencia
-		group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
-        pe.fecha_fin, pe.mes)
-
-select 			'creditos' :: varchar as tipo,
-				ag.id_agencia,
-
-                COALESCE ( cr.monto_credito, 0 )as monto_credito,
-                cr.garantia as boleta_garantia,
-                cr.autorizacion__nro_deposito,
-                cr.fecha,
-                cr.nro_deposito_boa,
-                cr.ajuste_credito as ajuste,
-                cr.fecha_ini,
-                cr.fecha_fin,
-                cr.periodo
-
-                from obingresos.tagencia ag
-                left join credito cr on cr.id_agencia = ag.id_agencia
-                where ag.id_agencia = v_parametros.id_agencia
-                and cr.fecha >= v_parametros.fecha_ini::date
-                and cr.fecha <= v_parametros.fecha_fin::date
-
-                )
-
-
-
-
-                 )
-
-
-        LOOP
-
-		--if (v_creditos.fecha between v_debitos_fecha.fecha_ini and v_debitos_fecha.fecha_fin)  then
-        if (v_creditos.fecha between v_fechas_periodos.fecha_ini and v_fechas_periodos.fecha_fin)  then
-        insert into temp (
-                                        tipo_credito,
-                                        fecha_ini,
-                                        fecha_fin,
-                                        fecha,
-                                        monto_credito,
-                                        ajuste_credito,
-                                        autorizacion__nro_deposito,
-                                        nro_deposito_boa,
-                                        periodo/*Aumentando*/
-
-        				  )
-                                  values (
-                                  		v_creditos.tipo,
-                                        v_fechas_periodos.fecha_ini,--v_debitos_fecha.fecha_ini,
-                                        v_fechas_periodos.fecha_fin,--v_debitos_fecha.fecha_fin,
-                                        v_creditos.fecha,
-                                        v_creditos.monto_credito,
-                                        v_creditos.ajuste,
-                                        v_creditos.autorizacion__nro_deposito,
-                                        v_creditos.nro_deposito_boa,
-                                        v_fechas_periodos.periodo/*Aumentando*/
-                                  );
-                          end if;
-
-
-
-
-
-
-  end loop;
-end loop;
-
-
-
-
- for v_debitos in (select
-                  'debitos':: varchar as tipo,
-                  mo.id_agencia,
-                  pe.fecha_ini,
-                  pe.fecha_fin,
-
-                  sum(case when mo.ajuste = 'no' then
-                      (case when mo.id_moneda = 1 then
-                                      mo.monto
-                                  else
-                                      param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
-
-                                      end)
-              else
-                  0
-              end) as monto_debito,
-              sum(case when mo.ajuste = 'si' then
-                  (case when mo.id_moneda = 1 then
-                                      mo.monto
-                                  else
-                                      param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
-
-                                      end)
-              else
-                  0
-              end) as ajuste_debito,
-
-                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-
-      from obingresos.tmovimiento_entidad mo
-      LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
-      where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
-            mo.tipo = 'debito' and
-            mo.id_agencia = v_parametros.id_agencia and
-            mo.cierre_periodo = 'no' and
-            mo.estado_reg = 'activo'
-
-      group by mo.id_agencia,
-      pe.fecha_ini,
-      pe.fecha_fin,
-      pe.mes
-
-
-
-      )
-
-
-      loop
-
-
-     insert into temp (
-                                        tipo_debito,
-                                        fecha_ini,
-                                        fecha_fin,
-                                        periodo,
-                                        monto_debito,
-                                        ajuste_debito
-
-
-
-        				  )
-                                  values (
-                                  		v_debitos.tipo,
-                                        v_debitos.fecha_ini,
-                                        v_debitos.fecha_fin,
-                                        v_debitos.periodo,
-                                        v_debitos.monto_debito,
-                                        v_debitos.ajuste_debito
-                                  );
-
-end loop;
+                            end loop;
 
 		/*******Obtenemos la fecha maxima del periodo*******/
 		select
@@ -1404,189 +1493,233 @@ end loop;
               mo.id_agencia = v_parametros.id_agencia;
         /***********************************************************/
 
-
 		/*Obtenemos los creditos qeu no estan dentro de ese periodo*/
-		for v_creditos_fuera in (  (with credito as (select  mo.id_agencia,
-        pe.fecha_ini,
-        pe.fecha_fin,
-		sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
-            	(case when mo.id_moneda = 1 then
-                            	mo.monto
-                            else
-                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
 
-                                end)
-        else
-            0
-        end) as monto_credito,
-
-		 sum(case when  mo.garantia = 'si' and mo.id_periodo_venta is null then
-           	(case when mo.id_moneda = 1 then
-                            	mo.monto
-                            else
-                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
-
-                                end)
-        else
-            0
-        end) as garantia,
-
-        sum(case when mo.ajuste = 'si'  then
-            	(case when mo.id_moneda = 1 then
-                            	mo.monto
-                            else
-                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
-
-                                end)
-        else
-            0
-        end) as ajuste_credito,
-        mo.autorizacion__nro_deposito,
-        mo.fecha,
-        dep.nro_deposito_boa,
-
-        COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-
-        from obingresos.tmovimiento_entidad mo
-        left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
-        left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
-
-		where mo.fecha >= '1/1/2017' and
-         mo.cierre_periodo = 'no' and
-      	 mo.estado_reg = 'activo' and
-         mo.tipo = 'credito'
-         and  mo.id_agencia = v_parametros.id_agencia
-		group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
-        pe.fecha_fin, pe.mes)
-
-select 			'creditos' :: varchar as tipo,
-				ag.id_agencia,
-
-                COALESCE ( cr.monto_credito, 0 )as monto_credito,
-                cr.garantia as boleta_garantia,
-                cr.autorizacion__nro_deposito,
-                cr.fecha,
-                cr.nro_deposito_boa,
-                cr.ajuste_credito as ajuste,
-                cr.fecha_ini,
-                cr.fecha_fin,
-                cr.periodo
-
-                from obingresos.tagencia ag
-                left join credito cr on cr.id_agencia = ag.id_agencia
-                where ag.id_agencia = v_parametros.id_agencia
-                and cr.fecha > v_fecha_maxima
-                and cr.fecha <= v_parametros.fecha_fin::date
+         CREATE TEMPORARY TABLE tbl_2 ( tipo varchar,
+          								id_agencia int4,
+                                        monto numeric,
+                                        garantia NUMERIC,
+                                        autorizacion__nro_deposito varchar,
+                                        fecha date,
+                                        nro_deposito_boa varchar,
+                                        ajuste NUMERIC,
+                                        fecha_ini date,
+                                        fecha_fin date,
+                                        periodo text
+                                       )ON COMMIT DROP;
 
 
-                )
+      ------------------------------------------------
+                      insert into tbl_2
+                      (with credito as (select  mo.id_agencia,
+                                          pe.fecha_ini,
+                                          pe.fecha_fin,
+                                          sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
+                                                  (case when mo.id_moneda = 1 then
+                                                                  mo.monto
+                                                              else
+                                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                  end)
+                                          else
+                                              0
+                                          end) as monto_credito,
+
+                                           sum(case when  mo.garantia = 'si' and mo.id_periodo_venta is null then
+                                              (case when mo.id_moneda = 1 then
+                                                                  mo.monto
+                                                              else
+                                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                  end)
+                                          else
+                                              0
+                                          end) as garantia,
+
+                                          sum(case when mo.ajuste = 'si'  then
+                                                  (case when mo.id_moneda = 1 then
+                                                                  mo.monto
+                                                              else
+                                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                  end)
+                                          else
+                                              0
+                                          end) as ajuste_credito,
+                                          mo.autorizacion__nro_deposito,
+                                          mo.fecha,
+                                          dep.nro_deposito_boa,
+
+                                          COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                                          from obingresos.tmovimiento_entidad mo
+                                          left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
+                                          left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+
+                                          where mo.fecha >= '1/1/2017' and
+                                           mo.cierre_periodo = 'no' and
+                                           mo.estado_reg = 'activo' and
+                                           mo.tipo = 'credito'
+                                           and  mo.id_agencia = v_parametros.id_agencia
+                                           and mo.tipo_void is null
+                                          group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
+                                          pe.fecha_fin, pe.mes)
+
+                                      select 		  'creditos' :: varchar as tipo,
+                                                      ag.id_agencia,
+                                                      COALESCE ( cr.monto_credito, 0 )as monto,
+                                                      cr.garantia as boleta_garantia,
+                                                      cr.autorizacion__nro_deposito,
+                                                      cr.fecha,
+                                                      cr.nro_deposito_boa,
+                                                      cr.ajuste_credito as ajuste,
+                                                      cr.fecha_ini,
+                                                      cr.fecha_fin,
+                                                      cr.periodo
+
+                                                      from obingresos.tagencia ag
+                                                      left join credito cr on cr.id_agencia = ag.id_agencia
+                                                      where ag.id_agencia = v_parametros.id_agencia
+                                                      and cr.fecha > v_fecha_maxima::date
+                                                      and cr.fecha <= v_parametros.fecha_fin::date
+                                                      )
+
+
+                UNION
+
+
+                (with credito as (select  mo.id_agencia,
+                                          pe.fecha_ini,
+                                          pe.fecha_fin,
+                                          sum(case when mo.ajuste = 'no' and  mo.garantia = 'no'   then
+                                                  (case when mo.id_moneda = 1 then
+                                                                  mo.monto
+                                                              else
+                                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                  end)
+                                          else
+                                              0
+                                          end) as monto_credito,
+
+                                           sum(case when  mo.garantia = 'si' and mo.id_periodo_venta is null then
+                                              (case when mo.id_moneda = 1 then
+                                                                  mo.monto
+                                                              else
+                                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                  end)
+                                          else
+                                              0
+                                          end) as garantia,
+
+                                          sum(case when mo.ajuste = 'si'  then
+                                                  (case when mo.id_moneda = 1 then
+                                                                  mo.monto
+                                                              else
+                                                                  param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+
+                                                                  end)
+                                          else
+                                              0
+                                          end) as ajuste_credito,
+                                          mo.autorizacion__nro_deposito,
+                                          mo.fecha,
+                                          dep.nro_deposito_boa,
+
+                                          COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+
+                                          from obingresos.tmovimiento_entidad mo
+                                          left join obingresos.tperiodo_venta pe on pe.id_periodo_venta = mo.id_periodo_venta
+                                          left JOIN obingresos.tdeposito dep ON dep.id_agencia = mo.id_agencia and dep.nro_deposito::text = mo.autorizacion__nro_deposito::text AND dep.estado::text = 'validado'::text
+
+                                          where mo.fecha >= '1/1/2017' and
+                                           mo.cierre_periodo = 'no' and
+                                           mo.estado_reg = 'activo' and
+                                           mo.tipo = 'credito'
+                                           and  mo.id_agencia = v_parametros.id_agencia
+                                           and (mo.tipo_void = 'BOLETO' or mo.tipo_void = 'RESERVA' )
+                                          group by mo.id_agencia, mo.autorizacion__nro_deposito, mo.fecha, dep.nro_deposito_boa, pe.fecha_ini,
+                                          pe.fecha_fin, pe.mes)
+
+                                      select 		  'voids' :: varchar as tipo,
+                                                      ag.id_agencia,
+                                                      COALESCE ( cr.monto_credito, 0 )as monto,
+                                                      cr.garantia as boleta_garantia,
+                                                      cr.autorizacion__nro_deposito,
+                                                      cr.fecha,
+                                                      cr.nro_deposito_boa,
+                                                      cr.ajuste_credito as ajuste,
+                                                      cr.fecha_ini,
+                                                      cr.fecha_fin,
+                                                      cr.periodo
+
+                                                      from obingresos.tagencia ag
+                                                      left join credito cr on cr.id_agencia = ag.id_agencia
+                                                      where ag.id_agencia = v_parametros.id_agencia
+                                                      and cr.fecha > v_fecha_maxima::date
+                                                      and cr.fecha <= v_parametros.fecha_fin::date
+                                                      );
 
 
 
-                 )
 
+		for v_creditos_fuera in (  select *
+        						   from tbl_2
+                 							)
+                                              LOOP
+                                              /*Verificamos si ya se encuentra en la tabla temporal*/
 
-        LOOP
+                                              if (NOT exists(
+                                                      select 1
+                                                      from temp
+                                                      where tipo = v_creditos_fuera.tipo
+                                                      and fecha = v_creditos_fuera.fecha
+                                                      and monto = v_creditos_fuera.monto
+                                                      and autorizacion__nro_deposito = v_creditos_fuera.autorizacion__nro_deposito)
+                                                  ) then
+                                              /*****************************************************/
 
-		/*Verificamos si ya se encuentra en la tabla temporal*/
+                                              insert into temp (
+                                                                  tipo,
+                                                                  fecha,
+                                                                  monto,
+                                                                  garantia,
+                                                                  ajuste,
+                                                                  autorizacion__nro_deposito,
+                                                                  nro_deposito_boa
+                                                                )
+                                                            values (
+                                                                  v_creditos_fuera.tipo,
+                                                                  v_creditos_fuera.fecha,
+                                                                  v_creditos_fuera.monto,
+                                                                  v_creditos_fuera.garantia,
+                                                                  v_creditos_fuera.ajuste,
+                                                                  v_creditos_fuera.autorizacion__nro_deposito,
+                                                                  v_creditos_fuera.nro_deposito_boa
+                                                                );
+                                          end if;
 
-        if (NOT exists(
-        		select 1
-                from temp
-                where tipo_credito = v_creditos_fuera.tipo
-                and fecha = v_creditos_fuera.fecha
-                and monto_credito = v_creditos_fuera.monto_credito
-                and autorizacion__nro_deposito = v_creditos_fuera.autorizacion__nro_deposito)
-        	) then
-        /*****************************************************/
-
-        insert into temp (
-                                        tipo_credito,
-                                        fecha,
-                                        monto_credito,
-                                        garantia,
-                                        ajuste_credito,
-                                        autorizacion__nro_deposito,
-                                        nro_deposito_boa
-
-
-        				  )
-                                  values (
-                                  		v_creditos_fuera.tipo,
-                                        v_creditos_fuera.fecha,
-                                        v_creditos_fuera.monto_credito,
-                                        v_creditos_fuera.boleta_garantia,
-                                        v_creditos_fuera.ajuste,
-                                        v_creditos_fuera.autorizacion__nro_deposito,
-                                        v_creditos_fuera.nro_deposito_boa
-
-                                  );
-
-
-
-
-
-
-
-	end if;
-
-  end loop;
-
-if (v_parametros.formas_pago = 'prepago' ) then
+                                        end loop;
 
 		v_consulta = 'select
-        				 				tipo_credito ,
-                                        tipo_debito,
-                                        total,
-          								id_agencia ,
-                                        COALESCE (monto_credito,0) as monto_credito ,
-                                        COALESCE (monto_debito,0) as monto_debito ,
-                                        COALESCE (garantia , 0) as garantia,
-                                        autorizacion__nro_deposito ,
-                                        fecha ,
-                                        nro_deposito_boa ,
-                                        COALESCE (ajuste_credito,0) as ajuste_credito ,
-                                        COALESCE (ajuste_debito,0) as ajuste_debito,
-                                        id_periodo_venta ,
-                                        fecha_ini ,
-                                        fecha_fin ,
+        				 				tipo,
+          								COALESCE (monto,0),
+                                        COALESCE (garantia,0) as garantia,
+                                        autorizacion__nro_deposito,
+                                        fecha,
+                                        nro_deposito_boa,
+                                        COALESCE (ajuste,0),
+                                        id_periodo_venta,
+                                        fecha_ini,
+                                        fecha_fin,
                                         periodo,
                                         tipo_agencia
+                                        from temp order by fecha_ini,fecha';
 
-                                        from temp order by fecha_ini,fecha ';
 
-
-			raise notice '%',v_consulta;
-			--Devuelve la respuesta
 			return v_consulta;
-elsif  (v_parametros.formas_pago = 'postpago' ) then
 
-v_consulta = 'select
-        				 				tipo_credito ,
-                                        tipo_debito,
-                                        total,
-          								id_agencia ,
-                                        COALESCE (monto_credito,0) as monto_credito ,
-                                        COALESCE (monto_debito,0) as monto_debito ,
-                                        COALESCE (garantia , 0) as garantia,
-                                        autorizacion__nro_deposito ,
-                                        fecha ,
-                                        nro_deposito_boa ,
-                                        COALESCE (ajuste_credito,0) as ajuste_credito ,
-                                        COALESCE (ajuste_debito,0) as ajuste_debito,
-                                        id_periodo_venta ,
-                                        fecha_ini ,
-                                        fecha_fin ,
-                                        periodo,
-                                        tipo_agencia
-
-                                        from temp order by fecha ';
-
-
-			raise notice '%',v_consulta;
-			--Devuelve la respuesta
-		return v_consulta;
-end if;
 
 		end;
 

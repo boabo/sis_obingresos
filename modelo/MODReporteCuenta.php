@@ -149,25 +149,17 @@ class MODReporteCuenta extends MODbase{
 				$this->setParametro('formas_pago','formas_pago','varchar');
 
 
-				$this->captura('tipo_credito','varchar');
-				$this->captura('tipo_debito','varchar');
-				 $this->captura('total','numeric');
-
-         $this->captura('id_agencia','int4');
-				// $this->captura('nombre','varchar');
+				$this->captura('tipo','varchar');
+				$this->captura('monto','numeric');
+				$this->captura('garantia','numeric');
 				//
-				 $this->captura('monto_credito','numeric');
-				 $this->captura('monto_debito','numeric');
-				 $this->captura('garantia','numeric');
+				$this->captura('autorizacion__nro_deposito','varchar');
 				//
-				 $this->captura('autorizacion__nro_deposito','varchar');
+        $this->captura('fecha','date');
+				$this->captura('nro_deposito_boa','varchar');
 				//
-         $this->captura('fecha','date');
-				 $this->captura('nro_deposito_boa','varchar');
-				//
-				$this->captura('ajuste_credito','numeric');
-				 $this->captura('ajuste_debito','numeric');
-				 $this->captura('id_periodo_venta','int4');
+				$this->captura('ajuste','numeric');
+				$this->captura('id_periodo_venta','int4');
 
 				//
 				 $this->captura('fecha_ini','date');
@@ -179,7 +171,7 @@ class MODReporteCuenta extends MODbase{
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
-       ///var_dump( $this->respuesta);exit;
+        //var_dump( $this->respuesta);
         //Devuelve la respuesta
         return $this->respuesta;
     }
