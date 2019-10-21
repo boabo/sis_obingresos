@@ -191,5 +191,41 @@ class MODMovimientoEntidad extends MODbase{
         return $this->respuesta;
     }
 
+    /*Aumentando para Arrastrar el saldo*/
+    function arrastrarSaldo(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_movimiento_entidad_ime';
+        $this->transaccion='OBING_ARRASTRAR_IME';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_agencia','id_agencia','int4');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function verificarSaldoAgencia(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_movimiento_entidad_ime';
+        $this->transaccion='OBING_VERISALDO_IME';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_agencia','id_agencia','int4');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /************************************/
+
 }
 ?>

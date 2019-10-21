@@ -38,6 +38,15 @@ DECLARE
     v_agencia				varchar;
     v_usuario				varchar;
 
+
+    /*Aumentando para obtener el maximo*/
+    v_periodo_maximo		integer;
+    v_monto_arrastre		numeric;
+    v_existencia			integer;
+    v_fecha_arrastre		date;
+    v_id_moneda				integer;
+
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_movimiento_entidad_ime';
@@ -322,6 +331,161 @@ BEGIN
             return v_resp;
 
 		end;
+
+        /*********************************
+ 	#TRANSACCION:  'OBING_ARRASTRAR_IME'
+ 	#DESCRIPCION:	Arrastre de Saldo
+ 	#AUTOR:		ivaldivia
+ 	#FECHA:		21-10-2019 11:30:35
+	***********************************/
+
+	elsif(p_transaccion='OBING_ARRASTRAR_IME')then
+
+		begin
+        	select
+            MAX (distinct me.id_periodo_venta::integer) into v_periodo_maximo
+            from obingresos.tmovimiento_entidad me
+            where me.id_agencia = v_parametros.id_agencia and me.estado_reg = 'activo' and me.cierre_periodo = 'si';
+
+
+            SELECT count(me.id_movimiento_entidad) into v_existencia
+            from obingresos.tmovimiento_entidad me
+            where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
+            and me.cierre_periodo = 'si';
+
+            if (v_existencia > 0) then
+                    SELECT me.monto,
+                    	   me.fecha,
+                           me.id_moneda into
+                           v_monto_arrastre,
+                           v_fecha_arrastre,
+                           v_id_moneda
+                    from obingresos.tmovimiento_entidad me
+                    where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
+                    and me.cierre_periodo = 'si';
+            end if;
+
+
+            IF (v_monto_arrastre > 0) then
+            	insert into obingresos.tmovimiento_entidad(
+                            id_usuario_reg,
+                            fecha_reg,
+                            estado_reg,
+                            tipo,
+                            fecha,
+                            monto,
+                            id_moneda,
+                            garantia,
+                            ajuste,
+                            id_agencia,
+                            monto_total,
+                            id_periodo_venta,
+                            cierre_periodo
+                            ) values(
+                            p_id_usuario,
+                            now(),
+                            'activo',
+                            'debito',
+                            v_fecha_arrastre,
+                            v_monto_arrastre::numeric,
+                            v_id_moneda::integer,
+                            'no',
+                            'no',
+                            v_parametros.id_agencia::integer,
+                            v_monto_arrastre::numeric,
+                            v_periodo_maximo,
+                            'si'
+                );
+
+                insert into obingresos.tmovimiento_entidad(
+                            id_usuario_reg,
+                            fecha_reg,
+                            estado_reg,
+                            tipo,
+                            fecha,
+                            monto,
+                            id_moneda,
+                            garantia,
+                            ajuste,
+                            id_agencia,
+                            monto_total,
+                            cierre_periodo
+                            ) values(
+                            p_id_usuario,
+                            now(),
+                            'activo',
+                            'credito',
+                            v_fecha_arrastre,
+                            v_monto_arrastre::numeric,
+                            v_id_moneda::integer,
+                            'no',
+                            'no',
+                            v_parametros.id_agencia::integer,
+                            v_monto_arrastre::numeric,
+                            'si'
+                )RETURNING id_movimiento_entidad into v_id_movimiento_entidad;
+
+            else
+
+            	Raise exception 'El saldo anterior de la agencia es negativo, no se pudo Arrastrar el saldo';
+
+            end if;
+
+
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Movimientos anulado(a) o modificado');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_movimiento_entidad',v_id_movimiento_entidad::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+
+        /*********************************
+ 	#TRANSACCION:  'OBING_VERISALDO_IME'
+ 	#DESCRIPCION:	Verificacion de saldo
+ 	#AUTOR:		ivaldivia
+ 	#FECHA:		21-10-2019 15:33:35
+	***********************************/
+
+	elsif(p_transaccion='OBING_VERISALDO_IME')then
+
+		begin
+        	select
+            MAX (distinct me.id_periodo_venta::integer) into v_periodo_maximo
+            from obingresos.tmovimiento_entidad me
+            where me.id_agencia = v_parametros.id_agencia and me.estado_reg = 'activo' and me.cierre_periodo = 'si';
+
+
+            SELECT count(me.id_movimiento_entidad) into v_existencia
+            from obingresos.tmovimiento_entidad me
+            where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
+            and me.cierre_periodo = 'si';
+
+            if (v_existencia > 0) then
+                    SELECT me.monto,
+                    	   me.fecha,
+                           me.id_moneda into
+                           v_monto_arrastre,
+                           v_fecha_arrastre,
+                           v_id_moneda
+                    from obingresos.tmovimiento_entidad me
+                    where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
+                    and me.cierre_periodo = 'si';
+            end if;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Movimientos anulado(a) o modificado');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_movimiento_entidad',v_id_movimiento_entidad::varchar);
+            v_resp = pxp.f_agrega_clave(v_resp,'v_monto_arrastre',v_monto_arrastre::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
     	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;

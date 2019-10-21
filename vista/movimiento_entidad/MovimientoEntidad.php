@@ -723,6 +723,161 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
                 //this.Cmp.fecha.enable();
             },
+
+            /*Aumentando para interactuar saldo vigente*/
+
+            conexionFailure: function (resp){
+                this.guardar(resp);
+            },
+
+
+            onSubmit: function(o, x, force) {
+              Phx.vista.MovimientoEntidad.superclass.onSubmit.call(this,o, x, force);
+              //this.verificarSaldo();
+
+            },
+
+            verificarSaldo:function(){
+              Ext.Ajax.request({
+                  url:'../../sis_obingresos/control/MovimientoEntidad/verificarSaldoAgencia',
+                  params:{id_agencia:this.maestro.id_agencia},
+                  success: function(resp){
+                      var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                      this.saldoAgencia = reg.ROOT.datos.v_monto_arrastre;
+                  },
+                  failure: this.conexionFailure,
+                  timeout:this.timeout,
+                  scope:this
+              });
+            },
+
+            guardar:function(resp)
+            {
+              Phx.CP.loadingHide();
+              var datos_respuesta = JSON.parse(resp.responseText);
+              if (/La agencia no tiene saldo suficiente para emitir el boleto/.test(datos_respuesta.ROOT.detalle.mensaje)) {
+                /*Controlando el saldo para habilitar el boton*/
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/MovimientoEntidad/verificarSaldoAgencia',
+                    params:{id_agencia:this.maestro.id_agencia},
+                    success: function(resp){
+                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                        this.saldoAgencia = reg.ROOT.datos.v_monto_arrastre;
+                        /*Dialogo de AVISO*/
+                        if (this.saldoAgencia > 0) {
+                          Ext.Msg.show({
+                            title:'<center style="font-size:20px;"><i style="color:#D52300;" class="fa fa-exclamation-circle" aria-hidden="true"></i> Aviso</center>',
+                            width:400,
+                            height:400,
+                            msg: datos_respuesta.ROOT.detalle.mensaje,
+                            buttons: {
+                              yes: '<b style="font-size:15px; color:#268A4F;"><i class="fa fa-refresh" aria-hidden="true"></i> Arrastar Saldo</b>',
+                              cancel: '<b style="font-size:15px; color:red;"><i class="fa fa-ban" aria-hidden="true"></i> Cerrar</b>',
+                            },
+                            fn: function (btn,text) {
+                              if (btn == 'yes') {
+                                this.arrastrarSaldo();
+                              } else {
+                                Ext.MessageBox.hide();
+                              }
+
+                            },
+                            scope:this
+                          });
+                        } else {
+                          Ext.Msg.show({
+                            title:'<center style="font-size:20px;"><i style="color:#D52300;" class="fa fa-exclamation-circle" aria-hidden="true"></i> Aviso</center>',
+                            width:400,
+                            height:400,
+                            msg: datos_respuesta.ROOT.detalle.mensaje,
+                            buttons: {
+                              //yes: '<b style="font-size:15px; color:#11A220;"><i class="fa fa-refresh" aria-hidden="true"></i> Arrastar Saldo</b>',
+                              cancel: '<b style="font-size:15px; color:red;"><i class="fa fa-ban" aria-hidden="true"></i> Cerrar</b>',
+                            },
+                            fn: function (btn,text) {
+                              if (btn == 'cancel') {
+                                Ext.MessageBox.hide();
+                              }
+
+                            },
+                            scope:this
+                          });
+                        }
+                      /****************************/
+                    },
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+
+
+
+
+                  //   Ext.Msg.show({
+                  //    title:'<center style="font-size:20px;"><i style="color:#D52300;" class="fa fa-exclamation-circle" aria-hidden="true"></i> Aviso</center>',
+                  //    width:400,
+                  //    height:400,
+                  //    msg: datos_respuesta.ROOT.detalle.mensaje,
+                  //    buttons: {
+                  //    yes: '<b style="font-size:15px; color:#11A220;"><i class="fa fa-refresh" aria-hidden="true"></i> Arrastar Saldo</b>',
+                  //    cancel: '<b style="font-size:15px; color:red;"><i class="fa fa-ban" aria-hidden="true"></i> Cerrar</b>',
+                  //    },
+                  //    fn: function (btn,text) {
+                  //       if (btn == 'yes') {
+                  //         this.arrastrarSaldo();
+                  //       } else {
+                  //         Ext.MessageBox.hide();
+                  //       }
+                  //
+                  //    },
+                  //    scope:this
+                  // });
+                /************************************************************/
+              } else {
+                Ext.Msg.show({
+                 title:'<center style="font-size:20px;"><i style="color:#D52300;" class="fa fa-exclamation-circle" aria-hidden="true"></i> Aviso</center>',
+                 width:400,
+                 height:400,
+                 msg: datos_respuesta.ROOT.detalle.mensaje,
+                 buttons: Ext.Msg.OK,
+                 icon: Ext.MessageBox.QUESTION,
+                 scope:this
+              });
+              }
+            },
+
+            arrastrarSaldo:function () {
+              Ext.Ajax.request({
+       						url : '../../sis_obingresos/control/MovimientoEntidad/arrastrarSaldo',
+       						params : {
+                    'id_agencia' : this.maestro.id_agencia
+       						},
+       						success : this.arrastreCorrecto,
+       						failure : this.conexionFailure,
+       						timeout : this.timeout,
+       						scope : this
+       					});
+            },
+
+            arrastreCorrecto:function (resp) {
+              var datos_respuesta = JSON.parse(resp.responseText);
+              if (datos_respuesta.ROOT.error == false){
+                  Ext.Msg.show({
+                   title:'<center style="font-size:20px;"><i style="color:#D52300;" class="fa fa-exclamation-circle" aria-hidden="true"></i> Aviso</center>',
+                   msg: 'Se realizó el arrastre de saldo Correctamente',
+                   buttons: Ext.Msg.OK,
+                   fn: function () {
+                      this.reload();
+                      //this.panel.close();
+                   },
+                   scope:this
+                 });
+               }
+
+            },
+
+            /*******************************************/
+
             south:{
                 url:'../../../sis_obingresos/vista/detalle_boletos_web/DetalleBoletosWeb.php',
                 title:'Billetes',

@@ -16,7 +16,7 @@ class ACTMovimientoEntidad extends ACTbase{
 
     if ($this->objParam->getParametro('id_entidad') != '') {
         $this->objParam->addFiltro("moe.id_agencia = ". $this->objParam->getParametro('id_entidad'));
-    }   
+    }
 
     if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
         $this->objReporte = new Reporte($this->objParam,$this);
@@ -97,6 +97,20 @@ class ACTMovimientoEntidad extends ACTbase{
         $this->res=$this->objFunc->anularAutorizacion($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+
+    /*****************Aumentando para arrastrar Saldo****************/
+    function arrastrarSaldo(){
+        $this->objFunc=$this->create('MODMovimientoEntidad');
+        $this->res=$this->objFunc->arrastrarSaldo($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    function verificarSaldoAgencia(){
+        $this->objFunc=$this->create('MODMovimientoEntidad');
+        $this->res=$this->objFunc->verificarSaldoAgencia($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /****************************************************************/
 
 }
 
