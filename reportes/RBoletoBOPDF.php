@@ -59,7 +59,7 @@ class RBoletoBOPDF extends  ReportePDF {
         //$this->Cell(70,5,$datos[0]['direccion_ofi'],0,0,'L');
         $this->SetFont('Courier','',10);
         $this->Cell(15,5,'NOMBRE',0,0,'R');
-        $this->Cell(80,5,': ' . $datos_detalle->pasajeros->pasajeroDR->apdos_nombre,0,1,'L');
+        $this->Cell(80,5,': ' .$datos[0]['pasajero'],0,1,'L');
         $this->SetFont('Courier','',10);
         $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');
 
@@ -84,7 +84,7 @@ class RBoletoBOPDF extends  ReportePDF {
 
         $this->SetFont('Courier','',10);
         $this->Cell(85,5,'NUMERO DE BILLETE',0,0,'L');
-        $this->Cell(80,5,': ETKT ' .$datos_detalle->pasajeros->pasajeroDR->Tkts->string,0,1,'L');
+        $this->Cell(80,5,': ETKT ' .$datos[0]['numero_billete'],0,1,'L');
 
 
         $this->Cell(85,5,'FORMA DE IDENTIFICACIÓN',0,0,'L');
@@ -160,9 +160,9 @@ class RBoletoBOPDF extends  ReportePDF {
 
                 $this->ln();
                 $cantidad++;
-                if ($cantidad == 8) {
+                /*if ($cantidad == 8) {
                     $this->AddPage();
-                }
+                }*/
 
                 if ($value['clase'] != 'Y') {
                     $solo_y = 'no';

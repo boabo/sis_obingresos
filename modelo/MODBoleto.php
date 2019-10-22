@@ -984,6 +984,8 @@ class MODBoleto extends MODbase{
         $this->captura('moneda_iva','varchar');
         $this->captura('tipo_emision','varchar');
         $this->captura('moneda_tarifa','varchar');
+        $this->captura('pasajero','varchar');
+        $this->captura('numero_billete','varchar');
 
 
         //Ejecuta la instruccion
