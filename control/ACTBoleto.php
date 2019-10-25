@@ -1896,20 +1896,21 @@ class ACTBoleto extends ACTbase{
                 'Content-Type: application/json',
                 'Content-Length: ' . strlen($json_data))
         );
-        $_out = curl_exec($s);
+        $_out = curl_exec($s);//var_dump(json_decode($_out)->TraerReservaExchResult);exit;
         $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
         if (!$status) {
             throw new Exception("No se pudo conectar con Resiber");
         }
-
         curl_close($s);
+
+        $out_origin = $_out;
 
         $_out = str_replace('\\','',$_out);
         $_out = substr($_out,27);//23
         $_out = substr($_out,0,-2);
 
         $res = json_decode($_out);
-
+        //var_dump($res->reserva_V2);exit;
         if ($res->reserva_V2 != null) {
 
             $localizador = array(
@@ -2027,7 +2028,7 @@ class ACTBoleto extends ACTbase{
             $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
         }else{
 
-            $this->objParam->addParametro('tipo', 'normal');
+            /*$this->objParam->addParametro('tipo', 'normal');
             $this->objFunc = $this->create('MODBoleto');
 
             $this->res = $this->objFunc->generarBilleteElectronico($this->objParam);
@@ -2038,7 +2039,6 @@ class ACTBoleto extends ACTbase{
 
             $nombreArchivo = uniqid(md5(session_id()) . 'Boleto BO');
 
-
             $this->objParam->addParametro('titulo_archivo', 'Boleto');
             $nombreArchivo .= '.pdf';
             $this->objParam->addParametro('nombre_archivo', $nombreArchivo);
@@ -2048,12 +2048,20 @@ class ACTBoleto extends ACTbase{
             //Instancia la clase de pdf
             $this->objReporteFormato = new RBoletoBOPDF($this->objParam);
             $this->objReporteFormato->generarReporte();
-            $this->objReporteFormato->output($this->objReporteFormato->url_archivo, 'F');
+            $this->objReporteFormato->output($this->objReporteFormato->url_archivo, 'F');*/
 
             $this->mensajeExito = new Mensaje();
-            $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
+            /*$this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
                 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
-            $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+            $this->mensajeExito->setArchivoGenerado($nombreArchivo);*/
+            //$this->mensajeExito->setDatos(array());
+            $res = json_decode($out_origin);
+            if($res == null){
+                $tipo_emision = 'normal';
+            }else{
+                $tipo_emision = 'estructura';
+            }
+            $this->mensajeExito->setDatos(array("tipo_emision"=>$tipo_emision, "error"=>$res->TraerReservaExchResult));
             $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
         }
         //$this->res->imprimirRespuesta($this->res->generarJson());

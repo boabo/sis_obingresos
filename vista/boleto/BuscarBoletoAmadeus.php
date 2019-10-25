@@ -8,8 +8,40 @@
  */
 header("content-type:text/javascript; charset=UTF-8");
 ?>
+
+<style type="text/css" rel="stylesheet">
+    .x-selectable,
+    .x-selectable * {
+        -moz-user-select: text !important;
+        -khtml-user-select: text !important;
+        -webkit-user-select: text !important;
+    }
+
+    .x-grid-row td,
+    .x-grid-summary-row td,
+    .x-grid-cell-text,
+    .x-grid-hd-text,
+    .x-grid-hd,
+    .x-grid-row,
+
+    .x-grid-row,
+    .x-grid-cell,
+    .x-unselectable
+    {
+        -moz-user-select: text !important;
+        -khtml-user-select: text !important;
+        -webkit-user-select: text !important;
+    }
+</style>
 <script>
     Phx.vista.BuscarBoletoAmadeus = Ext.extend(Phx.gridInterfaz, {
+
+        viewConfig: {
+            stripeRows: false,
+            getRowClass: function(record) {
+                return "x-selectable";
+            }
+        },
         constructor : function(config) {
             this.id_movimiento=config.id_movimiento;
 
@@ -172,20 +204,32 @@ header("content-type:text/javascript; charset=UTF-8");
             //console.log('objRes',objRes);
             var objetoDatos = (objRes.ROOT == undefined)?objRes.datos:objRes.ROOT.datos;
             var objetoDetalle = (objRes.ROOT == undefined)?objRes.detalle:objRes.ROOT.detalle;
+            //console.log('objRes', objetoDatos);
             if (objRes.ROOT.datos.tipo_emision == 'R') { //"archivo_generado" in objetoDetalle
                 window.open('../../../lib/lib_control/Intermediario.php?r=' + objetoDetalle.archivo_generado + '&t='+new Date().toLocaleTimeString())
             } else {
                 /*var wnd = window.open("about:blank", "", "_blank");
                 wnd.document.write(objetoDatos.html);*/
-                Phx.CP.loadingHide();
-                Ext.Msg.show({
-                    title: 'Alerta',
-                    msg: '<div><b>Estimado Usuario:</b> <br><br> Informarle que el boleto seleccionado no corresponde a un Exchange. </div>',
-                    buttons: Ext.Msg.OK,
-                    width: 500,
-                    maxWidth:1024,
-                    icon: Ext.Msg.WARNING
-                });
+                //Phx.CP.loadingHide();
+                if(objetoDatos.tipo_emision == 'normal') {
+                    Ext.Msg.show({
+                        title: 'Sistema ERP',
+                        msg: '<div style="text-align: justify;"><b style="color: red;">Estimado Usuario:</b> <br><br><b>Informarle que el boleto seleccionado no corresponde a un Exchange.</b></div>',
+                        buttons: Ext.Msg.OK,
+                        width: 500,
+                        maxWidth: 1024,
+                        icon: Ext.Msg.WARNING
+                    });
+                }else{
+                    Ext.Msg.show({
+                        title: 'Sistema AMADEUS',
+                        msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> Se ha producido un problema al recuperar la información, la ultima emisión del boleto exchange esta mal construido. Revise la construcción del Boleto.</b> </div>',
+                        buttons: Ext.Msg.OK,
+                        width: 500,
+                        maxWidth: 1024,
+                        icon: Ext.Msg.WARNING
+                    });
+                }
             }
 
 
@@ -1323,7 +1367,7 @@ header("content-type:text/javascript; charset=UTF-8");
         bedit:false,
 
         onBtnBuscar : function() {
-            this.store.baseParams.nro_boleto = this.txtSearch.getValue();
+            this.store.baseParams.nro_boleto = (this.txtSearch.getValue()).toUpperCase();
             this.store.baseParams.fecha_actual =  new Date();;
             this.load({params: {start: 0, limit: this.tam_pag}});
             //this.grid.getSelectionModel().selectFirstRow();
