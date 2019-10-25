@@ -17,12 +17,13 @@ header("content-type:text/javascript; charset=UTF-8");
                     return 'prioridad_importanteA';
                 }
             }
-        }, 
+        },
         constructor : function(config) {
             this.maestro = config;
             this.description = this.maestro.tipo_agencia;
             Phx.vista.listaAgencias.superclass.constructor.call(this, config);
             this.init();
+            this.iniciarEventos();
             //this.bbar.add(this.lugar);
             this.addButton('Moneda',
                 {
@@ -44,11 +45,17 @@ header("content-type:text/javascript; charset=UTF-8");
                 scope:this
             });
 
+            this.addButton('CorregirSaldos',{
+                text: 'Corregir Saldos <br> de Agencias',
+                iconCls: 'bedit',
+                disabled: true,
+                handler: this.corregirSaldos,
+                tooltip: '<b>Corregir Saldos de las Agencias</b>',
+                scope:this
+            });
+
 
             this.tbar.addField(this.fecha_fin);
-
-
-
 
             this.fecha_fin.on('select',function(value){
                 this.capturaFiltros();
@@ -60,15 +67,19 @@ header("content-type:text/javascript; charset=UTF-8");
             var rec = this.sm.getSelected();
             this.getBoton('ReporteGeneral').enable();
             this.getBoton('Moneda').enable();
+            this.getBoton('CorregirSaldos').enable();
+
             },
 
         liberaMenu : function(){
             var rec = this.sm.getSelected();
             this.getBoton('ReporteGeneral').disable();
             this.getBoton('Moneda').disable();
+            this.getBoton('CorregirSaldos').disable();
           Phx.vista.listaAgencias.superclass.liberaMenu.call(this);
 
         },
+
 
 
 
@@ -475,6 +486,26 @@ header("content-type:text/javascript; charset=UTF-8");
       			 this.idContenedor,
       			 'verificarMoneda');
       	},
+
+
+        corregirSaldos: function() {
+      	 //var titulo = 'Anexo 1';
+         var rec = {
+                    agencia: this.sm.getSelected().data.id_agencia
+                    }
+      	 Phx.CP.loadWindows('../../../sis_obingresos/vista/control_agencias/CorregirSaldosAgencias.php',
+      			 'Corregir Saldos',
+      			 {
+      					 width:'90%',
+      					 height:600
+      			 },
+
+      			 rec,
+      			 this.idContenedor,
+      			 'CorregirSaldosAgencias');
+      	},
+
+
         capturaFiltros:function(combo, record, index){
             this.desbloquearOrdenamientoGrid();
             console.log(this.tipo_agencia.getValue());

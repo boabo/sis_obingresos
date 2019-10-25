@@ -70,7 +70,7 @@ class MODControlAgencias extends MODbase{
         $this->captura('depositos','numeric');
         $this->captura('debitos','numeric');
 				$this->captura('saldo_arrastrado','numeric');
-        $this->captura('periodo','varchar'); 
+        $this->captura('periodo','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -103,5 +103,69 @@ class MODControlAgencias extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+		function corregirSaldos(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_control_agencia_sel';
+        $this->transaccion='OBING_CORRSAL_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+        //Definicion de la lista del resultado del query
+				$this->setParametro('fecha_fin','fecha_fin','varchar');
+				$this->setParametro('nombre','nombre','varchar');
+				$this->setParametro('id_agencia','id_agencia','int4');
+        //$this->setParametro('fecha_ini','fecha_ini','varchar');
+      	//Definicion de la lista del resultado del query
+
+				$this->captura('id_agencia','int4');
+				$this->captura('id_periodo_venta','int4');
+				$this->captura('tipo','varchar');
+
+        $this->captura('depositos_con_saldos','numeric');
+        $this->captura('depositos','numeric');
+        $this->captura('debitos','numeric');
+				$this->captura('saldo_calculado','numeric');
+				$this->captura('saldo_arrastrado','numeric');
+				$this->captura('periodo','varchar');
+        $this->captura('diferencia','numeric');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //var_dump( $this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+		/*Actualizacion del dato*/
+		function modificarSaldoAgencia(){
+			//Definicion de variables para ejecucion del procedimiento
+			$this->procedimiento='obingresos.ft_control_agencia_ime';
+			$this->transaccion='OBING_MODSAL_MOD';
+			$this->tipo_procedimiento='IME';
+
+			//Define los parametros para la funcion
+			$this->setParametro('id_agencia','id_agencia','int4');
+			$this->setParametro('id_periodo_venta','id_periodo_venta','int4');
+			$this->setParametro('depositos_con_saldos','depositos_con_saldos','numeric');
+			$this->setParametro('depositos','depositos','numeric');
+			$this->setParametro('debitos','debitos','numeric');
+			$this->setParametro('saldo_calculado','saldo_calculado','numeric');
+			$this->setParametro('saldo_arrastrado','saldo_arrastrado','numeric');
+			$this->setParametro('periodo','periodo','varchar');
+			$this->setParametro('cantidad_det','cantidad','numeric');
+			$this->setParametro('diferencia','diferencia','numeric');
+			//$this->setParametro('saldo_arrastrado_anterior','saldo_arrastrado_anterior','numeric');
+
+			//Ejecuta la instruccion
+			$this->armarConsulta();
+			$this->ejecutarConsulta();
+
+			//Devuelve la respuesta
+			//var_dump($this->respuesta);
+			return $this->respuesta;
+		}
+
+
 }
 ?>
