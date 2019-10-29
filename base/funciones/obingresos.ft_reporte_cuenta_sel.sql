@@ -148,6 +148,34 @@ BEGIN
                         and mo.estado_reg = 'activo' and mo.ajuste = 'si'
 						and mo.fecha between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
 
+                        UNION
+
+                        select mo.id_agencia,
+                                ag.nombre,
+                                'ajustes':: varchar as tipo,
+                                mo.pnr,
+                                --null::date as fecha,
+                                mo.fecha,
+                                mo.autorizacion__nro_deposito as autorizacion__nro_deposito,
+                                ' '::varchar as billete,
+                                0::numeric as comision,
+                                 (case when mo.id_moneda = 1 then
+                            	mo.monto
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto,mo.fecha,'O',2)
+                                end)as importe,
+                                0::numeric as neto,
+                                (case when mo.id_moneda = 1 then
+                            	mo.monto_total
+                           		 else
+                            	param.f_convertir_moneda(2,1,mo.monto_total,mo.fecha,'O',2)
+                                end) as saldo
+                        from obingresos.tmovimiento_entidad mo
+                        inner join obingresos.tagencia ag on ag.id_agencia = mo.id_agencia
+                        where mo.id_agencia =  v_parametros.id_agencia and mo.tipo = 'debito'
+                        and mo.estado_reg = 'activo' and (mo.tipo_void = 'BOLETO' OR mo.tipo_void = 'RESERVA')
+						and mo.fecha between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+
                         )
 
                       LOOP
