@@ -1552,3 +1552,188 @@ ALTER TABLE obingresos.tmovimiento_entidad
 ALTER TABLE obingresos.tmovimiento_entidad
   ADD COLUMN tipo_void VARCHAR(50);
 /********************************************F-SCP-IRVA-OBINGRESOS-0-26/09/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-06/11/2019********************************************/
+CREATE TABLE obingresos.tforma_pago_pw (
+  id_forma_pago_pw SERIAL,
+  name VARCHAR(100),
+  country_code VARCHAR(5),
+  erp_code VARCHAR(50),
+  fop_code VARCHAR(15),
+  manage_account NUMERIC(18,2),
+  forma_pago_id INTEGER,
+  CONSTRAINT tforma_pago_pw_pkey PRIMARY KEY(id_forma_pago_pw)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+ALTER TABLE obingresos.tforma_pago_pw
+  ALTER COLUMN id_forma_pago_pw SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_pw
+  ALTER COLUMN name SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_pw
+  ALTER COLUMN country_code SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_pw
+  ALTER COLUMN erp_code SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_pw
+  ALTER COLUMN fop_code SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_pw
+  ALTER COLUMN manage_account SET STATISTICS 0;
+
+ALTER TABLE obingresos.tforma_pago_pw
+  OWNER TO postgres;
+
+  CREATE TABLE obingresos.tboletos_observados (
+    id_boletos_observados SERIAL,
+    pnr VARCHAR(10) NOT NULL,
+    nro_autorizacion VARCHAR(256) NOT NULL,
+    moneda VARCHAR(4),
+    importe_total NUMERIC(18,2) NOT NULL,
+    fecha_emision DATE,
+    estado_p VARCHAR(10),
+    forma_pago VARCHAR(10),
+    medio_pago VARCHAR(10),
+    instancia_pago VARCHAR(10),
+    office_id_emisor VARCHAR(10) NOT NULL,
+    pnr_prov VARCHAR(10) NOT NULL,
+    nro_autorizacion_prov VARCHAR(256) NOT NULL,
+    office_id_emisor_prov VARCHAR(10) NOT NULL,
+    importe_prov NUMERIC(18,2),
+    moneda_prov VARCHAR(4),
+    estado_prov VARCHAR(10),
+    fecha_autorizacion_prov DATE,
+    estado_validacion CHAR(1) NOT NULL,
+    tipo_error VARCHAR(100) NOT NULL,
+    tipo_validacion VARCHAR(50),
+    prov_informacion VARCHAR(256),
+    CONSTRAINT tpnr_na_observado_pkey PRIMARY KEY(id_boletos_observados)
+  ) INHERITS (pxp.tbase)
+  WITH (oids = false);
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN id_boletos_observados SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN pnr SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN nro_autorizacion SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN moneda SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN importe_total SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN fecha_emision SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN estado_p SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN forma_pago SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN medio_pago SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN instancia_pago SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN office_id_emisor SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN pnr_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN nro_autorizacion_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN office_id_emisor_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN importe_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN moneda_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN estado_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN fecha_autorizacion_prov SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN estado_validacion SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN tipo_error SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    ALTER COLUMN tipo_validacion SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tboletos_observados
+    OWNER TO postgres;
+
+
+    CREATE TABLE obingresos.tinstancia_pago (
+    id_instancia_pago SERIAL,
+    id_medio_pago INTEGER,
+    nombre VARCHAR(40) NOT NULL,
+    codigo VARCHAR(10) NOT NULL,
+    codigo_forma_pago VARCHAR(10),
+    codigo_medio_pago VARCHAR(20),
+    instancia_pago_id INTEGER,
+    fp_code VARCHAR(50),
+    ins_code VARCHAR(20),
+    CONSTRAINT tintancia_pago_pkey PRIMARY KEY(id_instancia_pago)
+  ) INHERITS (pxp.tbase)
+  WITH (oids = false);
+
+  ALTER TABLE obingresos.tinstancia_pago
+    ALTER COLUMN id_instancia_pago SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tinstancia_pago
+    ALTER COLUMN id_medio_pago SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tinstancia_pago
+    ALTER COLUMN nombre SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tinstancia_pago
+    ALTER COLUMN codigo SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tinstancia_pago
+    ALTER COLUMN codigo_medio_pago SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tinstancia_pago
+    OWNER TO postgres;
+
+
+    CREATE TABLE obingresos.tmedio_pago_pw (
+    id_medio_pago_pw SERIAL,
+    medio_pago_id INTEGER,
+    forma_pago_id INTEGER,
+    name VARCHAR(100),
+    mop_code VARCHAR(20),
+    code VARCHAR(15),
+    CONSTRAINT tmedio_pago_pw_pkey PRIMARY KEY(id_medio_pago_pw)
+  ) INHERITS (pxp.tbase)
+  WITH (oids = false);
+
+  ALTER TABLE obingresos.tmedio_pago_pw
+    ALTER COLUMN id_medio_pago_pw SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tmedio_pago_pw
+    ALTER COLUMN medio_pago_id SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tmedio_pago_pw
+    ALTER COLUMN forma_pago_id SET STATISTICS 0;
+
+  ALTER TABLE obingresos.tmedio_pago_pw
+    OWNER TO postgres;
+/********************************************F-SCP-IRVA-OBINGRESOS-0-06/11/2019********************************************/
