@@ -63,6 +63,7 @@ DECLARE
     v_datos_saldo_arrastre_vigente numeric;
 
     v_periodos			record;
+    v_periodo_siguiente	integer;
 
 
 BEGIN
@@ -81,17 +82,6 @@ BEGIN
 
 
     	begin
-
-        CREATE TEMPORARY TABLE temp ( id_agencia  int4,
-                                      id_periodo_venta int4,
-                                      tipo varchar,
-                                      depositos_con_saldos NUMERIC,
-                                      depositos NUMERIC,
-                                      debitos NUMERIC,
-                                      saldo_arrastrado NUMERIC,
-                                      periodo varchar
-                                       )ON COMMIT DROP;
-
         select  max(mo.id_periodo_venta)
         into v_maximo_credito
         from obingresos.tmovimiento_entidad mo
@@ -118,7 +108,65 @@ BEGIN
         	v_valor_maximo = v_maximo_debito ;
         end if;
 
-		--raise exception 'LLEGA AQUI %',v_valor_maximo;
+        /*Creamos una tabla temporal para insertar los creditos + saldos*/
+           CREATE TEMPORARY TABLE periodos (
+                                                  id_periodo_venta int4
+
+                                              )ON COMMIT DROP;
+
+        FOR v_periodos in (
+        select distinct *
+        from (
+                  (select
+                  mo.id_periodo_venta
+                  from obingresos.tmovimiento_entidad mo
+                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                  where mo.tipo = 'credito' and
+                  mo.id_agencia = v_parametros.id_agencia AND
+                  mo.estado_reg = 'activo' and
+                  mo.garantia = 'no' and
+                  mo.id_periodo_venta is not null
+                  group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
+                  order by mo.id_periodo_venta asc)
+
+                  UNION
+
+
+                  (Select
+                  mo.id_periodo_venta
+                  from obingresos.tmovimiento_entidad mo
+                  left join obingresos.tperiodo_venta pv on pv.id_periodo_venta=mo.id_periodo_venta
+                  where mo.tipo = 'debito' and
+                  mo.id_agencia = v_parametros.id_agencia AND
+                  mo.estado_reg = 'activo' and
+                  mo.garantia = 'no' and
+                  mo.cierre_periodo = 'no' and
+                  mo.id_periodo_venta is not null
+                  group by mo.id_periodo_venta,pv.fecha_ini, pv.fecha_fin,mo.tipo
+                  order by mo.id_periodo_venta asc)
+          ) as periodo_venta) loop
+
+          		insert into	periodos ( id_periodo_venta
+                						)
+                					  values(
+                                        v_periodos.id_periodo_venta
+                                       );
+
+         end loop;
+
+
+		/*Creamos una tabla temporal para insertar los creditos + saldos*/
+           CREATE TEMPORARY TABLE creditos_saldos (  id_agencia  int4,
+                                                  id_periodo_venta int4,
+                                                  tipo varchar,
+                                                  depositos_con_saldos NUMERIC,
+                                                  saldo_arrastrado NUMERIC,
+                                                  periodo varchar
+                                              )ON COMMIT DROP;
+
+
+
+
         FOR v_record in ( select  mo.id_periodo_venta,
                                   Sum(mo.monto_total) as saldos,
                                   mo.tipo,
@@ -130,37 +178,85 @@ BEGIN
                                     mo.estado_reg = 'activo' and
                                     mo.garantia = 'no' and
                                     mo.id_periodo_venta is not null
-                                    and mo.id_periodo_venta < v_valor_maximo
+                                    and mo.id_periodo_venta <= v_valor_maximo
                                   group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
                                   order by mo.id_periodo_venta asc
                         )
 
                       LOOP
-        					insert into	temp ( id_agencia  ,
-                                      id_periodo_venta ,
-                                      tipo,
-                                      depositos_con_saldos,
-                                      periodo
+        					insert into	creditos_saldos ( id_agencia  ,
+                                                          id_periodo_venta ,
+                                                          tipo,
+                                                          depositos_con_saldos,
+                                                          periodo
+                                        				)
+                                                          values(
+                                                          v_parametros.id_agencia,
+                                                          v_record.id_periodo_venta,
+                                                          v_record.tipo,
+                                                          v_record.saldos,
+                                                          v_record.periodo
+                                                        );
 
+                      END LOOP;
 
-                                        )
-                                        values(
-                                        v_parametros.id_agencia,
-                                        v_record.id_periodo_venta,
-                                        v_record.tipo,
-                                        v_record.saldos,
-                                        v_record.periodo
+        /*Tabla para el periodo vigente*/
+        CREATE TEMPORARY TABLE creditos_saldos_vigentes (  id_agencia  int4,
+                                                  id_periodo_venta int4,
+                                                  tipo varchar,
+                                                  depositos_con_saldos NUMERIC,
+                                                  saldo_arrastrado NUMERIC,
+                                                  periodo varchar
+                                              )ON COMMIT DROP;
 
-                                      );
+        FOR v_record in ( select  mo.id_periodo_venta,
+                                  Sum(mo.monto_total) as saldos,
+                                  mo.tipo,
+                                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+                                  from obingresos.tmovimiento_entidad mo
+                                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
+                                  where mo.tipo = 'credito' and
+                                    mo.id_agencia = v_parametros.id_agencia AND
+                                    mo.estado_reg = 'activo' and
+                                    mo.garantia = 'no' and
+                                    mo.id_periodo_venta is null
+                                    --and mo.id_periodo_venta < v_valor_maximo
+                                  group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
+                                  order by mo.id_periodo_venta asc
+                        )
 
-    	END LOOP;
+                      LOOP
+        					insert into	creditos_saldos_vigentes ( id_agencia  ,
+                                                          id_periodo_venta ,
+                                                          tipo,
+                                                          depositos_con_saldos,
+                                                          periodo
+                                        				)
+                                                          values(
+                                                          v_parametros.id_agencia,
+                                                          0,
+                                                          v_record.tipo,
+                                                          v_record.saldos,
+                                                          v_record.periodo
+                                                        );
 
-        FOR v_depositos in (
+                      END LOOP;
+        /*******************************/
+
+        /******************************************************************************************************************/
+
+        /******Creamos tabla temporal para los depositos******/
+                    CREATE TEMPORARY TABLE depositos (  id_agencia  int4,
+                                                              id_periodo_venta int4,
+                                                              tipo varchar,
+                                                              depositos NUMERIC
+                                                          )ON COMMIT DROP;
+
+        			FOR v_depositos in (
         					Select
                             mo.id_periodo_venta,
                             sum(mo.monto_total) as depositos,
                             mo.tipo
-
                             from obingresos.tmovimiento_entidad mo
                             where mo.tipo = 'credito' and
                                                 mo.id_agencia = v_parametros.id_agencia AND
@@ -168,34 +264,120 @@ BEGIN
                                                     mo.garantia = 'no' and
                                                     mo.cierre_periodo = 'no' and
                                                     mo.id_periodo_venta is not null
-                                                    and mo.id_periodo_venta < v_valor_maximo
+                                                    and mo.id_periodo_venta <= v_valor_maximo
                             group by mo.id_periodo_venta,mo.tipo
                             order by mo.id_periodo_venta asc
 
                             )
 
                             LOOP
+                              insert into	depositos (  id_agencia  ,
+                                                    id_periodo_venta ,
+                                                    tipo,
+                                                    depositos
+                                                  )
+                                                  values(
+                                                    v_parametros.id_agencia,
+                                                    v_depositos.id_periodo_venta,
+                                                    'depositos',
+                                                    v_depositos.depositos
+                                                );
+                              end loop;
 
+       	/*Tabla para el periodo Vigente*/
+        				CREATE TEMPORARY TABLE depositos_vigente (  id_agencia  int4,
+                                                              id_periodo_venta int4,
+                                                              tipo varchar,
+                                                              depositos NUMERIC
+                                                          )ON COMMIT DROP;
 
+        			FOR v_depositos_vigente in (
+        					Select
+                            mo.id_periodo_venta,
+                            sum(mo.monto_total) as depositos,
+                            mo.tipo
+                            from obingresos.tmovimiento_entidad mo
+                            where mo.tipo = 'credito' and
+                                                mo.id_agencia = v_parametros.id_agencia AND
+                                                    mo.estado_reg = 'activo' and
+                                                    mo.garantia = 'no' and
+                                                    mo.cierre_periodo = 'no' and
+                                                    mo.id_periodo_venta is null
+                                                    --and mo.id_periodo_venta < v_valor_maximo
+                            group by mo.id_periodo_venta,mo.tipo
+                            order by mo.id_periodo_venta asc
 
-                    insert into	temp ( id_agencia  ,
-                                      id_periodo_venta ,
-                                      tipo,
-                                      depositos
+                            )
 
+                            LOOP
+                              insert into depositos_vigente (  id_agencia  ,
+                                                    id_periodo_venta ,
+                                                    tipo,
+                                                    depositos
+                                                  )
+                                                  values(
+                                                    v_parametros.id_agencia,
+                                                    0,
+                                                    'depositos',
+                                                    v_depositos_vigente.depositos
+                                                );
+                              end loop;
 
-                                        )
-                                        values(
-                                        v_parametros.id_agencia,
-                                        v_depositos.id_periodo_venta,
-                                        'depositos',
-                                        v_depositos.depositos
+		/*********************************************************/
 
-                                      );
-                    end loop;
+        /*Creamos Tabla temporal para los debitos*/
+    					CREATE TEMPORARY TABLE debitos (  	  id_agencia  int4,
+                                                              id_periodo_venta int4,
+                                                              tipo varchar,
+                                                              debitos NUMERIC,
+                                                              periodo text
+                                                          )ON COMMIT DROP;
+        FOR v_debitos in (
+        					Select
+                            mo.id_periodo_venta,
+                            pv.fecha_ini,
+                            pv.fecha_fin,
+                            sum(mo.monto) as debitos,
+                            mo.tipo,
+                            COALESCE(TO_CHAR(pv.fecha_ini,'DD')||' al '|| TO_CHAR(pv.fecha_fin,'DD')||' '||pv.mes||' '||EXTRACT(YEAR FROM pv.fecha_ini),'Periodo Vigente')::text as periodo
+                            from obingresos.tmovimiento_entidad mo
+                            left join obingresos.tperiodo_venta pv on pv.id_periodo_venta=mo.id_periodo_venta
+                            where mo.tipo = 'debito' and
+                                                mo.id_agencia = v_parametros.id_agencia AND
+                                                    mo.estado_reg = 'activo' and
+                                                    mo.garantia = 'no' and
+                                                    mo.cierre_periodo = 'no' and
+                                                    mo.id_periodo_venta is not null
+                                                    and mo.id_periodo_venta <= v_valor_maximo
+                            group by mo.id_periodo_venta,pv.fecha_ini, pv.fecha_fin,mo.tipo,pv.mes
+                            order by mo.id_periodo_venta asc
 
+                            )
 
-    FOR v_debitos in (
+                            LOOP
+                                                insert into	debitos ( id_agencia  ,
+                                                                  id_periodo_venta ,
+                                                                  tipo,
+                                                                  debitos,
+                                                                  periodo
+
+                                                )
+                                                values(
+                                                                  v_parametros.id_agencia,
+                                                                  v_debitos.id_periodo_venta,
+                                                                  'debitos',
+                                                                  v_debitos.debitos,
+                                                                  v_debitos.periodo
+                                              );
+                            end loop;
+
+        /*Tabla periodo Vigente*/
+        				CREATE TEMPORARY TABLE debitos_vigente (  	  id_agencia  int4,
+                                                                      id_periodo_venta int4,
+                                                                      tipo varchar,
+                                                                      debitos NUMERIC
+                                                                  )ON COMMIT DROP;
+        FOR v_debitos in (
         					Select
                             mo.id_periodo_venta,
                             pv.fecha_ini,
@@ -209,33 +391,39 @@ BEGIN
                                                     mo.estado_reg = 'activo' and
                                                     mo.garantia = 'no' and
                                                     mo.cierre_periodo = 'no' and
-                                                    mo.id_periodo_venta is not null
-                                                    and mo.id_periodo_venta < v_valor_maximo
+                                                    mo.id_periodo_venta is null
+                                                    --and mo.id_periodo_venta < v_valor_maximo
                             group by mo.id_periodo_venta,pv.fecha_ini, pv.fecha_fin,mo.tipo
                             order by mo.id_periodo_venta asc
 
                             )
 
                             LOOP
+                                                insert into	debitos_vigente ( id_agencia  ,
+                                                                  id_periodo_venta ,
+                                                                  tipo,
+                                                                  debitos
+
+                                                )
+                                                values(
+                                                                  v_parametros.id_agencia,
+                                                                  0,
+                                                                  'debitos',
+                                                                  v_debitos.debitos
+                                              );
+                            end loop;
 
 
-
-                    insert into	temp ( id_agencia  ,
-                                      id_periodo_venta ,
-                                      tipo,
-                                      debitos
-
-                                        )
-                                        values(
-                                        v_parametros.id_agencia,
-                                        v_debitos.id_periodo_venta,
-                                        'debitos',
-                                        v_debitos.debitos
-                                      );
-                    end loop;
+        /***************************************************************************************/
 
 
-                    FOR v_arrastre in (
+        /*Creamos tabla temporal para el saldo arrastrado*/
+                          CREATE TEMPORARY TABLE saldo_arrastrado (    id_agencia  int4,
+                                                                       id_periodo_venta int4,
+                                                                       tipo varchar,
+                                                                       saldo_arrastrado NUMERIC
+                                                          )ON COMMIT DROP;
+        FOR v_arrastre in (
         					select  mo.id_periodo_venta,
                             		Sum(mo.monto_total) as arrastre
                                     from obingresos.tmovimiento_entidad mo
@@ -245,235 +433,102 @@ BEGIN
                                           mo.garantia = 'no' and
                                           mo.cierre_periodo = 'si' and
                                           mo.id_periodo_venta is not null
-                                          and mo.id_periodo_venta < v_valor_maximo
+                                          and mo.id_periodo_venta <= v_valor_maximo
                                     group by mo.id_periodo_venta
                                     order by mo.id_periodo_venta asc
 
                             )
 
                             LOOP
+                            					insert into	saldo_arrastrado ( id_agencia  ,
+                                                                              id_periodo_venta ,
+                                                                              tipo,
+                                                                              saldo_arrastrado
+                                                                              )
+                                                                              values(
+                                                                              v_parametros.id_agencia,
+                                                                              v_arrastre.id_periodo_venta,
+                                                                              'arrastre',
+                                                                              --COALESCE(v_arrastre.arrastre,0)
+                                                                              v_arrastre.arrastre
+                                                                            );
+                            end loop;
+        /*Periodo Vigente*/
+                      CREATE TEMPORARY TABLE saldo_arrastrado_vigente (    id_agencia  int4,
+                                                                                     id_periodo_venta int4,
+                                                                                     tipo varchar,
+                                                                                     saldo_arrastrado NUMERIC
+                                                                        )ON COMMIT DROP;
+                      FOR v_arrastre in (
+                                          select  mo.id_periodo_venta,
+                                                  Sum(mo.monto_total) as arrastre
+                                                  from obingresos.tmovimiento_entidad mo
+                                                  where mo.tipo = 'credito' and
+                                                    mo.id_agencia = v_parametros.id_agencia AND
+                                                        mo.estado_reg = 'activo' and
+                                                        mo.garantia = 'no' and
+                                                        mo.cierre_periodo = 'si' and
+                                                        mo.id_periodo_venta is null
+                                                        --and mo.id_periodo_venta < v_valor_maximo
+                                                  group by mo.id_periodo_venta
+                                                  order by mo.id_periodo_venta asc
+
+                                          )
+
+                                          LOOP
+                                                              insert into	saldo_arrastrado_vigente ( id_agencia  ,
+                                                                                            id_periodo_venta ,
+                                                                                            tipo,
+                                                                                            saldo_arrastrado
+                                                                                            )
+                                                                                            values(
+                                                                                            v_parametros.id_agencia,
+                                                                                            0,
+                                                                                            'arrastre',
+                                                                                            --COALESCE(v_arrastre.arrastre,0)
+                                                                                            v_arrastre.arrastre
+                                                                                          );
+                                          end loop;
 
 
-
-                    insert into	temp ( id_agencia  ,
-                                      id_periodo_venta ,
-                                      tipo,
-                                      saldo_arrastrado
-
-                                        )
-                                        values(
-                                        v_parametros.id_agencia,
-                                        v_arrastre.id_periodo_venta,
-                                        'arrastre',
-                                        v_arrastre.arrastre
-                                      );
-                    end loop;
+        /*************************************************/
 
 
-                    select  	  mo.id_periodo_venta,
-                                  Sum(mo.monto_total) as saldos,
-                                  mo.tipo,
-                                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-								  into v_saldo_vigente_maximo
-                                  from obingresos.tmovimiento_entidad mo
-                                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
-                                  where mo.tipo = 'credito' and
-                                    mo.id_agencia = v_parametros.id_agencia AND
-                                    mo.estado_reg = 'activo' and
-                                    mo.garantia = 'no' and
-                                    mo.id_periodo_venta is not null
-                                    and mo.id_periodo_venta = v_valor_maximo
-                                  group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
-                                  order by mo.id_periodo_venta asc;
+			v_consulta:='(select 	cr.id_agencia  ,
+            						pe.id_periodo_venta ,
+                                    cr.tipo,
+                                    COALESCE(cr.depositos_con_saldos,0) as depositos_con_saldos ,
+                                    COALESCE(de.depositos,0) as depositos,
+                                    COALESCE(deb.debitos,0) as debitos,
+                                    COALESCE(arr.saldo_arrastrado,0) as saldo_arrastrado,
+                                    COALESCE(cr.periodo,deb.periodo) as periodo
+                                	from periodos pe
+                                    left join creditos_saldos cr on cr.id_periodo_venta = pe.id_periodo_venta
+                                    left join depositos de on de.id_periodo_venta = pe.id_periodo_venta
+                                    left join debitos deb on deb.id_periodo_venta = pe.id_periodo_venta
+                                    left join saldo_arrastrado arr on arr.id_periodo_venta = pe.id_periodo_venta
+                                    ORDER BY cr.id_periodo_venta ASC)
 
-                    Select
-                            mo.id_periodo_venta,
-                            sum(mo.monto_total) as depositos,
-                            mo.tipo
-                            into v_depositos_vigente_maximo
-                            from obingresos.tmovimiento_entidad mo
-                            where mo.tipo = 'credito' and
-                                                mo.id_agencia = v_parametros.id_agencia AND
-                                                    mo.estado_reg = 'activo' and
-                                                    mo.garantia = 'no' and
-                                                    mo.cierre_periodo = 'no'and
-                                                    mo.id_periodo_venta is not null
-                                                    and mo.id_periodo_venta = v_valor_maximo
-                            group by mo.id_periodo_venta,mo.tipo
-                            order by mo.id_periodo_venta asc;
+            				UNION
 
-                    Select
-                            mo.id_periodo_venta,
-                            sum(mo.monto) as debitos,
-                            COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-
-                            into v_debitos_vigente_maximo
-                            from obingresos.tmovimiento_entidad mo
-                            LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
-                            where mo.tipo = 'debito' and
-                                                mo.id_agencia = v_parametros.id_agencia AND
-                                                    mo.estado_reg = 'activo' and
-                                                    mo.garantia = 'no' and
-                                                    mo.cierre_periodo = 'no' and
-                                                    mo.id_periodo_venta is not null
-                                                    and mo.id_periodo_venta = v_valor_maximo
-                            group by mo.id_periodo_venta, pe.fecha_ini, pe.fecha_fin, pe.mes
-                            order by mo.id_periodo_venta asc;
-
-                    select  mo.id_periodo_venta,
-                            		Sum(mo.monto_total) as arrastre
-                                    into v_arrastre_vigente_maximo
-                                    from obingresos.tmovimiento_entidad mo
-                                    where mo.tipo = 'credito' and
-                                      mo.id_agencia = v_parametros.id_agencia AND
-                                          mo.estado_reg = 'activo' and
-                                          mo.garantia = 'no' and
-                                          mo.cierre_periodo = 'si' and
-                                          mo.id_periodo_venta is not null
-                                          and mo.id_periodo_venta = v_valor_maximo
-                                    group by mo.id_periodo_venta
-                                    order by mo.id_periodo_venta asc;
-
-
-                    insert into	temp ( id_agencia,
-                    				   id_periodo_venta,
-                                       tipo,
-                                       depositos_con_saldos,
-                                       depositos,
-                                       debitos,
-                                       saldo_arrastrado,
-                                       periodo
-
-                                        )
-                                        values(
-                                        v_parametros.id_agencia,
-                                        CASE WHEN v_saldo_vigente_maximo.id_periodo_venta is null
-                                        THEN v_debitos_vigente_maximo.id_periodo_venta
-                                              ELSE v_saldo_vigente_maximo.id_periodo_venta
-                                        END,
-                                        'ultimo_periodo',
-                                        v_saldo_vigente_maximo.saldos,
-                                        v_depositos_vigente_maximo.depositos,
-                                        v_debitos_vigente_maximo.debitos,
-                                        v_arrastre_vigente_maximo.arrastre,
-                                        CASE WHEN v_saldo_vigente_maximo.periodo is null
-                                        THEN v_debitos_vigente_maximo.periodo
-                                              ELSE v_saldo_vigente_maximo.periodo
-                                        END
-
-
-                                      );
-
-
-
-
-
-					select  	  mo.id_periodo_venta,
-                                  Sum(mo.monto_total) as saldos,
-                                  mo.tipo,
-                                  COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
-								  into v_saldo_vigente
-                                  from obingresos.tmovimiento_entidad mo
-                                  LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
-                                  where mo.tipo = 'credito' and
-                                    mo.id_agencia = v_parametros.id_agencia AND
-                                    mo.estado_reg = 'activo' and
-                                    mo.garantia = 'no' and
-                                    mo.id_periodo_venta is null
-                                  group by mo.id_periodo_venta,mo.tipo, pe.fecha_ini, pe.fecha_fin, pe.mes
-                                  order by mo.id_periodo_venta asc;
-
-                    Select
-                            mo.id_periodo_venta,
-                            sum(mo.monto_total) as depositos,
-                            mo.tipo
-                            into v_depositos_vigente
-                            from obingresos.tmovimiento_entidad mo
-                            where mo.tipo = 'credito' and
-                                                mo.id_agencia = v_parametros.id_agencia AND
-                                                    mo.estado_reg = 'activo' and
-                                                    mo.garantia = 'no' and
-                                                    mo.cierre_periodo = 'no'and
-                                                    mo.id_periodo_venta is null
-                            group by mo.id_periodo_venta,mo.tipo
-                            order by mo.id_periodo_venta asc;
-
-                    Select
-                            mo.id_periodo_venta,
-                            pv.fecha_ini,
-                            pv.fecha_fin,
-                            sum(mo.monto) as debitos,
-                            mo.tipo
-                            into v_debitos_vigente
-                            from obingresos.tmovimiento_entidad mo
-                            left join obingresos.tperiodo_venta pv on pv.id_periodo_venta=mo.id_periodo_venta
-                            where mo.tipo = 'debito' and
-                                                mo.id_agencia = v_parametros.id_agencia AND
-                                                    mo.estado_reg = 'activo' and
-                                                    mo.garantia = 'no' and
-                                                    mo.cierre_periodo = 'no' and
-                                                    mo.id_periodo_venta is null
-                            group by mo.id_periodo_venta,pv.fecha_ini, pv.fecha_fin,mo.tipo
-                            order by mo.id_periodo_venta asc;
-
-                    select  mo.id_periodo_venta,
-                            		Sum(mo.monto_total) as arrastre
-                                    into v_arrastre_vigente
-                                    from obingresos.tmovimiento_entidad mo
-                                    where mo.tipo = 'credito' and
-                                      mo.id_agencia = v_parametros.id_agencia AND
-                                          mo.estado_reg = 'activo' and
-                                          mo.garantia = 'no' and
-                                          mo.cierre_periodo = 'si' and
-                                          mo.id_periodo_venta is null
-                                    group by mo.id_periodo_venta
-                                    order by mo.id_periodo_venta asc;
-
-
-                    insert into	temp ( id_agencia,
-
-                                       tipo,
-                                       depositos_con_saldos,
-                                       depositos,
-                                       debitos,
-                                       saldo_arrastrado,
-                                       periodo
-
-                                        )
-                                        values(
-                                        v_parametros.id_agencia,
-
-                                        'periodo_vigente',
-                                        v_saldo_vigente.saldos,
-                                        v_depositos_vigente.depositos,
-                                        v_debitos_vigente.debitos,
-                                        v_arrastre_vigente.arrastre,
-                                        'Periodo Vigente'
-
-
-                                      );
-
-
-                    --raise exception 'LLEGA EL SALDO %',v_debitos_vigente.debitos;
-
-    		--Sentencia de la consulta
-
-
-			v_consulta:='select 	id_agencia  ,
-            						id_periodo_venta ,
-                                    tipo,
-                                    COALESCE(depositos_con_saldos,0) as depositos_con_saldos ,
-                                    COALESCE(depositos,0) as depositos ,
-                                    debitos ,
-                                    saldo_arrastrado,
-                                    periodo
-                                	from temp';
+            				(select cr.id_agencia  ,
+            						Null::integer as id_periodo_venta ,
+                                    cr.tipo,
+                                    COALESCE(cr.depositos_con_saldos,0) as depositos_con_saldos ,
+                                    COALESCE(de.depositos,0) as depositos,
+                                    COALESCE(deb.debitos,0) as debitos,
+                                    COALESCE(arr.saldo_arrastrado,0) as saldo_arrastrado,
+                                    cr.periodo
+                                	from creditos_saldos_vigentes cr
+                                    left join depositos_vigente de on de.id_periodo_venta = cr.id_periodo_venta
+                                    left join debitos_vigente deb on deb.id_periodo_venta = cr.id_periodo_venta
+                                    left join saldo_arrastrado_vigente arr on arr.id_periodo_venta = cr.id_periodo_venta
+                                    )
+                            ORDER BY id_periodo_venta ASC';
 
 			--Devuelve la respuesta
 			return v_consulta;
-
 		end;
-
 
 
     /*********************************
@@ -1268,48 +1323,48 @@ from detalle';
                                               )ON COMMIT DROP;
 
          							    /*Tomar el saldo calculado desde el siguiente periodo minimo*/
-                                          select id_periodo_venta into v_id_periodo_venta
+                                          /*select id_periodo_venta into v_id_periodo_venta
                                           from saldo_arrastrado
                                           ORDER BY id_periodo_venta ASC
-                                          limit 1;
-
-
-
-                                          /*select id_periodo_venta into v_id_periodo_venta
-                                          from saldo_calculado
-                                          ORDER BY id_periodo_venta ASC
                                           limit 1;*/
+
+                                          /*Recuperamos el id periodo para ir calculando la diferencia*/
+
+                                          /************************************************************/
+
                                         /************************************************************/
 
                                         --raise exception 'llega aqui %',v_id_periodo_venta;
 
-                              			for  v_datos_saldo_calculado in (
+                              			for  v_id_periodo_venta in (
 
-                                                                          select *
-                                                                          from saldo_calculado
-                                                                          where id_periodo_venta > v_id_periodo_venta
+                                                                          Select id_periodo_venta
+                                                                          from periodos
                                                                           ORDER BY id_periodo_venta ASC
 
                                         								) loop
 
-                                                                          select saldo_arrastrado,
-                                                                          		 id_periodo_venta into v_datos_saldo_arrastre
-                                                                          from saldo_arrastrado
-                                                                          where id_periodo_venta = v_datos_saldo_calculado.id_periodo_venta;
+                                                                           select saldo_calculado into v_saldo
+                                                                           from saldo_calculado
+                                                                           where id_periodo_venta = v_id_periodo_venta;
 
-                                                                           --if ( v_datos_saldo_arrastre.saldo_arrastrado is not null ) then
-                                                                           if (v_datos_saldo_arrastre.saldo_arrastrado is null) then
-                                                                           	v_datos_saldo_arrastre.saldo_arrastrado = 0;
-                                                                           end if;
+                                                                           /*Tomaremos el periodo siguiente*/
+                                                                           Select id_periodo_venta  into v_periodo_siguiente
+                                                                          from periodos
+                                                                          where id_periodo_venta >  v_id_periodo_venta
+                                                                          ORDER BY id_periodo_venta ASC
+                                                                          limit 1;
+
+                                                                            select saldo_arrastrado,
+                                                                                   id_periodo_venta into v_datos_saldo_arrastre
+                                                                            from saldo_arrastrado
+                                                                            where id_periodo_venta = v_periodo_siguiente
+                                                                            ORDER BY id_periodo_venta ASC
+                                                                            Limit 1;
 
 
-                                                                            	 select saldo_calculado into v_saldo
-                                                                                 from saldo_calculado
-                                                                                 where id_periodo_venta = (v_datos_saldo_calculado.id_periodo_venta-1);
+                                                                         v_diferencia = COALESCE (v_saldo,0) - COALESCE (v_datos_saldo_arrastre.saldo_arrastrado,0);
 
-                                                                                  v_diferencia = v_saldo - v_datos_saldo_arrastre.saldo_arrastrado;
-
-                                                                                 -- raise exception 'llega aqui el saldo:%.',v_diferencia;
 
                                                                                       insert into	diferencia_calculada (
                                                                                                         id_agencia,
@@ -1318,7 +1373,7 @@ from detalle';
                                                                                                         )
                                                                                     values(
                                                                                             v_parametros.id_agencia,
-                                                                                            v_datos_saldo_calculado.id_periodo_venta,
+                                                                                            v_periodo_siguiente,
                                                                                             v_diferencia
                                                                                           );
 

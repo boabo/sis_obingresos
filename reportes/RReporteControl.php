@@ -374,6 +374,15 @@ class RReporteControl
 
             ),
         );
+        $diferencia_2 = array(
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'FF5733'
+                )
+
+            ),
+        );
         $saldo_calculado = array(
             'alignment' => array(
                 'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
@@ -417,120 +426,19 @@ class RReporteControl
         $datos = $this->objParam->getParametro('datos');
         $periodo=array();
 
-        foreach($datos as $value){
-            $valor=$value['id_periodo_venta'];
 
-             if(!in_array($valor, $periodo)){
-                 $periodo[]=$valor;
-             }
-             //var_dump($datos);exit;
+           foreach ($datos as $value) {
+             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $value['periodo']);
+             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['id_periodo_venta']);
+             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['depositos_con_saldos']);
+             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['depositos']);
+             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['debitos']);
+             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['saldo_arrastrado']);
+             $this->docexcel->getActiveSheet()->getStyle("F$fila")->applyFromArray($saldo_calculado);
+             $this->docexcel->getActiveSheet()->getStyle("C$fila:H$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+             $fila++;
            }
 
-foreach($periodo as $value1 ){
-        //var_dump($datos);exit;
-        foreach ($datos as $value){
-          if ($value['id_periodo_venta'] == $value1) {
-          if($value['tipo'] == 'credito'){
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['id_periodo_venta']);
-            if ($value['depositos_con_saldos'] != '') {
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['depositos_con_saldos']);
-            }else{
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, 0);
-            }
-
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $value['periodo']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, 0);
-            $this->docexcel->getActiveSheet()->getStyle("D$fila:D$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->docexcel->getActiveSheet()->getStyle("C$fila:H$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->docexcel->getActiveSheet()->getStyle("F$fila")->applyFromArray($saldo_calculado);
-            $fila++;
-            $numero++;
-            $aux=$fila-1;
-            $aux2=$fila-1;
-
-          }
-          elseif($value['tipo'] == 'depositos'){
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $aux, $value['depositos']);
-            $this->docexcel->getActiveSheet()->getStyle("D$aux:D$aux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
-          }elseif($value['tipo'] == 'debitos'){
-            if ($value['debitos'] != '') {
-              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $aux, $value['debitos']);
-              }else{
-              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $aux, 0);
-              }
-            $this->docexcel->getActiveSheet()->getStyle("E$aux:E$aux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
-          }elseif($value['tipo'] == 'arrastre'){
-
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $aux2, $value['saldo_arrastrado']);
-            $this->docexcel->getActiveSheet()->getStyle("G$aux:G$aux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
-          }elseif($value['tipo'] == 'ultimo_periodo'){
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $value['periodo']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $value['id_periodo_venta']);
-            if ($value['depositos_con_saldos'] != '') {
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $value['depositos_con_saldos']);
-              $this->docexcel->getActiveSheet()->getStyle("C$fila:H$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
-            }else{
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, 0);
-            }
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value['depositos']);
-            if ($value['debitos'] != '') {
-              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value['debitos']);
-              }else{
-              $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, 0);
-              }
-
-            if ($value['saldo_arrastrado'] != '') {
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $value['saldo_arrastrado']);
-            $this->docexcel->getActiveSheet()->getStyle("G$aux:G$aux")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-            }else{
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, 0);
-            }
-            $this->docexcel->getActiveSheet()->getStyle("F$fila")->applyFromArray($saldo_calculado);
-          }elseif($value['tipo'] == 'periodo_vigente'){
-            $aux3=$fila+1;
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila+1, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila+1, 0);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila+1, $value['periodo']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila+1, $value['depositos_con_saldos']);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila+1, $value['depositos']);
-            if($value['debitos'] != ''){
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila+1, $value['debitos']);
-            }else{
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila+1, 0);
-            }
-            if($value['saldo_arrastrado'] != ''){
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila+1, $value['saldo_arrastrado']);
-            }else{
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila+1, 0);
-            }
-            $this->docexcel->getActiveSheet()->getStyle("D$aux3:H$aux3")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
-
-          }
-
-
-        } //end if
-
-
-      } //end ForEach 1
-      // $fila++;
-      // $aux=$fila;
-
-    //  $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $aux, $value['depositos']);
-      // $fila++;
-      // $aux=$fila-1;
-
-
-    } //End Foreach2
-    $fila=$fila+2;
     for ($i=7; $i < $fila; $i++) {
       $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $i, "=SUM((C$i-E$i))");
       $this->docexcel->getActiveSheet()->getStyle("F$i")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);

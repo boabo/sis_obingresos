@@ -62,7 +62,7 @@ class MODControlAgencias extends MODbase{
 				$this->setParametro('id_agencia','id_agencia','int4');
         //$this->setParametro('fecha_ini','fecha_ini','varchar');
         //Definicion de la lista del resultado del query
-        $this->captura('id_agencia','int4');
+				$this->captura('id_agencia','int4');
 				$this->captura('id_periodo_venta','int4');
 				$this->captura('tipo','varchar');
 
@@ -70,12 +70,12 @@ class MODControlAgencias extends MODbase{
         $this->captura('depositos','numeric');
         $this->captura('debitos','numeric');
 				$this->captura('saldo_arrastrado','numeric');
-        $this->captura('periodo','varchar');
+				$this->captura('periodo','varchar');      
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
 
-        //var_dump( $this->respuesta);exit;
+        //var_dump( $this->respuesta);
         //Devuelve la respuesta
         return $this->respuesta;
     }
