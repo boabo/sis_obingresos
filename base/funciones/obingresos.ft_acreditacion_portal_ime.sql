@@ -35,6 +35,10 @@ DECLARE
     v_id_moneda				integer;
     v_codigo				varchar;
 
+    /*Aumentando variable para almacenar el saldo*/
+    v_saldo					numeric;
+    /*********************************************/
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_acreditacion_portal_ime';
@@ -85,44 +89,71 @@ BEGIN
           if(v_existe.existe<>0)then
                raise exception 'La Acreditacion con el ID:%. ya se encuentra registrado para la Agencia % con el ID_MOVIMIENTO: %',v_parametros.id_void,v_nombre_agencia,v_existe.id_movimiento_entidad::integer;
           else
-             v_codigo = ('VOID:'||v_parametros.pnr||'->'||v_parametros.billete||'-'||v_parametros.tipo_void)::varchar;
 
+          	 if (exists (select 1
+                from obingresos.tperiodo_venta_agencia pva
+                where pva.estado_reg = 'activo' and pva.id_agencia = v_parametros.id_agencia and pva.estado = 'abierto' and
+                (pva.monto_mb <= 0 or pva.monto_usd <= 0)) and v_parametros.monto > 0) then
+
+                v_codigo = ('VOID:'||v_parametros.pnr||'->'||v_parametros.billete||'-'||v_parametros.tipo_void)::varchar||'-Total:'||v_parametros.monto::varchar;
+
+             else
+             	v_codigo = ('VOID:'||v_parametros.pnr||'->'||v_parametros.billete||'-'||v_parametros.tipo_void)::varchar;
+             end if;
+
+          	  /*Aumentando para dividir el VOID tipo credito y saldar deudas si corresponde*/
+              v_id_movimiento_entidad = obingresos.f_dividir_void_credito_pagar_deuda(p_id_usuario,v_parametros.monto,now()::date,v_codigo,v_id_moneda,v_parametros.id_agencia,v_parametros.pnr,v_parametros.billete,v_parametros.id_void,v_parametros.tipo_void,v_parametros.monto_comision,NULL);
+              /*****************************************************************************/
+
+          	  /*if (v_saldo > 0) then
               --Sentencia de la insercion
-              insert into obingresos.tmovimiento_entidad(
-              id_usuario_reg,
-              fecha_reg,
-              estado_reg,
-              tipo,
-              pnr,
-              fecha,
-              monto,
-              id_moneda,
-              autorizacion__nro_deposito,
-              garantia,
-              ajuste,
-              id_agencia,
-              monto_total,
-              billete,
-              id_void,
-              tipo_void
-              ) values(
-              p_id_usuario,
-              now(),
-              'activo',
-              'credito',
-              v_parametros.pnr::varchar,
-              now(),
-              v_parametros.monto::numeric,
-              v_id_moneda::integer,
-              v_codigo::varchar,
-              'no',
-              'no',
-              v_parametros.id_agencia::integer,
-              v_parametros.monto::numeric,
-              v_parametros.billete::varchar,
-              v_parametros.id_void,
-              v_parametros.tipo_void
-              )RETURNING id_movimiento_entidad into v_id_movimiento_entidad;
+                  insert into obingresos.tmovimiento_entidad(
+                  id_usuario_reg,
+                  fecha_reg,
+                  estado_reg,
+                  tipo,
+                  pnr,
+                  fecha,
+                  monto,
+                  id_moneda,
+                  autorizacion__nro_deposito,
+                  garantia,
+                  ajuste,
+                  id_agencia,
+                  monto_total,
+                  billete,
+                  id_void,
+                  tipo_void
+                  ) values(
+                  p_id_usuario,
+                  now(),
+                  'activo',
+                  'credito',
+                  v_parametros.pnr::varchar,
+                  now(),
+                  v_saldo,--v_parametros.monto::numeric,
+                  v_id_moneda::integer,
+                  v_codigo::varchar,
+                  'no',
+                  'no',
+                  v_parametros.id_agencia::integer,
+                  v_saldo,--v_parametros.monto::numeric,
+                  v_parametros.billete::varchar,
+                  v_parametros.id_void,
+                  v_parametros.tipo_void
+                  )RETURNING id_movimiento_entidad into v_id_movimiento_entidad;
+
+
+                  /*Actualizamos el Fk_id_movimiento_entidad*/
+                  update obingresos.tmovimiento_entidad set
+                  fk_id_movimiento_entidad = v_id_movimiento_entidad
+                  where id_void = v_parametros.id_void and id_agencia = v_parametros.id_agencia
+                  		and fecha = now()::date and pnr = v_parametros.pnr and id_movimiento_entidad <> v_id_movimiento_entidad
+                        and fk_id_movimiento_entidad is null;
+                  /******************************************/
+
+
+              end if;
 
               /*Insertamos la comision siempre y cuando sea distinto de 0*/
 
@@ -166,10 +197,10 @@ BEGIN
                       v_parametros.tipo_void,
                       v_id_movimiento_entidad
                       );
-
+              end if;
               /********************************************************************************/
-             end if;
 
+              */
 
               --Definicion de la respuesta
               v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Acreditacion almacenado(a) con exito (id_movimiento_entidad'||v_id_movimiento_entidad||')');
