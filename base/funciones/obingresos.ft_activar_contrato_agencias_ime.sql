@@ -35,6 +35,9 @@ DECLARE
     v_creditos				numeric;
     v_debitos				numeric;
     v_diferencia			numeric;
+
+    v_tiene_debito			integer;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_activar_contrato_agencias_ime';
@@ -131,6 +134,13 @@ BEGIN
 
                                 		v_diferencia = v_creditos - v_debitos;
 
+								 /*Controlamos si el movimiento tiene un debito*/
+								 select count(*) into v_tiene_debito
+                                 from obingresos.tmovimiento_entidad en
+                                 where en.id_periodo_venta = v_datos_movimiento.id_periodo_venta and en.tipo = 'debito' and en.cierre_periodo = 'si'
+                                 	   and en.id_agencia = v_record.id_agencia and en.estado_reg = 'activo';
+
+                                 if (v_tiene_debito = 0) then
 
                                  /***************************Realizamos la inserccion recuperando los datos como debito*******************************/
 
@@ -153,7 +163,8 @@ BEGIN
                                                       fecha_mod,
                                                       id_usuario_mod,
                                                       cierre_periodo,
-                                                      fk_id_movimiento_entidad
+                                                      fk_id_movimiento_entidad,
+                                                      observaciones
                                                       ) values(
                                                       v_datos_movimiento.id_moneda,
                                                       v_datos_movimiento.id_periodo_venta,
@@ -173,9 +184,10 @@ BEGIN
                                                       now(),
                                                       p_id_usuario,
                                                       v_datos_movimiento.cierre_periodo,
-                                                      v_datos_movimiento.fk_id_movimiento_entidad
+                                                      v_datos_movimiento.fk_id_movimiento_entidad,
+                                                      'Saldo Arrastrado debido a Actualización de contrato'
                                                       );
-
+									end if;
                                  /***************************Realizamos la inserccion recuperando los datos como credito periodo vigente*******************************/
                                                insert into obingresos.tmovimiento_entidad(
                                                       id_moneda,
@@ -196,7 +208,8 @@ BEGIN
                                                       fecha_mod,
                                                       id_usuario_mod,
                                                       cierre_periodo,
-                                                      fk_id_movimiento_entidad
+                                                      fk_id_movimiento_entidad,
+                                                      observaciones
                                                       ) values(
                                                       v_datos_movimiento.id_moneda,
                                                       NULL,
@@ -216,11 +229,13 @@ BEGIN
                                                       now(),
                                                       p_id_usuario,
                                                       v_datos_movimiento.cierre_periodo,
-                                                      v_datos_movimiento.fk_id_movimiento_entidad
+                                                      v_datos_movimiento.fk_id_movimiento_entidad,
+                                                      'Saldo Arrastrado debido a Actualización de contrato'
                                                       );
 
                                                       v_respuesta = 'Actualización y Arrastre de saldo correctamente verifique';
-									end if;
+
+                                 end if;
 
                                 --end if;
                             /*************************************************************************************************/
