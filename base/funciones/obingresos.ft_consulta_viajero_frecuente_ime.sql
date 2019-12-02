@@ -32,6 +32,13 @@ DECLARE
     v_exist					numeric;
     v_existe				numeric;
 
+    v_canjeado 				varchar;
+    v_mensaje				varchar;
+    v_encontrado			varchar;
+    v_inexistente			varchar;
+    v_expirado				varchar;
+	v_consumido				varchar;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_consulta_viajero_frecuente_ime';
@@ -80,7 +87,8 @@ BEGIN
 			usuario_ai,
 			id_usuario_ai,
 			fecha_mod,
-			id_usuario_mod
+			id_usuario_mod,
+            estado
           	) values(
 			v_parametros.ffid,
 			'activo',
@@ -92,8 +100,8 @@ BEGIN
 			v_parametros._nombre_usuario_ai,
 			v_parametros._id_usuario_ai,
 			null,
-			null
-
+			null,
+            'Verificado'
 
 			)RETURNING id_consulta_viajero_frecuente into v_id_consulta_viajero_frecuente;
             END IF;
@@ -122,48 +130,91 @@ BEGIN
 	elsif(p_transaccion='OBING_VIF_MOD')then
 
 		begin
-        --raise exception 'p_transaccion %', p_transaccion;
-        if (v_parametros.nro_boleto != '') then
-              --select count( v.id_consulta_viajero_frecuente)::numeric into v_exist
-                    --from obingresos.tconsulta_viajero_frecuente v
-                   -- where v.nro_boleto = '930'||v_parametros.nro_boleto;
-                    --raise exception 'El numero % %',            v_exist, v_parametros.nro_boleto;
-        CASE
-            	WHEN (select 1
-                    from obingresos.tconsulta_viajero_frecuente v
-                    where v.nro_boleto = '930'||v_parametros.nro_boleto)
-                THEN v_exist = '1';
+          if (v_parametros.nro_boleto != '' AND v_parametros.pnr != '') then
+                --select count( v.id_consulta_viajero_frecuente)::numeric into v_exist
+                      --from obingresos.tconsulta_viajero_frecuente v
+                     -- where v.nro_boleto = '930'||v_parametros.nro_boleto;
+                      --raise exception 'El numero % %',            v_exist, v_parametros.nro_boleto;
+                  CASE
+                          WHEN (select 1
+                              from obingresos.tconsulta_viajero_frecuente v
+                              where v.nro_boleto = '930'||v_parametros.nro_boleto)
+                          THEN v_exist = '1';
 
-                ELSE v_exist = '0';
-            END CASE;
+                          ELSE v_exist = '0';
+                      END CASE;
 
-            IF(v_exist = 1)
-            THEN
-            	raise exception 'El numero de boleto que intenta registrar ya se encuentra asociado con un voucher.';
-            ELSE
-            	--raise exception 'no existe';
-                --Sentencia de la modificacion
-            --THEN
-			update obingresos.tconsulta_viajero_frecuente set
-			--id_consulta_viajero_frecuente = v_parametros.id_consulta_viajero_frecuente,
-            --ffid = v_parametros.ffid,
-            --status = v_parametros.status,
-            nro_boleto = '930'||v_parametros.nro_boleto,
-			fecha_mod = now(),
-			id_usuario_mod = p_id_usuario,
-			id_usuario_ai = v_parametros._id_usuario_ai,
-			usuario_ai = v_parametros._nombre_usuario_ai
-			where id_consulta_viajero_frecuente=v_parametros.id_consulta_viajero_frecuente;
-        --ELSE raise exception 'cadena vacia';
-        end if;
-			--Definicion de la respuesta
-            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','consulta viajero frecuente modificado(a)');
-            v_resp = pxp.f_agrega_clave(v_resp,'id_consulta_viajero_frecuente',v_parametros.id_consulta_viajero_frecuente::varchar);
+                          IF(v_exist = 1)
+                          THEN
+                              raise exception 'El numero de boleto que intenta registrar ya se encuentra asociado con un voucher.';
+                          ELSE
 
-            --Devuelve la respuesta
-            return v_resp;
-            ELSE raise exception 'El campo Boleto no puede ser vacio';
-            END IF;
+                          if (v_parametros.status = 'OK') then
+                          	v_canjeado = 'Canjeado';
+                          else
+                          	v_canjeado = 'No Canjeado';
+                          end if;
+
+
+                          if (pxp.f_existe_parametro(p_tabla,'message')) then
+
+                          	v_mensaje = v_parametros.message;
+
+                          	SELECT replace(replace(regexp_matches(v_parametros.message::varchar, 'encontrado')::VARCHAR,'{',''),'}','')::varchar into v_encontrado;
+                            SELECT replace(replace(regexp_matches(v_parametros.message::varchar, 'inexistente')::VARCHAR,'{',''),'}','')::varchar into v_inexistente;
+                            SELECT replace(replace(regexp_matches(v_parametros.message::varchar, 'expirado')::VARCHAR,'{',''),'}','')::varchar into v_expirado;
+                            SELECT replace(replace(regexp_matches(v_parametros.message::varchar, 'consumido')::VARCHAR,'{',''),'}','')::varchar into v_consumido;
+
+                               if (v_encontrado <> '') then
+                                v_canjeado = 'Encontrado';
+                               end if;
+
+                               if (v_inexistente <> '') then
+                                v_canjeado = 'Inexistente';
+                               end if;
+
+                               if (v_expirado <> '') then
+                                v_canjeado = 'Expirado';
+                               end if;
+
+                               if (v_consumido <> '') then
+                                v_canjeado = 'Consumido';
+                               end if;
+
+                          else
+                          	v_mensaje = 'Voucher Canjeado Existosamente';
+                      	  end if;
+
+
+
+                            update obingresos.tconsulta_viajero_frecuente set
+
+                            /*Aumentando campos para el estado y mensaje al momento de canjear*/
+                            status_canjeado = v_parametros.status,
+                            message_canjeado = v_mensaje,
+                            /*****************************************************************/
+
+                            nro_boleto = '930'||v_parametros.nro_boleto,
+                            pnr = v_parametros.pnr,
+                            fecha_mod = now(),
+                            id_usuario_mod = p_id_usuario,
+                            id_usuario_ai = v_parametros._id_usuario_ai,
+                            usuario_ai = v_parametros._nombre_usuario_ai,
+                            estado = v_canjeado
+                            where id_consulta_viajero_frecuente=v_parametros.id_consulta_viajero_frecuente;
+
+
+                      --ELSE raise exception 'cadena vacia';
+                      end if;
+              --Definicion de la respuesta
+              v_resp = pxp.f_agrega_clave(v_resp,'mensaje','consulta viajero frecuente modificado(a)');
+              v_resp = pxp.f_agrega_clave(v_resp,'id_consulta_viajero_frecuente',v_parametros.id_consulta_viajero_frecuente::varchar);
+
+              --Devuelve la respuesta
+              return v_resp;
+              ELSE
+              		raise exception 'El campo Boleto o PNR no pueden ser vacios';
+           END IF;
 
 
 		end;
@@ -213,3 +264,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_consulta_viajero_frecuente_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

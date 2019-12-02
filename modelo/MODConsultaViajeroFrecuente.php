@@ -20,9 +20,13 @@ class MODConsultaViajeroFrecuente extends MODbase{
         $this->captura('ffid','varchar');
         $this->captura('estado_reg','varchar');
         $this->captura('message','varchar');
+        $this->captura('message_canjeado','varchar');
         $this->captura('voucher_code','varchar');
         $this->captura('status','varchar');
+        $this->captura('status_canjeado','varchar');
         $this->captura('nro_boleto','varchar');
+        $this->captura('pnr','varchar');
+        $this->captura('estado','varchar');
         $this->captura('id_usuario_reg','int4');
         $this->captura('fecha_reg','timestamp');
         $this->captura('usuario_ai','varchar');
@@ -71,6 +75,9 @@ class MODConsultaViajeroFrecuente extends MODbase{
         //$this->setParametro('voucher_code','voucher_code','varchar');
         $this->setParametro('status','status','varchar');
         $this->setParametro('nro_boleto','nro_boleto','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('message','message','varchar');
+
         //Ejecuta la instruccion
         $this->armarConsulta();
         //echo $this->consulta;exit;

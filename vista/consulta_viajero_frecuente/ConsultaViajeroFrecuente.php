@@ -6,20 +6,42 @@
  *@date 15-12-2017 14:59:25
  *@description Archivo con la interfaz de usuario que permite la ejecucion de todas las funcionalidades del sistema
  */
+include_once ('../../media/stylesVoucherElevate.php');
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 <script>
     Phx.vista.ConsultaViajeroFrecuente=Ext.extend(Phx.gridInterfaz,{
+        /*Aumentando para maquillar interfaz 29/11/2019 (Ismael Valdivia)*/
+        viewConfig: {
+            stripeRows: false,
+            getRowClass: function(record) {
+                if(record.data.estado == 'Verificado'){
+                    return 'Verificado';
+                } else if (record.data.estado == 'Canjeado') {
+                    return 'Canjeado';
+                } else if (record.data.estado == 'No Canjeado') {
+                    return 'No_Canjeado';
+                }
+            }
+        },
+        /******************************************************************/
+
+
         codSist : 'PXP',
         constructor:function(config){
             this.maestro = config.maestro;
             //llama al constructor de la clase padre
             Phx.vista.ConsultaViajeroFrecuente.superclass.constructor.call(this, config);
             this.init();
+            this.bbar.el.dom.style.background='#7FB3D5';
+        		this.tbar.el.dom.style.background='#7FB3D5';
+        		this.grid.body.dom.firstChild.firstChild.lastChild.style.background='#EBF5FB';
+        		this.grid.body.dom.firstChild.firstChild.firstChild.firstChild.style.background='#AED6F1';
+
             //this.load({params:{start:0, limit:this.tam_pag}})
-            this.addButton('btnBoleto',
+              this.addButton('btnBoleto',
                 {
-                    text: 'Adicionar Boleto',
+                    text: 'Canjear Boleto',
                     iconCls: 'blist',
                     disabled: true,
                     handler: this.onButtonBoVendido,
@@ -27,6 +49,27 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
             );
             this.bloquearOrdenamientoGrid();
+            /*Aumentando en la cabezera el estado*/
+            this.mostrar_estado = new Ext.form.Label({
+                name: 'estado',
+                //grupo: this.bactGroups,
+                fieldLabel: 'Estado',
+                readOnly:true,
+                anchor: '150%',
+                gwidth: 150,
+                format: 'd/m/Y',
+                hidden : false,
+                //style: 'font-size: 170%; font-weight: bold; background-image: none;'
+                style: {
+                  fontSize:'40px',
+                  fontWeight:'bold',
+                  color:'blue',
+                  textShadow: '0.5px 0.5px 0px #FFFFFF, 1px 0px 0px rgba(0,0,0,0.15)',
+                  marginLeft:'20px'
+                }
+            });
+
+            this.tbar.addField(this.mostrar_estado);
             this.cmbVoucher.on('select', function () {
                 if (this.validarFiltros()) {
                     this.capturaFiltros();
@@ -55,6 +98,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     {name: 'ffid', type: 'string'},
                     {name: 'voucher_code', type: 'string'},
                     {name: 'nro_boleto', type: 'string'},
+                    {name: 'pnr', type: 'string'},
                     {name: 'status', type: 'string'}
                 ],
                 remoteSort: true,
@@ -82,6 +126,8 @@ header("content-type: text/javascript; charset=UTF-8");
             //}
         },
 
+
+
         Atributos: [
             {
                 //configuracion del componente
@@ -98,7 +144,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     name: 'ffid',
                     fieldLabel: 'FFID',
                     allowBlank: true,
-                    anchor: '80%',
+                    width: 150,
                     gwidth: 150,
                     maxLength: 10,
                     minLength: 10,
@@ -108,14 +154,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 filters:{pfiltro:'vif.ffid',type:'numeric'},
                 id_grupo:1,
                 grid:true,
-                form:true
+                form:true,
+                bottom_filter : true
             },
             {
                 config: {
                     name: 'voucher_code',
                     fieldLabel: 'Voucher Code',
                     allowBlank: true,
-                    anchor: '80%',
+                    width: 150,
                     gwidth: 200,
                     maxLength: 10,
                     minLength: 10,
@@ -131,9 +178,9 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config: {
                     name: 'message',
-                    fieldLabel: 'Message',
+                    fieldLabel: 'Mensaje Verificación',
                     allowBlank: true,
-                    anchor: '80%',
+                    width: '80%',
                     gwidth: 200,
                     maxLength: 200
                 },
@@ -146,17 +193,17 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config: {
                     name: 'status',
-                    fieldLabel: 'Status',
+                    fieldLabel: 'Estado de Verificación',
                     allowBlank: true,
-                    anchor: '80%',
-                    gwidth: 100,
+                    width: '80%',
+                    gwidth: 200,
                     maxLength: 20,
                     renderer: function (value, p, record) {
                         if (record.data['status'] == 'NOK') {
-                            return String.format('<div title="Anulado"><b><font color="red">{0}</font></b></div>', value);
+                            return String.format('<div title="Anulado"><b><font color="red"><i class="fa fa-times-circle" aria-hidden="true" style="font-size:12px;"></i> {0}</font></b></div>', value);
 
                         } else {
-                            return String.format('<div title="Activo"><b><font color="green">{0}</font></b></div>', value);
+                            return String.format('<div title="Activo"><b><font color="green"><i class="fa fa-thumbs-up" aria-hidden="true" style="font-size:12px;"></i> {0}</font></b></div>', value);
                         }
                     }
                 },
@@ -166,14 +213,58 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid: true,
                 form: false
             },
+            /*Aumentando estos campos para verificar si se hace el canje Isamel Valdivia (2/12/2019)*/
+            {
+                config: {
+                    name: 'message_canjeado',
+                    fieldLabel: 'Mensaje Canjeado',
+                    allowBlank: true,
+                    width: '80%',
+                    gwidth: 200,
+                    maxLength: 200
+                },
+                type: 'TextField',
+                filters: {pfiltro: 'vif.message_canjeado', type: 'string'},
+                id_grupo: 1,
+                grid: true,
+                form: false
+            },
+            {
+                config: {
+                    name: 'status_canjeado',
+                    fieldLabel: 'Estado Canjeado',
+                    allowBlank: true,
+                    width: '80%',
+                    gwidth: 200,
+                    maxLength: 20,
+                    renderer: function (value, p, record) {
+                        console.log("recor data irbva",record.data);
+                        if (record.data['status_canjeado'] == 'NOK' && record.data['status_canjeado'] != '' ) {
+                            return String.format('<div title="Anulado"><b><font color="red"><i class="fa fa-times-circle" aria-hidden="true" style="font-size:12px;"></i> {0}</font></b></div>', value);
+
+                        } else if (record.data['status_canjeado'] == 'OK' && record.data['status_canjeado'] != '') {
+                            return String.format('<div title="Activo"><b><font color="green"><i class="fa fa-thumbs-up" aria-hidden="true" style="font-size:12px;"></i> {0}</font></b></div>', value);
+                        } else {
+                          return String.format('<div title="Activo"><b><font color="green"> {0}</font></b></div>', value);
+
+                        }
+                    }
+                },
+                type: 'TextField',
+                filters: {pfiltro: 'vif.status_canjeado', type: 'string'},
+                id_grupo: 1,
+                grid: true,
+                form: false
+            },
+            /**********************************************************************************/
             {
                 config: {
                     name: 'nro_boleto',
                     fieldLabel: 'Boleto (930-)',
-                    emptyText: '...',
+                    //emptyText: '...',
                     allowBlank: true,
                     Text: '930-',
-                    anchor: '80%',
+                    width: 150,
                     gwidth: 100,
                     maxLength: 10,
                     minLength: 10,
@@ -195,6 +286,73 @@ header("content-type: text/javascript; charset=UTF-8");
                 form: true,
                 bottom_filter : true
             },
+            /*Aumentando el PNR 28/11/2019 (Ismael Valdivia)*/
+            {
+                config: {
+                    name: 'pnr',
+                    fieldLabel: 'PNR',
+                    allowBlank: true,
+                    width: 150,
+                    gwidth: 100,
+                    maxLength: 6,
+                    style: 'background-color:#9BF592 ; background-image: none;',
+                    renderer: function (value, p, record) {
+                        if (record.data['estado_reg'] == 'activo') {
+                            return String.format('<div title="Activo"><b><font color="blue">{0}</font></b></div>', value);
+
+                        } else {
+                            return String.format('<div title="Anulado"><b><font color="red">{0}</font></b></div>', value);
+                        }
+                    }
+                },
+                type: 'TextField',
+                filters: {pfiltro: 'vif.pnr', type: 'string'},
+                id_grupo: 1,
+                grid: true,
+                form: true,
+                bottom_filter : true
+            },
+            {
+                config: {
+                    name: 'estado',
+                    fieldLabel: 'Estado Voucher',
+                    allowBlank: true,
+                    width: 150,
+                    gwidth: 100,
+                    maxLength: 6,
+                    style: 'background-color:#9BF592 ; background-image: none;',
+                    renderer: function (value, p, record) {
+                        if (record.data['estado'] == 'Verificado') {
+                            return String.format('<div title="Verificado"><b><i class="fa fa-check-circle-o" aria-hidden="true" style="font-size:12px;"></i> {0}</b></div>', value);
+
+                        } else if (record.data['estado'] == 'Canjeado') {
+                            return String.format('<div title="Verificado"><b style="color:green;"><i class="fa fa-refresh" aria-hidden="true" style="font-size:12px;"></i> {0}</b></div>', value);
+
+                        } else if (record.data['estado'] == 'Encontrado') {
+                            return String.format('<div title="Encontrado"><b style="color:green;"><i class="fa fa-refresh" aria-hidden="true" style="font-size:12px;"></i> {0}</b></div>', value);
+
+                        } else if (record.data['estado'] == 'Inexistente') {
+                            return String.format('<div title="Inexistente"><b style="color:red;"><i class="fa fa-times-circle" aria-hidden="true" style="font-size:12px;"></i> {0}</b></div>', value);
+
+                        }else if (record.data['estado'] == 'Expirado') {
+                            return String.format('<div title="Expirado"><b style="color:red;"><i class="fa fa-times-circle" aria-hidden="true" style="font-size:12px;"></i> {0}</b></div>', value);
+
+                        }else if (record.data['estado'] == 'Consumido') {
+                            return String.format('<div title="Consumido"><b style="color:red;"><i class="fa fa-times-circle" aria-hidden="true" style="font-size:12px;"></i> {0}</b></div>', value);
+                        }
+
+                        else {
+                            return String.format('<div title="Anulado"><b><font color="red">{0}</font></b></div>', value);
+                        }
+                    }
+                },
+                type: 'TextField',
+                filters: {pfiltro: 'vif.estado', type: 'string'},
+                id_grupo: 1,
+                grid: true,
+                form: false
+            },
+            /************************************************************/
             {
                 config: {
                     name: 'estado_reg',
@@ -207,7 +365,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 type: 'TextField',
                 filters: {pfiltro: 'vif.estado_reg', type: 'string'},
                 id_grupo: 1,
-                grid: true,
+                grid: false,
                 form: false
             },
             {
@@ -232,6 +390,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: true,
                     anchor: '80%',
                     gwidth: 100,
+                    //hidden:true,
                     format: 'd/m/Y',
                     renderer: function (value, p, record) {
                         return value ? value.dateFormat('d/m/Y H:i:s') : ''
@@ -241,7 +400,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 filters: {pfiltro: 'vif.fecha_reg', type: 'date'},
                 id_grupo: 1,
                 grid: true,
-                form: false
+                form: true
             },
             {
                 config:{
@@ -306,7 +465,9 @@ header("content-type: text/javascript; charset=UTF-8");
             }
         ],
         tam_pag: 50,
-        title: 'consulta viajero frecuente',
+        title: '<center><h1 style="font-size:15px; color:#0E00B7; text-shadow: -1px -1px 1px rgba(255,255,255,.1), 1px 1px 1px rgba(0,0,0,.5);"> <img src="../../../lib/imagenes/icono_dibu/dibu_zoom.png" height="20px" style="float:center; vertical-align: middle;"> Consultar Voucher</h1></center>',
+        fheight: 260,
+        fwidth: 420,
         ActSave: '../../sis_obingresos/control/ConsultaViajeroFrecuente/insertarConsultaViajeroFrecuente',
         ActDel: '../../sis_obingresos/control/ConsultaViajeroFrecuente/eliminarConsultaViajeroFrecuente',
         ActList: '../../sis_obingresos/control/ConsultaViajeroFrecuente/listarConsultaViajeroFrecuente',
@@ -316,9 +477,13 @@ header("content-type: text/javascript; charset=UTF-8");
             {name: 'ffid', type: 'numeric'},
             {name: 'estado_reg', type: 'string'},
             {name: 'message', type: 'string'},
+            {name: 'message_canjeado', type: 'string'},
             {name: 'voucher_code', type: 'string'},
             {name: 'status', type: 'string'},
+            {name: 'status_canjeado', type: 'string'},
             {name: 'nro_boleto', type: 'string'},
+            {name: 'pnr', type: 'string'},
+            {name: 'estado', type: 'string'},
             {name: 'id_usuario_reg', type: 'numeric'},
             {name: 'fecha_reg', type: 'date', dateFormat: 'Y-m-d H:i:s.u'},
             {name: 'usuario_ai', type: 'string'},
@@ -337,40 +502,23 @@ header("content-type: text/javascript; charset=UTF-8");
         bdel: false,
         bedit: false,
         bsave: false,
-        Grupos: [
-            {
-                layout: 'column',
-                border: false,
-                defaults: {
-                    border: false
-                },
-                items: [
-                    {
-                        bodyStyle: 'padding-right:10px;',
-                        items: [
-                            {
-                                xtype: 'fieldset',
-                                columnWidth: 1,
-                                defaults: {
-                                    anchor: '-2' // leave room for error icon
-                                },
-                                title: 'Datos Voucher',
-                                items: [],
-                                id_grupo: 1
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
-        fheight: 200,
-        fwidth: 400,
+
         preparaMenu: function () {
             var rec = this.sm.getSelected();
-            //this.getBoton('btnBoleto').enable();
+            /*********************************************************/
+            this.mostrar_estado.setText(rec.data.estado.toUpperCase());
+            if (rec.data.estado == 'Canjeado') {
+              this.mostrar_estado.el.dom.style.color = 'green';
+              this.mostrar_estado.setText(rec.data.estado.toUpperCase());
+            } else {
+              this.mostrar_estado.el.dom.style.color = 'blue';
+              this.mostrar_estado.setText(rec.data.estado.toUpperCase());
+            }
+
+            /*********************************************************/
             if (rec.data.status == 'OK') {
                 this.getBoton('btnBoleto').enable();
-                Phx.vista.ConsultaViajeroFrecuentesuperclass.preparaMenu.call(this);
+                Phx.vista.ConsultaViajeroFrecuente.superclass.preparaMenu.call(this);
             }
         },
         liberaMenu : function(){
@@ -386,13 +534,14 @@ header("content-type: text/javascript; charset=UTF-8");
             if (data.status == 'OK' ) {
                 //global.onButtonEdit();
                 if (data.nro_boleto == '') {
-                    //global.formAdicionBoleto();
-                    global.onButtonEdit();
+                    global.formAdicionBoleto();
+                    //global.onButtonEdit();
                 }
                 else {
                     Ext.Msg.confirm('Confirmacion', 'Desea Editar el Boleto del Voucher Seleccionado', function (btn) {
                         if (btn == 'yes') {
-                            global.onButtonEdit();
+                            global.formAdicionBoleto();
+                            //global.onButtonEdit();
                         }
                         else {
                         }
@@ -406,19 +555,154 @@ header("content-type: text/javascript; charset=UTF-8");
         },
 
         formAdicionBoleto : function(){
-            var global = this;
-            var rec = this.sm.getSelected();
-            var data = rec.data;
-            Phx.CP.loadWindows('../../../sis_obingresos/vista/consulta_viajero_frecuente/FomRegistroBoleto.php',
-                'Formulario de Registro Boleto',
-                {
-                    modal:true,
-                    width: 450,
-                    height:200
-                }, data,this.id_consulta_viajero_frecuente,'FomRegistroBoleto'
-            )
+          var rec=this.sm.getSelected();
+          var datos_boletos = new Ext.FormPanel({
+           labelWidth: 75, // label settings here cascade unless overridden
+           frame:true,
+           bodyStyle:'padding:5px 5px 0; background:linear-gradient(45deg, #a7cfdf 0%,#a7cfdf 100%,#23538a 100%);',
+           width: 300,
+           height:200,
+           defaultType: 'textfield',
+           items: [
+                     new Ext.form.NumberField({
+                                         name: 'id_consulta_viajero_frecuente',
+                                         //msgTarget: 'title',
+                                         fieldLabel: 'id viajero',
+                                         allowBlank: false,
+                                         hidden:true,
+                                         disabled:true,
+                                         style:{
+                                           background: '#F39E8C',
+                                           backgroundImage: 'none'
+                                         },
+
+                                 }),
+
+                    new Ext.form.NumberField({
+                                        name: 'ffid',
+                                        //msgTarget: 'title',
+                                        fieldLabel: 'FFID',
+                                        allowBlank: false,
+                                        disabled:true,
+                                        style:{
+                                          background: '#F39E8C',
+                                          backgroundImage: 'none'
+                                        },
+
+                                }),
+                    new Ext.form.TextField({
+                                        name: 'voucher_code',
+                                        //msgTarget: 'title',
+                                        fieldLabel: 'Voucher Code',
+                                        allowBlank: false,
+                                        disabled:true,
+                                        style:{
+                                          background: '#F39E8C',
+                                          backgroundImage: 'none'
+                                        },
+
+                                }),
+                    new Ext.form.NumberField({
+                                        name: 'nro_boleto',
+                                        //msgTarget: 'title',
+                                        fieldLabel: 'Boleto (930-)',
+                                        allowBlank: false,
+                                        maxLength: 10,
+                                        minLength: 10,
+                                        style:{
+                                          background: '#9BF592',
+                                          backgroundImage: 'none'
+                                        },
+
+                                }),
+                    new Ext.form.TextField({
+                                        name: 'pnr',
+                                        //msgTarget: 'title',
+                                        fieldLabel: 'PNR',
+                                        allowBlank: false,
+                                        maxLength: 6,
+                                        minLength: 6,
+                                        style:{
+                                          background: '#9BF592',
+                                          backgroundImage: 'none'
+                                        },
+
+                                }),
+                    new Ext.form.TextField({
+                                        name: 'fecha_reg',
+                                        //msgTarget: 'title',
+                                        fieldLabel: 'Fecha reg',
+                                        allowBlank: false,
+                                        hidden:true,
+                                        disabled:true,
+
+                                }),
+                    ]
+
+                });
+            this.formulario_boletos = datos_boletos;
+
+          var win = new Ext.Window({
+            title: '<center><h1 style="font-size:15px; color:#0E00B7; text-shadow: -1px -1px 1px rgba(255,255,255,.1), 1px 1px 1px rgba(0,0,0,.5);"> <img src="../../../lib/imagenes/icono_dibu/dibu_zoom.png" height="20px" style="float:center; vertical-align: middle;"> Canjear Voucher</h1></center>',
+            width:315,
+            height:290,
+            //closeAction:'hide',
+            modal:true,
+            plain: true,
+            items:datos_boletos,
+            buttons: [{
+                        text:'<i class="fa fa-floppy-o fa-lg"></i> Guardar',
+                        scope:this,
+                        handler: function(){
+                            this.registrar_boleto(win);
+                        }
+                    },{
+                        text: '<i class="fa fa-times-circle fa-lg"></i> Cancelar',
+                        handler: function(){
+                            win.hide();
+                        }
+                    }]
+
+          });
+          win.show();
+          console.log("llega aqui la fecha",rec.data);
+          var fecha_registro = rec.data.fecha_reg.dateFormat('d/m/Y');
+          console.log("llega aqui la fecha registro",fecha_registro);
+
+          this.formulario_boletos.items.items[0].setValue(rec.data.id_consulta_viajero_frecuente);
+          this.formulario_boletos.items.items[1].setValue(rec.data.ffid);
+          this.formulario_boletos.items.items[2].setValue(rec.data.voucher_code);
+          this.formulario_boletos.items.items[3].setValue(rec.data.nro_boleto);
+          this.formulario_boletos.items.items[4].setValue(rec.data.pnr);
+          this.formulario_boletos.items.items[5].setValue(fecha_registro);
 
         },
+
+
+        registrar_boleto : function(win){
+          var rec=this.sm.getSelected();
+          console.log("llega aqui para guardar datos",rec);
+          /*Recuperamos de la venta detalle si existe algun concepto con excento*/
+          Ext.Ajax.request({
+              url : '../../sis_obingresos/control/ConsultaViajeroFrecuente/insertarConsultaViajeroFrecuente',
+              params : {
+                'id_consulta_viajero_frecuente' : this.formulario_boletos.items.items[0].getValue(),
+                'ffid': this.formulario_boletos.items.items[1].getValue(),
+                'voucher_code': this.formulario_boletos.items.items[2].getValue(),
+                'nro_boleto': this.formulario_boletos.items.items[3].getValue(),
+                'pnr': this.formulario_boletos.items.items[4].getValue(),
+                'fecha_reg': this.formulario_boletos.items.items[5].getValue(),
+              },
+              success : this.successExportHtml,
+              failure : this.conexionFailure,
+              timeout : this.timeout,
+              scope : this
+            });
+            this.reload();
+            win.hide();
+          /**********************************************************************/
+        },
+
         onButtonEdit : function() {
 
             var rec= this.sm.getSelected();
@@ -428,25 +712,40 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Cmp.voucher_code.disable();
             this.Cmp.nro_boleto.enable();
             this.Cmp.nro_boleto.show();
+            //this.Cmp.fecha_reg.hide();
+
+            /*Incluimos el PNR 28/11/2019 (Ismael Valdivia)*/
+            this.Cmp.pnr.enable();
+            this.Cmp.pnr.show();
+            this.Cmp.nro_boleto.allowBlank = false;
+            this.Cmp.pnr.allowBlank = false;
+            this.Cmp.fecha_reg.hide();
+            /***********************************************/
             Phx.vista.ConsultaViajeroFrecuente.superclass.onButtonEdit.call(this);
+            this.form.el.dom.firstChild.childNodes[0].style.background = '#7FB3D5';
             //aux = this.Cmp.nro_boleto.getValue();
             //aux = aux.toString();
             //var res = aux.substr();
             var aux = this.Cmp.id_consulta_viajero_frecuente.getValue();
-            console.log('probando2',aux);
-            //this.Cmp.nro_boleto.setValue(res);
-            console.log(res);
+
         },
         onButtonNew : function () {
             var aux = this.Cmp.id_consulta_viajero_frecuente.getValue();
-            console.log('probando1',aux);
+
 
             this.Cmp.ffid.enable();
             this.Cmp.voucher_code.enable();
             this.Cmp.nro_boleto.hide();
-
+            this.Cmp.fecha_reg.hide();
+            /*Incluimos el PNR 28/11/2019 (Ismael Valdivia)*/
+            this.Cmp.pnr.hide();
+            this.Cmp.nro_boleto.allowBlank = true;
+            this.Cmp.pnr.allowBlank = true;
+            /**********************************************/
             //this.Cmp.id_periodo_venta.enable();
             Phx.vista.ConsultaViajeroFrecuente.superclass.onButtonNew.call(this);
+            this.form.el.dom.firstChild.childNodes[0].style.background = '#7FB3D5';
+
             //this.Cmp.id_consulta_viajero_frecuente.reset();
             this.Cmp.id_consulta_viajero_frecuente.setValue();
 

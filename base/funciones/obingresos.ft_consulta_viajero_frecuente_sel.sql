@@ -1,7 +1,11 @@
-CREATE OR REPLACE FUNCTION "obingresos"."ft_consulta_viajero_frecuente_sel"(
-				p_administrador integer, p_id_usuario integer, p_tabla character varying, p_transaccion character varying)
-RETURNS character varying AS
-$BODY$
+CREATE OR REPLACE FUNCTION obingresos.ft_consulta_viajero_frecuente_sel (
+  p_administrador integer,
+  p_id_usuario integer,
+  p_tabla varchar,
+  p_transaccion varchar
+)
+RETURNS varchar AS
+$body$
 /**************************************************************************
  SISTEMA:		Ingresos
  FUNCION: 		obingresos.ft_consulta_viajero_frecuente_sel
@@ -44,10 +48,13 @@ BEGIN
 						vif.ffid,
 						vif.estado_reg,
 						vif.message,
+                        vif.message_canjeado,
 						vif.voucher_code,
 						vif.status,
-            substring(vif.nro_boleto
-          from 4)::varchar,
+                        vif.status_canjeado,
+            			substring(vif.nro_boleto from 4)::varchar,
+                        vif.pnr,
+                        vif.estado,
 						vif.id_usuario_reg,
 						vif.fecha_reg,
 						vif.usuario_ai,
@@ -110,7 +117,12 @@ EXCEPTION
 			v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
 			raise exception '%',v_resp;
 END;
-$BODY$
-LANGUAGE 'plpgsql' VOLATILE
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
 COST 100;
-ALTER FUNCTION "obingresos"."ft_consulta_viajero_frecuente_sel"(integer, integer, character varying, character varying) OWNER TO postgres;
+
+ALTER FUNCTION obingresos.ft_consulta_viajero_frecuente_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
