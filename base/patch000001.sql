@@ -1737,3 +1737,8 @@ ALTER TABLE obingresos.tforma_pago_pw
   ALTER TABLE obingresos.tmedio_pago_pw
     OWNER TO postgres;
 /********************************************F-SCP-IRVA-OBINGRESOS-0-06/11/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-25/11/2019********************************************/
+ALTER TABLE obingresos.tmovimiento_entidad
+  ADD COLUMN observaciones TEXT;
+/********************************************F-SCP-IRVA-OBINGRESOS-0-25/11/2019********************************************/
