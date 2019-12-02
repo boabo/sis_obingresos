@@ -1742,3 +1742,17 @@ ALTER TABLE obingresos.tforma_pago_pw
 ALTER TABLE obingresos.tmovimiento_entidad
   ADD COLUMN observaciones TEXT;
 /********************************************F-SCP-IRVA-OBINGRESOS-0-25/11/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-02/12/2019********************************************/
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+ADD COLUMN pnr VARCHAR(6);
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+ADD COLUMN estado VARCHAR(100);
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+ADD COLUMN status_canjeado VARCHAR(20);
+
+ALTER TABLE obingresos.tconsulta_viajero_frecuente
+ADD COLUMN message_canjeado VARCHAR(200);
+/********************************************F-SCP-IRVA-OBINGRESOS-0-02/12/2019********************************************/
