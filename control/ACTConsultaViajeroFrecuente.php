@@ -98,7 +98,7 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
                  //var_dump("el voucher es ",$voucher_code);
                  $data = array(  "FFID" => $this->objParam->getParametro('ffid'),
                      "PNR" => $this->objParam->getParametro('pnr'),
-                     "TicketNumber" => $this->objParam->getParametro('nro_boleto'),
+                     "TicketNumber" =>'930'.$this->objParam->getParametro('nro_boleto'),
                      "VoucherCode" => $voucher_code);
                      //var_dump($data);
                  $data_string = json_encode($data);
