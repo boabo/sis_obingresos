@@ -465,7 +465,7 @@ header("content-type: text/javascript; charset=UTF-8");
             }
         ],
         tam_pag: 50,
-        title: '<center><h1 style="font-size:15px; color:#0E00B7; text-shadow: -1px -1px 1px rgba(255,255,255,.1), 1px 1px 1px rgba(0,0,0,.5);"> <img src="../../../lib/imagenes/icono_dibu/dibu_zoom.png" height="20px" style="float:center; vertical-align: middle;"> Consultar Voucher</h1></center>',
+        title: 'Consultar Voucher',
         fheight: 260,
         fwidth: 420,
         ActSave: '../../sis_obingresos/control/ConsultaViajeroFrecuente/insertarConsultaViajeroFrecuente',
