@@ -25,7 +25,6 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
     }
 
     function insertarConsultaViajeroFrecuente(){
-        //var_dump("llega aqui el dato fecha",$this->objParam->getParametro('fecha_reg'));
         /*Recuperamos la fecha actual*/
          $fecha_actual = date("d/m/Y");
         /*****************************/
@@ -97,7 +96,7 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
                  /*************************************************/
                  //var_dump("el voucher es ",$voucher_code);
                  $data = array(  "FFID" => $this->objParam->getParametro('ffid'),
-                     "PNR" => $this->objParam->getParametro('pnr'),
+                     "PNR" => strtoupper($this->objParam->getParametro('pnr')),
                      "TicketNumber" =>'930'.$this->objParam->getParametro('nro_boleto'),
                      "VoucherCode" => $voucher_code);
                      //var_dump($data);

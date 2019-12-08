@@ -624,7 +624,8 @@ header("content-type: text/javascript; charset=UTF-8");
                                         minLength: 6,
                                         style:{
                                           background: '#9BF592',
-                                          backgroundImage: 'none'
+                                          backgroundImage: 'none',
+                                          textTransform:'uppercase'
                                         },
 
                                 }),
