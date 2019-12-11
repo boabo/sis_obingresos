@@ -281,6 +281,10 @@ BEGIN
 
         begin
 
+        --11/12-2019 (Alan.felipez) revision si el numero de contrato ya se encuentra registrado
+        perform leg.f_verificar_numero_contrato( 'contrato',v_parametros.numero_contrato, null,'insertar');
+        
+
         select coalesce(max (id_contrato),0) into v_id_contrato
         from leg.tcontrato;
 
