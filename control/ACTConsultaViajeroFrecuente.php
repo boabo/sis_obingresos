@@ -27,7 +27,7 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
     function insertarConsultaViajeroFrecuente(){
         /*Recuperamos la fecha actual*/
          $fecha_actual = date("d/m/Y");
-        /*****************************/
+        /*****************************/      
         if ($this->objParam->getParametro('fecha_reg') == '') {
             /*Validar voucherCode Ismael Valdivia(28/11/2019)*/
             if ($this->objParam->getParametro('nro_boleto') == '' && $this->objParam->getParametro('pnr') == '') {
@@ -37,7 +37,7 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
             }
             /*************************************************/
             $data = array(  "FFID" => $this->objParam->getParametro('ffid'),
-                "PNR" => $this->objParam->getParametro('pnr'),
+                "PNR" => strtoupper($this->objParam->getParametro('pnr')),
                 "TicketNumber" => $this->objParam->getParametro('nro_boleto'),
                 "VoucherCode" => $voucher_code);
                 //var_dump($data);
