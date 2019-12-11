@@ -64,7 +64,10 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');
 
         $this->SetFont('Courier','B',10);
-        $this->Cell(15,5,'NIT',0,0,'R');
+        $this->Cell(15,5,'NIT',0,0,'R');//var_dump(strlen($datos[0]['endoso']));exit;
+        if( strlen($datos[0]['endoso']) > 43){
+            $this->SetFont('Courier','B',8);
+        }
         $this->Cell(80,5,': ' . substr($datos[0]['endoso'], 2),0,1,'L');
 
         $this->SetFont('Courier','',10);

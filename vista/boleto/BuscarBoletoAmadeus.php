@@ -220,10 +220,19 @@ header("content-type:text/javascript; charset=UTF-8");
                         maxWidth: 1024,
                         icon: Ext.Msg.WARNING
                     });
+                }else if(objetoDatos.tipo_emision == 'consulta') {
+                        Ext.Msg.show({
+                            title: 'Sistema ERP',
+                            msg: '<div style="text-align: justify;"><b style="color: red;">Estimado Usuario:</b> <br><br><b>Se ha producido un problema al recuperar la información del sistema ERP, reportelo a Sistemas (Cel.: 71721380).</b></div>',
+                            buttons: Ext.Msg.OK,
+                            width: 500,
+                            maxWidth: 1024,
+                            icon: Ext.Msg.WARNING
+                        });
                 }else{
                     Ext.Msg.show({
                         title: 'Sistema AMADEUS',
-                        msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> Se ha producido un problema al recuperar la información, la ultima emisión del boleto exchange esta mal construido. Revise la construcción del Boleto.</b> </div>',
+                        msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> Se ha producido un problema al recuperar la información del sistema Amadeus, posiblemente la ultima emisión del boleto exchange este mal o existio algun problema con el Servicio Web. Revise la construcción del boleto; si ese no es el motivo del problema, reportelo a Sistemas (Cel.: 71721380).</b> </div>',
                         buttons: Ext.Msg.OK,
                         width: 500,
                         maxWidth: 1024,
@@ -1367,7 +1376,7 @@ header("content-type:text/javascript; charset=UTF-8");
         bedit:false,
 
         onBtnBuscar : function() {
-            this.store.baseParams.nro_boleto = (this.txtSearch.getValue()).toUpperCase();
+            this.store.baseParams.nro_boleto = ((this.txtSearch.getValue()).trim()).toUpperCase();
             this.store.baseParams.fecha_actual =  new Date();;
             this.load({params: {start: 0, limit: this.tam_pag}});
             //this.grid.getSelectionModel().selectFirstRow();

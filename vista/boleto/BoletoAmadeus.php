@@ -147,6 +147,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 //this.addButton('cerrar',{grupo:[0],text:'Cerrar Caja',iconCls: 'block',disabled:false,handler:this.preparaCerrarCaja,tooltip: '<b>Cerrar la Caja</b>'});
 
                 //this.store.baseParams.estado = 'borrador';
+                console.log("llega aqui el dato carga",this);
                 this.iniciarEventos();
                 this.finCons = true;
                 this.seleccionarPuntoVentaSucursal();
@@ -2946,6 +2947,16 @@ header("content-type: text/javascript; charset=UTF-8");
                         {
                             text: '<i class="fa fa-check"></i> Aceptar',
                             handler: function () {
+                              /*Aumentamos la condicion si se recupera el ffid y el voucher code mandamos el filtro Ismael Valdivia (11/12/2019)*/
+                                this.ffid_recuperado = this.sm.getSelected().data['ffid_consul'] ;
+                                this.vouchercode_recuperado = this.sm.getSelected().data['voucher_consu'];
+                                if (this.ffid_recuperado == '' || this.vouchercode_recuperado == '') {
+                                      this.llenado = 'vacio';
+                                  } else {
+                                      this.llenado = 'llenado';
+                                  }
+                              /**********************************************************************************/
+
                                 if (formularioInicio.getForm().isValid()) {
                                     validado = true;
                                     this.ffid = ffid.getValue();
@@ -3022,7 +3033,6 @@ header("content-type: text/javascript; charset=UTF-8");
                         {
                             text: '<i class="fa fa-check"></i> Declinar',
                             handler : function() {
-                                //refresh source grid
                                 console.log(formularioInicio.getForm());
                                 formularioInicio.getForm().reset();
                             },
@@ -3037,7 +3047,7 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             formFormual: function (origen) {
                 //this.Cmp.voucher_consu.setReadOnly(false);
-
+                console.log("lega aqui el dato",this);
                 var ffid = new Ext.form.TextField(
                     {
                         name: 'ffid_consul',
@@ -3112,6 +3122,15 @@ header("content-type: text/javascript; charset=UTF-8");
                         {
                             text: '<i class="fa fa-check"></i> Aceptar',
                             handler: function () {
+                              /*Aumentamos la condicion si se recupera el ffid y el voucher code mandamos el filtro Ismael Valdivia (11/12/2019)*/
+                                this.ffid_recuperado = this.sm.getSelected().data['ffid_consul'] ;
+                                this.vouchercode_recuperado = this.sm.getSelected().data['voucher_consu'];
+                                if (this.ffid_recuperado == '' || this.vouchercode_recuperado == '') {
+                                      this.llenado = 'vacio';
+                                  } else {
+                                      this.llenado = 'llenado';
+                                  }
+                              /**********************************************************************************/
                                 if (formularioInicio.getForm().isValid()) {
                                     validado = true;
                                     this.ffid = ffid.getValue();
@@ -3125,7 +3144,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                         url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
                                         params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
                                             ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
-                                            pnr:this.pnr,bandera:'form' },
+                                            pnr:this.pnr,bandera:'form',dato_llenado:this.llenado},
                                         success:function(resp){
                                             var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                             console.log('id:prueba',reg);
@@ -3196,7 +3215,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     closeAction: 'close'
                 });
                 VentanaInicio.show();
-            }
+            },
 
         }
     )

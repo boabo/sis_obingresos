@@ -1804,6 +1804,11 @@ class ACTBoleto extends ACTbase{
     }
     function viajeroFrecuente()
     {
+
+      /*Aumentando control para que si se tiene el boleto y el pnr asociado no llamar al servicio*/
+
+      if ($this->objParam->getParametro('dato_llenado') == 'vacio') {
+
         $data = array("FFID" => $this->objParam->getParametro('ffid'),
             "PNR" => $this->objParam->getParametro('pnr'),
             "TicketNumber" => '930'.$this->objParam->getParametro('ticketNumber'),
@@ -1849,6 +1854,24 @@ class ACTBoleto extends ACTbase{
             }
             $this->res->imprimirRespuesta($this->res->generarJson());
         }
+
+      } /*Fin if si los datos no son vacios mandamos a la consulta e insertamos localmente*/
+      else {
+
+        $ffid = $this->objParam->getParametro('ffid');
+        $this->objParam->addParametro('id_pasajero_frecuente', $ffid);
+        $this->objParam->addParametro('nombre_completo', '');
+        $this->objParam->addParametro('mensaje', 'yes');
+        $this->objParam->addParametro('status', 'OK');
+        $this->objFunc = $this->create('MODBoleto');
+
+        if ($this->objParam->insertar('id_viajero_frecuente')) {
+            $this->res = $this->objFunc->viajeroFrecuente($this->objParam);
+        }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+
+      }
+      /*************************************************************************************/
     }
 
     function logViajeroFrecuente (){
@@ -2019,12 +2042,18 @@ class ACTBoleto extends ACTbase{
 
             //$this->extraData['tipo_emision'] = $datos[0]['tipo_emision'];
 
+            if($datos == null){
+                $tipo_emision = 'consulta';
+            }else{
+                $tipo_emision = $datos[0]['tipo_emision'];
+            }
+
             $this->mensajeExito = new Mensaje();
 
             $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
                 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
             $this->mensajeExito->setArchivoGenerado($nombreArchivo);
-            $this->mensajeExito->setDatos(array("tipo_emision"=>$datos[0]['tipo_emision']));
+            $this->mensajeExito->setDatos(array("tipo_emision"=>$tipo_emision));
             $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
         }else{
 

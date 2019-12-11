@@ -2623,7 +2623,18 @@ BEGIN
 
 		begin
 
-    INSERT INTO   obingresos.tviajero_frecuente
+        	/*Verificamos si el nombre del boleto es vacio para recuperar de la tabla tboleto_amadeus*/
+            --Ismael Valdivia 10/12/2019
+            if (v_parametros.nombre_completo = '') then
+            	select ama.pasajero into v_nombre_pasajero
+                from obingresos.tboleto_amadeus ama
+                where ama.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+            else
+            	v_nombre_pasajero = v_parametros.nombre_completo;
+            end if ;
+            /*****************************************************************************************/
+
+        	INSERT INTO   obingresos.tviajero_frecuente
               (
               id_usuario_reg,
               id_usuario_mod,
@@ -2656,7 +2667,7 @@ BEGIN
               v_parametros.ticketNumber,
               'OB.FF.VO'||v_parametros.voucherCode,
               v_parametros.id_pasajero_frecuente,
-              v_parametros.nombre_completo,
+              v_nombre_pasajero,--v_parametros.nombre_completo,
               v_parametros.mensaje,
               v_parametros.status
               )RETURNING id_viajero_frecuente into v_id_viajero_frecuente;
