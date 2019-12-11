@@ -980,7 +980,7 @@ class MODBoleto extends MODbase{
         $this->captura('direccion_ofi','varchar');
         $this->captura('tipo_cambio','numeric');
         $this->captura('endoso','varchar');
-        $this->captura('fecha_create','date');
+        $this->captura('fecha_create','varchar');
         $this->captura('moneda_iva','varchar');
         $this->captura('tipo_emision','varchar');
         $this->captura('moneda_tarifa','varchar');
