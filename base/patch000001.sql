@@ -1756,3 +1756,11 @@ ADD COLUMN status_canjeado VARCHAR(20);
 ALTER TABLE obingresos.tconsulta_viajero_frecuente
 ADD COLUMN message_canjeado VARCHAR(200);
 /********************************************F-SCP-IRVA-OBINGRESOS-0-02/12/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-24/12/2019********************************************/
+ALTER TABLE obingresos.tacm_det
+DROP CONSTRAINT tacm_det_fk1 RESTRICT;
+
+ALTER TABLE obingresos.tacm_det
+DROP CONSTRAINT tacm_det_idx RESTRICT;
+/********************************************F-SCP-IRVA-OBINGRESOS-0-24/12/2019********************************************/

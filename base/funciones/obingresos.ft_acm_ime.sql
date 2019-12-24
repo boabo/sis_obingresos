@@ -150,25 +150,49 @@ BEGIN
                                         ) LOOP
 
       --##########OBTENEMOS TODOS LOS BOLETOS EN DOLARES E INSERTAMOS EN TACM Y TEACMDET#########--
-              for v_boletos_sus in (select
-                                bole.id_detalle_boletos_web,
-                                bole.billete,
-                                bole.id_agencia,
-                                bole.neto,
-                                boletos.comision ,
-                                boletos.ruta,
-                                boletos.moneda,
-                                boletos.tipdoc
-                                --acmd.id_agencia
-                                from obingresos.tmovimiento_entidad mov
-                                inner join obingresos.tdetalle_boletos_web bole on (bole.id_agencia=mov.id_agencia and bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
-                                inner join obingresos.tboleto boletos on (bole.billete = boletos.nro_boleto and boletos.estado_reg='activo')
-                                where
-                                mov.id_agencia = v_registros.id_agencia and
-                                mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin and
-                                boletos.voided = 'no' and
-                                bole.void = 'no' and
-                                boletos.tipdoc = 'ETN')  LOOP
+              for v_boletos_sus in (  /*Comentando para recuperar directamente de la tabla Boletos (Ismael Valdivia 23/12/2019)*/
+
+                                     /* select
+                                      bole.id_detalle_boletos_web,
+                                      bole.billete,
+                                      bole.id_agencia,
+                                      bole.neto,
+                                      boletos.comision ,
+                                      boletos.ruta,
+                                      boletos.moneda,
+                                      boletos.tipdoc
+                                      --acmd.id_agencia
+                                      from obingresos.tmovimiento_entidad mov
+                                      inner join obingresos.tdetalle_boletos_web bole on (bole.id_agencia=mov.id_agencia and bole.numero_autorizacion=mov.autorizacion__nro_deposito and mov.id_moneda=2)
+                                      inner join obingresos.tboleto boletos on (bole.billete = boletos.nro_boleto and boletos.estado_reg='activo')
+                                      where
+                                      mov.id_agencia = v_registros.id_agencia and
+                                      mov.fecha between v_registros.fecha_ini and v_registros.fecha_fin and
+                                      boletos.voided = 'no' and
+                                      bole.void = 'no' and
+                                      boletos.tipdoc = 'ETN'*/
+
+                                      select
+                                      boletos.id_boleto,
+                                      boletos.nro_boleto as billete,
+                                      boletos.id_agencia,
+                                      COALESCE (boletos.neto,0) as neto,
+                                      boletos.comision ,
+                                      boletos.ruta,
+                                      boletos.moneda,
+                                      boletos.tipdoc
+                                      --boletos.localizador
+                                      from obingresos.tboleto boletos
+                                      --left join obingresos.tmovimiento_entidad mov on (mov.pnr = boletos.localizador and mov.id_agencia = v_registros.id_agencia)
+                                      where
+                                      boletos.id_moneda_boleto = 2 and
+                                      boletos.estado_reg = 'activo' and
+                                      --mov.estado_reg = 'activo' and
+                                      boletos.id_agencia = v_registros.id_agencia and boletos.fecha_emision between v_registros.fecha_ini and v_registros.fecha_fin
+                                      and boletos.voided = 'no'
+                                      and boletos.tipdoc = 'ETN'
+
+                                      )  LOOP
 
                  Select acm.id_acm
                  into v_id_acm_sus
@@ -194,6 +218,7 @@ BEGIN
                      --INSERTAMOS DATOS EN ACM
                         --Sentencia de la insercion
                          if v_registros.tipo_agencia = 'noiata' THEN
+
                             insert into obingresos.tacm(
                             id_moneda,
                             id_archivo_acm_det,
@@ -239,6 +264,7 @@ BEGIN
                     end if; --fin acm dolares
 
                 --INSERTAMOS DATOS RECUPERADOS EN ACM DET
+
                     if v_registros.porcentaje = 2 or v_registros.porcentaje = 4 then
                       insert into obingresos.tacm_det(
                       id_acm,
@@ -254,7 +280,8 @@ BEGIN
                       )
                       VALUES(
                       v_id_acm_sus,
-                      v_boletos_sus.id_detalle_boletos_web,
+                      --v_boletos_sus.id_detalle_boletos_web,
+                      v_boletos_sus.id_boleto,
                       v_boletos_sus.neto,
                       (v_boletos_sus.neto * v_registros.porcentaje)/100,
                       now(),
@@ -300,7 +327,9 @@ BEGIN
 
 
     --##########OBTENEMOS TODOS LOS BOLETOS EN BOLIVIANOS E INSERTAMOS EN TACM Y TEACMDET#########--
-        for v_boletos_bs in (select
+        for v_boletos_bs in (
+        				  /*Comentando para recuperar directamente de la tabla Boletos (Ismael Valdivia 23/12/2019)*/
+                          /*select
                           bole.id_detalle_boletos_web,
                           bole.billete,
                           bole.id_agencia,
@@ -317,7 +346,33 @@ BEGIN
                           and mov.id_moneda=1
                           and boletos.voided = 'no' and
                           bole.void = 'no' and
-                          boletos.tipdoc = 'ETN')  LOOP
+                          boletos.tipdoc = 'ETN'*/
+
+
+                          select
+                          boletos.id_boleto,
+                          boletos.nro_boleto as billete,
+                          boletos.id_agencia,
+                          COALESCE (boletos.neto,0) as neto,
+                          boletos.comision ,
+                          boletos.ruta,
+                          boletos.moneda,
+                          boletos.tipdoc
+                          --boletos.localizador
+                          from obingresos.tboleto boletos
+                          --left join obingresos.tmovimiento_entidad mov on (mov.pnr = boletos.localizador and mov.id_agencia = v_registros.id_agencia)
+                          where
+                          boletos.id_moneda_boleto = 1 and
+                          boletos.estado_reg = 'activo' and
+                          --mov.estado_reg = 'activo' and
+                          boletos.id_agencia = v_registros.id_agencia and boletos.fecha_emision between v_registros.fecha_ini and v_registros.fecha_fin
+                          and boletos.voided = 'no'
+                          and boletos.tipdoc = 'ETN'
+
+
+
+
+                          )  LOOP
 
 	       Select acm.id_acm
            into v_id_acm_bs
@@ -412,7 +467,8 @@ BEGIN
                     )
                     VALUES(
                     v_id_acm_bs,
-                    v_boletos_bs.id_detalle_boletos_web,
+                    v_boletos_bs.id_boleto,
+                   -- v_boletos_bs.id_detalle_boletos_web,
                     v_boletos_bs.neto,
                     (v_boletos_bs.neto * v_registros.porcentaje)/100,
                     now(),
@@ -711,6 +767,3 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
-
-ALTER FUNCTION obingresos.ft_acm_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
-  OWNER TO postgres;

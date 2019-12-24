@@ -62,11 +62,12 @@ BEGIN
                         acmdet.porcentaje_over,
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
-                        bole.billete
+                        COALESCE (bole.billete,boletos.nro_boleto) as billete
 						from obingresos.tacm_det acmdet
 						inner join segu.tusuario usu1 on usu1.id_usuario = acmdet.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = acmdet.id_usuario_mod
-                        inner join obingresos.tdetalle_boletos_web bole on bole.id_detalle_boletos_web = acmdet.id_detalle_boletos_web
+                        left join obingresos.tdetalle_boletos_web bole on bole.id_detalle_boletos_web = acmdet.id_detalle_boletos_web
+                        inner join obingresos.tboleto boletos on boletos.id_boleto = acmdet.id_detalle_boletos_web
 				        where  ';
 
 			--Definicion de la respuesta
@@ -96,7 +97,8 @@ BEGIN
 					    from obingresos.tacm_det acmdet
 						inner join segu.tusuario usu1 on usu1.id_usuario = acmdet.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = acmdet.id_usuario_mod
-                        inner join obingresos.tdetalle_boletos_web bole on bole.id_detalle_boletos_web = acmdet.id_detalle_boletos_web
+                        left join obingresos.tdetalle_boletos_web bole on bole.id_detalle_boletos_web = acmdet.id_detalle_boletos_web
+                        inner join obingresos.tboleto boletos on boletos.id_boleto = acmdet.id_detalle_boletos_web
 				        where ';
 
 			--Definicion de la respuesta
