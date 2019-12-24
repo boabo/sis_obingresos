@@ -2042,12 +2042,18 @@ class ACTBoleto extends ACTbase{
 
             //$this->extraData['tipo_emision'] = $datos[0]['tipo_emision'];
 
+            if($datos == null){
+                $tipo_emision = 'consulta';
+            }else{
+                $tipo_emision = $datos[0]['tipo_emision'];
+            }
+
             $this->mensajeExito = new Mensaje();
 
             $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
                 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
             $this->mensajeExito->setArchivoGenerado($nombreArchivo);
-            $this->mensajeExito->setDatos(array("tipo_emision"=>$datos[0]['tipo_emision']));
+            $this->mensajeExito->setDatos(array("tipo_emision"=>$tipo_emision));
             $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
         }else{
 
