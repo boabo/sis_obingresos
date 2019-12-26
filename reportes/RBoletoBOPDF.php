@@ -115,23 +115,31 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->ln();
         $cantidad = 0;
         $validez = $datos_detalle->tl->fecha_limite;
-        $tipo_vuelo = 'nacional';
+
         $solo_y = 'si';
         $solo_b = 'si';
         $solo_yb = 'si';
         $contador_tarifa = 0;
         $contador_vuelo = 0;
-        //var_dump($datos[0]['cadena_tasa']);exit;
+        $cantidad_equipaje = '';
+        $tipo_vuelo = 'nacional';
         foreach ($datos as $value) {
 
             //if(gettype($value)==='object'){
                 if ($validez != $value['fecha_limite']) {
                     $validez = 'combinability';
                 }
-
-                /*if ($value['pais_origen'] != 'BO' || $value['pais_destino'] != 'BO') {
+//var_dump($value['origen_cod'].' '.$value['destino_cod']);
+                //$tipo_vuelo = 'nacional';
+                if ($value['origen_cod'] != 'BO' || $value['destino_cod'] != 'BO') {
                     $tipo_vuelo = 'internacional';
-                }*/
+                }
+
+                if($tipo_vuelo == 'nacional'){
+                    $cantidad_equipaje = '20K';
+                }else{
+                    $cantidad_equipaje = '2PC';
+                }
 
                 $y = $this->getY();
                 $this->multiCell(40,5,$value['origen'] ,0,'L');
@@ -145,7 +153,7 @@ class RBoletoBOPDF extends  ReportePDF {
                 $this->Cell(25,5,$value['codigo_tarifa'],0,0,'L');
                 $this->Cell(10,5,''/*$value['equipaje']*/,0,0,'L');
                 $this->Cell(15,5,$value['fecha_salida']/*$value['equipaje']*/,0,0,'L');
-                $this->Cell(15,5,'20K'/*$value['equipaje']*/,0,0,'L');
+                $this->Cell(15,5,$cantidad_equipaje,0,0,'L');
                 $this->Cell(15,5,$value['estado'],0,0,'L');
 
                 /*if ($value['cupon'] != '1' && $value['retorno'] != 'si') {

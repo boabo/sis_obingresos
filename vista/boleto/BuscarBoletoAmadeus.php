@@ -214,7 +214,7 @@ header("content-type:text/javascript; charset=UTF-8");
                 if(objetoDatos.tipo_emision == 'normal') {
                     Ext.Msg.show({
                         title: 'Sistema ERP',
-                        msg: '<div style="text-align: justify;"><b style="color: red;">Estimado Usuario:</b> <br><br><b>Informarle que el boleto seleccionado no corresponde a un Exchange.</b></div>',
+                        msg: '<div style="text-align: justify;"><b style="color: red;">Estimado Usuario:</b> <br><br><b>Informarle que el servicio de AMADEUS no devuelve información para el boleto seleccionado.</b></div>',
                         buttons: Ext.Msg.OK,
                         width: 500,
                         maxWidth: 1024,

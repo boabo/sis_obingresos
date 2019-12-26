@@ -66,6 +66,10 @@ DECLARE
     v_fecha_emision 	varchar;
     v_numero_tkt      varchar;
     v_tasa_valida	varchar = 'reject';
+    v_pais_o		  varchar;
+    v_pais_d		  varchar;
+
+    v_tipo_19		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -751,7 +755,8 @@ BEGIN
                   importe			numeric,
                   moneda			varchar,
                   posicion			integer,
-                  numero_tkt		varchar
+                  numero_tkt		varchar,
+                  tipo_19			varchar
             )on commit drop;
 
             --mas de un pasajero
@@ -764,14 +769,16 @@ BEGIN
                   importe,
                   moneda,
                   posicion,
-                  numero_tkt
+                  numero_tkt,
+                  tipo_19
                 )values (
                     v_contador_id,
                     v_record_json->>'apdos_nombre',
                     (v_record_json->'pago'->>'importe')::numeric,
                     v_record_json->'pago'->>'moneda',
                     (v_record_json->'posicion'->>'numLinea')::integer,
-                    (v_record_json->'Tkts'->>'string')::varchar
+                    (v_record_json->'Tkts'->>'string')::varchar,
+                    (v_record_json->>'tipo_19')::varchar
                 );
                 v_contador_id = v_contador_id + 1;
             	end loop;
@@ -782,14 +789,16 @@ BEGIN
                     importe,
                     moneda,
                     posicion,
-                    numero_tkt
+                    numero_tkt,
+                    tipo_19
               )values (
                   v_contador_id,
                   v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre',
                   (v_parametros.pasajeros->'pasajeroDR'->'pago'->>'importe')::numeric,
                   v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
                   (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
-                  (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar
+                  (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
+                  (v_parametros.pasajeros->>'tipo_19')::varchar
               );
             end if;
 
@@ -808,11 +817,13 @@ BEGIN
             from ttpasajero tp
             where tp.numero_tkt = v_numero_tkt;*/
 
-            select tp.posicion, tp.nombre
-            into v_posicion, v_pasajero
+            select tp.posicion, tp.nombre, tp.tipo_19
+            into v_posicion, v_pasajero, v_tipo_19
             from ttpasajero tp
-            where '%'||v_pasajero||'%' ilike '%'||tp.nombre||'%' or '%'||tp.nombre||'%' ilike '%'||v_pasajero||'%'
-            or (string_to_array(v_pasajero,'/'))[1] ilike (string_to_array(tp.nombre,'/'))[1];
+            where --word_similarity(v_pasajero, tp.nombre) > 0.8;
+                  similarity_dist(v_pasajero, tp.nombre) < 0.37;
+            --'%'||v_pasajero||'%' ilike '%'||tp.nombre||'%' or '%'||tp.nombre||'%' ilike '%'||v_pasajero||'%';
+            --or (string_to_array(v_pasajero,'/'))[1] ilike (string_to_array(tp.nombre,'/'))[1];
 
             v_contador_id = 1;
             create temp table ttasa(
@@ -894,23 +905,29 @@ BEGIN
                 for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
                   if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
 
+                      if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
+                    	  continue;
+                      elsif v_tipo_19 in ('CHD','ADT','SNN') and v_record_json->>'inf' = 'Y' then
+                    	  continue;
+                      end if;
+
                       v_importe = (v_record_json->>'importe_total');
                       for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
 
                           if v_record_json_aux->>'tipo_tasa' != 'X' then
                               v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
-                              if v_record_json->>'tipo_emision' = 'R' then
+                              /*if v_record_json->>'tipo_emision' = 'R' then
                               	v_tasa_valida = 'resolve';
-                              end if;
+                              end if;*/
                           end if;
 
                           if v_record_json_aux->>'tipo_tasa' = 'X' then
                               if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
                                   v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
                               end if;
-                              if v_record_json->>'tipo_emision' = 'R' then
+                              /*if v_record_json->>'tipo_emision' = 'R' then
                                 v_tasa_valida = 'resolve';
-                              end if;
+                              end if;*/
                           end if;
 
                           v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
@@ -926,7 +943,8 @@ BEGIN
                         v_codigo_tarifa = v_cadena[v_contador_id];
                       end if;
 
-                      if v_tasa_valida = 'resolve' then
+                      --if v_tasa_valida = 'resolve' then
+                      if v_importe > 0 then
                         insert into ttasa(
                           id_tasa,
                         calculo_tarifa,
@@ -960,12 +978,20 @@ BEGIN
                         );
                         v_tipo_emision = v_record_json->>'tipo_emision';
                         v_contador_id = v_contador_id + 1;
+
+                      else
+                        v_tasa = '';
                       end if;
                   else
                     continue;
                   end if;
                 end loop;
             end if;
+
+            select max(tba.fecha_emision)::varchar
+            into v_fecha_emision
+            from obingresos.tboleto_amadeus tba
+            where tba.localizador = v_parametros.pnr;
 
             v_contador_id = 1;
             create temp table tvuelos(
@@ -979,7 +1005,9 @@ BEGIN
                 hora_salida		varchar,
                 fecha_salida	varchar,
                 hora_llegada 	varchar,
-                codigo_tarifa	varchar
+                codigo_tarifa	varchar,
+                origen_cod		varchar,
+                destino_cod		varchar
             )on commit drop;
 
 
@@ -1004,20 +1032,27 @@ BEGIN
               v_tam_cod_tarifa = array_length(v_cadena,1);
               for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
 
-                  select tl.nombre, tl.codigo
+                  select tl.nombre, tl.codigo, tl.id_lugar
                   into v_ciudad_o
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
 
-                  /*case v_ciudad_o.codigo when  'MIA','MAD') then v_cont_inter = v_cont_inter + 1
-                   	   when  v_ciudad_o.codigo in ('GRU','AR') then v_cont_regional = v_cont_regional + 1
-					   else v_cont_nacional = v_cont_nacional + 1 end;*/
+                  select tl.codigo
+                  into v_pais_o
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
 
-                  select tl.nombre, tl.codigo
+                  select tl.nombre, tl.codigo, tl.id_lugar
                   into v_ciudad_d
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
-                  if (v_record_json->>'estado')::varchar != 'B' then
+
+                  select tl.codigo
+                  into v_pais_d
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+
+                  if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
                     --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
                       insert into tvuelos(
                         id_vuelo,
@@ -1030,7 +1065,9 @@ BEGIN
                         hora_salida,
                         fecha_salida,
                         hora_llegada,
-                        codigo_tarifa
+                        codigo_tarifa,
+                        origen_cod,
+                		    destino_cod
                       )values (
                           v_contador_id,
                           (v_record_json->>'clase')::varchar,
@@ -1042,7 +1079,9 @@ BEGIN
                           (v_record_json->>'hora_salida')::varchar,
                           (v_record_json->>'fecha_salida')::varchar,
                           (v_record_json->>'hora_llegada')::varchar,
-                          case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end
+                          case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end,
+                          v_pais_o,
+                          v_pais_d
                       );
                     --end if;
                   end if;
@@ -1050,15 +1089,25 @@ BEGIN
               end loop;
             else
 
-                 select tl.nombre, tl.codigo
+                 select tl.nombre, tl.codigo, tl.id_lugar
                   into v_ciudad_o
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
 
-                  select tl.nombre, tl.codigo
+                  select tl.codigo
+                  into v_pais_o
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+
+                  select tl.nombre, tl.codigo, tl.id_lugar
                   into v_ciudad_d
                   from param.tlugar tl
                   where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
+
+                  select tl.codigo
+                  into v_pais_d
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
 
                   if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
                       SELECT array_agg(value)
@@ -1069,7 +1118,7 @@ BEGIN
                       into v_cadena
                       FROM ttasa tt;
                   end if;
-                  if (v_parametros.vuelo->>'estado')::varchar != 'B' then
+                  if (v_parametros.vuelo->>'estado')::varchar != 'B' or ((v_parametros.vuelo->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
 
                       insert into tvuelos(
                         id_vuelo,
@@ -1082,7 +1131,9 @@ BEGIN
                         hora_salida,
                         fecha_salida,
                         hora_llegada,
-                        codigo_tarifa
+                        codigo_tarifa,
+                        origen_cod,
+                		    destino_cod
                       )values (
                           1,
                           (v_parametros.vuelo->>'clase')::varchar,
@@ -1094,8 +1145,9 @@ BEGIN
                           (v_parametros.vuelo->>'hora_salida')::varchar,
                           (v_parametros.vuelo->>'fecha_salida')::varchar,
                           (v_parametros.vuelo->>'hora_llegada')::varchar,
-                          case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end
-                         -- v_cadena[v_contador_id]
+                          case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end,
+                          v_pais_o,
+                          v_pais_d
                       );
 
                   end if;
@@ -1195,10 +1247,7 @@ BEGIN
                           from tvuelos tv
 
             ';*/
-            select max(tba.fecha_emision)::varchar
-            into v_fecha_emision
-            from obingresos.tboleto_amadeus tba
-            where tba.localizador = v_parametros.pnr;
+
           	v_consulta:='
                           select
                           tv.id_vuelo,
@@ -1232,7 +1281,9 @@ BEGIN
                           '''||v_tipo_emision||'''::varchar as tipo_emision,
                           ts.moneda_tarifa,
                           '''||v_pasajero||'''::varchar as pasajero,
-                          '''||v_numero_billete||'''::varchar as numero_billete
+                          '''||v_numero_billete||'''::varchar as numero_billete,
+                          tv.origen_cod,
+                          tv.destino_cod
                           from tvuelos tv
                           cross join ttasa ts
             ';
