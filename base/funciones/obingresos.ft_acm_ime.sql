@@ -56,7 +56,7 @@ DECLARE
     v_auxacm				integer;
     v_id_gestion			integer;
     v_id_agencia			integer;
-
+	v_fecha_recuperado		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_acm_ime';
@@ -605,12 +605,28 @@ BEGIN
 
 		begin
 
-        	select count (mov.*) into v_contador
+        	/*Cambiando la condicion para recuperar la fecha por la fecha de la validacion*/
+        	/*Recuperamos la fecha en la que se valido el ACM*/
+           	select
+                   mov.fecha into v_fecha_recuperado
+            from obingresos.tmovimiento_entidad mov
+            where mov.autorizacion__nro_deposito = v_parametros.numero
+                  and mov.id_agencia = v_parametros.id_agencia;
+            /*************************************************************/
+
+            /*Recuperamos la deuda posterior a la fecha de validacion*/
+            select count (mov.*) into v_contador
+            from obingresos.tmovimiento_entidad mov
+            where mov.fecha >= v_fecha_recuperado::date
+                  and mov.id_agencia = v_parametros.id_agencia
+                  and mov.tipo = 'debito';
+            /*********************************************************/
+            --Comentando para recuperar la fecha
+        	/*select count (mov.*) into v_contador
             from obingresos.tmovimiento_entidad mov
             where mov.fecha >= v_parametros.fecha
             	  and mov.id_agencia = v_parametros.id_agencia
-                  and mov.tipo = 'debito';
-
+                  and mov.tipo = 'debito';*/
         	 if (v_contador > 0) then
              	raise exception 'La agencia cuenta con Débitos posteriores a la fecha, por lo tanto no es posible eliminar el ACM seleccionado';
              end if;
@@ -767,3 +783,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_acm_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

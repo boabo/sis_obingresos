@@ -162,6 +162,7 @@ class MODAcm extends MODbase{
 		$this->setParametro('id_archivo_acm_det','id_archivo_acm_det','int4');
 		$this->setParametro('id_agencia','id_agencia','int4');
 		$this->setParametro('fecha','fecha','date');
+		$this->setParametro('numero','numero','varchar');
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();

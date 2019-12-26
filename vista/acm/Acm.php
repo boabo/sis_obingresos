@@ -126,6 +126,7 @@ Phx.vista.Acm=Ext.extend(Phx.gridInterfaz,{
                       id_archivo_acm_det:d.id_archivo_acm_det,
                       id_agencia:d.id_agencia,
                       fecha:d.fecha.dateFormat('d/m/Y'),
+                      numero:d.numero
               	      },
 							success: this.successEliminacion,
 							failure: this.successEliminacion,

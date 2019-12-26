@@ -67,7 +67,7 @@ BEGIN
 						inner join segu.tusuario usu1 on usu1.id_usuario = acmdet.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = acmdet.id_usuario_mod
                         left join obingresos.tdetalle_boletos_web bole on bole.id_detalle_boletos_web = acmdet.id_detalle_boletos_web
-                        inner join obingresos.tboleto boletos on boletos.id_boleto = acmdet.id_detalle_boletos_web
+                        left join obingresos.tboleto boletos on boletos.id_boleto = acmdet.id_detalle_boletos_web
 				        where  ';
 
 			--Definicion de la respuesta
@@ -98,7 +98,7 @@ BEGIN
 						inner join segu.tusuario usu1 on usu1.id_usuario = acmdet.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = acmdet.id_usuario_mod
                         left join obingresos.tdetalle_boletos_web bole on bole.id_detalle_boletos_web = acmdet.id_detalle_boletos_web
-                        inner join obingresos.tboleto boletos on boletos.id_boleto = acmdet.id_detalle_boletos_web
+                        left join obingresos.tboleto boletos on boletos.id_boleto = acmdet.id_detalle_boletos_web
 				        where ';
 
 			--Definicion de la respuesta
@@ -130,3 +130,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_acm_det_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
