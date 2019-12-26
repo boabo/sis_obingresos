@@ -907,6 +907,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('nombre_completo','nombre_completo','varchar');
         $this->setParametro('mensaje','mensaje','varchar');
         $this->setParametro('status','status','varchar');
+
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();

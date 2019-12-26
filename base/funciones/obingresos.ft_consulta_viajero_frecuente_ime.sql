@@ -195,7 +195,7 @@ BEGIN
                             /*****************************************************************/
 
                             nro_boleto = '930'||v_parametros.nro_boleto,
-                            pnr = v_parametros.pnr,
+                            pnr = upper(v_parametros.pnr),
                             fecha_mod = now(),
                             id_usuario_mod = p_id_usuario,
                             id_usuario_ai = v_parametros._id_usuario_ai,

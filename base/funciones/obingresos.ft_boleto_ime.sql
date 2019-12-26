@@ -150,6 +150,8 @@ DECLARE
     v_moneda_desc			varchar;
     v_fecha_emision			varchar;
 
+    v_nombre_punto_venta	varchar;
+	v_cajero				varchar;
 
 BEGIN
 
@@ -2633,6 +2635,20 @@ BEGIN
             	v_nombre_pasajero = v_parametros.nombre_completo;
             end if ;
             /*****************************************************************************************/
+			/***Recuperamos el punto de venta en donde se realizo en canje (Ismael Valdivia 19/12/2019) ***/
+            select pv.nombre into v_nombre_punto_venta
+            from vef.tpunto_venta pv
+            where pv.id_punto_venta = v_parametros.id_punto_venta;
+            /****************************************************************/
+
+            /*Recuperamos el usuario que realizo el canje*/
+            select per.nombre_completo2 into v_cajero
+            from segu.tusuario usu
+            inner join segu.vpersona2 per on per.id_persona = usu.id_persona
+            where usu.id_usuario = p_id_usuario;
+            /*********************************************/
+
+
 
         	INSERT INTO   obingresos.tviajero_frecuente
               (
@@ -2671,7 +2687,10 @@ BEGIN
               v_parametros.mensaje,
               v_parametros.status
               )RETURNING id_viajero_frecuente into v_id_viajero_frecuente;
-               if (v_parametros.status = 'OK' and v_parametros.bandera ='revisar') then
+
+
+
+            if (v_parametros.status = 'OK' and v_parametros.bandera ='revisar') then
 
              select * into v_boleto
             from obingresos.tboleto_amadeus
@@ -2735,13 +2754,52 @@ BEGIN
               	DELETE
                 FROM obingresos.tboleto_amadeus_forma_pago
                 WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
-
-
-
               END IF;
 
-            END IF;
+            	END IF;
             end if;
+
+            /***************************Aumentando para alimentar en la tabla tconsulta_viajero_frecuente (Ismael Valdivia 19/12/2019)****************************/
+            if (v_id_viajero_frecuente is not null) then
+              insert into obingresos.tconsulta_viajero_frecuente(
+                  ffid,
+                  estado_reg,
+                  message,
+                  message_canjeado,
+                  voucher_code,
+                  status,
+                  status_canjeado,
+                  nro_boleto,
+                  pnr,
+                  id_usuario_reg,
+                  fecha_reg,
+                  usuario_ai,
+                  id_usuario_ai,
+                  fecha_mod,
+                  id_usuario_mod,
+                  estado
+                  ) values(
+                  v_parametros.ffid,
+                  'activo',
+                  'Verificado por Caja en el punto de venta: '||v_nombre_punto_venta||' por el cajero: '||v_cajero,
+                  'Canjeado por Caja en el punto de venta:'||v_nombre_punto_venta||' por el cajero: '||v_cajero,
+                  'OB.FF.VO'||v_parametros.voucherCode,
+                  v_parametros.status,
+                  'OK',
+                  '930'||v_parametros.ticketNumber,
+                  v_parametros.pnr,
+                  p_id_usuario,
+                  now(),
+                  v_parametros._nombre_usuario_ai,
+                  v_parametros._id_usuario_ai,
+                  null,
+                  null,
+                  'Canjeado'
+                  );
+                END IF;
+            /*****************************************************************************************************************************************************/
+
+
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');

@@ -27,7 +27,7 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
     function insertarConsultaViajeroFrecuente(){
         /*Recuperamos la fecha actual*/
          $fecha_actual = date("d/m/Y");
-        /*****************************/      
+        /*****************************/
         if ($this->objParam->getParametro('fecha_reg') == '') {
             /*Validar voucherCode Ismael Valdivia(28/11/2019)*/
             if ($this->objParam->getParametro('nro_boleto') == '' && $this->objParam->getParametro('pnr') == '') {
@@ -88,6 +88,39 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
          else { //Condicion si existe la fecha reg se esta haciendo una modificacion y validamos si la modificacion es el mismo dia que se realizo el registro
                 if ($this->objParam->getParametro('fecha_reg') == $fecha_actual) {
                  /*Validar voucherCode Ismael Valdivia(28/11/2019)*/
+
+                 /*Ponemos control para que el numero de caracteres ingresados en el numero de boleto y pnr correspondan*/
+                  $longitud_numero_boleto = strlen($this->objParam->getParametro('nro_boleto'));
+                  $primeros_digitos_boleto = substr($this->objParam->getParametro('nro_boleto'), 0, 3);
+
+                  $longitud_numero_pnr = strlen($this->objParam->getParametro('pnr'));
+
+                  if ($this->existenciaRegistro($this->objParam->getParametro('nro_boleto')) == 1) {
+                    throw new Exception('El número de boleto que intenta registrar ya se encuentra asociado con un voucher. Verifique!');
+                  }
+
+                  if ($this->objParam->getParametro('nro_boleto') == '') {
+                    throw new Exception('El número de boleto no puede ser vacio');
+                  }
+
+                  if ($this->objParam->getParametro('pnr') == '') {
+                    throw new Exception('El número de PNR no puede ser vacio');
+                  }
+
+                  if ($primeros_digitos_boleto == '930') {
+                    throw new Exception('El número de boleto ingresado deber ser déspues de los dígitos 930 por ejemplo. Nro Boleto = 9301234567890 el dato a ingresar debe ser: 1234567890');
+                  }
+
+                  if ($longitud_numero_boleto != 10) {
+                    throw new Exception('El número de boleto debe tener 10 dígitos');
+                  }
+
+                  if ($longitud_numero_pnr != 6) {
+                    throw new Exception('El número del PNR debe tener 6 dígitos');
+                  }
+
+                 /*******************************************************************************************************/
+
                  if ($this->objParam->getParametro('nro_boleto') == '' && $this->objParam->getParametro('pnr') == '') {
                   $voucher_code = 'OB.FF.VO'.$this->objParam->getParametro('voucher_code');
                 } else {
@@ -149,6 +182,23 @@ class ACTConsultaViajeroFrecuente extends ACTbase{
                   throw new Exception('Solo se puede realizar la modificación el mismo dia que se registro el Voucher. la fecha de registro para el voucher es '.$this->objParam->getParametro('fecha_reg').' y la fecha de modificación es: '.$fecha_actual);
               }
          }
+    }
+
+    function existenciaRegistro($numero_boleto){
+
+      $cone = new conexion();
+      $link = $cone->conectarpdo();
+      $copiado = false;
+
+      $consulta ="select count (*) as existencia
+                  from obingresos.tconsulta_viajero_frecuente v
+                  where v.nro_boleto = '930'||".$numero_boleto."";
+
+      $res = $link->prepare($consulta);
+      $res->execute();
+      $result = $res->fetchAll(PDO::FETCH_ASSOC);
+      return $result[0]['existencia'];
+
     }
 
     function eliminarConsultaViajeroFrecuente(){

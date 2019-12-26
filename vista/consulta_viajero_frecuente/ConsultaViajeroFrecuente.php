@@ -666,9 +666,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
           });
           win.show();
-          console.log("llega aqui la fecha",rec.data);
+
           var fecha_registro = rec.data.fecha_reg.dateFormat('d/m/Y');
-          console.log("llega aqui la fecha registro",fecha_registro);
 
           this.formulario_boletos.items.items[0].setValue(rec.data.id_consulta_viajero_frecuente);
           this.formulario_boletos.items.items[1].setValue(rec.data.ffid);
@@ -682,7 +681,6 @@ header("content-type: text/javascript; charset=UTF-8");
 
         registrar_boleto : function(win){
           var rec=this.sm.getSelected();
-          console.log("llega aqui para guardar datos",rec);
           /*Recuperamos de la venta detalle si existe algun concepto con excento*/
           Ext.Ajax.request({
               url : '../../sis_obingresos/control/ConsultaViajeroFrecuente/insertarConsultaViajeroFrecuente',
@@ -694,15 +692,21 @@ header("content-type: text/javascript; charset=UTF-8");
                 'pnr': this.formulario_boletos.items.items[4].getValue(),
                 'fecha_reg': this.formulario_boletos.items.items[5].getValue(),
               },
-              success : this.successExportHtml,
+              success : this.successRegistro(win),
               failure : this.conexionFailure,
               timeout : this.timeout,
               scope : this
             });
-            this.reload();
-            win.hide();
+            // this.reload();
+            // win.hide();
           /**********************************************************************/
         },
+
+        successRegistro : function (win) {        
+          this.reload();
+          win.hide();
+        },
+
 
         onButtonEdit : function() {
 

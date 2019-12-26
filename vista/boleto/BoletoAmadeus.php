@@ -2908,6 +2908,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         readOnly :true,
                         anchor: '90%',
+                        maxLength: 10,
+                        minLength: 10,
                         style: 'background-color: #E1F590; background-image: none;',
                         value: this.sm.getSelected().data['nro_boleto'] ,
                         maxLength:50
@@ -2920,6 +2922,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         readOnly :true,
                         anchor: '90%',
+                        maxLength: 6,
+                        minLength: 6,
                         style: 'background-color: #E1F590; background-image: none;',
                         value: this.sm.getSelected().data['localizador'] ,
                         maxLength:50
@@ -2969,7 +2973,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                         url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
                                         params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
                                             ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
-                                            pnr:this.pnr ,bandera:'revisar'},
+                                            pnr:this.pnr ,bandera:'revisar',dato_llenado:this.llenado,id_punto_venta:this.id_punto_venta},
                                         success:function(resp){
                                             var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                             console.log('id',reg);
@@ -3082,6 +3086,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Ticket Number',
                         allowBlank: true,
                         readOnly :true,
+                        maxLength: 10,
+                        minLength: 10,
                         anchor: '90%',
                         style: 'background-color: #E1F590; background-image: none;',
                         value: this.sm.getSelected().data['nro_boleto'] ,
@@ -3094,6 +3100,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'PNR',
                         allowBlank: true,
                         readOnly :true,
+                        maxLength: 6,
+                        minLength: 6,
                         anchor: '90%',
                         style: 'background-color: #E1F590; background-image: none;',
                         value: this.sm.getSelected().data['localizador'] ,
@@ -3130,13 +3138,14 @@ header("content-type: text/javascript; charset=UTF-8");
                                   } else {
                                       this.llenado = 'llenado';
                                   }
-                              /**********************************************************************************/
+                                                                /**********************************************************************************/
                                 if (formularioInicio.getForm().isValid()) {
                                     validado = true;
                                     this.ffid = ffid.getValue();
                                     this.voucher = voucherCoide.getValue();
                                     this.ticket = ticketNumber.getValue();
                                     this.pnr  = pnr.getValue();
+
                                     VentanaInicio.close();
                                     m = this;
 
@@ -3144,7 +3153,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                         url:'../../sis_obingresos/control/Boleto/viajeroFrecuente',
                                         params:{id_boleto_amadeus: m.sm.getSelected().data['id_boleto_amadeus'],
                                             ffid: this.ffid, voucherCode:this.voucher , ticketNumber: this.ticket,
-                                            pnr:this.pnr,bandera:'form',dato_llenado:this.llenado},
+                                            pnr:this.pnr,bandera:'form',dato_llenado:this.llenado, id_punto_venta:this.id_punto_venta},
                                         success:function(resp){
                                             var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                             console.log('id:prueba',reg);
