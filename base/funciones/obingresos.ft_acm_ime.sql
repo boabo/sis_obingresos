@@ -610,23 +610,18 @@ BEGIN
            	select
                    mov.fecha into v_fecha_recuperado
             from obingresos.tmovimiento_entidad mov
-            where mov.autorizacion__nro_deposito = v_parametros.numero
+            where REPLACE (mov.autorizacion__nro_deposito,' ','') = REPLACE (v_parametros.numero,' ','')
                   and mov.id_agencia = v_parametros.id_agencia;
             /*************************************************************/
 
-            /*Recuperamos la deuda posterior a la fecha de validacion*/
-            select count (mov.*) into v_contador
+            --Corrigiendo la fecha para tomar la fecha en la que se valido el ACM
+        	select count (mov.*) into v_contador
             from obingresos.tmovimiento_entidad mov
             where mov.fecha >= v_fecha_recuperado::date
-                  and mov.id_agencia = v_parametros.id_agencia
-                  and mov.tipo = 'debito';
-            /*********************************************************/
-            --Comentando para recuperar la fecha
-        	/*select count (mov.*) into v_contador
-            from obingresos.tmovimiento_entidad mov
-            where mov.fecha >= v_parametros.fecha
             	  and mov.id_agencia = v_parametros.id_agencia
-                  and mov.tipo = 'debito';*/
+                  and mov.tipo = 'debito';
+            ------------------------------------------------------------------------
+
         	 if (v_contador > 0) then
              	raise exception 'La agencia cuenta con Débitos posteriores a la fecha, por lo tanto no es posible eliminar el ACM seleccionado';
              end if;
