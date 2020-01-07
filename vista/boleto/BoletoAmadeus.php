@@ -1540,6 +1540,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(newValue);
                                 this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
                             }
 
                         } else if(this.Cmp.moneda.getValue() == 'USD' && this.Cmp.moneda_fp1.getValue() == this.Cmp.moneda_sucursal.getValue()){
@@ -1571,6 +1574,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(newValue);
                                 this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
                             }
                         }
                         else if(this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp1.getValue() == 'USD'){
@@ -1599,11 +1605,17 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(newValue);
                                 this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
                             }
                         }
                         else { console.log('D');
                             this.Cmp.monto_forma_pago.setValue(0);
                             this.Cmp.cambio.setValue(0);
+                            /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                            this.Cmp.cambio_moneda_extranjera.setValue(0);
+                            /**********************************************************************************************************/
                         }
                         //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
                     }else{
@@ -1633,6 +1645,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(newValue);
                                 this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
                             }
                         } else {
                             if (newValue > (this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD'])) {
@@ -1658,6 +1673,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
                                 this.Cmp.monto_forma_pago.setValue(newValue);
                                 this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
                             }
                         }
                         var valueNew = this.Cmp.monto_forma_pago.getValue();
@@ -1701,15 +1719,34 @@ header("content-type: text/javascript; charset=UTF-8");
                                 console.log('id_forma_pago, misma moneda sucursal y moneda forma de pago, boleto en usd');
                                 //convertir de  dolares a moneda sucursal(multiplicar)
                                 //convertir de  moneda sucursal a dolares(dividir)
-                                this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
-                                this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
+
+                                /*Comentando porque el redondeo lo esta haciendo por todos los decimales cambiaremos para tomar igual q la base de datos solo los 2 primeros decimales Ismael Valdivia (07/01/2019)*/
+                                //this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
+                                //this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
+                                /********************************************************************************************************/
+
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago.setValue(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()).toFixed(2));
+                                this.Cmp.monto_recibido_forma_pago.setValue((((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue())).toFixed(2));
+                                /***********************/
+
                                 //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
 
                                 //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
                             } else if (this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp1.getValue() == 'USD') {
                                 console.log('id_forma_pago, misma moneda sucursal y moneda boleto, moneda forma de pago en usd');
-                                this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
-                                this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
+
+                                /*Comentando porque el redondeo lo esta haciendo por todos los decimales cambiaremos para tomar igual q la base de datos solo los 2 primeros decimales Ismael Valdivia (07/01/2019)*/
+                                //this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
+                                //this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
+                                /*******************************************************************************************************************/
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago.setValue(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()).toFixed(2));
+                                this.Cmp.monto_recibido_forma_pago.setValue((((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue())).toFixed(2));
+                                /***********************/
+
+
+
                                 //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
 
                             } else {
@@ -1743,11 +1780,21 @@ header("content-type: text/javascript; charset=UTF-8");
                             //Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
                             else if (this.Cmp.moneda.getValue() == 'USD' && this.Cmp.moneda_fp2.getValue() == this.Cmp.moneda_sucursal.getValue()) {
                                 //convertir de  dolares a moneda sucursal(multiplicar)
-                                this.Cmp.monto_forma_pago2.setValue(this.round(((this.Cmp.total.getValue() - monto_pagado_fp1) * this.Cmp.tc.getValue()), 2));
+                                /*Comentando esta parte para tomar los dos primeros decimales (Ismael Valdivia 07/01/2020)*/
+                                //this.Cmp.monto_forma_pago2.setValue(this.round(((this.Cmp.total.getValue() - monto_pagado_fp1) * this.Cmp.tc.getValue()), 2));
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago2.setValue(((this.Cmp.total.getValue() - monto_pagado_fp1) * this.Cmp.tc.getValue()).toFixed(2));
+                                /***********************/
+
                                 //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
                             } else if (this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp2.getValue() == 'USD') {
                                 //convertir de  moneda sucursal a dolares(dividir)
-                                this.Cmp.monto_forma_pago2.setValue(this.round(((this.Cmp.total.getValue() - monto_pagado_fp1) / this.Cmp.tc.getValue()), 2));
+                                /*Comentando esta parte para tomar los dos primeros decimales (Ismael Valdivia 07/01/2020)*/
+                                //this.Cmp.monto_forma_pago2.setValue(this.round(((this.Cmp.total.getValue() - monto_pagado_fp1) / this.Cmp.tc.getValue()), 2));
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago2.setValue(((this.Cmp.total.getValue() - monto_pagado_fp1) / this.Cmp.tc.getValue()).toFixed(2));
+                                /***********************/
+
                             } else {
                                 this.Cmp.monto_forma_pago2.setValue(0);
                             }
@@ -1945,11 +1992,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.ocultarGrupo(3);
                 this.mostrarGrupo(0);
                 //this.ocultarGrupo(0);
+                console.log("llega aqui el dato",this.Cmp.total.getValue());
                 this.grupo = 'no';
                 this.Cmp.nro_boleto.allowBlank = true;
                 this.Cmp.nro_boleto.setDisabled(false);
                 //this.Cmp.voucherCode.setReadOnly(false);
+
                 this.Cmp.monto_recibido_forma_pago.setValue(this.Cmp.monto_forma_pago.getValue());
+
+
                 this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
                 this.manejoComponentesFp1(this.sm.getSelected().data['id_forma_pago'],this.sm.getSelected().data['codigo_forma_pago']);
                 this.manejoComponentesFp2(this.sm.getSelected().data['id_forma_pago2'],this.sm.getSelected().data['codigo_forma_pago2']);
@@ -2077,16 +2128,28 @@ header("content-type: text/javascript; charset=UTF-8");
                 if (this.moneda_grupo_fp2 == '') {
                     console.log('moneda grupo 2 vacio');
                     this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda]);
+                    /*Aumentando para calcular el monto recibido*/                  
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda]);
+                    /***********************************************/
                 } else if (this.moneda_grupo_fp2 == this.moneda_grupo_fp1) {
                     console.log('moneda grupo 2 igual moneda grupo 1');
                     this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.Cmp.monto_forma_pago2.getValue());
+                    /*Aumentando para calcular el monto recibido*/
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.Cmp.monto_forma_pago2.getValue());
+                    /***********************************************/
                 } else {
                     if (this.moneda_grupo_fp2 == 'USD') {
                         console.log('monedas distintas grupo 2 usd');
                         this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        /*Aumentando para calcular el monto recibido*/
+                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        /***********************************************/
                     } else {
                         console.log('monedas distintas grupo 2 bob');
                         this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        /*Aumentando para calcular el monto recibido*/
+                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        /***********************************************/
                     }
                 }
 
@@ -2135,9 +2198,14 @@ header("content-type: text/javascript; charset=UTF-8");
                         /*this.total_grupo['total_boletos_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.total);
                          this.total_grupo['total_neto_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.neto);
                          this.total_grupo['total_comision_'+seleccionados[0].data.moneda_sucursal] += parseFloat(seleccionados[i].data.comision);*/
+
+                         /**********************************Comentnado esta parte*************************************************/
                         this.total_grupo['total_boletos_USD'] += this.round(seleccionados[i].data.total , 2);
                         this.total_grupo['total_neto_USD'] += this.round(seleccionados[i].data.neto , 2);
                         this.total_grupo['total_comision_USD'] += this.round(seleccionados[i].data.comision , 2);
+                        /**********************************************************************************************************/
+
+
                         this.Cmp.moneda_boletos.setValue(seleccionados[i].data.moneda);
                         this.Cmp.monto_total_boletos.setValue(this.total_grupo['total_boletos_USD']);// +seleccionados[0].data.moneda_sucursal].toFixed(2));
                         this.Cmp.monto_total_neto.setValue(this.total_grupo['total_neto_USD']); //+seleccionados[0].data.moneda_sucursal].toFixed(2));

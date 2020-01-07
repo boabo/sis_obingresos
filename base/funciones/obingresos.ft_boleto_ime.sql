@@ -153,6 +153,11 @@ DECLARE
     v_nombre_punto_venta	varchar;
 	v_cajero				varchar;
 
+    v_calculo_boleto		numeric;
+    v_diferencia			numeric;
+    v_tolerancia			numeric;
+
+    v_codigo_moneda				varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -621,6 +626,41 @@ BEGIN
                 inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
                 where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
 
+
+				/*Verificamos si la moneda es ARS entonces tomamos el margen de error*/
+				select mon.codigo_internacional into v_codigo_moneda
+                from param.tmoneda mon
+                where mon.tipo_moneda = 'base';
+
+
+                IF (v_codigo_moneda = 'ARS') then
+
+               /*Aumentando margen de error (Ismael Valdivia 06/01/2019)*/
+                v_calculo_boleto = (COALESCE(v_boleto.total,0) - COALESCE(v_boleto.comision,0));
+                v_diferencia = (COALESCE(v_monto_total_fp,0) - v_calculo_boleto);
+                /*********************************************************/
+
+                /*****RECUPERAMOS LA TOLERANCIA DESDE UNA VARIABLE GLOBAL*******/
+                select va.valor into v_tolerancia
+                from pxp.variable_global va
+                where va.variable = 'tolerancia_amadeus';
+                /*****************************************************************/
+
+                    if ((v_diferencia >= (v_tolerancia * (1))) OR (v_diferencia <= (v_tolerancia * (-1)))) THEN
+                        raise exception 'Existe una diferencia de % entre el monto ingresado: % y el monto total del Boleto %. la tolerancia maxima que se puede tener es de %',v_diferencia,v_monto_total_fp,v_calculo_boleto,v_tolerancia;
+
+                    ELSE
+                        if (v_boleto.voided='no') then
+                            update obingresos.tboleto_amadeus
+                            set
+                            estado = 'revisado',
+                            id_usuario_cajero=p_id_usuario
+                            where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+                        end if;
+                    end if;
+
+                else
+				/*Si la moneda es BOB no tomamos la tolerancia*/
                 IF (COALESCE(v_monto_total_fp,0) = (v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
                   update obingresos.tboleto_amadeus
                   set
@@ -628,6 +668,8 @@ BEGIN
                   id_usuario_cajero=p_id_usuario
                   where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
                 END IF;
+                /*****************************************************/
+             end if;
 
             end if;
 
