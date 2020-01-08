@@ -101,6 +101,14 @@ class ACTArchivoAcm extends ACTbase{
 
             foreach ($arrayArchivo as $fila) {
 								/*Aumentando control para verificar si el office id existe en la base de datos (Ismael Valdivia 08/01/2020)*/
+
+								/*Recuperamos todos los datos del arreglo para encontrar repetidos*/
+								/*Eliminamos datos repetidos*/
+								$officeId_general[] = str_replace(" ", "", $fila['officce_id']);
+							//	$datos_comunes =
+
+
+
 								if ($this->existenciaOfficeId(str_replace(" ", "", $fila['officce_id'])) == 0) {
 									/*Si no existe el officeId en la base de datos eliminamos el archivo generado*/
 									$valor.= str_replace(" ", "", $fila['officce_id']).",";
@@ -108,7 +116,14 @@ class ACTArchivoAcm extends ACTbase{
 								}
             }
 
-						if ($valor != '') {
+						$officeId_elimar_repetidos = array_unique($officeId_general);
+						$obtenemos_officeId_comunes = array_diff_assoc($officeId_general, $officeId_elimar_repetidos);
+						$eliminar_repetidos_officeId_comunes = array_unique($obtenemos_officeId_comunes);
+						$obtenemos_repetidos = implode(',',$eliminar_repetidos_officeId_comunes);
+
+						if ($obtenemos_repetidos != '') {
+							throw new Exception('El o los siguientes OfficeId: '.$obtenemos_repetidos.' se encuentran mas de una vez en el archivo Excel por favor verifique.');
+						}elseif ($valor != '') {
 							$valor = trim($valor, ',');
 							throw new Exception('El o los siguientes OfficeId: '.$valor.' no se encuentran registrados en el sistema por favor revise el archivo excel y verifique que el OfficeId sea correcto.');
 						} else {
