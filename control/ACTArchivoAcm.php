@@ -98,22 +98,38 @@ class ACTArchivoAcm extends ACTbase{
             $archivoExcel->recuperarColumnasExcel();
 
             $arrayArchivo = $archivoExcel->leerColumnasArchivoExcel();
-            //var_dump($arrayArchivo); exit;
+
             foreach ($arrayArchivo as $fila) {
-                $this->objParam->addParametro('id_archivo_acm', $id_archivo_acm);
-                $this->objParam->addParametro('importe_total_mt', '');
-                $this->objParam->addParametro('estado_reg', '');
-                $this->objParam->addParametro('porcentaje', $fila['porcentaje'] == NULL ? '' : $fila['porcentaje']);
-                $this->objParam->addParametro('importe_total_mb', '');
-                $this->objParam->addParametro('id_agencia', '');
-                $this->objParam->addParametro('officce_id', $fila['officce_id'] == NULL ? '' : $fila['officce_id']);
-                $this->objFunc = $this->create('sis_obingresos/MODArchivoAcmDet');
-                $this->res = $this->objFunc->insertarArchivoAcmDet($this->objParam);
-                if($this->res->getTipo()=='ERROR'){
-                    $error = 'error';
-                    $mensaje_completo = "Error al guardar el fila en tabla ". $this->res->getMensajeTec();
-                }
+								/*Aumentando control para verificar si el office id existe en la base de datos (Ismael Valdivia 08/01/2020)*/
+								if ($this->existenciaOfficeId(str_replace(" ", "", $fila['officce_id'])) == 0) {
+									/*Si no existe el officeId en la base de datos eliminamos el archivo generado*/
+									$valor.= str_replace(" ", "", $fila['officce_id']).",";
+									/*****************************************************************************/
+								}
             }
+
+						if ($valor != '') {
+							$valor = trim($valor, ',');
+							throw new Exception('El o los siguientes OfficeId: '.$valor.' no se encuentran registrados en el sistema por favor revise el archivo excel y verifique que el OfficeId sea correcto.');
+						} else {
+								foreach ($arrayArchivo as $fila) {
+								 $this->objParam->addParametro('id_archivo_acm', $id_archivo_acm);
+								 $this->objParam->addParametro('importe_total_mt', '');
+								 $this->objParam->addParametro('estado_reg', '');
+								 $this->objParam->addParametro('porcentaje', $fila['porcentaje'] == NULL ? '' : $fila['porcentaje']);
+								 $this->objParam->addParametro('importe_total_mb', '');
+								 $this->objParam->addParametro('id_agencia', '');
+								 $this->objParam->addParametro('officce_id', str_replace(" ", "", $fila['officce_id']) == NULL ? '' : str_replace(" ", "", $fila['officce_id']));
+								 $this->objFunc = $this->create('sis_obingresos/MODArchivoAcmDet');
+								 $this->res = $this->objFunc->insertarArchivoAcmDet($this->objParam);
+
+								 if($this->res->getTipo()=='ERROR'){
+										 $error = 'error';
+										 $mensaje_completo = "Error al guardar el fila en tabla ". $this->res->getMensajeTec();
+								 }
+
+							 }
+					 }
 
             //upload directory
             $upload_dir = "/tmp/";
@@ -183,6 +199,24 @@ class ACTArchivoAcm extends ACTbase{
         $this->mensajeRes->imprimirRespuesta($this->mensajeRes->generarJson());
         //return $this->respuesta;
     }
+		/*Aumentando para verificar si existe el office id en la base de datos*/
+		function existenciaOfficeId($officeId){
+
+      $cone = new conexion();
+      $link = $cone->conectarpdo();
+      $copiado = false;
+      $consulta ="select count (*) as existencia
+												from obingresos.tagencia ag
+									where ag.codigo_int= '".$officeId."'
+									and ag.estado_reg='activo'";
+      $res = $link->prepare($consulta);
+      $res->execute();
+      $result = $res->fetchAll(PDO::FETCH_ASSOC);
+      return $result[0]['existencia'];
+
+    }
+		/***************************************************************************/
+
     function eliminarArchivoACMExcel(){
 	    //var_dump($this->objParam->getParametro('id_archivo_acm'));
         $this->objFunc=$this->create('sis_obingresos/MODArchivoAcmDet');

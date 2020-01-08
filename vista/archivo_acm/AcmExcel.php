@@ -27,11 +27,31 @@ header("content-type: text/javascript; charset=UTF-8");
 
             successSave:function(resp)
             {
+                console.log("irva respuesta",resp);
                 Phx.CP.loadingHide();
                 Phx.CP.getPagina(this.idContenedorPadre).reload();
                 this.panel.close();
             },
 
+            conexionFailure:function(resp){
+              var datos_respuesta = JSON.parse(resp.responseText);
+              Phx.CP.loadingHide();
+              this.panel.close();
+              if (datos_respuesta.ROOT.error == true) {
+                  Ext.Msg.show({
+                    width:'100%',
+                    height:'100%',
+                   title:'<h1 style="color:red; font-size:15px;"><center><i class="fa fa-exclamation-circle" aria-hidden="true"></i> ALERTA</center></h1>',
+                   msg: '<p style="font-size:14px;">'+datos_respuesta.ROOT.detalle.mensaje+'</p>',
+                   buttons: Ext.Msg.OK,
+                   fn: function () {
+                      Phx.CP.getPagina(this.idContenedorPadre).reload();
+                      this.panel.close();
+                   },
+                   scope:this
+                });
+                }
+            },
 
             Atributos:[
                 {
