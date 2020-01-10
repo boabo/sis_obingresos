@@ -1513,12 +1513,282 @@ class ACTBoleto extends ACTbase{
                     $this->objParam->addFiltro(" bol.estado = ''borrador'' ");
                 }
             }
+
             $this->objFunc=$this->create('MODBoleto');
             $this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
             $this->res->imprimirRespuesta($this->res->generarJson());
         }
 
     }
+
+    /*Aumentando para actualizar localmente*/
+    function listarBoletosAmadeusLocalmente() {
+      if ($this->objParam->getParametro('primera_carga')=='si') {
+
+          if ($this->objParam->getParametro('id_punto_venta') != '') {
+              $this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
+          }
+
+          if ($this->objParam->getParametro('fecha') != '') {
+              $fecha = $this->objParam->getParametro('fecha');
+              $this->objParam->addFiltro("bol.fecha_emision = ''". date($fecha)."''");
+              //$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
+          }
+
+          if ($this->objParam->getParametro('reporte') == 'reporte') {
+              $this->objFunc = $this->create('MODBoleto');
+              //$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
+          }
+
+          if ($this->objParam->getParametro('moneda_base') != '') {
+              $mone_base = $this->objParam->getParametro('moneda_base');
+          }
+          //var_dump("llega:",$this->objParam->getParametro('moneda_base'));
+          if ($this->objParam->getParametro('officeId_agencia') != '') {
+              $officeid = $this->objParam->getParametro('officeId_agencia');
+          }else{
+              $this->objParam->addParametro('fecha', $fecha);
+              $this->objParam->addParametro('moneda', $mone_base);
+
+              $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
+              $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
+
+              $datos = $this->res->getDatos();
+
+              $officeid = $datos[0]['officeid'];
+              $id_agencia = $datos[0]['id_agencia'];
+
+              if($this->objParam->getParametro('todos')=='no') {
+                  $numberItems = 5;
+                  $identificador_reporte = $datos[0]['identificador_reporte'];
+              }else{
+                  $numberItems = 0;
+                  $identificador_reporte = 0;
+              }
+          }
+
+          //var_dump($mone_base);exit;
+          //boletos en bolivianos
+            // code...
+            $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>$mone_base,"statusVoid"=>"");
+
+            $data_string = json_encode($data);
+            $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
+            $session = curl_init($request);
+            curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+            curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($session, CURLOPT_HTTPHEADER, array(
+              'Content-Type: application/json',
+              'Content-Length: ' . strlen($data_string))
+            );
+
+            $result = curl_exec($session);//var_dump($result);exit;
+            curl_close($session);
+
+            $respuesta = json_decode($result);
+            //var_dump($respuesta);exit;
+            if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
+
+              $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+              $this->objParam->addParametro('boletos', $respuesta->Boa_RITRetrieveSales_JSResult);
+              $this->objParam->addParametro('fecha_emision', $fecha);
+              $this->objParam->addParametro('id_agencia', $id_agencia);
+
+              if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+                $this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
+                $this->objFunc = $this->create('MODBoleto');
+                //$this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
+              } else {
+                if ($this->objParam->getParametro('reporte') == 'reporte') {
+                  $this->objFunc = $this->create('MODBoleto');
+                  //$this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
+                } else {
+                  $this->objFunc = $this->create('MODBoleto');
+                  $this->res = $this->objFunc->insertarBoletoServicioAmadeusJSon($this->objParam);
+                }
+              }
+              if ($this->res->getTipo() == 'ERROR') {
+                $this->res->imprimirRespuesta($this->res->generarJson());
+                exit;
+              }
+            }
+
+
+          $this->objParam->addParametro('fecha', $fecha);
+          $this->objParam->addParametro('moneda', "USD");
+          $this->objFunc=$this->create('sis_ventas_facturacion/MODPuntoVenta');
+          $this->res=$this->objFunc->obtenerOfficeID($this->objParam);
+
+          $datos = $this->res->getDatos();
+          //var_dump($datos); exit;
+          $officeid = $datos[0]['officeid'];
+          $id_agencia = $datos[0]['id_agencia'];
+          $identificador_reporte = $datos[0]['identificador_reporte'];
+
+          if($this->objParam->getParametro('todos')=='no') {
+              $numberItems = 5;
+              $identificador_reporte = $datos[0]['identificador_reporte'];
+          }else{
+              $numberItems = 0;
+              $identificador_reporte = 0;
+          }
+          ////boletos en dolares
+          //$data = array("numberItems"=>"0","lastItemNumber"=>"0","officeID"=>"SRZOB0104","dateFrom"=>"20170808","dateTo"=>"20170808","monetary"=>"USD");
+          $data = array("numberItems"=>$numberItems, "lastItemNumber"=>$identificador_reporte,"officeID"=>$officeid, "dateFrom"=>$fecha,"dateTo"=>$fecha,"monetary"=>"USD","statusVoid"=>"");
+          $data_string = json_encode($data);
+          $request =  'http://172.17.58.45/esbFIN/RITISERP.svc/Boa_RITRetrieveSales_JS';
+          $session = curl_init($request);
+          curl_setopt($session, CURLOPT_CUSTOMREQUEST, "POST");
+          curl_setopt($session, CURLOPT_POSTFIELDS, $data_string);
+          curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+          curl_setopt($session, CURLOPT_HTTPHEADER, array(
+                  'Content-Type: application/json',
+                  'Content-Length: ' . strlen($data_string))
+          );
+
+          $result = curl_exec($session);
+          curl_close($session);
+
+          $respuesta = json_decode($result);
+
+          if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
+
+              $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+              $this->objParam->addParametro('boletos', $respuesta->Boa_RITRetrieveSales_JSResult);
+              $this->objParam->addParametro('fecha_emision', $fecha);
+              $this->objParam->addParametro('id_agencia', $id_agencia);
+
+              if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+                  $this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
+                  $this->objFunc = $this->create('MODBoleto');
+                  $this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
+              } else {
+                  if ($this->objParam->getParametro('reporte') == 'reporte') {
+                      $this->objFunc = $this->create('MODBoleto');
+                      $this->res = $this->objFunc->insertarBoletoReporteServicioAmadeus($this->objParam);
+                  } else {
+                      $this->objFunc = $this->create('MODBoleto');
+                      $this->res = $this->objFunc->insertarBoletoServicioAmadeusJSon($this->objParam);
+                  }
+              }
+              if ($this->res->getTipo() == 'ERROR') {
+                  $this->res->imprimirRespuesta($this->res->generarJson());
+                  exit;
+              }
+          }
+          //var_dump($this->objParam->getParametro('tipoReporte'));exit;
+          if ($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid') {
+
+              if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+
+                  $this->objReporte = new Reporte($this->objParam,$this);
+                  $this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');
+                  $this->res->imprimirRespuesta($this->res->generarJson());
+              }else {
+                  $this->objFunc = $this->create('MODBoleto');
+                  $this->res = $this->objFunc->listarBoletoAmadeus($this->objParam);
+                  $this->res->imprimirRespuesta($this->res->generarJson());
+              }
+          }else {
+              if ($this->objParam->getParametro('pes_estado') != '') {
+                  if ($this->objParam->getParametro('pes_estado') == 'revisados') {
+                      $this->objParam->addFiltro(" bol.estado = ''revisado'' ");
+                      $this->objParam->addFiltro("(bol.id_usuario_cajero = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
+                                                          from segu.tusuario_rol
+                                                          where id_rol = 1 and estado_reg = ''activo'' and
+                                                          id_usuario = ". $_SESSION["ss_id_usuario"] . " )
+                                                        or exists (
+                                                             select 1
+                                                             from vef.tsucursal_usuario
+                                                             where id_punto_venta=". $this->objParam->getParametro('id_punto_venta') . "
+                                                             and id_usuario=". $_SESSION["ss_id_usuario"] . "
+                                                             and tipo_usuario=''administrador''
+                                                        ))");
+                  }else{
+                      $this->objParam->addFiltro(" bol.estado = ''borrador'' ");
+                  }
+              }
+
+              $this->objFunc=$this->create('MODBoleto');
+              $this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+              $this->res->imprimirRespuesta($this->res->generarJson());
+      }
+    } else {
+        if ($this->objParam->getParametro('id_punto_venta') != '') {
+            $this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
+        }
+
+        if ($this->objParam->getParametro('fecha') != '') {
+            $fecha = $this->objParam->getParametro('fecha');
+            $this->objParam->addFiltro("bol.fecha_emision = ''". date($fecha)."''");
+            //$this->objParam->addFiltro("bol.fecha_emision = ''". date("d-m-Y")."''");
+        }
+
+        if ($this->objParam->getParametro('reporte') == 'reporte') {
+            $this->objFunc = $this->create('MODBoleto');
+            //$this->res = $this->objFunc->eliminarBoletosAmadeus($this->objParam);
+        }
+
+        if ($this->objParam->getParametro('moneda_base') != '') {
+            $mone_base = $this->objParam->getParametro('moneda_base');
+        }
+        //var_dump("llega:",$this->objParam->getParametro('moneda_base'));
+        if ($this->objParam->getParametro('officeId_agencia') != '') {
+            $officeid = $this->objParam->getParametro('officeId_agencia');
+        }
+
+
+            if ($this->objParam->getParametro('id_usuario_cajero') != '') {
+                $this->objParam->addParametro('id_usuario_cajero', $this->objParam->getParametro('id_usuario_cajero'));
+                $this->objFunc = $this->create('MODBoleto');
+                $this->res = $this->objFunc->actualizaBoletoServicioAmadeus($this->objParam);
+                $this->res->imprimirRespuesta($this->res->generarJson());
+            }
+
+
+
+
+        if ($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid') {
+
+            if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+
+                $this->objReporte = new Reporte($this->objParam,$this);
+                $this->res = $this->objReporte->generarReporteListado('MODBoleto','listarBoletoAmadeus');
+                $this->res->imprimirRespuesta($this->res->generarJson());
+            }else {
+                $this->objFunc = $this->create('MODBoleto');
+                $this->res = $this->objFunc->listarBoletoAmadeus($this->objParam);
+                $this->res->imprimirRespuesta($this->res->generarJson());
+            }
+        }else {
+            if ($this->objParam->getParametro('pes_estado') != '') {
+                if ($this->objParam->getParametro('pes_estado') == 'revisados') {
+                    $this->objParam->addFiltro(" bol.estado = ''revisado'' ");
+                    $this->objParam->addFiltro("(bol.id_usuario_cajero = ". $_SESSION["ss_id_usuario"] . " or exists(	select 1
+																												from segu.tusuario_rol
+																												where id_rol = 1 and estado_reg = ''activo'' and
+																												id_usuario = ". $_SESSION["ss_id_usuario"] . " )
+																											or exists (
+																													 select 1
+																													 from vef.tsucursal_usuario
+																													 where id_punto_venta=". $this->objParam->getParametro('id_punto_venta') . "
+																													 and id_usuario=". $_SESSION["ss_id_usuario"] . "
+																													 and tipo_usuario=''administrador''
+																											))");
+                }else{
+                    $this->objParam->addFiltro(" bol.estado = ''borrador'' ");
+                }
+            }
+            /*Comentando esto para que el boton actualizar no llame al servicio y solo cargue boletos de la base de datos local (Isamel Valdivia 10/01/2020)*/
+            $this->objFunc=$this->create('MODBoleto');
+            $this->res=$this->objFunc->listarBoletosEmitidosAmadeus($this->objParam);
+            $this->res->imprimirRespuesta($this->res->generarJson());
+        }
+      }
+
+    }
+
 
     function traerBoletosJsonAnulados(){
 

@@ -17,6 +17,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.grupo = 'no';
                 this.tipo_usuario = 'cajero';
 
+
                 Ext.Ajax.request({
                     url:'../../sis_ventas_facturacion/control/Venta/getVariablesBasicas',
                     params: {'prueba':'uno'},
@@ -251,8 +252,10 @@ header("content-type: text/javascript; charset=UTF-8");
                                                 this.Cmp.id_forma_pago2.store.baseParams.id_punto_venta = this.id_punto_venta;
                                                 this.store.baseParams.id_punto_venta = combo2.getValue();
                                                 this.argumentExtraSubmit.id_punto_venta = this.id_punto_venta;
+                                                this.store.baseParams.primera_carga = 'si';
                                                 this.punto_venta.setText(combo2.lastSelectionText)
                                                 this.load({params:{start:0, limit:this.tam_pag}});
+                                                this.iniciarTiempo();
                                             }
                                         },
                                         scope: this
@@ -299,7 +302,7 @@ header("content-type: text/javascript; charset=UTF-8");
               /***********************************************************************************/
 
             },
-
+            //loadMask :false,
             Atributos:[
                 {
                     //configuracion del componente
@@ -1420,7 +1423,8 @@ header("content-type: text/javascript; charset=UTF-8");
             title:'Boleto',
             ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVenta',
             //ActDel:'../../sis_obingresos/control/Boleto/eliminarBoleto',
-            ActList:'../../sis_obingresos/control/Boleto/traerBoletosJson',
+            //ActList:'../../sis_obingresos/control/Boleto/traerBoletosJson',
+            ActList:'../../sis_obingresos/control/Boleto/listarBoletosAmadeusLocalmente',
 
             id_store:'id_boleto_amadeus',
             fields: [
@@ -1882,6 +1886,45 @@ header("content-type: text/javascript; charset=UTF-8");
 
 
             },
+
+            onDestroy: function() {
+          			//Phx.baseInterfaz.superclass.destroy.call(this,c);
+          			this.store.baseParams.id_punto_venta = '';
+          			this.fireEvent('closepanel',this);
+
+          			if (this.window) {
+          					this.window.destroy();
+          			}
+          			if (this.form) {
+          					this.form.destroy();
+          			}
+
+          			Phx.CP.destroyPage(this.idContenedor);
+          			delete this;
+
+          	},
+
+            iniciarTiempo:function () {
+                            /*Aumentando para que los boletos sean traidos de manera automatica (Ismael Valdivia 10/01/2020)*/
+                            this.timer_id=Ext.TaskMgr.start({
+                               run: Ftimer,
+                               interval:30000,
+                               scope:this
+                           });
+                            /************************************************************************************************/
+                            function Ftimer(){
+                              console.log("iniciamos el temporizador");
+                              if (this.store.baseParams.primera_carga == 'no') {
+                                  if (this.store.baseParams.id_punto_venta != '') {
+                                    this.onTraerBoletosTodosAutomatico();
+                                  }
+                              } else {
+                                this.store.baseParams.primera_carga = 'no';
+                              }
+                          }
+
+
+              },
             //devuelve el monto en la moenda del boleto
             getMontoMonBol : function (monto, moneda_fp) {
                 //Si la forma de pago y el boleto estan en la misma moneda
@@ -1915,10 +1958,27 @@ header("content-type: text/javascript; charset=UTF-8");
              scope:this
              });
              },*/
+             /********************FUNCION PARA TRAER AUTOMATICAMENTE LOS BOLETOS AMADEUS (ISMAEL VALDIVIA 10/01/2020)*************************/
+             onTraerBoletosTodosAutomatico : function () {
+                 Ext.Ajax.request({
+                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
+                     params: {moneda_base:this.store.baseParams.moneda_base,id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
+                     success:this.successSincro,
+                     failure: this.conexionFailure,
+                     timeout:this.timeout,
+                     scope:this
+                 });
+             },
 
+             successSincro: function(resp) {
+                 Phx.CP.loadingHide();
+                 var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+             },
+
+
+             /********************************************************************************/
             onTraerBoletosTodos : function () {
-                Phx.CP.loadingShow();
-                console.log("llega aqui el boleto",this);
+                Phx.CP.loadingShow();                
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
                     params: {moneda_base:this.store.baseParams.moneda_base,id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
@@ -2128,7 +2188,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 if (this.moneda_grupo_fp2 == '') {
                     console.log('moneda grupo 2 vacio');
                     this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda]);
-                    /*Aumentando para calcular el monto recibido*/                  
+                    /*Aumentando para calcular el monto recibido*/
                     this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda]);
                     /***********************************************/
                 } else if (this.moneda_grupo_fp2 == this.moneda_grupo_fp1) {
