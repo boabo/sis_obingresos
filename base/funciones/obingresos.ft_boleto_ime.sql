@@ -159,6 +159,7 @@ DECLARE
 
     v_codigo_moneda				varchar;
     v_consultado			integer;
+    v_estado_canjeado		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -2810,8 +2811,12 @@ BEGIN
               from obingresos.tconsulta_viajero_frecuente via
               where ffid = v_parametros.ffid and voucher_code = v_parametros.voucherCode;
 
+              select via.estado into v_estado_canjeado
+              FROM obingresos.tconsulta_viajero_frecuente via
+              where ffid = v_parametros.ffid and voucher_code = v_parametros.voucherCode
+              limit 1;
 
-              if (v_consultado >= 1) then
+              if (v_consultado >= 1 and v_estado_canjeado <> 'Canjeado') then
               	update obingresos.tconsulta_viajero_frecuente set
                 message_canjeado = 'Canjeado por Caja en el punto de venta:'||v_nombre_punto_venta||' por el cajero: '||v_cajero,
             	status_canjeado = 'OK',
@@ -2819,7 +2824,7 @@ BEGIN
                 pnr = v_parametros.pnr,
                 estado = 'Canjeado'
                 where ffid = v_parametros.ffid and voucher_code = v_parametros.voucherCode;
-              end if;
+              else
               /**********************************************************************************/
               insert into obingresos.tconsulta_viajero_frecuente(
                   ffid,
@@ -2856,7 +2861,8 @@ BEGIN
                   null,
                   'Canjeado'
                   );
-                END IF;
+                  end if;
+              END IF;
             /*****************************************************************************************************************************************************/
 
 
