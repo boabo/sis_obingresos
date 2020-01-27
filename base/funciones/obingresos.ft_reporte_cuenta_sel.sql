@@ -254,7 +254,7 @@ BEGIN
                        and mo.id_agencia = v_parametros.id_agencia
                       group by mo.id_agencia, mo.fecha, mo.pnr, mo.tipo
 
-                      union
+                      union all
 
 
                       select 	mo.id_agencia,
