@@ -2809,21 +2809,21 @@ BEGIN
               /*Poniendo este control para ir actualizando si el cajero realiza el canjeado Ismael Valdivia (23/01/2020)*/
               select count (*) into v_consultado
               from obingresos.tconsulta_viajero_frecuente via
-              where ffid = v_parametros.ffid and voucher_code = v_parametros.voucherCode;
+              where ffid = v_parametros.ffid and voucher_code = 'OB.FF.VO'||v_parametros.voucherCode;
 
               select via.estado into v_estado_canjeado
               FROM obingresos.tconsulta_viajero_frecuente via
-              where ffid = v_parametros.ffid and voucher_code = v_parametros.voucherCode
+              where ffid = v_parametros.ffid and voucher_code = 'OB.FF.VO'||v_parametros.voucherCode
               limit 1;
 
               if (v_consultado >= 1 and v_estado_canjeado <> 'Canjeado') then
               	update obingresos.tconsulta_viajero_frecuente set
                 message_canjeado = 'Canjeado por Caja en el punto de venta:'||v_nombre_punto_venta||' por el cajero: '||v_cajero,
             	status_canjeado = 'OK',
-                nro_boleto = v_parametros.ticketNumber,
+                nro_boleto = '930'||v_parametros.ticketNumber,
                 pnr = v_parametros.pnr,
                 estado = 'Canjeado'
-                where ffid = v_parametros.ffid and voucher_code = v_parametros.voucherCode;
+                where ffid = v_parametros.ffid and voucher_code = 'OB.FF.VO'||v_parametros.voucherCode;
               else
               /**********************************************************************************/
               insert into obingresos.tconsulta_viajero_frecuente(
