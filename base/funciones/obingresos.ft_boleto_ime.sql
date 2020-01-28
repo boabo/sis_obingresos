@@ -2816,14 +2816,16 @@ BEGIN
               where ffid = v_parametros.ffid and voucher_code = 'OB.FF.VO'||v_parametros.voucherCode
               limit 1;
 
-              if (v_consultado >= 1 and v_estado_canjeado <> 'Canjeado') then
-              	update obingresos.tconsulta_viajero_frecuente set
-                message_canjeado = 'Canjeado por Caja en el punto de venta:'||v_nombre_punto_venta||' por el cajero: '||v_cajero,
-            	status_canjeado = 'OK',
-                nro_boleto = '930'||v_parametros.ticketNumber,
-                pnr = v_parametros.pnr,
-                estado = 'Canjeado'
-                where ffid = v_parametros.ffid and voucher_code = 'OB.FF.VO'||v_parametros.voucherCode;
+              if (v_consultado >= 1) then
+                  if (v_estado_canjeado <> 'Canjeado') then
+                    update obingresos.tconsulta_viajero_frecuente set
+                    message_canjeado = 'Canjeado por Caja en el punto de venta:'||v_nombre_punto_venta||' por el cajero: '||v_cajero,
+                    status_canjeado = 'OK',
+                    nro_boleto = '930'||v_parametros.ticketNumber,
+                    pnr = v_parametros.pnr,
+                    estado = 'Canjeado'
+                    where ffid = v_parametros.ffid and voucher_code = 'OB.FF.VO'||v_parametros.voucherCode;
+              	  end if;
               else
               /**********************************************************************************/
               insert into obingresos.tconsulta_viajero_frecuente(
