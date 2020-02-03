@@ -1764,3 +1764,35 @@ DROP CONSTRAINT tacm_det_fk1 RESTRICT;
 ALTER TABLE obingresos.tacm_det
 DROP CONSTRAINT tacm_det_idx RESTRICT;
 /********************************************F-SCP-IRVA-OBINGRESOS-0-24/12/2019********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-03/02/2020********************************************/
+CREATE TABLE obingresos.tboletos_banca (
+  id_boleto_banca SERIAL,
+  agencia_id INTEGER NOT NULL,
+  emision_id INTEGER NOT NULL,
+  transaccion_id INTEGER NOT NULL,
+  pnr VARCHAR(10) NOT NULL,
+  tkt VARCHAR(15),
+  neto NUMERIC(20,2) NOT NULL,
+  tasas NUMERIC(20,2) NOT NULL,
+  monto_total NUMERIC(20,2) NOT NULL,
+  comision NUMERIC(20,2) NOT NULL,
+  moneda VARCHAR(3) NOT NULL,
+  fecha_emision DATE,
+  fecha_transaccion TIMESTAMP WITHOUT TIME ZONE,
+  fecha_pago_banco DATE NOT NULL,
+  forma_pago VARCHAR(50) NOT NULL,
+  entidad_pago VARCHAR(20) NOT NULL,
+  estado VARCHAR(20) NOT NULL,
+  pasajero TEXT,
+  CONSTRAINT tboletos_banca_pkey PRIMARY KEY(id_boleto_banca)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+CREATE INDEX tboletos_banca_idx ON obingresos.tboletos_banca
+  USING btree (fecha_emision, fecha_transaccion, fecha_pago_banco, moneda COLLATE pg_catalog."default", forma_pago COLLATE pg_catalog."default", agencia_id, emision_id);
+
+ALTER TABLE obingresos.tboletos_banca
+  OWNER TO postgres;
+
+/********************************************F-SCP-IRVA-OBINGRESOS-0-03/02/2020********************************************/
