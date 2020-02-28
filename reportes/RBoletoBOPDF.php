@@ -55,30 +55,57 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->Cell(15,5,'AGENTE',0,0,'R');
         $this->Cell(80,5,': '.$datos[0]['agente'],0,1,'L');
         $this->ln();
-        $this->setX(80);
-        //$this->Cell(70,5,$datos[0]['direccion_ofi'],0,0,'L');
-        $this->SetFont('Courier','',10);
+
+
+        /*$this->SetFont('Courier','',10);
         $this->Cell(15,5,'NOMBRE',0,0,'R');
         $this->Cell(80,5,': ' .$datos[0]['pasajero'],0,1,'L');
         $this->SetFont('Courier','',10);
-        $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');
-
-        $this->SetFont('Courier','B',10);
-        $this->Cell(15,5,'NIT',0,0,'R');//var_dump(strlen($datos[0]['endoso']));exit;
-        if( strlen($datos[0]['endoso']) > 43){
-            $this->SetFont('Courier','B',8);
-        }
-        $this->Cell(80,5,': ' . substr($datos[0]['endoso'], 2),0,1,'L');
+        $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');*/
 
         $this->SetFont('Courier','',10);
+        //$this->Cell(15,5,'NIT',0,0,'R');//var_dump(strlen($datos[0]['endoso']));exit;
+        /*if( strlen($datos[0]['endoso']) > 43){
+            $this->Cell(15,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');
+            $this->SetFont('Courier','',10);
+            $this->Cell(114.5,5,'TELEFONO: ' . $datos[0]['telefono_ofi'],0,0,'R');
+            $this->ln();
+            $this->SetFont('Courier','',10);
+            $this->Cell(15,5,'NOMBRE',0,0,'L');
+            $this->Cell(80,5,': ' .$datos[0]['pasajero'],0,1,'L');
 
-        $this->Cell(70,5,'TELEFONO: ' . $datos[0]['telefono_ofi']/*$datos_maestro[0]['telefono']*/,0,0,'L');
+            $this->Cell(9,5,'NIT',0,0,'R');
+            $this->Cell(80,5,': ' . substr($datos[0]['endoso'], 2),0,1,'L');
+            $this->ln();//$this->ln();
+        }else{
+            $this->setX(80);
+            $this->SetFont('Courier','',10);
+            $this->Cell(15,5,'NOMBRE',0,0,'R');
+            $this->Cell(80,5,': ' .$datos[0]['pasajero'],0,1,'L');
+            $this->SetFont('Courier','',10);
+            $this->Cell(70,5,'IATA: '.$datos[0]['codigo_iata'],0,0,'L');
+
+            $this->Cell(15,5,'NIT',0,0,'R');
+            $this->Cell(80,5,': ' . substr($datos[0]['endoso'], 2),0,1,'L');
+            $this->Cell(70,5,'TELEFONO: ' . $datos[0]['telefono_ofi'],0,0,'L');
+            $this->ln();$this->ln();
+        }*/
+
+        $tbl = '<table border="0">
+                <tr><td colspan="2" width="45.4%" style="text-align: right;">NOMBRE&nbsp;&nbsp;</td><td width="2%">:</td><td width="52.6%">'.$datos[0]['pasajero'].'</td></tr>
+                <tr><td width="22.7%"><span style="text-align: left;">IATA:  '.$datos[0]['codigo_iata'].'</span></td><td width="22.7%"><span style="text-align: right;">NIT&nbsp;</span>&nbsp;</td><td width="2%">:</td><td width="48%" rowspan="2" style="text-align: justify;">'.substr($datos[0]['endoso'], 2).'</td></tr>
+                <tr><td colspan="3">TELEFONO: '.$datos[0]['telefono_ofi'].'</td></tr>
+                ';
+        $this->writeHTML ($tbl); //$this->ln();
+
+        //$this->SetFont('Courier','',10);
+        //$this->Cell(70,5,'TELEFONO: ' . $datos[0]['telefono_ofi'],0,0,'L');
 //var_dump($datos_detalle->pasajeros->pasajeroDR->Tkts->string);exit;
 
         $this->SetFont('Courier','',10);
-        $this->Cell(15,5,'',0,0,'R');
-        $this->Cell(80,5,'',0,1,'L');
-        $this->ln();
+        /*$this->Cell(15,5,'',0,0,'R');
+        $this->Cell(80,5,'',0,1,'L');*/
+
         $this->Cell(85,5,'COMPANIA EMISORA',0,0,'L');
         $this->Cell(80,5,': BOLIVIANA DE AVIACION',0,1,'L');
 
@@ -273,7 +300,7 @@ class RBoletoBOPDF extends  ReportePDF {
         $this->Cell(45,5,'SUBJECT TO TAX ',0,0,'L');
         $this->Cell(150,5,': '.$datos[0]['moneda_iva'].' ' .$rc_iva,0,1,'L');
         $this->Cell(150,5,'CREDIT (T-IVA)' ,0,1,'L');
-        $this->SetFont('Courier','B',10);
+        $this->SetFont('Courier','',10);
         $this->Cell(45,5,'TOTAL',0,0,'L');
         $total_tarifa = $datos_detalle->elementosTkt->fns->fn_V2->importe_tarifa  + $datos[0]['rc_iva'];
         $this->Cell(150,5,': ' .$datos[0]['importe_total']/*$datos_maestro[0]['total']*/,0,1,'L');

@@ -70,6 +70,9 @@ DECLARE
     v_pais_d		  varchar;
 
     v_tipo_19		varchar;
+    v_cont_pasajero   integer;
+
+    v_pasajero_aux    varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -798,32 +801,37 @@ BEGIN
                   v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
                   (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
                   (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
-                  (v_parametros.pasajeros->>'tipo_19')::varchar
+                  (v_parametros.pasajeros->'pasajeroDR'->>'tipo_19')::varchar
               );
             end if;
 
-            /*select tba.nro_boleto
-            into v_numero_tkt
-            from obingresos.tboleto_amadeus tba
-            where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;*/
 
             select tba.pasajero
-            into v_pasajero
+            into v_pasajero_aux
             from obingresos.tboleto_amadeus tba
             where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
 
-            /*select tp.posicion, tp.nombre
-            into v_posicion, v_pasajero
-            from ttpasajero tp
-            where tp.numero_tkt = v_numero_tkt;*/
+            
+            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
 
-            select tp.posicion, tp.nombre, tp.tipo_19
-            into v_posicion, v_pasajero, v_tipo_19
-            from ttpasajero tp
-            where --word_similarity(v_pasajero, tp.nombre) > 0.8;
-                  similarity_dist(v_pasajero, tp.nombre) < 0.37;
-            --'%'||v_pasajero||'%' ilike '%'||tp.nombre||'%' or '%'||tp.nombre||'%' ilike '%'||v_pasajero||'%';
-            --or (string_to_array(v_pasajero,'/'))[1] ilike (string_to_array(tp.nombre,'/'))[1];
+              select tp.posicion, tp.nombre, tp.tipo_19
+              into v_posicion, v_pasajero, v_tipo_19
+              from ttpasajero tp
+              where similarity_dist(v_pasajero_aux, tp.nombre) = 0;
+
+              if v_pasajero is null then
+                select tp.posicion, tp.nombre, tp.tipo_19
+                into v_posicion, v_pasajero, v_tipo_19
+                from ttpasajero tp
+                where similarity_dist(v_pasajero_aux, tp.nombre) < 0.38;
+              end if;
+
+            else
+              select tp.posicion, tp.nombre, tp.tipo_19
+              into v_posicion, v_pasajero, v_tipo_19
+              from ttpasajero tp
+              where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+            end if;
 
             v_contador_id = 1;
             create temp table ttasa(
@@ -840,25 +848,39 @@ BEGIN
                 tipo_tarifa		varchar,
                 tipo_total		varchar,
                 num_pax			varchar,
-                inf				varchar
+                inf				varchar,
+                pasajero varchar
             )on commit drop;
 
             if jsonb_typeof(v_parametros.fn_V2) = 'object' then
               v_importe = (v_parametros.importes->>'importe_total');
-              for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
-                  --raise exception 'tasa: %, %, %', v_record_json->>'tipo_tasa', v_record_json->>'importe_tasa',v_record_json->>'codigo_tasa';
-                  if v_record_json->>'tipo_tasa' != 'X' then
-                      v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
-                  end if;
 
-                  if v_record_json->>'tipo_tasa' = 'X' then
-                      if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
-                          v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
-                      end if;
-                  end if;
+              if jsonb_typeof(v_parametros.tasa) = 'array' then
+                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
+                    --raise exception 'tasa: %, %, %', v_record_json->>'tipo_tasa', v_record_json->>'importe_tasa',v_record_json->>'codigo_tasa';
+                    if v_record_json->>'tipo_tasa' != 'X' then
+                        v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
+                    end if;
 
-                  v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
-              end loop;
+                    if v_record_json->>'tipo_tasa' = 'X' then
+                        if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
+                            v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
+                        end if;
+                    end if;
+
+                    v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
+                end loop;
+              else
+              	if v_parametros.tasa->>'tipo_tasa' != 'X' then
+                	v_calculo_tarifa = v_calculo_tarifa ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar;
+                end if;
+                if v_parametros.tasa->>'tipo_tasa' = 'X' then
+                    if v_parametros.tasa->>'codigo_tasa' not in ('QM', 'BO') then
+                        v_importe = v_importe - (v_parametros.tasa->>'importe_tasa')::numeric;
+                    end if;
+                end if;
+                v_tasa = v_tasa ||(v_parametros.tasa->>'moneda_tasa')::varchar||' '||case when v_parametros.tasa->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar||'		';
+              end if;
 
               v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
 
@@ -882,7 +904,8 @@ BEGIN
                   tipo_tarifa,
                   tipo_total,
                   num_pax,
-                  inf
+                  inf,
+                  pasajero
               )values (
                 v_contador_id,
                 v_calculo_tarifa,
@@ -897,7 +920,8 @@ BEGIN
                 v_parametros.fn_V2->>'tipo_tarifa',
                 v_parametros.fn_V2->>'tipo_total',
                 v_parametros.fn_V2->>'num_pax',
-                v_parametros.fn_V2->>'inf'
+                v_parametros.fn_V2->>'inf',
+                v_pasajero
               );
 			        v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
             else
@@ -912,26 +936,39 @@ BEGIN
                       end if;
 
                       v_importe = (v_record_json->>'importe_total');
-                      for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
+                      if jsonb_typeof(v_record_json->'Fntaxs'->'tasa') = 'array' then
+                        for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
 
-                          if v_record_json_aux->>'tipo_tasa' != 'X' then
-                              v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
-                              /*if v_record_json->>'tipo_emision' = 'R' then
-                              	v_tasa_valida = 'resolve';
-                              end if;*/
-                          end if;
+                            if v_record_json_aux->>'tipo_tasa' != 'X' then
+                                v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
+                                /*if v_record_json->>'tipo_emision' = 'R' then
+                                  v_tasa_valida = 'resolve';
+                                end if;*/
+                            end if;
 
-                          if v_record_json_aux->>'tipo_tasa' = 'X' then
-                              if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
-                                  v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
-                              end if;
-                              /*if v_record_json->>'tipo_emision' = 'R' then
-                                v_tasa_valida = 'resolve';
-                              end if;*/
-                          end if;
+                            if v_record_json_aux->>'tipo_tasa' = 'X' then
+                                if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
+                                    v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
+                                end if;
+                                /*if v_record_json->>'tipo_emision' = 'R' then
+                                  v_tasa_valida = 'resolve';
+                                end if;*/
+                            end if;
 
-                          v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
-                      end loop;
+                            v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
+                        end loop;
+                      else
+                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' != 'X' then
+                            v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar;
+                        end if;
+
+                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' = 'X' then
+                            if v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa' not in ('QM', 'BO') then
+                                v_importe = v_importe - (v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::numeric;
+                            end if;
+                        end if;
+                        v_tasa = v_tasa ||(v_record_json->'Fntaxs'->'tasa'->>'moneda_tasa')::varchar||' '||case when v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar||'		';
+                      end if;
                       v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
 
                       IF jsonb_typeof(v_record_json->'codigo_tarifa'->'string') = 'string' then
@@ -943,8 +980,12 @@ BEGIN
                         v_codigo_tarifa = v_cadena[v_contador_id];
                       end if;
 
+                      select count(ta.id_tasa)
+                      into v_cont_pasajero
+                      from ttasa ta
+                      where ta.pasajero = v_pasajero;
                       --if v_tasa_valida = 'resolve' then
-                      if v_importe > 0 then
+                      if /*v_importe > 0 and*/ v_cont_pasajero = 0 /*or ((v_record_json->>'importe_total')::numeric = 0 and v_cont_pasajero = 0)*/ then
                         insert into ttasa(
                           id_tasa,
                         calculo_tarifa,
@@ -959,7 +1000,8 @@ BEGIN
                             tipo_tarifa,
                             tipo_total,
                             num_pax,
-                            inf
+                            inf,
+                            pasajero
                         )values (
                           v_contador_id,
                           v_calculo_tarifa,
@@ -974,7 +1016,8 @@ BEGIN
                           v_record_json->>'tipo_tarifa',
                           v_record_json->>'tipo_total',
                           v_record_json->>'num_pax',
-                          v_record_json->>'inf'
+                          v_record_json->>'inf',
+                          v_pasajero
                         );
                         v_tipo_emision = v_record_json->>'tipo_emision';
                         v_contador_id = v_contador_id + 1;

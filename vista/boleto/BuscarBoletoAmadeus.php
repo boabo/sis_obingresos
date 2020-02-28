@@ -213,7 +213,7 @@ header("content-type:text/javascript; charset=UTF-8");
                 //Phx.CP.loadingHide();
                 if(objetoDatos.tipo_emision == 'normal') {
                     Ext.Msg.show({
-                        title: 'Sistema ERP',
+                        title: 'Sistema AMADEUS',
                         msg: '<div style="text-align: justify;"><b style="color: red;">Estimado Usuario:</b> <br><br><b>Informarle que el servicio de AMADEUS no devuelve información para el boleto seleccionado.</b></div>',
                         buttons: Ext.Msg.OK,
                         width: 500,
@@ -229,6 +229,15 @@ header("content-type:text/javascript; charset=UTF-8");
                             maxWidth: 1024,
                             icon: Ext.Msg.WARNING
                         });
+                }else if(objRes.ROOT.datos.tipo_emision == 'F') {
+                    Ext.Msg.show({
+                        title: 'Sistema AMADEUS',
+                        msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> Se ha producido un problema respecto al tipo de emision, El tipo de emisión del boleto es (First Issue), posiblemente al agregar un nuevo boleto, se generaron para todos nuevos TSTs, favor de verificar tu estructura actual; si ese no es el motivo del problema, reportelo a Sistemas (Cel.: 71721380).</b> </div>',
+                        buttons: Ext.Msg.OK,
+                        width: 500,
+                        maxWidth: 1024,
+                        icon: Ext.Msg.WARNING
+                    });
                 }else{
                     Ext.Msg.show({
                         title: 'Sistema AMADEUS',
