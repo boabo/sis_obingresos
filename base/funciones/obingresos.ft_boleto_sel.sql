@@ -73,6 +73,10 @@ DECLARE
     v_cont_pasajero   integer;
 
     v_pasajero_aux    varchar;
+    v_datos				record;
+
+    v_contador			integer;
+    v_id_usuario		integer;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -811,7 +815,7 @@ BEGIN
             from obingresos.tboleto_amadeus tba
             where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
 
-            
+
             if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
 
               select tp.posicion, tp.nombre, tp.tipo_19
@@ -1351,11 +1355,223 @@ BEGIN
        begin
     		--Sentencia de la consulta
 
-			v_consulta:='with forma_pago_temporal as(
+            /*Cambiando la consulta para separar moneda local y moneda exranjera (Ismael Valdivia 26/02/2020)*/
+
+            if (v_parametros.tipo_interfaz = 'ResumenDetalle') then
+
+            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                      pasajero varchar,
+                                      localizador varchar,
+                                      nro_boleto varchar,
+          							  forma_pago_amadeus varchar,
+                                      moneda varchar,
+                                      precio_total_ml numeric,
+                                      precio_total_me numeric,
+                                      agente_venta varchar,
+                                      id_forma_pago int4,
+                                      monto_forma_pago_ml numeric,
+                                      monto_forma_pago_me numeric,
+                                      forma_pago varchar,
+                                      fecha_emision date,
+                                      trans_code varchar,
+                                      trans_issue_indicator varchar,
+                                      nombre varchar,
+                                      trans_code_exch varchar,
+                                      impreso varchar )ON COMMIT DROP;
+
+
+           /* select ex.id_usuario into v_id_usuario
+            from segu.tusuario_externo ex
+            where ex.usuario_externo = v_parametros.agente_venta;*/
+
+
+              For v_datos in (with forma_pago_temporal as(
+                                            select bol.id_boleto_amadeus,
+                                                   array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                   array_agg(mon.codigo_internacional) as moneda_fp,
+                                                   array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                                                   array_agg(fp.codigo) as codigo_forma_pago,
+                                                   array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                   array_agg(bfp.mco) as mco,
+                                                   array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                   array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                   array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                   array_agg(bfp.importe) as monto_forma_pago
+                                            from obingresos.tboleto_amadeus bol
+                                                 left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                                 left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                                 left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                                 left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                            where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                                            group by bol.id_boleto_amadeus)
+
+                            select nr.id_boleto_amadeus,
+                                   nr.pasajero as pasajero,
+                                   nr.localizador as localizador,
+                                   substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                   nr.forma_pago as forma_pago_amadeus,
+                                   nr.moneda,
+                                   nr.total as precio_total,
+                                   nr.agente_venta as codigo_agente,
+                                   fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                   fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                   fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                   nr.fecha_emision,
+                                   nr.trans_code,
+                                   nr.trans_issue_indicator,
+                                   pv.nombre as punto_venta,
+                                   nr.trans_code_exch,
+                                   nr.impreso,
+                                   fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+
+                            from obingresos.tboleto_amadeus nr
+                            inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                            inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                            inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                            inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                            left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                            where nr.agente_venta = v_parametros.agente_venta and pv.id_punto_venta = v_parametros.punto_venta::integer)
+
+                          LOOP
+
+                          if (v_datos.moneda = 'USD') then
+
+                          		 insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_me,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+                           	else
+
+                            insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_ml,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+
+
+                            end if;
+
+                          END LOOP;
+
+            else
+
+            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                      pasajero varchar,
+                                      localizador varchar,
+                                      nro_boleto varchar,
+          							  forma_pago_amadeus varchar,
+                                      moneda varchar,
+                                      precio_total_ml numeric,
+                                      precio_total_me numeric,
+                                      agente_venta varchar,
+                                      id_forma_pago int4,
+                                      monto_forma_pago_ml numeric,
+                                      monto_forma_pago_me numeric,
+                                      forma_pago varchar,
+                                      fecha_emision date,
+                                      trans_code varchar,
+                                      trans_issue_indicator varchar,
+                                      nombre varchar,
+                                      trans_code_exch varchar,
+                                      impreso varchar )ON COMMIT DROP;
+
+
+
+
+            For v_datos in (with forma_pago_temporal as(
                                           select bol.id_boleto_amadeus,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
                                                  array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
                                                  array_agg(fp.codigo) as codigo_forma_pago,
                                                  array_agg(bfp.numero_tarjeta) as numero_tarjeta,
                                                  array_agg(bfp.mco) as mco,
@@ -1368,7 +1584,7 @@ BEGIN
                                                left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                                                left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
                                                left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision = '''||v_parametros.fecha||'''::date
+                                          where bol.fecha_emision = v_parametros.fecha::date
                                           group by bol.id_boleto_amadeus)
 
                           select nr.id_boleto_amadeus,
@@ -1387,15 +1603,150 @@ BEGIN
                          		 nr.trans_issue_indicator,
                          		 pv.nombre as punto_venta,
                                  nr.trans_code_exch,
-                                 nr.impreso
+                                 nr.impreso,
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
                           inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
                           inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
                           left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          where usuex.id_usuario = '||p_id_usuario||' and ';
+                          where usuex.id_usuario = p_id_usuario)
+
+                          LOOP
+
+                          if (v_datos.moneda = 'USD') then
+
+                          		 insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_me,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+                           	else
+
+                            insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_ml,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+
+
+                            end if;
+
+                          END LOOP;
+            end if;
+
+			v_consulta:='select id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      COALESCE (precio_total_ml,0) as precio_total_ml,
+                                      COALESCE (precio_total_me,0) as precio_total_me,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_ml,
+                                      monto_forma_pago_me,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                          from datos_amadeus
+                          where ';
 
             --Definicion de la respuesta
 			v_consulta = v_consulta||v_parametros.filtro;
@@ -1418,11 +1769,40 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='with forma_pago_temporal as(
+
+             if (v_parametros.tipo_interfaz = 'ResumenDetalle') then
+
+            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                      pasajero varchar,
+                                      localizador varchar,
+                                      nro_boleto varchar,
+          							  forma_pago_amadeus varchar,
+                                      moneda varchar,
+                                      precio_total_ml numeric,
+                                      precio_total_me numeric,
+                                      agente_venta varchar,
+                                      id_forma_pago int4,
+                                      monto_forma_pago_ml numeric,
+                                      monto_forma_pago_me numeric,
+                                      forma_pago varchar,
+                                      fecha_emision date,
+                                      trans_code varchar,
+                                      trans_issue_indicator varchar,
+                                      nombre varchar,
+                                      trans_code_exch varchar,
+                                      impreso varchar )ON COMMIT DROP;
+
+
+            /*select ex.id_usuario into v_id_usuario
+            from segu.tusuario_externo ex
+            where ex.usuario_externo = v_parametros.agente_venta;*/
+
+
+            For v_datos in (with forma_pago_temporal as(
                                           select bol.id_boleto_amadeus,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
                                                  array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
                                                  array_agg(fp.codigo) as codigo_forma_pago,
                                                  array_agg(bfp.numero_tarjeta) as numero_tarjeta,
                                                  array_agg(bfp.mco) as mco,
@@ -1435,25 +1815,730 @@ BEGIN
                                                left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                                                left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
                                                left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision = '''||v_parametros.fecha||'''::date
+                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
                                           group by bol.id_boleto_amadeus)
 
-                          select
-                          	count(nr.id_boleto_amadeus) as total,
-                        	sum(nr.total) as precio_total
+                          select nr.id_boleto_amadeus,
+                          		 nr.pasajero as pasajero,
+                          		 nr.localizador as localizador,
+                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                 nr.forma_pago as forma_pago_amadeus,
+                                 nr.moneda,
+                                 nr.total as precio_total,
+                                 nr.agente_venta as codigo_agente,
+                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                 nr.fecha_emision,
+                                 nr.trans_code,
+                         		 nr.trans_issue_indicator,
+                         		 pv.nombre as punto_venta,
+                                 nr.trans_code_exch,
+                                 nr.impreso,
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda=''moneda_base''
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
                           inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
                           inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
                           left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          where usuex.id_usuario = '||p_id_usuario||' and ';
+                          where nr.agente_venta = v_parametros.agente_venta and pv.id_punto_venta = v_parametros.punto_venta::integer)
+
+                          LOOP
+
+                          if (v_datos.moneda = 'USD') then
+
+                          		 insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_me,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+                           	else
+
+                            insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_ml,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+
+
+                            end if;
+
+                          END LOOP;
+
+            else
+
+            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                      pasajero varchar,
+                                      localizador varchar,
+                                      nro_boleto varchar,
+          							  forma_pago_amadeus varchar,
+                                      moneda varchar,
+                                      precio_total_ml numeric,
+                                      precio_total_me numeric,
+                                      agente_venta varchar,
+                                      id_forma_pago int4,
+                                      monto_forma_pago_ml numeric,
+                                      monto_forma_pago_me numeric,
+                                      forma_pago varchar,
+                                      fecha_emision date,
+                                      trans_code varchar,
+                                      trans_issue_indicator varchar,
+                                      nombre varchar,
+                                      trans_code_exch varchar,
+                                      impreso varchar )ON COMMIT DROP;
+
+
+
+
+            For v_datos in (with forma_pago_temporal as(
+                                          select bol.id_boleto_amadeus,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
+                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                          where bol.fecha_emision = v_parametros.fecha::date
+                                          group by bol.id_boleto_amadeus)
+
+                          select nr.id_boleto_amadeus,
+                          		 nr.pasajero as pasajero,
+                          		 nr.localizador as localizador,
+                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                 nr.forma_pago as forma_pago_amadeus,
+                                 nr.moneda,
+                                 nr.total as precio_total,
+                                 nr.agente_venta as codigo_agente,
+                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                 nr.fecha_emision,
+                                 nr.trans_code,
+                         		 nr.trans_issue_indicator,
+                         		 pv.nombre as punto_venta,
+                                 nr.trans_code_exch,
+                                 nr.impreso,
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+
+                          from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          where usuex.id_usuario = p_id_usuario)
+
+                          LOOP
+
+                          if (v_datos.moneda = 'USD') then
+
+                          		 insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_me,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+                           	else
+
+                            insert into datos_amadeus (
+                                      id_boleto_amadeus,
+                                      pasajero,
+                                      localizador,
+                                      nro_boleto,
+          							  forma_pago_amadeus,
+                                      moneda,
+                                      precio_total_ml,
+                                      agente_venta,
+                                      id_forma_pago,
+                                      monto_forma_pago_me,
+                                      monto_forma_pago_ml,
+                                      forma_pago,
+                                      fecha_emision,
+                                      trans_code,
+                                      trans_issue_indicator,
+                                      nombre,
+                                      trans_code_exch,
+                                      impreso
+
+                                        )
+                                        values(
+                                        v_datos.id_boleto_amadeus,
+                                        v_datos.pasajero,
+                                        v_datos.localizador,
+                                        v_datos.nro_boleto,
+                                        v_datos.forma_pago_amadeus,
+                                        v_datos.moneda,
+                                        v_datos.precio_total,
+                                        v_datos.codigo_agente,
+                                        v_datos.id_forma_pago,
+                                        CASE WHEN v_datos.moneda_fp = 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        CASE WHEN v_datos.moneda_fp != 'USD' then
+                                        v_datos.monto_forma_pago
+                                        else
+                                        0
+                                        end,
+                                        v_datos.forma_pago,
+                                        v_datos.fecha_emision,
+                                        v_datos.trans_code,
+                                        v_datos.trans_issue_indicator,
+                                        v_datos.punto_venta,
+                                        v_datos.trans_code_exch,
+                                        v_datos.impreso
+                                      );
+
+
+                            end if;
+
+                          END LOOP;
+            end if;
+
+			v_consulta:='select count(id_boleto_amadeus) as total,
+                        		COALESCE (sum(precio_total_ml),0) as precio_total_ml,
+                                COALESCE (sum(precio_total_me),0) as precio_total_me,
+                                COALESCE (sum(monto_forma_pago_ml),0) as monto_forma_pago_ml,
+                                COALESCE (sum(monto_forma_pago_me),0) as monto_forma_pago_me
+                          from datos_amadeus
+                          where ';
 
 			v_consulta:=v_consulta||v_parametros.filtro;
 			--Devuelve la respuesta
 			return v_consulta;
 
 		end;
+
+        /*********************************
+ 	#TRANSACCION:  'OBING_RESUVEN_SEL'
+ 	#DESCRIPCION:	Consulta de Boletos Vendidos
+ 	#AUTOR:		Ismael Valdivia
+ 	#FECHA:		26-02-2022 18:00:00
+	***********************************/
+
+	elsif(p_transaccion='OBING_RESUVEN_SEL')then
+
+       begin
+    		--Sentencia de la consulta
+
+            CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
+            									   counter varchar,
+                                                   monto_ml numeric,
+                                                   monto_me numeric
+             				          )ON COMMIT DROP;
+
+
+
+
+            For v_datos in (with forma_pago_temporal as(
+                                          select bol.id_boleto_amadeus,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
+                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                                          group by bol.id_boleto_amadeus)
+
+                          select
+                                 nr.agente_venta as codigo_agente,
+                                 per.nombre_completo2,
+                                 nr.moneda,
+                                 sum (nr.total) as precio_total
+
+                          from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
+                          left join segu.vpersona per on per.id_persona = usu.id_persona
+                          where pv.id_punto_venta = v_parametros.punto_venta::integer
+                          group by nr.agente_venta, per.nombre_completo2, nr.moneda)
+
+                          LOOP
+
+                          		select count(*) into v_contador
+                                    from datos_resumen
+                                    where agente_venta = v_datos.codigo_agente;
+
+                                 if (v_contador = 0) then
+
+                                 	if (v_datos.moneda = 'USD') then
+
+                                       insert into datos_resumen (
+                                              agente_venta,
+                                              counter,
+                                              monto_ml,
+                                              monto_me
+                                              )
+                                              values(
+                                              v_datos.codigo_agente,
+                                              v_datos.nombre_completo2,
+                                              0,
+                                              v_datos.precio_total
+                                            );
+                                    else
+                                    	insert into datos_resumen (
+                                              agente_venta,
+                                              counter,
+                                              monto_ml,
+                                              monto_me
+                                              )
+                                              values(
+                                              v_datos.codigo_agente,
+                                              v_datos.nombre_completo2,
+                                              v_datos.precio_total,
+                                              0
+                                            );
+                                    end if;
+
+                                else
+
+                                    	if (v_datos.moneda = 'USD')  then
+                                            update datos_resumen set
+                                            monto_me = v_datos.precio_total
+                                            where agente_venta = v_datos.codigo_agente;
+
+                                        else
+                                            update datos_resumen set
+                                            monto_ml = v_datos.precio_total
+                                            where agente_venta = v_datos.codigo_agente;
+                                        end if;
+
+                            	end if;
+
+
+
+                          END LOOP;
+
+			v_consulta:='select agente_venta,
+            					counter,
+                                monto_ml,
+                                monto_me
+                          from datos_resumen
+                          where ';
+
+            --Definicion de la respuesta
+			v_consulta = v_consulta||v_parametros.filtro;
+        	v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+
+            --raise notice 'v_consulta: %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_RESUVEN_CONT'
+ 	#DESCRIPCION:	Conteo de boletos vendidos
+ 	#AUTOR:		franklin.espinoza
+ 	#FECHA:		09-04-2019 20:28:10
+	***********************************/
+
+	elsif(p_transaccion='OBING_RESUVEN_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+
+             CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
+            									   counter varchar,
+                                                   monto_ml numeric,
+                                                   monto_me numeric
+             				          )ON COMMIT DROP;
+
+
+
+
+            For v_datos in (with forma_pago_temporal as(
+                                          select bol.id_boleto_amadeus,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
+                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                                          group by bol.id_boleto_amadeus)
+
+                          select
+                                 nr.agente_venta as codigo_agente,
+                                 per.nombre_completo2,
+                                 nr.moneda,
+                                 sum (nr.total) as precio_total
+
+                          from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
+                          left join segu.vpersona per on per.id_persona = usu.id_persona
+                          where pv.id_punto_venta = v_parametros.punto_venta::integer
+                          group by nr.agente_venta, per.nombre_completo2, nr.moneda)
+
+                          LOOP
+
+                          		select count(*) into v_contador
+                                    from datos_resumen
+                                    where agente_venta = v_datos.codigo_agente;
+
+                                 if (v_contador = 0) then
+
+                                 	if (v_datos.moneda = 'USD') then
+
+                                       insert into datos_resumen (
+                                              agente_venta,
+                                              counter,
+                                              monto_ml,
+                                              monto_me
+                                              )
+                                              values(
+                                              v_datos.codigo_agente,
+                                              v_datos.nombre_completo2,
+                                              0,
+                                              v_datos.precio_total
+                                            );
+                                    else
+                                    	insert into datos_resumen (
+                                              agente_venta,
+                                              counter,
+                                              monto_ml,
+                                              monto_me
+                                              )
+                                              values(
+                                              v_datos.codigo_agente,
+                                              v_datos.nombre_completo2,
+                                              v_datos.precio_total,
+                                              0
+                                            );
+                                    end if;
+
+                                else
+
+                                    	if (v_datos.moneda = 'USD')  then
+                                            update datos_resumen set
+                                            monto_me = v_datos.precio_total
+                                            where agente_venta = v_datos.codigo_agente;
+
+                                        else
+                                            update datos_resumen set
+                                            monto_ml = v_datos.precio_total
+                                            where agente_venta = v_datos.codigo_agente;
+                                        end if;
+
+                            	end if;
+
+
+
+                          END LOOP;
+
+			v_consulta:='select count(agente_venta),
+                                sum(monto_ml),
+                                sum(monto_me)
+                          from datos_resumen
+                          where ';
+
+			v_consulta:=v_consulta||v_parametros.filtro;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+
+
+        /*********************************
+ 	#TRANSACCION:  'OBING_RESUVENREP_SEL'
+ 	#DESCRIPCION:	Consulta de Boletos Vendidos
+ 	#AUTOR:		Ismael Valdivia
+ 	#FECHA:		26-02-2022 18:00:00
+	***********************************/
+
+	elsif(p_transaccion='OBING_RESUVENREP_SEL')then
+
+       begin
+    		--Sentencia de la consulta
+
+            /*Cambiando la consulta para separar moneda local y moneda exranjera (Ismael Valdivia 26/02/2020)*/
+
+
+            CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
+            									   counter varchar,
+                                                   monto_ml numeric,
+                                                   monto_me numeric
+             				          )ON COMMIT DROP;
+
+
+
+
+            For v_datos in (with forma_pago_temporal as(
+                                          select bol.id_boleto_amadeus,
+                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
+                                                 array_agg(mon.codigo_internacional) as moneda_fp,
+                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                                                 array_agg(fp.codigo) as codigo_forma_pago,
+                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                                                 array_agg(bfp.mco) as mco,
+                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
+                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                                                 array_agg(bfp.importe) as monto_forma_pago
+                                          from obingresos.tboleto_amadeus bol
+                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                                          group by bol.id_boleto_amadeus)
+
+                          select
+                                 nr.agente_venta as codigo_agente,
+                                 per.nombre_completo2,
+                                 nr.moneda,
+                                 sum (nr.total) as precio_total
+
+                          from obingresos.tboleto_amadeus nr
+                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                          left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
+                          left join segu.vpersona per on per.id_persona = usu.id_persona
+                          where pv.id_punto_venta = v_parametros.punto_venta::integer
+                          group by nr.agente_venta, per.nombre_completo2, nr.moneda)
+
+                          LOOP
+
+                          		select count(*) into v_contador
+                                    from datos_resumen
+                                    where agente_venta = v_datos.codigo_agente;
+
+                                 if (v_contador = 0) then
+
+                                 	if (v_datos.moneda = 'USD') then
+
+                                       insert into datos_resumen (
+                                              agente_venta,
+                                              counter,
+                                              monto_ml,
+                                              monto_me
+                                              )
+                                              values(
+                                              v_datos.codigo_agente,
+                                              v_datos.nombre_completo2,
+                                              0,
+                                              v_datos.precio_total
+                                            );
+                                    else
+                                    	insert into datos_resumen (
+                                              agente_venta,
+                                              counter,
+                                              monto_ml,
+                                              monto_me
+                                              )
+                                              values(
+                                              v_datos.codigo_agente,
+                                              v_datos.nombre_completo2,
+                                              v_datos.precio_total,
+                                              0
+                                            );
+                                    end if;
+
+                                else
+
+                                    	if (v_datos.moneda = 'USD')  then
+                                            update datos_resumen set
+                                            monto_me = v_datos.precio_total
+                                            where agente_venta = v_datos.codigo_agente;
+
+                                        else
+                                            update datos_resumen set
+                                            monto_ml = v_datos.precio_total
+                                            where agente_venta = v_datos.codigo_agente;
+                                        end if;
+
+                            	end if;
+
+
+
+                          END LOOP;
+
+			v_consulta:='select agente_venta,
+            					counter,
+                                monto_ml,
+                                monto_me
+                          from datos_resumen
+                          order by counter ASC
+                          ';
+
+			return v_consulta;
+
+        end;
 
     else
 

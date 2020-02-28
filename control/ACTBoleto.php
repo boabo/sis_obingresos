@@ -10,6 +10,7 @@ include(dirname(__FILE__).'/../reportes/RBoleto.php');
 include(dirname(__FILE__).'/../reportes/RBoletoBOPDF.php');
 include(dirname(__FILE__).'/../reportes/RBoletoBRPDF.php');
 include(dirname(__FILE__).'/../reportes/RReporteBoletoResiberVentasWeb.php');
+include(dirname(__FILE__).'/../reportes/RReporteResumenVentasExcel.php');
 
 class ACTBoleto extends ACTbase{
     var $objParamAux;
@@ -2457,16 +2458,49 @@ class ACTBoleto extends ACTbase{
         //$this->objParam->addParametro('id_usuario', $_SESSION["ss_id_usuario"]);
 
 
+        // $this->objFunc=$this->create('MODBoleto');
+        // $this->res=$this->objFunc->listarVentasCounter($this->objParam);
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODBoleto','listarVentasCounter');
+
+        } else{
+          $this->objFunc=$this->create('MODBoleto');
+          $this->res=$this->objFunc->listarVentasCounter($this->objParam);
+      		$temp = Array();
+          $temp['tipo_reg'] = 'summary';
+          $temp['id_boleto_amadeus'] = 0;
+          $temp['precio_total_ml_t'] =$this->res->extraData['precio_total_ml_t'];
+          $temp['precio_total_me_t'] =$this->res->extraData['precio_total_me_t'];
+          $temp['monto_forma_pago_ml_t'] =$this->res->extraData['monto_forma_pago_ml_t'];
+          $temp['monto_forma_pago_me_t'] =$this->res->extraData['monto_forma_pago_me_t'];
+          $temp['nro_boleto'] = '<b style="font-size: 20px; color: green">Totales</b>';
+      		$this->res->total++;
+      		$this->res->addLastRecDatos($temp);
+      }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+
+    }
+
+
+    function listarResumenVentasCounter(){
+
+        $this->objParam->defecto('ordenacion','counter');
+        $this->objParam->defecto('dir_ordenacion','ASC');
+
+        //$this->objParam->addFiltro(" bol.fecha_emision = ''".$this->objParam->getParametro('fecha')."''::date");
+        $this->objParam->getParametro('fecha_ini');
+
         $this->objFunc=$this->create('MODBoleto');
-        $this->res=$this->objFunc->listarVentasCounter($this->objParam);
+        $this->res=$this->objFunc->listarResumenVentasCounter($this->objParam);
 
         //adicionar una fila al resultado con el summario
 		$temp = Array();
-        $temp['id_boleto_amadeus'] = 0;
-		$temp['precio_total'] ='<b style="font-size: 15px; color: green">'.$this->res->extraData['precio_total'].'</b>';
-		$temp['monto_forma_pago'] ='<b style="font-size: 15px; color: green">'.$this->res->extraData['precio_total'].'</b>';
-        $temp['nro_boleto'] = '<b style="font-size: 20px; color: green">Total</b>';
-		//$temp['tipo_reg'] = 'summary';
+    $temp['tipo_reg'] = 'summary';
+    $temp['monto_ml'] =$this->res->extraData['monto_ml'];
+    $temp['monto_me'] =$this->res->extraData['monto_me'];
+    $temp['counter'] = '<b style="font-size: 20px; color: green">Totales</b>';
 
 
 		$this->res->total++;
@@ -2476,6 +2510,29 @@ class ACTBoleto extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
+    function  ReporteResumenVentasCounter(){
+
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->ReporteResumenVentasCounter($this->objParam);
+        //obtener titulo de reporte
+        $titulo ='Reporte Resumen de Ventas';
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo=uniqid(md5(session_id()).$titulo);
+        $nombreArchivo.='.xls';
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        $this->objParam->addParametro('datos',$this->res->datos);
+        //Instancia la clase de excel
+        $this->objReporteFormato=new RReporteResumenVentasExcel($this->objParam);
+        $this->objReporteFormato->generarDatos();
+        $this->objReporteFormato->generarReporte();
+
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado',
+            'Se generó con éxito el reporte: '.$nombreArchivo,'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+    }
 
 }
 

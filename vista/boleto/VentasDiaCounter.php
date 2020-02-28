@@ -53,27 +53,38 @@ header("content-type:text/javascript; charset=UTF-8");
 
             Phx.vista.VentasDiaCounter.superclass.constructor.call(this, config);
             this.init();
+            var that = this;
 
-            this.campo_fecha = new Ext.form.DateField({
-                name: 'fecha_reg',
-                grupo: this.grupoDateFin,
-                fieldLabel: 'Fecha',
-                allowBlank: false,
-                anchor: '60%',
-                gwidth: 100,
-                format: 'd/m/Y',
-                value: new Date(),
-                hidden : false
-            });
+            if (this.counter==undefined) {
+              this.campo_fecha = new Ext.form.DateField({
+                  name: 'fecha_reg',
+                  grupo: this.grupoDateFin,
+                  fieldLabel: 'Fecha',
+                  allowBlank: false,
+                  anchor: '60%',
+                  gwidth: 100,
+                  format: 'd/m/Y',
+                  value: new Date(),
+                  hidden : false
+              });
 
-            this.tbar.addField(this.campo_fecha);
+              this.tbar.addField(this.campo_fecha);
+              this.store.baseParams.tipo_interfaz='VentasDiaCounter';
+              this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('Ymd');
+              this.campo_fecha.on('select',function(value){
+                  this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('Ymd');
+                  this.load({params: {start: 0, limit: this.tam_pag}});
+              },this);
+            } else {
+              console.log("llega aqui el dato",that);
+              this.store.baseParams.tipo_interfaz='ResumenDetalle';
+              this.store.baseParams.fecha_ini=this.principal.fecha_ini;
+              this.store.baseParams.fecha_fin=this.principal.fecha_fin;
+              this.store.baseParams.agente_venta=this.maestro.agente_venta;
+              this.store.baseParams.punto_venta=this.principal.punto_venta;
 
-            this.store.baseParams.tipo_interfaz='VentasDiaCounter';
-            this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('Ymd');
-            this.campo_fecha.on('select',function(value){
-                this.store.baseParams.fecha = this.campo_fecha.getValue().dateFormat('Ymd');
-                this.load({params: {start: 0, limit: this.tam_pag}});
-            },this);
+            }
+
 
             this.load({params: {start: 0, limit: this.tam_pag}});
 
@@ -103,7 +114,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     readOnly:true
                 },
                 type:'TextField',
-                filters:{pfiltro:'nr.pasajero',type:'string'},
+                filters:{pfiltro:'pasajero',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -130,7 +141,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
-                filters:{pfiltro:'nr.localizador',type:'string'},
+                filters:{pfiltro:'localizador',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -191,7 +202,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
-                filters:{pfiltro:'nr.nro_boleto',type:'string'},
+                filters:{pfiltro:'nro_boleto',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -228,12 +239,46 @@ header("content-type:text/javascript; charset=UTF-8");
             },
             {
                 config:{
-                    name: 'precio_total',
+                    name: 'precio_total_ml',
                     fieldLabel: 'Total M/L',
                     disabled: true,
                     anchor: '90%',
-                    gwidth: 70	,
-                    readOnly:true
+                    gwidth: 150	,
+                    readOnly:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:blue; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:blue;"><b>{0}<b></div>', Ext.util.Format.number(record.data.precio_total_ml_t,'0,000.00'));
+            					}
+            				},
+                },
+                type:'NumberField',
+                id_grupo:0,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    name: 'precio_total_me',
+                    fieldLabel: 'Total M/E',
+                    disabled: true,
+                    anchor: '90%',
+                    gwidth: 150	,
+                    readOnly:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:#E86A00; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#E86A00;"><b>{0}<b></div>', Ext.util.Format.number(record.data.precio_total_me_t,'0,000.00'));
+            					}
+            				}
                 },
                 type:'NumberField',
                 id_grupo:0,
@@ -252,7 +297,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
-                filters:{pfiltro:'pv.nombre',type:'string'},
+                filters:{pfiltro:'nombre',type:'string'},
                 id_grupo:0,
                 grid:true,
                 form:true,
@@ -318,15 +363,52 @@ header("content-type:text/javascript; charset=UTF-8");
             },
             {
                 config:{
-                    name: 'monto_forma_pago',
-                    fieldLabel: 'Importe Forma Pago',
+                    name: 'monto_forma_pago_ml',
+                    fieldLabel: 'Importe Forma Pago M/L',
                     allowBlank:false,
                     anchor: '80%',
                     allowDecimals:true,
                     decimalPrecision:2,
                     allowNegative : false,
                     disabled:true,
-                    gwidth: 110
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:blue; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:blue;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_forma_pago_ml_t,'0,000.00'));
+            					}
+            				},
+                    gwidth: 150
+                },
+                type:'NumberField',
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    name: 'monto_forma_pago_me',
+                    fieldLabel: 'Importe Forma Pago M/E',
+                    allowBlank:false,
+                    anchor: '80%',
+                    allowDecimals:true,
+                    decimalPrecision:2,
+                    allowNegative : false,
+                    disabled:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:#E86A00; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#E86A00;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_forma_pago_me_t,'0,000.00'));
+            					}
+            				},
+                    gwidth: 150
                 },
                 type:'NumberField',
                 id_grupo:1,
@@ -464,11 +546,20 @@ header("content-type:text/javascript; charset=UTF-8");
             {name:'nro_boleto', type: 'string'},
             {name:'forma_pago_amadeus', type: 'string'},
             {name:'moneda', type: 'string'},
-            {name:'precio_total', type: 'numeric'},
+            {name:'precio_total_ml', type: 'numeric'},
+            {name:'precio_total_me', type: 'numeric'},
+
+            {name:'precio_total_me_t', type: 'numeric'},
+            {name:'precio_total_ml_t', type: 'numeric'},
 
             {name:'codigo_agente', type: 'string'},
             {name:'id_forma_pago', type: 'numeric'},
-            {name:'monto_forma_pago', type: 'numeric'},
+            {name:'monto_forma_pago_ml', type: 'numeric'},
+            {name:'monto_forma_pago_me', type: 'numeric'},
+
+            {name:'monto_forma_pago_me_t', type: 'numeric'},
+            {name:'monto_forma_pago_ml_t', type: 'numeric'},
+
             {name:'forma_pago', type: 'string'},
             {name:'fecha_emision', type: 'date',dateFormat:'Y-m-d'},
             {name:'trans_code', type: 'string'},
@@ -476,6 +567,7 @@ header("content-type:text/javascript; charset=UTF-8");
             {name:'punto_venta', type: 'string'},
             {name:'trans_code_exch', type: 'string'},
             {name:'impreso', type: 'string'},
+            {name:'tipo_reg', type: 'string'},
         ],
         sortInfo:{
             field: 'nro_boleto',

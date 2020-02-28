@@ -1091,8 +1091,17 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento='SEL';//tipo de transaccion
 
         $this->setParametro('fecha', 'fecha', 'varchar');
+
+        $this->setParametro('tipo_interfaz', 'tipo_interfaz', 'varchar');
+        $this->setParametro('fecha_ini', 'fecha_ini', 'varchar');
+        $this->setParametro('fecha_fin', 'fecha_fin', 'varchar');
+        $this->setParametro('agente_venta', 'agente_venta', 'varchar');
+        $this->setParametro('punto_venta', 'punto_venta', 'varchar');
         //captura parametros adicionales para el count
-        $this->capturaCount('precio_total','numeric');
+        $this->capturaCount('precio_total_ml_t','numeric');
+        $this->capturaCount('precio_total_me_t','numeric');
+        $this->capturaCount('monto_forma_pago_ml_t','numeric');
+        $this->capturaCount('monto_forma_pago_me_t','numeric');
 
         $this->captura('id_boleto_amadeus','integer');
         $this->captura('pasajero','varchar');
@@ -1100,10 +1109,12 @@ class MODBoleto extends MODbase{
         $this->captura('nro_boleto','varchar');
         $this->captura('forma_pago_amadeus','varchar');
         $this->captura('moneda','varchar');
-        $this->captura('precio_total','numeric');
+        $this->captura('precio_total_ml','numeric');
+        $this->captura('precio_total_me','numeric');
         $this->captura('codigo_agente','varchar');
         $this->captura('id_forma_pago','int4');
-        $this->captura('monto_forma_pago','numeric');
+        $this->captura('monto_forma_pago_ml','numeric');
+        $this->captura('monto_forma_pago_me','numeric');
         $this->captura('forma_pago','varchar');
         $this->captura('fecha_emision','date');
         $this->captura('trans_code','varchar');
@@ -1115,7 +1126,64 @@ class MODBoleto extends MODbase{
         //Ejecuta la instruccion
         $this->armarConsulta();//echo $this->consulta;exit;
         $this->ejecutarConsulta();
+        //var_dump("llega aqui el dato",$this->respuesta);
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 
+    function listarResumenVentasCounter(){
+
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_sel';
+        $this->transaccion='OBING_RESUVEN_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('fecha_ini', 'fecha_ini', 'varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('punto_venta','punto_venta','varchar');
+        //captura parametros adicionales para el count
+        $this->capturaCount('monto_ml','numeric');
+        $this->capturaCount('monto_me','numeric');
+
+
+        $this->captura('agente_venta','varchar');
+        $this->captura('counter','varchar');
+        $this->captura('monto_ml','numeric');
+        $this->captura('monto_me','numeric');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();//echo $this->consulta;exit;
+        $this->ejecutarConsulta();
+        //var_dump("llega aqui el dato",$this->respuesta);
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    function ReporteResumenVentasCounter(){
+
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_sel';
+        $this->transaccion='OBING_RESUVENREP_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+
+        $this->setParametro('fecha_ini', 'fecha_ini', 'varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('punto_venta','punto_venta','varchar');
+        //captura parametros adicionales para el count
+        $this->capturaCount('monto_ml','numeric');
+        $this->capturaCount('monto_me','numeric');
+
+
+        $this->captura('agente_venta','varchar');
+        $this->captura('counter','varchar');
+        $this->captura('monto_ml','numeric');
+        $this->captura('monto_me','numeric');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();//echo $this->consulta;exit;
+        $this->ejecutarConsulta();
+        //var_dump("llega aqui el dato",$this->respuesta);
         //Devuelve la respuesta
         return $this->respuesta;
     }
