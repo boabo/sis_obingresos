@@ -26,10 +26,8 @@ header("content-type:text/javascript; charset=UTF-8");
         constructor : function(config) {
 
             this.maestro = config.maestro;
-
             Phx.vista.ResumenVentas.superclass.constructor.call(this, config);
             this.init();
-
             this.addButton('ReporteResumenVentas',{
                 text: 'Reporte Resumen <br> de Ventas',
                 iconCls: 'bexcel',
@@ -53,7 +51,18 @@ header("content-type:text/javascript; charset=UTF-8");
             this.tbar.addField(this.fecha_fin);
             this.tbar.addField(this.punto_venta);
 
-
+            Ext.Ajax.request({
+        				url:'../../sis_ventas_facturacion/control/Cajero/getTipoUsuario',
+        				params: {'vista':'counter'},
+        				success: function(resp){
+        						var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+        						this.tipo_usuario = reg.ROOT.datos.v_tipo_usuario;
+                    this.tbar.items.items[5].store.baseParams.tipo_usuario = this.tipo_usuario;
+        				},
+        				failure: this.conexionFailure,
+        				timeout:this.timeout,
+        				scope:this
+        		});
 
 
             this.fecha_ini.on('select',function(value){
@@ -91,7 +100,6 @@ header("content-type:text/javascript; charset=UTF-8");
 
 
         DetalleVentaCounter: function(){
-                    console.log("llega aqui el dato",this);
       	            var rec = {maestro: this.sm.getSelected().data,
                                principal: this.store.baseParams}
       	            rec.counter='especifico';
@@ -110,7 +118,6 @@ header("content-type:text/javascript; charset=UTF-8");
 
           preparaMenu: function () {
             var rec = this.sm.getSelected();
-            console.log("rec",rec);
             //if(rec.data.neto_total_mt !== null || rec.data.importe_total_mt !== null || rec.data.cant_bol_mt !== null){
                 this.getBoton('BtnDetalleVentaCounter').enable();
             //}
@@ -368,7 +375,6 @@ header("content-type:text/javascript; charset=UTF-8");
             this.store.baseParams.fecha_ini = this.fecha_ini.getValue().dateFormat('d/m/Y');
             this.store.baseParams.fecha_fin = this.fecha_fin.getValue().dateFormat('d/m/Y');
             this.store.baseParams.punto_venta = this.punto_venta.getValue();
-            console.log("llega aqui el dato",this);
             this.load({params:{start:0, limit:this.tam_pag}});
 
         },
