@@ -2534,6 +2534,12 @@ class ACTBoleto extends ACTbase{
 
     }
 
+    function obtenerPuntosVentasCounter(){
+  		 $this->objFunc=$this->create('MODBoleto');
+  		 $this->res=$this->objFunc->obtenerPuntosVentasCounter($this->objParam);
+  		 $this->res->imprimirRespuesta($this->res->generarJson());
+   }
+
 }
 
 ?>

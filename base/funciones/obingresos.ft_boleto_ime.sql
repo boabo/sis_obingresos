@@ -160,6 +160,7 @@ DECLARE
     v_codigo_moneda				varchar;
     v_consultado			integer;
     v_estado_canjeado		varchar;
+    v_puntos_venta			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -3033,6 +3034,40 @@ BEGIN
             return v_resp;
 
 		end;
+
+	/*********************************
+    #TRANSACCION: 'OBING_GET_PV'
+    #DESCRIPCION: RECUPERA LOS PUNTOS DE VENTAS
+    #AUTOR: ISMAEL VALDIVIA ARANIBAR
+    #FECHA: 02/03/2020
+    ***********************************/
+
+	elsif (p_transaccion = 'OBING_GET_PV') then
+
+  	BEGIN
+			if (p_id_usuario = 1) then
+            	v_puntos_venta = 'todos';
+            else
+            	select ex.usuario_externo into v_agente_venta
+                from segu.tusuario_externo ex
+                where ex.id_usuario = p_id_usuario;
+
+                select list(distinct (ama.id_punto_venta)::varchar) into v_puntos_venta
+                from obingresos.tboleto_amadeus ama
+                where ama.agente_venta = v_agente_venta;
+            end if;
+
+
+
+      --Definition of the response
+      	v_resp = pxp.f_agrega_clave(v_resp, 'message ', 'Puntos Venta');
+        v_resp = pxp.f_agrega_clave(v_resp,'v_puntos_venta',v_puntos_venta::varchar);
+
+
+      --Returns the answer
+        return v_resp;
+
+  	END;
 
 
 	else

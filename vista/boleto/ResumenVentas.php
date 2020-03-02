@@ -52,18 +52,18 @@ header("content-type:text/javascript; charset=UTF-8");
             this.tbar.addField(this.punto_venta);
 
             Ext.Ajax.request({
-        				url:'../../sis_ventas_facturacion/control/Cajero/getTipoUsuario',
+        				url:'../../sis_obingresos/control/Boleto/obtenerPuntosVentasCounter',
         				params: {'vista':'counter'},
         				success: function(resp){
         						var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-        						this.tipo_usuario = reg.ROOT.datos.v_tipo_usuario;
-                    this.tbar.items.items[5].store.baseParams.tipo_usuario = this.tipo_usuario;
+        						this.puntos_venta = reg.ROOT.datos.v_puntos_venta;
+                    this.tbar.items.items[5].store.baseParams.puntos_venta = this.puntos_venta;
         				},
         				failure: this.conexionFailure,
         				timeout:this.timeout,
         				scope:this
         		});
-
+            console.log("los puntos de ventas son",this);
 
             this.fecha_ini.on('select',function(value){
                 this.punto_venta.reset();

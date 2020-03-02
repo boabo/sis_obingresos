@@ -1187,5 +1187,20 @@ class MODBoleto extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+    function obtenerPuntosVentasCounter(){
+  			//Definicion de variables para ejecucion del procedimientp
+  			$this->procedimiento='obingresos.ft_boleto_ime';
+  			$this->transaccion='OBING_GET_PV';
+  			$this->tipo_procedimiento='IME';//tipo de transaccion
+
+  			$this->setParametro('vista','vista','varchar');
+
+  			//Ejecuta la instruccion
+  			$this->armarConsulta();
+  			$this->ejecutarConsulta();
+
+  			//Devuelve la respuesta
+  			return $this->respuesta;
+  	}
 }
 ?>
