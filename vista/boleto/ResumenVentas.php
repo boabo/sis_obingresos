@@ -61,14 +61,14 @@ header("content-type:text/javascript; charset=UTF-8");
         },
 
         onButtonReporteResumenVentas: function () {
-            Phx.CP.loadingShow();
+            Phx.CP.loadingShow();            
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/Boleto/ReporteResumenVentasCounter',
                 params:{
                         fecha_ini : this.fecha_ini.getValue().dateFormat('d/m/Y'),
                         fecha_fin : this.fecha_fin.getValue().dateFormat('d/m/Y'),
                         punto_venta : this.punto_venta.getValue(),
-                        nombre_pv : this.tbar.items.items[4].lastSelectionText,
+                        nombre_pv : this.punto_venta.lastSelectionText,
               },
 
                 success: this.successExport,
