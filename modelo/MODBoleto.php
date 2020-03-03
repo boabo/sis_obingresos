@@ -1189,18 +1189,29 @@ class MODBoleto extends MODbase{
     }
     function obtenerPuntosVentasCounter(){
   			//Definicion de variables para ejecucion del procedimientp
-  			$this->procedimiento='obingresos.ft_boleto_ime';
-  			$this->transaccion='OBING_GET_PV';
-  			$this->tipo_procedimiento='IME';//tipo de transaccion
+  			$this->procedimiento='obingresos.ft_boleto_sel';
+  			$this->transaccion='OBING_GET_PV_SEL';
+  			$this->tipo_procedimiento='SEL';//tipo de transaccion
+        //$this->setCount(false);
+        //Definicion de la lista del resultado del query
+    		$this->captura('id_punto_venta','int4');
+    		$this->captura('estado_reg','varchar');
+    		$this->captura('id_sucursal','int4');
+    		$this->captura('nombre','varchar');
+    		$this->captura('descripcion','text');
+    		$this->captura('codigo','varchar');
+    		$this->captura('habilitar_comisiones','varchar');
+    		$this->captura('formato_comprobante','varchar');
+    		$this->captura('tipo','varchar');
 
-  			$this->setParametro('vista','vista','varchar');
 
-  			//Ejecuta la instruccion
-  			$this->armarConsulta();
-  			$this->ejecutarConsulta();
+    		//Ejecuta la instruccion
+    		$this->armarConsulta();
+    		$this->ejecutarConsulta();
 
-  			//Devuelve la respuesta
-  			return $this->respuesta;
+    		//Devuelve la respuesta
+
+    		return $this->respuesta;
   	}
 }
 ?>

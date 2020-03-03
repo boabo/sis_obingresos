@@ -15,13 +15,7 @@ header("content-type:text/javascript; charset=UTF-8");
             stripeRows: false,
             getRowClass: function(record) {
                 return "x-selectable";
-            }/*,
-            listeners:{
-                itemkeydown:function(view, record, item, index, e){
-                    alert('The press key is' + e.getKey());
-                }
-            }*/
-
+            }
         },
         constructor : function(config) {
 
@@ -50,20 +44,6 @@ header("content-type:text/javascript; charset=UTF-8");
             this.tbar.addField(this.fecha_ini);
             this.tbar.addField(this.fecha_fin);
             this.tbar.addField(this.punto_venta);
-
-            Ext.Ajax.request({
-        				url:'../../sis_obingresos/control/Boleto/obtenerPuntosVentasCounter',
-        				params: {'vista':'counter'},
-        				success: function(resp){
-        						var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-        						this.puntos_venta = reg.ROOT.datos.v_puntos_venta;
-                    this.tbar.items.items[5].store.baseParams.puntos_venta = this.puntos_venta;
-        				},
-        				failure: this.conexionFailure,
-        				timeout:this.timeout,
-        				scope:this
-        		});
-            console.log("los puntos de ventas son",this);
 
             this.fecha_ini.on('select',function(value){
                 this.punto_venta.reset();
@@ -401,7 +381,7 @@ header("content-type:text/javascript; charset=UTF-8");
             emptyText:'Punto de Venta...',
             store:new Ext.data.JsonStore(
                 {
-                    url: '../../sis_ventas_facturacion/control/PuntoVenta/listarPuntoVenta',
+                    url: '../../sis_obingresos/control/Boleto/obtenerPuntosVentasCounter',
                     id: 'id_punto_venta',
                     root: 'datos',
                     sortInfo:{
