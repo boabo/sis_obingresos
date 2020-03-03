@@ -392,7 +392,7 @@ header("content-type:text/javascript; charset=UTF-8");
                     fields: ['id_punto_venta','tipo','id_sucursal','nombre','codigo','habilitar_comisiones','formato_comprobante'],
                     // turn on remote sorting
                     remoteSort: true,
-                    baseParams:{par_filtro:'puve.nombre#puve.codigo'}
+                    baseParams:{par_filtro:'nombre#codigo'}
                 }),
             valueField: 'id_punto_venta',
             displayField: 'nombre',

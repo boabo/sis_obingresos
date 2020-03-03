@@ -2637,16 +2637,8 @@ raise 'tvuelo: %', v_contador_exch;*/
     elsif(p_transaccion='OBING_GET_PV_SEL')then
 
       begin
-      			select ex.usuario_externo into v_agente_venta
-                from segu.tusuario_externo ex
-                where ex.id_usuario = p_id_usuario;
-
-                select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
-                from obingresos.tboleto_amadeus ama
-                where ama.agente_venta = v_agente_venta;
-
-
-                CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+      			if (p_administrador = 1) then
+                	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
                                                                nombre varchar,
@@ -2658,50 +2650,113 @@ raise 'tvuelo: %', v_contador_exch;*/
                                                   )ON COMMIT DROP;
 
 
-                for v_puntos_venta_counter in ( select
-                                              puve.id_punto_venta,
-                                              puve.estado_reg,
-                                              puve.id_sucursal,
-                                              puve.nombre,
-                                              puve.descripcion,
-                                              puve.codigo,
-                                              puve.habilitar_comisiones,
-                                              suc.formato_comprobante,
-                                              puve.tipo
-                                              from vef.tpunto_venta puve
-                                              inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
-                                              left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
-                                              inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                              where puve.id_punto_venta = any (v_puntos_venta) )
-                LOOP
+                      for v_puntos_venta_counter in ( select
+                                                    puve.id_punto_venta,
+                                                    puve.estado_reg,
+                                                    puve.id_sucursal,
+                                                    puve.nombre,
+                                                    puve.descripcion,
+                                                    puve.codigo,
+                                                    puve.habilitar_comisiones,
+                                                    suc.formato_comprobante,
+                                                    puve.tipo
+                                                    from vef.tpunto_venta puve
+                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                    where (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
+                                                	p_id_usuario in (select id_usuario from
+                                                	vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
+                                                    sucusu.tipo_usuario = 'administrador'))))
+                      LOOP
 
-                                insert into puntos_venta_counter (
-                                       id_punto_venta,
-                                       estado_reg,
-                                       id_sucursal,
-                                       nombre,
-                                       descripcion,
-                                       codigo,
-                                       habilitar_comisiones,
-                                       formato_comprobante,
-                                       tipo
-                                )VALUES(
-                                	   v_puntos_venta_counter.id_punto_venta,
-                                       v_puntos_venta_counter.estado_reg,
-                                       v_puntos_venta_counter.id_sucursal,
-                                       v_puntos_venta_counter.nombre,
-                                       v_puntos_venta_counter.descripcion,
-                                       v_puntos_venta_counter.codigo,
-                                       v_puntos_venta_counter.habilitar_comisiones,
-                                       v_puntos_venta_counter.formato_comprobante,
-                                       v_puntos_venta_counter.tipo
-                                );
+                                      insert into puntos_venta_counter (
+                                             id_punto_venta,
+                                             estado_reg,
+                                             id_sucursal,
+                                             nombre,
+                                             descripcion,
+                                             codigo,
+                                             habilitar_comisiones,
+                                             formato_comprobante,
+                                             tipo
+                                      )VALUES(
+                                             v_puntos_venta_counter.id_punto_venta,
+                                             v_puntos_venta_counter.estado_reg,
+                                             v_puntos_venta_counter.id_sucursal,
+                                             v_puntos_venta_counter.nombre,
+                                             v_puntos_venta_counter.descripcion,
+                                             v_puntos_venta_counter.codigo,
+                                             v_puntos_venta_counter.habilitar_comisiones,
+                                             v_puntos_venta_counter.formato_comprobante,
+                                             v_puntos_venta_counter.tipo
+                                      );
 
-                end loop;
+                      end loop;
+
+                      else
+                      select ex.usuario_externo into v_agente_venta
+                      from segu.tusuario_externo ex
+                      where ex.id_usuario = p_id_usuario;
+
+                      select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
+                      from obingresos.tboleto_amadeus ama
+                      where ama.agente_venta = v_agente_venta;
 
 
+                      CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+                                                                     estado_reg varchar,
+                                                                     id_sucursal int4,
+                                                                     nombre varchar,
+                                                                     descripcion text,
+                                                                     codigo varchar,
+                                                                     habilitar_comisiones varchar,
+                                                                     formato_comprobante varchar,
+                                                                     tipo varchar
+                                                        )ON COMMIT DROP;
 
 
+                      for v_puntos_venta_counter in ( select
+                                                    puve.id_punto_venta,
+                                                    puve.estado_reg,
+                                                    puve.id_sucursal,
+                                                    puve.nombre,
+                                                    puve.descripcion,
+                                                    puve.codigo,
+                                                    puve.habilitar_comisiones,
+                                                    suc.formato_comprobante,
+                                                    puve.tipo
+                                                    from vef.tpunto_venta puve
+                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                    where puve.id_punto_venta = any (v_puntos_venta) )
+                      LOOP
+
+                                      insert into puntos_venta_counter (
+                                             id_punto_venta,
+                                             estado_reg,
+                                             id_sucursal,
+                                             nombre,
+                                             descripcion,
+                                             codigo,
+                                             habilitar_comisiones,
+                                             formato_comprobante,
+                                             tipo
+                                      )VALUES(
+                                             v_puntos_venta_counter.id_punto_venta,
+                                             v_puntos_venta_counter.estado_reg,
+                                             v_puntos_venta_counter.id_sucursal,
+                                             v_puntos_venta_counter.nombre,
+                                             v_puntos_venta_counter.descripcion,
+                                             v_puntos_venta_counter.codigo,
+                                             v_puntos_venta_counter.habilitar_comisiones,
+                                             v_puntos_venta_counter.formato_comprobante,
+                                             v_puntos_venta_counter.tipo
+                                      );
+
+                      end loop;
+                end if;
 
         --Sentencia de la consulta
         v_consulta:='select
@@ -2714,8 +2769,12 @@ raise 'tvuelo: %', v_contador_exch;*/
                          habilitar_comisiones,
                          formato_comprobante,
                          tipo
-                         from puntos_venta_counter';
+                         from puntos_venta_counter
+                         where ';
 
+        v_consulta:=v_consulta||v_parametros.filtro;
+        v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+        raise notice '%',v_consulta;
         --Devuelve la respuesta
         return v_consulta;
 
@@ -2731,16 +2790,8 @@ raise 'tvuelo: %', v_contador_exch;*/
       elsif(p_transaccion='OBING_GET_PV_CONT')then
 
         begin
-        select ex.usuario_externo into v_agente_venta
-                from segu.tusuario_externo ex
-                where ex.id_usuario = p_id_usuario;
-
-                select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
-                from obingresos.tboleto_amadeus ama
-                where ama.agente_venta = v_agente_venta;
-
-
-                CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+        if (p_administrador = 1) then
+                	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
                                                                nombre varchar,
@@ -2752,51 +2803,122 @@ raise 'tvuelo: %', v_contador_exch;*/
                                                   )ON COMMIT DROP;
 
 
-                for v_puntos_venta_counter in ( select
-                                              puve.id_punto_venta,
-                                              puve.estado_reg,
-                                              puve.id_sucursal,
-                                              puve.nombre,
-                                              puve.descripcion,
-                                              puve.codigo,
-                                              puve.habilitar_comisiones,
-                                              suc.formato_comprobante,
-                                              puve.tipo
-                                              from vef.tpunto_venta puve
-                                              inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
-                                              left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
-                                              inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                              where puve.id_punto_venta = any (v_puntos_venta) )
-                LOOP
+                      for v_puntos_venta_counter in ( select
+                                                    puve.id_punto_venta,
+                                                    puve.estado_reg,
+                                                    puve.id_sucursal,
+                                                    puve.nombre,
+                                                    puve.descripcion,
+                                                    puve.codigo,
+                                                    puve.habilitar_comisiones,
+                                                    suc.formato_comprobante,
+                                                    puve.tipo
+                                                    from vef.tpunto_venta puve
+                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                    where (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
+                                                	p_id_usuario in (select id_usuario from
+                                                	vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
+                                                    sucusu.tipo_usuario = 'administrador'))))
+                      LOOP
 
-                                insert into puntos_venta_counter (
-                                       id_punto_venta,
-                                       estado_reg,
-                                       id_sucursal,
-                                       nombre,
-                                       descripcion,
-                                       codigo,
-                                       habilitar_comisiones,
-                                       formato_comprobante,
-                                       tipo
-                                )VALUES(
-                                	   v_puntos_venta_counter.id_punto_venta,
-                                       v_puntos_venta_counter.estado_reg,
-                                       v_puntos_venta_counter.id_sucursal,
-                                       v_puntos_venta_counter.nombre,
-                                       v_puntos_venta_counter.descripcion,
-                                       v_puntos_venta_counter.codigo,
-                                       v_puntos_venta_counter.habilitar_comisiones,
-                                       v_puntos_venta_counter.formato_comprobante,
-                                       v_puntos_venta_counter.tipo
-                                );
+                                      insert into puntos_venta_counter (
+                                             id_punto_venta,
+                                             estado_reg,
+                                             id_sucursal,
+                                             nombre,
+                                             descripcion,
+                                             codigo,
+                                             habilitar_comisiones,
+                                             formato_comprobante,
+                                             tipo
+                                      )VALUES(
+                                             v_puntos_venta_counter.id_punto_venta,
+                                             v_puntos_venta_counter.estado_reg,
+                                             v_puntos_venta_counter.id_sucursal,
+                                             v_puntos_venta_counter.nombre,
+                                             v_puntos_venta_counter.descripcion,
+                                             v_puntos_venta_counter.codigo,
+                                             v_puntos_venta_counter.habilitar_comisiones,
+                                             v_puntos_venta_counter.formato_comprobante,
+                                             v_puntos_venta_counter.tipo
+                                      );
 
-                end loop;
+                      end loop;
+
+                      else
+                      select ex.usuario_externo into v_agente_venta
+                      from segu.tusuario_externo ex
+                      where ex.id_usuario = p_id_usuario;
+
+                      select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
+                      from obingresos.tboleto_amadeus ama
+                      where ama.agente_venta = v_agente_venta;
+
+
+                      CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+                                                                     estado_reg varchar,
+                                                                     id_sucursal int4,
+                                                                     nombre varchar,
+                                                                     descripcion text,
+                                                                     codigo varchar,
+                                                                     habilitar_comisiones varchar,
+                                                                     formato_comprobante varchar,
+                                                                     tipo varchar
+                                                        )ON COMMIT DROP;
+
+
+                      for v_puntos_venta_counter in ( select
+                                                    puve.id_punto_venta,
+                                                    puve.estado_reg,
+                                                    puve.id_sucursal,
+                                                    puve.nombre,
+                                                    puve.descripcion,
+                                                    puve.codigo,
+                                                    puve.habilitar_comisiones,
+                                                    suc.formato_comprobante,
+                                                    puve.tipo
+                                                    from vef.tpunto_venta puve
+                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                    where puve.id_punto_venta = any (v_puntos_venta) )
+                      LOOP
+
+                                      insert into puntos_venta_counter (
+                                             id_punto_venta,
+                                             estado_reg,
+                                             id_sucursal,
+                                             nombre,
+                                             descripcion,
+                                             codigo,
+                                             habilitar_comisiones,
+                                             formato_comprobante,
+                                             tipo
+                                      )VALUES(
+                                             v_puntos_venta_counter.id_punto_venta,
+                                             v_puntos_venta_counter.estado_reg,
+                                             v_puntos_venta_counter.id_sucursal,
+                                             v_puntos_venta_counter.nombre,
+                                             v_puntos_venta_counter.descripcion,
+                                             v_puntos_venta_counter.codigo,
+                                             v_puntos_venta_counter.habilitar_comisiones,
+                                             v_puntos_venta_counter.formato_comprobante,
+                                             v_puntos_venta_counter.tipo
+                                      );
+
+                      end loop;
+                end if;
           --Sentencia de la consulta de conteo de registros
           v_consulta:='select
 						 count (id_punto_venta)
-                         from puntos_venta_counter ';
+                         from puntos_venta_counter
+                         where ';
           --Devuelve la respuesta
+
+          v_consulta:=v_consulta||v_parametros.filtro;
+
           return v_consulta;
 
       end;
