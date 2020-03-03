@@ -2664,10 +2664,22 @@ raise 'tvuelo: %', v_contador_exch;*/
                                                     inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
                                                     left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
                                                     inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                                    where (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
+                                                    inner join obingresos.tagencia ag on ag.codigo = puve.codigo
+                                                    where ag.boaagt = 'B' and (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
                                                 	p_id_usuario in (select id_usuario from
                                                 	vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
-                                                    sucusu.tipo_usuario = 'administrador'))))
+                                                    sucusu.tipo_usuario = 'administrador')))
+                                                    group by
+                                                    puve.id_punto_venta,
+                                                    puve.estado_reg,
+                                                    puve.id_sucursal,
+                                                    puve.nombre,
+                                                    puve.descripcion,
+                                                    puve.codigo,
+                                                    puve.habilitar_comisiones,
+                                                    suc.formato_comprobante,
+                                                    puve.tipo
+                                                    )
                       LOOP
 
                                       insert into puntos_venta_counter (
@@ -2817,10 +2829,22 @@ raise 'tvuelo: %', v_contador_exch;*/
                                                     inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
                                                     left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
                                                     inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                                    where (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
+                                                    inner join obingresos.tagencia ag on ag.codigo = puve.codigo
+                                                    where ag.boaagt = 'B' and (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
                                                 	p_id_usuario in (select id_usuario from
                                                 	vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
-                                                    sucusu.tipo_usuario = 'administrador'))))
+                                                    sucusu.tipo_usuario = 'administrador')))
+                                                    group by
+                                                    puve.id_punto_venta,
+                                                    puve.estado_reg,
+                                                    puve.id_sucursal,
+                                                    puve.nombre,
+                                                    puve.descripcion,
+                                                    puve.codigo,
+                                                    puve.habilitar_comisiones,
+                                                    suc.formato_comprobante,
+                                                    puve.tipo
+                                                    )
                       LOOP
 
                                       insert into puntos_venta_counter (
