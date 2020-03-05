@@ -1519,6 +1519,13 @@ from detalle';
         LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
         where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
               mo.id_agencia = v_parametros.id_agencia;
+
+        /*Aumentando esta condicion*/
+        if (v_fecha_maxima is null) then
+        	v_fecha_maxima = v_parametros.fecha_ini::date;
+        end if;
+        /***************************/
+
         /***********************************************************/
 
 		/*Obtenemos los creditos qeu no estan dentro de ese periodo*/
