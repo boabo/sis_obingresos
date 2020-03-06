@@ -2299,7 +2299,7 @@ BEGIN
                                         else
                                             update datos_resumen set
                                             monto_ml = v_datos.precio_total,
-                                            neto_ml = v_datos.netos_total
+                                            neto_ml = v_datos.neto_total
                                             where agente_venta = v_datos.codigo_agente;
                                         end if;
 
