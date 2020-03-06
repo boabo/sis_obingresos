@@ -287,6 +287,60 @@ header("content-type:text/javascript; charset=UTF-8");
             },
             {
                 config:{
+                    name: 'neto_ml',
+                    fieldLabel: 'Total Neto M/L',
+                    allowBlank:false,
+                    anchor: '80%',
+                    allowDecimals:true,
+                    decimalPrecision:2,
+                    allowNegative : false,
+                    disabled:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:#007826; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#007826;"><b>{0}<b></div>', Ext.util.Format.number(record.data.neto_total_ml,'0,000.00'));
+            					}
+            				},
+                    gwidth: 150
+                },
+                type:'NumberField',
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    name: 'neto_me',
+                    fieldLabel: 'Total Neto M/E',
+                    allowBlank:false,
+                    anchor: '80%',
+                    allowDecimals:true,
+                    decimalPrecision:2,
+                    allowNegative : false,
+                    disabled:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:#550089; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#550089;"><b>{0}<b></div>', Ext.util.Format.number(record.data.neto_total_me,'0,000.00'));
+            					}
+            				},
+                    gwidth: 150
+                },
+                type:'NumberField',
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
                     name: 'nombre',
                     fieldLabel: 'Punto Venta',
                     disabled: true,
@@ -361,60 +415,60 @@ header("content-type:text/javascript; charset=UTF-8");
                 grid: true,
                 form: true
             },
-            {
-                config:{
-                    name: 'monto_forma_pago_ml',
-                    fieldLabel: 'Importe Forma Pago M/L',
-                    allowBlank:false,
-                    anchor: '80%',
-                    allowDecimals:true,
-                    decimalPrecision:2,
-                    allowNegative : false,
-                    disabled:true,
-                    galign:'right',
-                    renderer:function (value,p,record){
-            					if(record.data.tipo_reg != 'summary'){
-            						return  String.format('<div style="font-size:12px; color:blue; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
-            					}
-
-            					else{
-            						return  String.format('<div style="font-size:15px; text-align:right; color:blue;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_forma_pago_ml_t,'0,000.00'));
-            					}
-            				},
-                    gwidth: 150
-                },
-                type:'NumberField',
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
-            {
-                config:{
-                    name: 'monto_forma_pago_me',
-                    fieldLabel: 'Importe Forma Pago M/E',
-                    allowBlank:false,
-                    anchor: '80%',
-                    allowDecimals:true,
-                    decimalPrecision:2,
-                    allowNegative : false,
-                    disabled:true,
-                    galign:'right',
-                    renderer:function (value,p,record){
-            					if(record.data.tipo_reg != 'summary'){
-            						return  String.format('<div style="font-size:12px; color:#E86A00; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
-            					}
-
-            					else{
-            						return  String.format('<div style="font-size:15px; text-align:right; color:#E86A00;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_forma_pago_me_t,'0,000.00'));
-            					}
-            				},
-                    gwidth: 150
-                },
-                type:'NumberField',
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
+            // {
+            //     config:{
+            //         name: 'monto_forma_pago_ml',
+            //         fieldLabel: 'Importe Forma Pago M/L',
+            //         allowBlank:false,
+            //         anchor: '80%',
+            //         allowDecimals:true,
+            //         decimalPrecision:2,
+            //         allowNegative : false,
+            //         disabled:true,
+            //         galign:'right',
+            //         renderer:function (value,p,record){
+            // 					if(record.data.tipo_reg != 'summary'){
+            // 						return  String.format('<div style="font-size:12px; color:blue; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            // 					}
+            //
+            // 					else{
+            // 						return  String.format('<div style="font-size:15px; text-align:right; color:blue;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_forma_pago_ml_t,'0,000.00'));
+            // 					}
+            // 				},
+            //         gwidth: 150
+            //     },
+            //     type:'NumberField',
+            //     id_grupo:1,
+            //     grid:true,
+            //     form:true
+            // },
+            // {
+            //     config:{
+            //         name: 'monto_forma_pago_me',
+            //         fieldLabel: 'Importe Forma Pago M/E',
+            //         allowBlank:false,
+            //         anchor: '80%',
+            //         allowDecimals:true,
+            //         decimalPrecision:2,
+            //         allowNegative : false,
+            //         disabled:true,
+            //         galign:'right',
+            //         renderer:function (value,p,record){
+            // 					if(record.data.tipo_reg != 'summary'){
+            // 						return  String.format('<div style="font-size:12px; color:#E86A00; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            // 					}
+            //
+            // 					else{
+            // 						return  String.format('<div style="font-size:15px; text-align:right; color:#E86A00;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_forma_pago_me_t,'0,000.00'));
+            // 					}
+            // 				},
+            //         gwidth: 150
+            //     },
+            //     type:'NumberField',
+            //     id_grupo:1,
+            //     grid:true,
+            //     form:true
+            // },
             {
                 config:{
                     name: 'fecha_emision',
@@ -557,8 +611,8 @@ header("content-type:text/javascript; charset=UTF-8");
             {name:'monto_forma_pago_ml', type: 'numeric'},
             {name:'monto_forma_pago_me', type: 'numeric'},
 
-            {name:'monto_forma_pago_me_t', type: 'numeric'},
-            {name:'monto_forma_pago_ml_t', type: 'numeric'},
+            {name:'neto_total_ml', type: 'numeric'},
+            {name:'neto_total_me', type: 'numeric'},
 
             {name:'forma_pago', type: 'string'},
             {name:'fecha_emision', type: 'date',dateFormat:'Y-m-d'},
@@ -568,6 +622,8 @@ header("content-type:text/javascript; charset=UTF-8");
             {name:'trans_code_exch', type: 'string'},
             {name:'impreso', type: 'string'},
             {name:'tipo_reg', type: 'string'},
+            {name:'neto_me', type: 'numeric'},
+            {name:'neto_ml', type: 'numeric'},
         ],
         sortInfo:{
             field: 'nro_boleto',

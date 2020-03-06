@@ -1380,7 +1380,9 @@ BEGIN
                                       trans_issue_indicator varchar,
                                       nombre varchar,
                                       trans_code_exch varchar,
-                                      impreso varchar )ON COMMIT DROP;
+                                      impreso varchar,
+                                      neto_ml numeric,
+                                      neto_me numeric )ON COMMIT DROP;
 
 
            /* select ex.id_usuario into v_id_usuario
@@ -1425,7 +1427,8 @@ BEGIN
                                    pv.nombre as punto_venta,
                                    nr.trans_code_exch,
                                    nr.impreso,
-                                   fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+                                   fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                   nr.neto
 
                             from obingresos.tboleto_amadeus nr
                             inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -1457,7 +1460,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
+                                      impreso,
+                                      neto_me
 
                                         )
                                         values(
@@ -1486,7 +1490,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
                            	else
 
@@ -1508,7 +1513,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
+                                      impreso,
+                                      neto_ml
 
                                         )
                                         values(
@@ -1537,7 +1543,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
 
 
@@ -1565,7 +1572,9 @@ BEGIN
                                       trans_issue_indicator varchar,
                                       nombre varchar,
                                       trans_code_exch varchar,
-                                      impreso varchar )ON COMMIT DROP;
+                                      impreso varchar,
+                                      neto_ml numeric,
+                                      neto_me numeric )ON COMMIT DROP;
 
 
 
@@ -1607,7 +1616,8 @@ BEGIN
                          		 pv.nombre as punto_venta,
                                  nr.trans_code_exch,
                                  nr.impreso,
-                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                 nr.neto
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -1639,7 +1649,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
+                                      impreso,
+                                      neto_me
 
                                         )
                                         values(
@@ -1668,7 +1679,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
                            	else
 
@@ -1690,7 +1702,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
+                                      impreso,
+                                      neto_ml
 
                                         )
                                         values(
@@ -1719,7 +1732,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
 
 
@@ -1746,7 +1760,9 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
+                                      impreso,
+                                      COALESCE (neto_ml,0) AS neto_ml,
+                                      COALESCE (neto_me,0) as neto_me
 
                           from datos_amadeus
                           where ';
@@ -1793,7 +1809,9 @@ BEGIN
                                       trans_issue_indicator varchar,
                                       nombre varchar,
                                       trans_code_exch varchar,
-                                      impreso varchar )ON COMMIT DROP;
+                                      impreso varchar,
+                                      neto_ml numeric,
+                                      neto_me numeric )ON COMMIT DROP;
 
 
             /*select ex.id_usuario into v_id_usuario
@@ -1838,7 +1856,8 @@ BEGIN
                          		 pv.nombre as punto_venta,
                                  nr.trans_code_exch,
                                  nr.impreso,
-                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                 nr.neto
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -1870,8 +1889,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
-
+                                      impreso,
+									  neto_me
                                         )
                                         values(
                                         v_datos.id_boleto_amadeus,
@@ -1899,7 +1918,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
                            	else
 
@@ -1921,7 +1941,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
+                                      impreso,
+                                      neto_ml
 
                                         )
                                         values(
@@ -1950,7 +1971,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
 
 
@@ -1978,7 +2000,9 @@ BEGIN
                                       trans_issue_indicator varchar,
                                       nombre varchar,
                                       trans_code_exch varchar,
-                                      impreso varchar )ON COMMIT DROP;
+                                      impreso varchar,
+                                      neto_ml numeric,
+                                      neto_me numeric )ON COMMIT DROP;
 
 
 
@@ -2020,7 +2044,8 @@ BEGIN
                          		 pv.nombre as punto_venta,
                                  nr.trans_code_exch,
                                  nr.impreso,
-                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp
+                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                 nr.neto
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -2052,8 +2077,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
-
+                                      impreso,
+									  neto_me
                                         )
                                         values(
                                         v_datos.id_boleto_amadeus,
@@ -2081,7 +2106,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
                            	else
 
@@ -2103,8 +2129,8 @@ BEGIN
                                       trans_issue_indicator,
                                       nombre,
                                       trans_code_exch,
-                                      impreso
-
+                                      impreso,
+									  neto_ml
                                         )
                                         values(
                                         v_datos.id_boleto_amadeus,
@@ -2132,7 +2158,8 @@ BEGIN
                                         v_datos.trans_issue_indicator,
                                         v_datos.punto_venta,
                                         v_datos.trans_code_exch,
-                                        v_datos.impreso
+                                        v_datos.impreso,
+                                        v_datos.neto
                                       );
 
 
@@ -2144,8 +2171,8 @@ BEGIN
 			v_consulta:='select count(id_boleto_amadeus) as total,
                         		COALESCE (sum(precio_total_ml),0) as precio_total_ml,
                                 COALESCE (sum(precio_total_me),0) as precio_total_me,
-                                COALESCE (sum(monto_forma_pago_ml),0) as monto_forma_pago_ml,
-                                COALESCE (sum(monto_forma_pago_me),0) as monto_forma_pago_me
+                                COALESCE (sum(neto_ml),0) as neto_total_ml,
+                                COALESCE (sum(neto_me),0) as neto_total_me
                           from datos_amadeus
                           where ';
 
@@ -2170,7 +2197,9 @@ BEGIN
             CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
             									   counter varchar,
                                                    monto_ml numeric,
-                                                   monto_me numeric
+                                                   monto_me numeric,
+                                                   neto_ml numeric,
+                                                   neto_me numeric
              				          )ON COMMIT DROP;
 
 
@@ -2200,7 +2229,8 @@ BEGIN
                                  nr.agente_venta as codigo_agente,
                                  per.nombre_completo2,
                                  nr.moneda,
-                                 sum (nr.total) as precio_total
+                                 sum (nr.total) as precio_total,
+                                 sum (nr.neto) as neto_total
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -2227,25 +2257,33 @@ BEGIN
                                               agente_venta,
                                               counter,
                                               monto_ml,
-                                              monto_me
+                                              monto_me,
+                                              neto_ml,
+                                              neto_me
                                               )
                                               values(
                                               v_datos.codigo_agente,
                                               v_datos.nombre_completo2,
                                               0,
-                                              v_datos.precio_total
+                                              v_datos.precio_total,
+                                              0,
+                                              v_datos.neto_total
                                             );
                                     else
                                     	insert into datos_resumen (
                                               agente_venta,
                                               counter,
                                               monto_ml,
-                                              monto_me
+                                              monto_me,
+                                              neto_ml,
+                                              neto_me
                                               )
                                               values(
                                               v_datos.codigo_agente,
                                               v_datos.nombre_completo2,
                                               v_datos.precio_total,
+                                              0,
+                                              v_datos.neto_total,
                                               0
                                             );
                                     end if;
@@ -2254,12 +2292,14 @@ BEGIN
 
                                     	if (v_datos.moneda = 'USD')  then
                                             update datos_resumen set
-                                            monto_me = v_datos.precio_total
+                                            monto_me = v_datos.precio_total,
+                                            neto_me = v_datos.neto_total
                                             where agente_venta = v_datos.codigo_agente;
 
                                         else
                                             update datos_resumen set
-                                            monto_ml = v_datos.precio_total
+                                            monto_ml = v_datos.precio_total,
+                                            neto_ml = v_datos.netos_total
                                             where agente_venta = v_datos.codigo_agente;
                                         end if;
 
@@ -2272,7 +2312,9 @@ BEGIN
 			v_consulta:='select agente_venta,
             					counter,
                                 monto_ml,
-                                monto_me
+                                monto_me,
+                                neto_ml,
+                                neto_me
                           from datos_resumen
                           where ';
 
@@ -2301,7 +2343,9 @@ BEGIN
              CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
             									   counter varchar,
                                                    monto_ml numeric,
-                                                   monto_me numeric
+                                                   monto_me numeric,
+                                                   neto_ml numeric,
+                                                   neto_me numeric
              				          )ON COMMIT DROP;
 
 
@@ -2331,7 +2375,8 @@ BEGIN
                                  nr.agente_venta as codigo_agente,
                                  per.nombre_completo2,
                                  nr.moneda,
-                                 sum (nr.total) as precio_total
+                                 sum (nr.total) as precio_total,
+                                 sum (nr.neto) as neto_total
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -2358,25 +2403,33 @@ BEGIN
                                               agente_venta,
                                               counter,
                                               monto_ml,
-                                              monto_me
+                                              monto_me,
+                                              neto_ml,
+                                              neto_me
                                               )
                                               values(
                                               v_datos.codigo_agente,
                                               v_datos.nombre_completo2,
                                               0,
-                                              v_datos.precio_total
+                                              v_datos.precio_total,
+                                              0,
+                                              v_datos.neto_total
                                             );
                                     else
                                     	insert into datos_resumen (
                                               agente_venta,
                                               counter,
                                               monto_ml,
-                                              monto_me
+                                              monto_me,
+                                              neto_ml,
+                                              neto_me
                                               )
                                               values(
                                               v_datos.codigo_agente,
                                               v_datos.nombre_completo2,
                                               v_datos.precio_total,
+                                              0,
+                                              v_datos.neto_total,
                                               0
                                             );
                                     end if;
@@ -2385,12 +2438,14 @@ BEGIN
 
                                     	if (v_datos.moneda = 'USD')  then
                                             update datos_resumen set
-                                            monto_me = v_datos.precio_total
+                                            monto_me = v_datos.precio_total,
+                                            neto_me = v_datos.neto_total
                                             where agente_venta = v_datos.codigo_agente;
 
                                         else
                                             update datos_resumen set
-                                            monto_ml = v_datos.precio_total
+                                            monto_ml = v_datos.precio_total,
+                                            neto_ml = v_datos.neto_total
                                             where agente_venta = v_datos.codigo_agente;
                                         end if;
 
@@ -2402,7 +2457,9 @@ BEGIN
 
 			v_consulta:='select count(agente_venta),
                                 sum(monto_ml),
-                                sum(monto_me)
+                                sum(monto_me),
+                                sum(neto_ml),
+                                sum(neto_me)
                           from datos_resumen
                           where ';
 
@@ -2432,7 +2489,9 @@ BEGIN
             CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
             									   counter varchar,
                                                    monto_ml numeric,
-                                                   monto_me numeric
+                                                   monto_me numeric,
+                                                   neto_ml numeric,
+                                                   neto_me numeric
              				          )ON COMMIT DROP;
 
 
@@ -2462,7 +2521,8 @@ BEGIN
                                  nr.agente_venta as codigo_agente,
                                  per.nombre_completo2,
                                  nr.moneda,
-                                 sum (nr.total) as precio_total
+                                 sum (nr.total) as precio_total,
+                                 sum (nr.neto) as neto_total
 
                           from obingresos.tboleto_amadeus nr
                           inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
@@ -2489,25 +2549,33 @@ BEGIN
                                               agente_venta,
                                               counter,
                                               monto_ml,
-                                              monto_me
+                                              monto_me,
+                                              neto_ml,
+                                              neto_me
                                               )
                                               values(
                                               v_datos.codigo_agente,
                                               v_datos.nombre_completo2,
                                               0,
-                                              v_datos.precio_total
+                                              v_datos.precio_total,
+                                              0,
+                                              v_datos.neto_total
                                             );
                                     else
                                     	insert into datos_resumen (
                                               agente_venta,
                                               counter,
                                               monto_ml,
-                                              monto_me
+                                              monto_me,
+                                              neto_ml,
+                                              neto_me
                                               )
                                               values(
                                               v_datos.codigo_agente,
                                               v_datos.nombre_completo2,
                                               v_datos.precio_total,
+                                              0,
+                                              v_datos.neto_total,
                                               0
                                             );
                                     end if;
@@ -2516,12 +2584,14 @@ BEGIN
 
                                     	if (v_datos.moneda = 'USD')  then
                                             update datos_resumen set
-                                            monto_me = v_datos.precio_total
+                                            monto_me = v_datos.precio_total,
+                                            neto_me = v_datos.neto_total
                                             where agente_venta = v_datos.codigo_agente;
 
                                         else
                                             update datos_resumen set
-                                            monto_ml = v_datos.precio_total
+                                            monto_ml = v_datos.precio_total,
+                                            neto_ml = v_datos.neto_total
                                             where agente_venta = v_datos.codigo_agente;
                                         end if;
 
@@ -2534,7 +2604,9 @@ BEGIN
 			v_consulta:='select agente_venta,
             					counter,
                                 monto_ml,
-                                monto_me
+                                monto_me,
+                                neto_ml,
+                                neto_me
                           from datos_resumen
                           order by counter ASC
                           ';

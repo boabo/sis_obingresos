@@ -2473,8 +2473,8 @@ class ACTBoleto extends ACTbase{
           $temp['id_boleto_amadeus'] = 0;
           $temp['precio_total_ml_t'] =$this->res->extraData['precio_total_ml_t'];
           $temp['precio_total_me_t'] =$this->res->extraData['precio_total_me_t'];
-          $temp['monto_forma_pago_ml_t'] =$this->res->extraData['monto_forma_pago_ml_t'];
-          $temp['monto_forma_pago_me_t'] =$this->res->extraData['monto_forma_pago_me_t'];
+          $temp['neto_total_ml'] =$this->res->extraData['neto_total_ml'];
+          $temp['neto_total_me'] =$this->res->extraData['neto_total_me'];
           $temp['nro_boleto'] = '<b style="font-size: 20px; color: green">Totales</b>';
       		$this->res->total++;
       		$this->res->addLastRecDatos($temp);
@@ -2498,8 +2498,10 @@ class ACTBoleto extends ACTbase{
         //adicionar una fila al resultado con el summario
 		$temp = Array();
     $temp['tipo_reg'] = 'summary';
-    $temp['monto_ml'] =$this->res->extraData['monto_ml'];
-    $temp['monto_me'] =$this->res->extraData['monto_me'];
+    $temp['monto_total_ml'] =$this->res->extraData['monto_total_ml'];
+    $temp['monto_total_me'] =$this->res->extraData['monto_total_me'];
+    $temp['neto_total_ml'] =$this->res->extraData['neto_total_ml'];
+    $temp['neto_total_me'] =$this->res->extraData['neto_total_me'];
     $temp['counter'] = '<b style="font-size: 20px; color: green">Totales</b>';
 
 

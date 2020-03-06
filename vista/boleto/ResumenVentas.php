@@ -61,7 +61,7 @@ header("content-type:text/javascript; charset=UTF-8");
         },
 
         onButtonReporteResumenVentas: function () {
-            Phx.CP.loadingShow();            
+            Phx.CP.loadingShow();
             Ext.Ajax.request({
                 url:'../../sis_obingresos/control/Boleto/ReporteResumenVentasCounter',
                 params:{
@@ -160,7 +160,7 @@ header("content-type:text/javascript; charset=UTF-8");
             					}
 
             					else{
-            						return  String.format('<div style="font-size:15px; text-align:right; color:blue;"><b>{0}<b></div>', Ext.util.Format.number(record.data.precio_total_ml_t,'0,000.00'));
+            						return  String.format('<div style="font-size:15px; text-align:right; color:blue;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_total_ml,'0,000.00'));
             					}
             				},
                 },
@@ -184,7 +184,55 @@ header("content-type:text/javascript; charset=UTF-8");
             					}
 
             					else{
-            						return  String.format('<div style="font-size:15px; text-align:right; color:#E86A00;"><b>{0}<b></div>', Ext.util.Format.number(record.data.precio_total_me_t,'0,000.00'));
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#E86A00;"><b>{0}<b></div>', Ext.util.Format.number(record.data.monto_total_me,'0,000.00'));
+            					}
+            				}
+                },
+                type:'NumberField',
+                id_grupo:0,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    name: 'neto_ml',
+                    fieldLabel: 'Total Neto M/L',
+                    disabled: true,
+                    anchor: '90%',
+                    gwidth: 150	,
+                    readOnly:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:#007826; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#007826;"><b>{0}<b></div>', Ext.util.Format.number(record.data.neto_total_ml,'0,000.00'));
+            					}
+            				}
+                },
+                type:'NumberField',
+                id_grupo:0,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    name: 'neto_me',
+                    fieldLabel: 'Total Neto M/E',
+                    disabled: true,
+                    anchor: '90%',
+                    gwidth: 150	,
+                    readOnly:true,
+                    galign:'right',
+                    renderer:function (value,p,record){
+            					if(record.data.tipo_reg != 'summary'){
+            						return  String.format('<div style="font-size:12px; color:#550089; font-weight:bold;"><b>{0}</b></div>', Ext.util.Format.number(value,'0,000.00'));
+            					}
+
+            					else{
+            						return  String.format('<div style="font-size:15px; text-align:right; color:#550089;"><b>{0}<b></div>', Ext.util.Format.number(record.data.neto_total_me,'0,000.00'));
             					}
             				}
                 },
@@ -334,6 +382,16 @@ header("content-type:text/javascript; charset=UTF-8");
             {name:'counter', type: 'string'},
             {name:'monto_ml', type: 'numeric'},
             {name:'monto_me', type: 'numeric'},
+            {name:'neto_ml', type: 'numeric'},
+            {name:'neto_me', type: 'numeric'},
+
+            {name:'monto_total_ml', type: 'numeric'},
+            {name:'monto_total_me', type: 'numeric'},
+            {name:'neto_total_ml', type: 'numeric'},
+            {name:'neto_total_me', type: 'numeric'},
+            {name:'tipo_reg', type: 'string'},
+
+
         ],
         sortInfo:{
             field: 'counter',

@@ -1100,8 +1100,8 @@ class MODBoleto extends MODbase{
         //captura parametros adicionales para el count
         $this->capturaCount('precio_total_ml_t','numeric');
         $this->capturaCount('precio_total_me_t','numeric');
-        $this->capturaCount('monto_forma_pago_ml_t','numeric');
-        $this->capturaCount('monto_forma_pago_me_t','numeric');
+        $this->capturaCount('neto_total_ml','numeric');
+        $this->capturaCount('neto_total_me','numeric');
 
         $this->captura('id_boleto_amadeus','integer');
         $this->captura('pasajero','varchar');
@@ -1122,6 +1122,8 @@ class MODBoleto extends MODbase{
         $this->captura('punto_venta','varchar');
         $this->captura('trans_code_exch','varchar');
         $this->captura('impreso','varchar');
+        $this->captura('neto_ml','numeric');
+        $this->captura('neto_me','numeric');
 
         //Ejecuta la instruccion
         $this->armarConsulta();//echo $this->consulta;exit;
@@ -1142,14 +1144,18 @@ class MODBoleto extends MODbase{
         $this->setParametro('fecha_fin','fecha_fin','varchar');
         $this->setParametro('punto_venta','punto_venta','varchar');
         //captura parametros adicionales para el count
-        $this->capturaCount('monto_ml','numeric');
-        $this->capturaCount('monto_me','numeric');
+        $this->capturaCount('monto_total_ml','numeric');
+        $this->capturaCount('monto_total_me','numeric');
+        $this->capturaCount('neto_total_ml','numeric');
+        $this->capturaCount('neto_total_me','numeric');
 
 
         $this->captura('agente_venta','varchar');
         $this->captura('counter','varchar');
         $this->captura('monto_ml','numeric');
         $this->captura('monto_me','numeric');
+        $this->captura('neto_ml','numeric');
+        $this->captura('neto_me','numeric');
 
         //Ejecuta la instruccion
         $this->armarConsulta();//echo $this->consulta;exit;
@@ -1169,15 +1175,13 @@ class MODBoleto extends MODbase{
         $this->setParametro('fecha_ini', 'fecha_ini', 'varchar');
         $this->setParametro('fecha_fin','fecha_fin','varchar');
         $this->setParametro('punto_venta','punto_venta','varchar');
-        //captura parametros adicionales para el count
-        $this->capturaCount('monto_ml','numeric');
-        $this->capturaCount('monto_me','numeric');
-
 
         $this->captura('agente_venta','varchar');
         $this->captura('counter','varchar');
         $this->captura('monto_ml','numeric');
         $this->captura('monto_me','numeric');
+        $this->captura('neto_ml','numeric');
+        $this->captura('neto_me','numeric');
 
 
         //Ejecuta la instruccion

@@ -208,12 +208,12 @@ class RReporteResumenVentasExcel
 
 
 
-        $this->docexcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($styleTitulos);
-        $this->docexcel->getActiveSheet()->getStyle('A2:D2')->applyFromArray($styleTitulos1);
-        $this->docexcel->getActiveSheet()->getStyle('A3:D3')->applyFromArray($styleTitulos1);
-        $this->docexcel->getActiveSheet()->getStyle('A4:D4')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->getStyle('A1:F1')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->getStyle('A2:F2')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->getStyle('A3:F3')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->getStyle('A4:F4')->applyFromArray($styleTitulos1);
         //$this->docexcel->getActiveSheet()->getStyle('A5:Q5')->applyFromArray($styleTitulos1);
-        $this->docexcel->getActiveSheet()->getStyle('A5:D5')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->getStyle('A5:F5')->applyFromArray($styleTitulos);
 
         $this->docexcel->getActiveSheet()->getStyle('H5')->applyFromArray($styleTituloAgencia);
         $this->docexcel->getActiveSheet()->getStyle('I5:M5')->applyFromArray($styleDatoAgencia);
@@ -236,26 +236,34 @@ class RReporteResumenVentasExcel
         $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(35);
         $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(35);
         $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(35);
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(35);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(35);
 
 
         $this->docexcel->getActiveSheet()->setCellValue('A6','COD. AGENTE');
         $this->docexcel->getActiveSheet()->setCellValue('B6','COUNTER');
         $this->docexcel->getActiveSheet()->setCellValue('C6','TOTAL M/L');
         $this->docexcel->getActiveSheet()->setCellValue('D6','TOTAL M/E');
+        $this->docexcel->getActiveSheet()->setCellValue('E6','TOTAL NETO M/L');
+        $this->docexcel->getActiveSheet()->setCellValue('F6','TOTAL NETO M/E');
 
 
         $this->docexcel->getActiveSheet()->getStyle('A6')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->getStyle('B6')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->getStyle('C6')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->getStyle('D6')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->getStyle('E6')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->getStyle('F6')->getAlignment()->setWrapText(true);
 
 
         $this->docexcel->getActiveSheet()->getStyle('A6')->applyFromArray($bordes);
         $this->docexcel->getActiveSheet()->getStyle('B6')->applyFromArray($bordes);
         $this->docexcel->getActiveSheet()->getStyle('C6')->applyFromArray($bordes);
         $this->docexcel->getActiveSheet()->getStyle('D6')->applyFromArray($bordes);
+        $this->docexcel->getActiveSheet()->getStyle('E6')->applyFromArray($bordes);
+        $this->docexcel->getActiveSheet()->getStyle('F6')->applyFromArray($bordes);
 
-        $this->docexcel->getActiveSheet()->getStyle('A6:D6')->applyFromArray($styleTitulos2);
+        $this->docexcel->getActiveSheet()->getStyle('A6:F6')->applyFromArray($styleTitulos2);
         $this->docexcel->getActiveSheet()->freezePaneByColumnAndRow(0,7);
 
 
@@ -342,9 +350,13 @@ class RReporteResumenVentasExcel
             $this->docexcel->getActiveSheet()->getStyle("C$fila")->applyFromArray($bordes);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $value["monto_me"]);
             $this->docexcel->getActiveSheet()->getStyle("D$fila")->applyFromArray($bordes);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $value["neto_ml"]);
+            $this->docexcel->getActiveSheet()->getStyle("E$fila")->applyFromArray($bordes);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $value["neto_me"]);
+            $this->docexcel->getActiveSheet()->getStyle("F$fila")->applyFromArray($bordes);
 
-            $this->docexcel->getActiveSheet()->getStyle("A$fila:D$fila")->applyFromArray($styleContenido);
-            $this->docexcel->getActiveSheet()->getStyle("C$fila:D$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+            $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->applyFromArray($styleContenido);
+            $this->docexcel->getActiveSheet()->getStyle("C$fila:F$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
 
             //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, date("d/m/Y", strtotime($value["fecha_pago_banco"])));
 
@@ -357,10 +369,10 @@ class RReporteResumenVentasExcel
           $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, 'Totales:');
           $this->docexcel->getActiveSheet()->mergeCells("A$fila:B$fila");
           $this->docexcel->getActiveSheet()->getStyle("A$fila:B$fila")->applyFromArray($bordes);
-          $this->docexcel->getActiveSheet()->getStyle("A$fila:D$fila")->applyFromArray($styleNegrita);
-          $this->docexcel->getActiveSheet()->getStyle("A$fila:D$fila")->applyFromArray($styleTotales);
-          $this->docexcel->getActiveSheet()->getStyle("A$fila:D$fila")->applyFromArray($styleDerecha);
-          $this->docexcel->getActiveSheet()->getStyle("A$fila:D$fila")->applyFromArray($bordes);
+          $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->applyFromArray($styleNegrita);
+          $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->applyFromArray($styleTotales);
+          $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->applyFromArray($styleDerecha);
+          $this->docexcel->getActiveSheet()->getStyle("A$fila:F$fila")->applyFromArray($bordes);
 
           /*Calculando las sumas de los totales*/
             $inicio = 7;
@@ -371,8 +383,10 @@ class RReporteResumenVentasExcel
             $borde_derecha_abajo = $fila+100;
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, "=SUM((C$inicio:C$final))");
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, "=SUM((D$inicio:D$final))");
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, "=SUM((E$inicio:E$final))");
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, "=SUM((F$inicio:F$final))");
 
-            $this->docexcel->getActiveSheet()->getStyle("C$fila:D$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
+            $this->docexcel->getActiveSheet()->getStyle("C$fila:F$fila")->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat :: FORMAT_NUMBER_COMMA_SEPARATED1);
             // $this->docexcel->getActiveSheet()->getStyle("A$fila")->applyFromArray($stylebordes_blancos);
             // $this->docexcel->getActiveSheet()->getStyle("I$fila:Z$fila")->applyFromArray($stylebordes_blancos);
             // $this->docexcel->getActiveSheet()->getStyle("A$borde_abajo_inicio:Z$borde_abajo")->applyFromArray($stylebordes_blancos);
