@@ -222,12 +222,12 @@ header("content-type: text/javascript; charset=UTF-8");
                         lazyRender:true,
                         mode: 'local',
                         gwidth: 150,
-                        store:['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','ECF']
+                        store:['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','BPM','ECF','QRB']
                     },
                     type:'ComboBox',
                     filters:{
                         type: 'list',
-                        options: ['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','ECF'],
+                        options: ['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','BPM','ECF','QRB'],
                     },
                     id_grupo:1,
                     grid:true,
