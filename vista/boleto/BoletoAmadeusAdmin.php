@@ -830,7 +830,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '80%',
                         minLength:6,
-                        maxLength:6
+                        maxLength:6,
+                        style:'text-transform:uppercase;',
+                        maskRe: /[a-zA-Z0-9]+/i,
+                        regex: /[a-zA-Z0-9]+/i
 
                     },
                     type:'TextField',
@@ -966,7 +969,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Codigo de Autorización 2',
                         allowBlank: true,
                         anchor: '80%',
-                        maxLength:20
+                        maxLength:20,
+                        style:'text-transform:uppercase;',
+                        maskRe: /[a-zA-Z0-9]+/i,
+                        regex: /[a-zA-Z0-9]+/i
 
                     },
                     type:'TextField',

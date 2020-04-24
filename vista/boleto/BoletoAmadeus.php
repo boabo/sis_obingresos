@@ -995,7 +995,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '80%',
                         minLength:6,
-                        maxLength:6
+                        maxLength:6,
+                        style:'text-transform:uppercase;',
+                        maskRe: /[a-zA-Z0-9]+/i,
+                        regex: /[a-zA-Z0-9]+/i
 
                     },
                     type:'TextField',
@@ -1188,7 +1191,10 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Codigo de Autorización 2',
                         allowBlank: true,
                         anchor: '80%',
-                        maxLength:20
+                        maxLength:20,
+                        style:'text-transform:uppercase;',
+                        maskRe: /[a-zA-Z0-9]+/i,
+                        regex: /[a-zA-Z0-9]+/i
 
                     },
                     type:'TextField',
@@ -1978,7 +1984,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
              /********************************************************************************/
             onTraerBoletosTodos : function () {
-                Phx.CP.loadingShow();                
+                Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
                     params: {moneda_base:this.store.baseParams.moneda_base,id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},

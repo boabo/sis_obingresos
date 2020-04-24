@@ -309,7 +309,7 @@ BEGIN
                   v_parametros.id_boleto,
                   --v_parametros.ctacte,
                   v_parametros.numero_tarjeta,
-                  v_parametros.codigo_tarjeta,
+                  replace(upper(v_parametros.codigo_tarjeta),' ',''),
                   v_codigo_tarjeta,
                   p_id_usuario,
                   v_parametros.id_auxiliar
@@ -345,7 +345,7 @@ BEGIN
                       v_parametros.id_forma_pago2,
                       v_parametros.id_boleto,
                       v_parametros.numero_tarjeta2,
-                      v_parametros.codigo_tarjeta2,
+                      replace(upper(v_parametros.codigo_tarjeta2),' ',''),
                       v_codigo_tarjeta
                     );
                 end if;
@@ -464,7 +464,7 @@ BEGIN
 
                              perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
             													v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
+                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_parametros.monto_forma_pago,
                                                                  v_parametros.mco);
 
                     END IF;
@@ -481,7 +481,7 @@ BEGIN
                             where m.billete = v_boleto.nro_boleto::numeric;
                              perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
             													v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
+                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_parametros.monto_forma_pago,
                                                                  v_parametros.mco);
 					END IF;
 
@@ -492,7 +492,7 @@ BEGIN
 
                    perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
                                                             v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                            p_id_usuario,v_parametros.codigo_tarjeta,v_parametros.monto_forma_pago,
+                                                            p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_parametros.monto_forma_pago,
                                                              v_parametros.mco);
                     END IF;
 
@@ -525,7 +525,6 @@ BEGIN
                      a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
 
 
-                 --raise exception 'llega';
                 INSERT INTO
                   obingresos.tboleto_amadeus_forma_pago
                 (
@@ -549,7 +548,7 @@ BEGIN
                   v_parametros.id_boleto_amadeus,
                   --v_parametros.ctacte,
                   v_parametros.numero_tarjeta,
-                  v_parametros.codigo_tarjeta,
+                  replace(upper(v_parametros.codigo_tarjeta),' ',''),
                   v_codigo_tarjeta,
                   p_id_usuario,
                   v_parametros.id_auxiliar,
@@ -569,12 +568,12 @@ BEGIN
 
                     PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta2,v_parametros.monto_forma_pago2,
+                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_parametros.monto_forma_pago2,
                                                                  v_parametros.mco2);
                     ELSE
                     PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta2,v_parametros.monto_forma_pago2,
+                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_parametros.monto_forma_pago2,
                                                                  v_parametros.mco2);
                     END IF;
               		select fp.codigo into v_codigo_tarjeta
@@ -613,7 +612,7 @@ BEGIN
                   v_parametros.id_boleto_amadeus,
                   --v_parametros.ctacte,
                   v_parametros.numero_tarjeta2,
-                  v_parametros.codigo_tarjeta2,
+                  replace(upper(v_parametros.codigo_tarjeta2),' ',''),
                   v_codigo_tarjeta,
                   p_id_usuario,
                   v_parametros.id_auxiliar2,
@@ -963,7 +962,7 @@ BEGIN
 
                              perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                		p_id_usuario,v_parametros.codigo_tarjeta,v_valor,
+                                                                		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_valor,
                                                                  		v_parametros.mco);
 
                     END IF;
@@ -983,7 +982,7 @@ BEGIN
 
                              perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                		p_id_usuario,v_parametros.codigo_tarjeta,v_valor,
+                                                                		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_valor,
                                                                  		v_parametros.mco);
 					END IF;
 
@@ -996,7 +995,7 @@ BEGIN
                             where a.id_boleto_amadeus = v_id_boleto );
                                      perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                		p_id_usuario,v_parametros.codigo_tarjeta,v_valor,
+                                                                		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_valor,
                                                                  		v_parametros.mco);
                     END IF;
 
@@ -1021,7 +1020,7 @@ BEGIN
                                                                         v_parametros.id_forma_pago,
                                                                         v_id_boleto,
                                                                         v_parametros.numero_tarjeta,
-                                                                        v_parametros.codigo_tarjeta,
+                                                                        replace (upper(v_parametros.codigo_tarjeta),' ',''),
                                                                         v_codigo_tarjeta,
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar,
@@ -1063,12 +1062,12 @@ BEGIN
 
                                  perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta2,v_valor,
+                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_valor,
                                                                 v_parametros.mco2);
                                 ELSE
                                                 perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
-                                                                p_id_usuario,v_parametros.codigo_tarjeta2,v_valor,
+                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_valor,
                                                                 v_parametros.mco2);
                     END IF;
 
@@ -1094,7 +1093,7 @@ BEGIN
                                                                         v_id_boleto,
                                                                         --v_parametros.ctacte,
                                                                         v_parametros.numero_tarjeta2,
-                                                                        v_parametros.codigo_tarjeta2,
+                                                                        replace(upper(v_parametros.codigo_tarjeta2),' ',''),
                                                                         v_codigo_tarjeta,
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar2,
