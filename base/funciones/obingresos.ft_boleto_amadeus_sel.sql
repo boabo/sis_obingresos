@@ -56,6 +56,8 @@ BEGIN
                                    array_agg(fp.codigo) as codigo_forma_pago,
                                    array_agg(bfp.numero_tarjeta) as
                                      numero_tarjeta,
+                                   array_agg(bfp.mco) as
+                                     numero_mco,
                                    array_agg(bfp.codigo_tarjeta) as
                                      codigo_tarjeta,
                                    array_agg(bfp.ctacte) as ctacte,
@@ -118,7 +120,9 @@ BEGIN
                          bol.localizador,
                          bol.forma_pago as forma_pag_amadeus,
                          bol.officeid,
-                         bol.codigo_iata
+                         bol.codigo_iata,
+                         forpa.numero_mco [ 1 ],
+                         forpa.numero_mco [ 2 ] as numero_mco2
                     from obingresos.tboleto_amadeus bol
                     left join forma_pago_temporal forpa on forpa.id_boleto_amadeus = bol.id_boleto_amadeus
                          inner join param.tmoneda mon on mon.id_moneda =
@@ -186,3 +190,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_boleto_amadeus_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

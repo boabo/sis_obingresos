@@ -811,7 +811,22 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'numero_tarjeta',
-                        fieldLabel: 'No Tarjeta/MCO',
+                        fieldLabel: 'No Tarjeta',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        minLength:15,
+                        maxLength:20
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'mco',
+                        fieldLabel: 'MCO',
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
@@ -952,7 +967,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'numero_tarjeta2',
-                        fieldLabel: 'No Tarjeta 2/MCO',
+                        fieldLabel: 'No Tarjeta 2',
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
@@ -961,6 +976,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'TextField',
                     id_grupo:1,
                     grid:false,
+                    form:true
+                },
+                ///nuevo
+                {
+                    config:{
+                        name: 'mco2',
+                        fieldLabel: 'MCO 2',
+                        allowBlank: true,
+                        anchor: '80%',
+                        gwidth: 150,
+                        minLength:15,
+                        maxLength:20
+                    },
+                    type:'TextField',
+                    id_grupo:1,
+                    grid:true,
                     form:true
                 },
                 {
@@ -1222,7 +1253,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'moneda_sucursal', type: 'string'},
                 {name:'moneda_fp1', type: 'string'},
                 {name:'moneda_fp2', type: 'string'},
-                {name:'voided', type: 'string'}
+                {name:'voided', type: 'string'},
+                {name:'mco', type: 'string'},
+                {name:'mco2', type: 'string'}
 
             ],
             sortInfo:{
@@ -1930,24 +1963,29 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.numero_tarjeta);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta);
                     this.ocultarComponente(this.Cmp.id_auxiliar);
+                    this.ocultarComponente(this.Cmp.mco);
                     this.Cmp.numero_tarjeta.allowBlank = true;
                     this.Cmp.codigo_tarjeta.allowBlank = true;
                     this.Cmp.id_auxiliar.allowBlank = true;
+                    this.Cmp.mco.allowBlank = true;
                 } else {
                     this.Cmp.id_forma_pago.setDisabled(false);
                     this.Cmp.monto_forma_pago.setDisabled(true);
                     if (codigo_fp1.startsWith("CC") ||
                         codigo_fp1.startsWith("SF")) {
                         this.ocultarComponente(this.Cmp.id_auxiliar);
+                        this.ocultarComponente(this.Cmp.mco);
                         this.Cmp.id_auxiliar.reset();
                         this.mostrarComponente(this.Cmp.numero_tarjeta);
                         this.mostrarComponente(this.Cmp.codigo_tarjeta);
                         this.Cmp.numero_tarjeta.allowBlank = false;
                         this.Cmp.codigo_tarjeta.allowBlank = false;
                         this.Cmp.id_auxiliar.allowBlank = true;
+                        this.Cmp.mco.allowBlank = true;
                         //tarjeta de credito
                     } else if (codigo_fp1.startsWith("CT")) {
                         //cuenta corriente
+                        this.ocultarComponente(this.Cmp.mco);
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
                         this.mostrarComponente(this.Cmp.id_auxiliar);
@@ -1956,25 +1994,30 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = false;
+                        this.Cmp.mco.allowBlank = true;
                     } else if (codigo_fp1.startsWith("MCO")) {
                         //mco
                         this.ocultarComponente(this.Cmp.id_auxiliar);
                         this.Cmp.id_auxiliar.reset();
-                        this.mostrarComponente(this.Cmp.numero_tarjeta);
+                        this.mostrarComponente(this.Cmp.mco);
+                        this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
-                        this.Cmp.numero_tarjeta.allowBlank = false;
+                        this.Cmp.mco.allowBlank = false;
+                        this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = true;
                     }else {
                         this.ocultarComponente(this.Cmp.numero_tarjeta);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta);
                         this.ocultarComponente(this.Cmp.id_auxiliar);
+                        this.ocultarComponente(this.Cmp.mco);
                         this.Cmp.numero_tarjeta.reset();
                         this.Cmp.codigo_tarjeta.reset();
                         this.Cmp.id_auxiliar.reset();
                         this.Cmp.numero_tarjeta.allowBlank = true;
                         this.Cmp.codigo_tarjeta.allowBlank = true;
                         this.Cmp.id_auxiliar.allowBlank = true;
+                        this.Cmp.mco.allowBlank = true;
                     }
                 }
             },
@@ -1987,12 +2030,15 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.ocultarComponente(this.Cmp.numero_tarjeta2);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                         this.ocultarComponente(this.Cmp.id_auxiliar2);
+                        this.ocultarComponente(this.Cmp.mco2);
                         this.Cmp.numero_tarjeta2.allowBlank = true;
                         this.Cmp.codigo_tarjeta2.allowBlank = true;
                         this.Cmp.id_auxiliar2.allowBlank = true;
+                        this.Cmp.mco2.allowBlank = true;
                         this.Cmp.numero_tarjeta2.reset();
                         this.Cmp.codigo_tarjeta2.reset();
                         this.Cmp.id_auxiliar2.reset();
+                        this.Cmp.mco2.reset();
                     } else {
                         this.Cmp.id_forma_pago2.setDisabled(false);
                         this.Cmp.monto_forma_pago2.setDisabled(false);
@@ -2003,17 +2049,22 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.ocultarComponente(this.Cmp.mco2);
                             this.Cmp.numero_tarjeta2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
                             this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.mco2.allowBlank = true;
 
                         } else if (codigo_fp2.startsWith("CT")) {
                             //cuenta corriente
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                            this.ocultarComponente(this.Cmp.mco2);
                             this.mostrarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.reset();
+                            this.Cmp.mco2.reset();
+                            this.Cmp.mco2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = false;
@@ -2021,27 +2072,34 @@ header("content-type: text/javascript; charset=UTF-8");
                             //mco
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.Cmp.id_auxiliar2.reset();
-                            this.mostrarComponente(this.Cmp.numero_tarjeta2);
-                            this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-                            this.Cmp.numero_tarjeta2.allowBlank = false;
-                            this.Cmp.codigo_tarjeta2.allowBlank = true;
-                            this.Cmp.id_auxiliar2.allowBlank = true;
-                        }else {
+                            this.mostrarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-                            this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.Cmp.mco2.allowBlank = false;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
+                        }else {
+                            this.ocultarComponente(this.Cmp.mco2);
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                            this.ocultarComponente(this.Cmp.id_auxiliar2);
+                            this.Cmp.mco2.allowBlank = true;
+                            this.Cmp.numero_tarjeta2.allowBlank = true;
+                            this.Cmp.codigo_tarjeta2.allowBlank = true;
+                            this.Cmp.id_auxiliar2.allowBlank = true;
+                            this.Cmp.mco2.reset();
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.codigo_tarjeta2.reset();
                             this.Cmp.id_auxiliar2.reset();
                         }
                     }
                 } else {
+                    this.ocultarComponente(this.Cmp.mco2);
                     this.ocultarComponente(this.Cmp.numero_tarjeta2);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
+                    this.Cmp.mco2.allowBlank = true;
                     this.Cmp.numero_tarjeta2.allowBlank = true;
                     this.Cmp.codigo_tarjeta2.allowBlank = true;
                     this.Cmp.id_auxiliar2.allowBlank = true;

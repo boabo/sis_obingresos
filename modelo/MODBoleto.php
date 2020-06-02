@@ -250,6 +250,8 @@ class MODBoleto extends MODbase{
         $this->captura('forma_pag_amadeus','varchar');
         $this->captura('officeid','varchar');
         $this->captura('codigo_iata','varchar');
+        $this->captura('mco','varchar');
+        $this->captura('mco2','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
