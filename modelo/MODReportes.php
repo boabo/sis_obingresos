@@ -73,11 +73,13 @@ class MODReportes extends MODbase{
         $fuente = $this->objParam->getParametro('tipo_reporte');;
         $office_id = $this->objParam->getParametro('id_punto_venta');
 
-        $fecha_desde = $this->objParam->getParametro('fecha_desde');
-        $fecha_desde = date_format(date_create($fecha_desde), 'Ydm');
+        /*$fecha_desde = $this->objParam->getParametro('fecha_desde');
+        $fecha_desde = date_format(date_create($fecha_desde), 'Ydm');*/
+        $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
 
-        $fecha_hasta = $this->objParam->getParametro('fecha_hasta');
-        $fecha_hasta =  date_format(date_create($fecha_hasta), 'Ydm');
+        /*$fecha_hasta = $this->objParam->getParametro('fecha_hasta');
+        $fecha_hasta =  date_format(date_create($fecha_hasta), 'Ydm');*/
+        $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
 
         //variables para la conexion sql server.
         $bandera_conex='';
