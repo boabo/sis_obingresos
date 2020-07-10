@@ -99,6 +99,31 @@ $body$
         return v_consulta;
 
       end;
+
+    /*********************************
+     #TRANSACCION:  'OBING_DEPO_TIGO_SEL'
+     #DESCRIPCION:	depositos realizados tigo money
+     #AUTOR:		franklin.espinoza
+     #FECHA:		11-04-2020 15:14:58
+    ***********************************/
+    elsif(p_transaccion='OBING_DEPO_TIGO_SEL')then
+
+      begin
+        --Sentencia de la consulta de conteo de registros
+        v_consulta = 'select
+            dep.fecha_venta,
+            dep.monto_total
+            from obingresos.tdeposito dep
+            where dep.fecha_venta between '''||v_parametros.fecha_desde||'''::date and '''||v_parametros.fecha_hasta||'''::date and dep.agt = ''TMY''';
+
+
+      --Definicion de la respuesta
+      --v_consulta:=v_consulta||v_parametros.filtro;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
 	else
 
 		raise exception 'Transaccion inexistente';

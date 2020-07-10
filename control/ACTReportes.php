@@ -10,30 +10,41 @@
 
 require_once(dirname(__FILE__).'/../reportes/RReporteCruceAtcXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteCruceLinkserXLS.php');
+require_once(dirname(__FILE__).'/../reportes/RReporteCruceTigoXLS.php');
 
 class ACTReportes extends ACTbase{
 
 
     function  generarCruceTarjetasBoletos(){
 
-        $this->objParam->defecto('ordenacion','nombre');
-        $this->objParam->defecto('dir_ordenacion','asc');
-        $this->objParam->defecto('cantidad','5000');
-        $this->objParam->defecto('puntero','0');
-
-        $this->objParam->addFiltro("(1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = 1 ) or 
-        ( 1 in (select id_usuario from vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta )))");
-
         $this->objFunc=$this->create('MODReportes');
-        $this->res=$this->objFunc->generarCruceTarjetasBoletos($this->objParam);
+        $tipo_rep = $this->objParam->getParametro('tipo_reporte');
+
+        if($tipo_rep != 'pago_tigo'){
+            $this->objParam->defecto('ordenacion','nombre');
+            $this->objParam->defecto('dir_ordenacion','asc');
+            $this->objParam->defecto('cantidad','5000');
+            $this->objParam->defecto('puntero','0');
+
+            $this->objParam->addFiltro("(1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = 1 ) or 
+            ( 1 in (select id_usuario from vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta )))");
+
+            $this->res=$this->objFunc->generarCruceTarjetasBoletos($this->objParam);
+
+            //obtener titulo de reporte
+            $titulo ='Cruce Tarjetas Boletos';
+        }else{
+            $this->res=$this->objFunc->generarCruceTigoBoletos($this->objParam);
+            //obtener titulo de reporte
+            $titulo ='Cruce Tigo Boletos';
+        }
+
         $this->datos = $this->res->getDatos();
 
-        //obtener titulo de reporte
-        $titulo ='Cruce Tarjetas Boletos';
         //Genera el nombre del archivo (aleatorio + titulo)
         $nombreArchivo=uniqid(md5(session_id()).$titulo);
         $nombreArchivo.='.xls';
-        $tipo_rep = $this->objParam->getParametro('tipo_reporte');
+
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $this->objParam->addParametro('datos',$this->datos);
         $this->objParam->addParametro('tipo',$tipo_rep);
@@ -45,6 +56,9 @@ class ACTReportes extends ACTbase{
             $this->objReporteFormato = new RReporteCruceAtcXLS($this->objParam);
         }else if($tipo_rep == 'pago_linkser'){
             $this->objReporteFormato = new RReporteCruceLinkserXLS($this->objParam);
+        }else if($tipo_rep == 'pago_tigo'){
+            $this->objParam->addParametro('depositos',$this->res->depositos);
+            $this->objReporteFormato = new RReporteCruceTigoXLS($this->objParam);
         }
 
         $this->objReporteFormato->imprimeDatos();
@@ -54,8 +68,8 @@ class ACTReportes extends ACTbase{
         $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado',
             'Se generó con éxito el reporte: '.$nombreArchivo,'control');
         $this->mensajeExito->setArchivoGenerado($nombreArchivo);
-        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
 
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
     }
 
     function listarAgencias(){

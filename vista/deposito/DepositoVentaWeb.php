@@ -34,6 +34,19 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 }, this);
 
+
+                /*franklin.espinoza 19/06/2020
+                * begin
+                * */
+                this.Cmp.monto_total.on('focus', function () {
+                    if ('TMY' == this.cmbBanco.getValue()) {
+                        this.Cmp.monto_total.setValue(this.Cmp.monto_deposito.getValue() * 0.972);
+                    }
+                }, this);
+                /*
+                * end
+                * */
+
                 this.load({params:{start:0, limit:this.tam_pag}});
                 this.init();
                 this.iniciarEventos();
