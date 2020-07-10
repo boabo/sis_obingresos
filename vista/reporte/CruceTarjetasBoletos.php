@@ -24,7 +24,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         fields : ['tipo', 'valor'],
                         data : [
                             ['pago_atc', 'Pagos ATC'],
-                            ['pago_linkser', 'Pagos LINKSER']
+                            ['pago_linkser', 'Pagos LINKSER'],
+                            ['pago_tigo', 'Pagos TIGO']
 
                         ]
                     }),

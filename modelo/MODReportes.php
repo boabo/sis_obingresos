@@ -129,6 +129,76 @@ class MODReportes extends MODbase{
         return $this->respuesta;
     }
 
+    function generarCruceTigoBoletos(){
+
+        $this->procedimiento='obingresos.ft_reportes_sel';
+        $this->transaccion='OBING_DEPO_TIGO_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('fecha_desde','fecha_desde','date');
+        $this->setParametro('fecha_hasta','fecha_hasta','date');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('fecha_venta','date');
+        $this->captura('monto_total','numeric');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //recuperamos los registros a migrar de la bd
+        $depositos = $this->respuesta->datos;
+
+        $depo_date = array();
+        foreach ($depositos as $key => $dep){
+            $d_key = DateTime::createFromFormat('Y-m-d', $dep['fecha_venta'])->format('dmY');
+            $depo_date[$d_key] += $dep['monto_total'];
+
+        }
+        $office_id = $this->objParam->getParametro('id_punto_venta');
+        $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
+        $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
+
+
+        //variables para la conexion sql server.
+        $bandera_conex = '';
+        $conn = '';
+        $param_conex = array();
+        $conexion = '';
+        $this->respuesta = new Mensaje();
+
+        if ($conn != '') {
+            $conexion->closeSQL();
+        }
+
+        $conexion = new ConexionSqlServer('172.17.58.22', 'SPConnection', 'Passw0rd', 'DBStage');
+        $conn = $conexion->conectarSQL();
+
+
+        if ($conn == 'connect') {
+            $error = 'connect';
+            throw new Exception("connect: La conexión a la bd SQL Server " . $param_conex[1] . " ha fallado.");
+        } else if ($conn == 'select_db') {
+            $error = 'select_db';
+            throw new Exception("select_db: La seleccion de la bd SQL Server " . $param_conex[1] . " ha fallado.");
+        } else {
+            $query = @mssql_query("exec DBStage.dbo.spa_GetTigoInformation '$fecha_desde','$fecha_hasta','$office_id';", $conn);
+
+            $data = array();
+            while ($row = mssql_fetch_array($query, MSSQL_ASSOC)) {
+                $record = json_decode(json_encode($row));
+                $data[] = $record;
+            }
+
+            $this->respuesta->datos = $data;
+            $this->respuesta->depositos = $depo_date;
+            mssql_free_result($query);
+            $conexion->closeSQL();
+        }
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
     function listarAgencias(){
         $this->procedimiento='obingresos.ft_reportes_sel';
         $this->transaccion='OBING_PUVE_CT_SEL';

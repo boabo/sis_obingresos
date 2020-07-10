@@ -144,7 +144,7 @@ class RReporteCruceAtcXLS
 
 
         $datos = $this->objParam->getParametro('datos');//print_r($datos);exit;
-        //print_r($datos);exit;
+
         $tipo = $this->objParam->getParametro('tipo');
         $fecha_desde = $this->objParam->getParametro('fecha_desde');
         $fecha_hasta = $this->objParam->getParametro('fecha_hasta');
