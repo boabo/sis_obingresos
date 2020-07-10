@@ -302,6 +302,7 @@ BEGIN
     	raise exception 'Transaccion inexistente: %',p_transaccion;
 
 	end if;
+
 EXCEPTION
 
 	WHEN OTHERS THEN
@@ -312,7 +313,12 @@ EXCEPTION
 		raise exception '%',v_resp;
 
 END;
-$BODY$
-LANGUAGE 'plpgsql' VOLATILE
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
 COST 100;
-ALTER FUNCTION "obingresos"."ft_mco_s_ime"(integer, integer, character varying, character varying) OWNER TO postgres;
+
+ALTER FUNCTION obingresos.ft_mco_s_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
