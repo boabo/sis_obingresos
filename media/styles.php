@@ -18,7 +18,53 @@ header("content-type: text/css; charset=UTF-8");
     }
 
     .prioridad_importanteA:hover{
-      background-color : #FFC57F;    
+      background-color : #FFC57F;
     }
 
+    .table_mco {
+        background: #fff;
+        width: 1000px;
+        height: auto;
+        display: block;
+        float: left;
+        position: relative;
+        left: 1%;
+        margin: 5px;
+        border: 4px solid green;
+        border-radius: 8px;
+        overflow: hidden;
+        -moz-box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+        -webkit-box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+        box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+        -webkit-transform: translateY(0%);
+        transform: translateY(0%);
+        -webkit-transition: .3s;
+        transition: .3s;
+      }
+
+      .t-interno-mco tr td{
+      font-size: 12px;
+      }
+      .t-interno-mco tr td span{
+        color:#274d80;
+        font-weight: bold;
+      }
+      th {
+        font-weight: bold;
+        text-align: center;
+      }
+      caption {
+        letter-spacing: 10px;
+        font-size: 25px;
+        text-align: center;
+        color: green;
+      }
+      .tkt_footer{
+        text-align: center;
+        color:#274d80;
+      }
+      .tkt_footer td{
+        font-size: 12px;
+        font-weight: bold;
+      }
 </style>

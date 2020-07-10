@@ -1796,3 +1796,47 @@ ALTER TABLE obingresos.tboletos_banca
   OWNER TO postgres;
 
 /********************************************F-SCP-IRVA-OBINGRESOS-0-03/02/2020********************************************/
+
+/********************************************I-SCP-BVP-OBINGRESOS-0-10/07/2020********************************************/
+CREATE TABLE obingresos.tmco_s (
+  id_mco SERIAL,
+  fecha_emision DATE NOT NULL,
+  id_moneda INTEGER NOT NULL,
+  motivo TEXT NOT NULL,
+  valor_total NUMERIC(18,2),
+  id_gestion INTEGER NOT NULL,
+  id_punto_venta INTEGER,
+  id_sucursal_usuario INTEGER,
+  estado INTEGER NOT NULL,
+  id_concepto_ingas INTEGER NOT NULL,
+  id_boleto INTEGER,
+  tipo_cambio NUMERIC(18,6),
+  nro_mco VARCHAR,
+  pax VARCHAR,
+  id_funcionario_emisor INTEGER,
+  CONSTRAINT tmco_s_pkey PRIMARY KEY(id_mco),
+  CONSTRAINT tmco_s_fk1 FOREIGN KEY (id_moneda)
+    REFERENCES param.tmoneda(id_moneda)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE,
+  CONSTRAINT tmco_s_fk2 FOREIGN KEY (id_gestion)
+    REFERENCES param.tgestion(id_gestion)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+COMMENT ON COLUMN obingresos.tmco_s.motivo
+IS 'Razon de emision de MCO.';
+
+COMMENT ON COLUMN obingresos.tmco_s.valor_total
+IS 'Importe del MCO.';
+
+COMMENT ON COLUMN obingresos.tmco_s.id_concepto_ingas
+IS 'Tipo de concepto global.';
+
+ALTER TABLE obingresos.tmco_s
+  OWNER TO postgres;
+/********************************************F-SCP-BVP-OBINGRESOS-0-10/07/2020********************************************/
