@@ -1840,3 +1840,39 @@ IS 'Tipo de concepto global.';
 ALTER TABLE obingresos.tmco_s
   OWNER TO postgres;
 /********************************************F-SCP-BVP-OBINGRESOS-0-10/07/2020********************************************/
+
+/********************************************I-SCP-MAY-OBINGRESOS-0-11/07/2020********************************************/
+CREATE TABLE obingresos.tfactura_no_utilizada (
+  id_factura_no_utilizada SERIAL,
+  id_lugar_pais INTEGER,
+  id_lugar_depto INTEGER,
+  id_sucursal INTEGER,
+  id_punto_venta INTEGER,
+  id_estado_factura INTEGER,
+  fecha DATE,
+  tipo_cambio NUMERIC(18,2),
+  id_moneda INTEGER,
+  nro_autorizacion VARCHAR(200),
+  nro_inicial INTEGER,
+  nro_final INTEGER,
+  nombre VARCHAR(300),
+  nit VARCHAR(200),
+  observaciones VARCHAR(500),
+  id_concepto_ingas INTEGER,
+  id_dosificacion INTEGER,
+  CONSTRAINT tfactura_manual_pkey PRIMARY KEY(id_factura_no_utilizada)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+COMMENT ON COLUMN obingresos.tfactura_no_utilizada.nro_inicial
+IS 'numero factura inicial';
+
+COMMENT ON COLUMN obingresos.tfactura_no_utilizada.nro_final
+IS 'numero factura final';
+
+COMMENT ON COLUMN obingresos.tfactura_no_utilizada.id_concepto_ingas
+IS 'concepto de gasto';
+
+ALTER TABLE obingresos.tfactura_no_utilizada
+  OWNER TO postgres;
+/********************************************F-SCP-MAY-OBINGRESOS-0-11/07/2020********************************************/
