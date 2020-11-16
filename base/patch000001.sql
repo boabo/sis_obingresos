@@ -1840,3 +1840,28 @@ IS 'Tipo de concepto global.';
 ALTER TABLE obingresos.tmco_s
   OWNER TO postgres;
 /********************************************F-SCP-BVP-OBINGRESOS-0-10/07/2020********************************************/
+
+/********************************************I-SCP-BVP-OBINGRESOS-0-16/11/2020********************************************/
+
+ALTER TABLE obingresos.tmedio_pago_pw
+  ADD COLUMN sw_autorizacion VARCHAR(200) [];
+
+ALTER TABLE obingresos.tmedio_pago_pw
+  ADD COLUMN regionales VARCHAR(200) [];
+
+ALTER TABLE obingresos.tmedio_pago_pw
+ ADD CONSTRAINT tmedio_pago_pw_fk FOREIGN KEY (forma_pago_id)
+   REFERENCES obingresos.tforma_pago_pw(id_forma_pago_pw)
+   ON DELETE NO ACTION
+   ON UPDATE NO ACTION
+   NOT DEFERRABLE;
+
+
+ ALTER TABLE obingresos.tinstancia_pago
+   ADD CONSTRAINT tinstancia_pago_fk FOREIGN KEY (id_medio_pago)
+     REFERENCES obingresos.tmedio_pago_pw(id_medio_pago_pw)
+     ON DELETE NO ACTION
+     ON UPDATE NO ACTION
+     NOT DEFERRABLE;
+
+/********************************************F-SCP-BVP-OBINGRESOS-0-16/11/2020********************************************/

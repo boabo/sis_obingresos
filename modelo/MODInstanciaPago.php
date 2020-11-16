@@ -23,11 +23,11 @@ class MODInstanciaPago extends MODbase{
         $this->captura('id_instancia_pago','int4');
         $this->captura('estado_reg','varchar');
         $this->captura('id_medio_pago','int4');
-        $this->captura('instancia_pago_id','int4');
+        //$this->captura('instancia_pago_id','int4');
         $this->captura('nombre','varchar');
-        $this->captura('codigo','varchar');
-        $this->captura('codigo_forma_pago','varchar');
-        $this->captura('codigo_medio_pago','varchar');
+        //$this->captura('codigo','varchar');
+        // $this->captura('codigo_forma_pago','varchar');
+        // $this->captura('codigo_medio_pago','varchar');
         $this->captura('id_usuario_reg','int4');
         $this->captura('fecha_reg','timestamp');
         $this->captura('id_usuario_ai','int4');
@@ -37,7 +37,11 @@ class MODInstanciaPago extends MODbase{
         $this->captura('usr_reg','varchar');
         $this->captura('usr_mod','varchar');
         $this->captura('fp_code','varchar');
-        $this->captura('ins_code','varchar');
+        $this->captura('ins_code','varchar');        
+        $this->captura('name','varchar');
+        $this->captura('codigo','varchar');
+        $this->captura('codigo_fp','varchar');
+        $this->captura('codigo_mp','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -56,12 +60,12 @@ class MODInstanciaPago extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('id_medio_pago','id_medio_pago','int4');
-        $this->setParametro('instancia_pago_id','instancia_pago_id','int4');
+        //$this->setParametro('instancia_pago_id','instancia_pago_id','int4');
         $this->setParametro('nombre','nombre','varchar');
-        $this->setParametro('codigo','codigo','varchar');
-        $this->setParametro('codigo_forma_pago','codigo_forma_pago','varchar');
-        $this->setParametro('codigo_medio_pago','codigo_medio_pago','varchar');
-        $this->setParametro('fp_code','fp_code','varchar');
+        // $this->setParametro('codigo','codigo','varchar');
+        // $this->setParametro('codigo_forma_pago','codigo_forma_pago','varchar');
+        // $this->setParametro('codigo_medio_pago','codigo_medio_pago','varchar');
+        // $this->setParametro('fp_code','fp_code','varchar');
         $this->setParametro('ins_code','ins_code','varchar');
 
         //Ejecuta la instruccion
@@ -82,12 +86,12 @@ class MODInstanciaPago extends MODbase{
         $this->setParametro('id_instancia_pago','id_instancia_pago','int4');
         $this->setParametro('estado_reg','estado_reg','varchar');
         $this->setParametro('id_medio_pago','id_medio_pago','int4');
-        $this->setParametro('instancia_pago_id','instancia_pago_id','int4');
+        //$this->setParametro('instancia_pago_id','instancia_pago_id','int4');
         $this->setParametro('nombre','nombre','varchar');
-        $this->setParametro('codigo','codigo','varchar');
-        $this->setParametro('codigo_forma_pago','codigo_forma_pago','varchar');
-        $this->setParametro('codigo_medio_pago','codigo_medio_pago','varchar');
-        $this->setParametro('fp_code','fp_code','varchar');
+        // $this->setParametro('codigo','codigo','varchar');
+        // $this->setParametro('codigo_forma_pago','codigo_forma_pago','varchar');
+        // $this->setParametro('codigo_medio_pago','codigo_medio_pago','varchar');
+        // $this->setParametro('fp_code','fp_code','varchar');
         $this->setParametro('ins_code','ins_code','varchar');
 
         //Ejecuta la instruccion
@@ -114,6 +118,8 @@ class MODInstanciaPago extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+
 
 }
 ?>
