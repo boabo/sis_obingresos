@@ -45,7 +45,7 @@ DECLARE
     v_existencia			integer;
     v_fecha_arrastre		date;
     v_id_moneda				integer;
-	v_existencia_vigente	numeric;
+
 
 BEGIN
 
@@ -453,22 +453,10 @@ BEGIN
 	elsif(p_transaccion='OBING_VERISALDO_IME')then
 
 		begin
-
-        	/*Aumentando dato para no arrastrar el saldo (Ismael Valdivia 23/11/2020)*/
-            select count (mo.id_movimiento_entidad)
-            		into
-                    v_existencia_vigente
-            from obingresos.tmovimiento_entidad mo
-            where mo.id_agencia = v_parametros.id_agencia  and mo.garantia = 'no' and mo.id_periodo_venta is null and
-            mo.estado_reg = 'activo' and mo.cierre_periodo = 'si' and mo.tipo = 'credito';
-        	/*************************************************************************/
-
-            if (v_existencia_vigente = 0) then
-
         	select
             MAX (distinct me.id_periodo_venta::integer) into v_periodo_maximo
             from obingresos.tmovimiento_entidad me
-            where me.id_agencia = v_parametros.id_agencia and me.estado_reg = 'activo' and me.cierre_periodo = 'si' and me.garantia = 'no';
+            where me.id_agencia = v_parametros.id_agencia and me.estado_reg = 'activo' and me.cierre_periodo = 'si';
 
 
             SELECT count(me.id_movimiento_entidad) into v_existencia
@@ -476,18 +464,16 @@ BEGIN
             where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
             and me.cierre_periodo = 'si';
 
-                if (v_existencia > 0) then
-                        SELECT me.monto,
-                               me.fecha,
-                               me.id_moneda into
-                               v_monto_arrastre,
-                               v_fecha_arrastre,
-                               v_id_moneda
-                        from obingresos.tmovimiento_entidad me
-                        where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
-                        and me.cierre_periodo = 'si';
-                end if;
-
+            if (v_existencia > 0) then
+                    SELECT me.monto,
+                    	   me.fecha,
+                           me.id_moneda into
+                           v_monto_arrastre,
+                           v_fecha_arrastre,
+                           v_id_moneda
+                    from obingresos.tmovimiento_entidad me
+                    where me.id_agencia = v_parametros.id_agencia and me.id_periodo_venta = v_periodo_maximo and me.tipo = 'credito' and me.estado_reg = 'activo'
+                    and me.cierre_periodo = 'si';
             end if;
 
             --Definicion de la respuesta
