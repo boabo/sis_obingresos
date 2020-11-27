@@ -1865,3 +1865,25 @@ ALTER TABLE obingresos.tmedio_pago_pw
      NOT DEFERRABLE;
 
 /********************************************F-SCP-BVP-OBINGRESOS-0-16/11/2020********************************************/
+/********************************************I-SCP-IRVA-OBINGRESOS-0-26/11/2020********************************************/
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ADD COLUMN id_medio_pago INTEGER;
+
+COMMENT ON COLUMN obingresos.tboleto_amadeus_forma_pago.id_medio_pago
+IS 'Usar los nuevos medios de pago';
+
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ADD COLUMN id_moneda INTEGER;
+
+COMMENT ON COLUMN obingresos.tboleto_amadeus_forma_pago.id_moneda
+IS 'Id moneda con la que se realiza el pago';
+
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ALTER COLUMN id_forma_pago DROP NOT NULL;
+
+ALTER TABLE obingresos.tforma_pago_ant
+  ADD COLUMN id_medio_pago INTEGER;
+
+COMMENT ON COLUMN obingresos.tforma_pago_ant.id_medio_pago
+IS 'Campo para registrar el medio de pago';
+/********************************************F-SCP-IRVA-OBINGRESOS-0-26/11/2020********************************************/

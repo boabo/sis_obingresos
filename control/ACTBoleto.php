@@ -1392,7 +1392,19 @@ class ACTBoleto extends ACTbase{
         curl_close($session);
 
         $respuesta = json_decode($result);
-        //var_dump($respuesta);exit;
+        /*********************Aumentando para verificar la respuesta del servicio de amadeus (Ismael Valdivia 26/11/2020)*****************/
+        $respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
+
+        if ($respuesta_json->queryReportDataDetails == false || $respuesta_json->queryReportDataDetails == '' || $respuesta_json->queryReportDataDetails == null) {
+          throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
+        }
+
+        if ($respuesta == false || $respuesta == '' || $respuesta == null) {
+          throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
+        }
+
+        /************************************************************************************************************************************/
+
         if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
             $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));

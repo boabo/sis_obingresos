@@ -6,7 +6,8 @@ CREATE OR REPLACE FUNCTION obingresos.f_forma_pago_amadeus_mod (
   p_usuario integer,
   p_codigo varchar,
   p_importe numeric,
-  p_mco varchar
+  p_mco varchar,
+  p_id_moneda integer
 )
 RETURNS void AS
 $body$
@@ -23,7 +24,7 @@ DECLARE
  v_moneda				varchar;
  v_cuenta				varchar;
  v_id_mod_forma_pago  integer;
- 
+
 BEGIN
 v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
 
@@ -32,7 +33,7 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                                     p.nombre,
                                     p.codigo ,
                                     lu.codigo as estacion
-                                   from vef.tsucursal s 
+                                   from vef.tsucursal s
                                    inner join vef.tpunto_venta p on p.id_sucursal = s.id_sucursal
                                    inner join param.tlugar l on l.id_lugar = param.f_obtener_padre_id_lugar (s.id_lugar,'pais')
                                    inner join param.tlugar lu on lu.id_lugar = s.id_lugar
@@ -48,7 +49,8 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                                   from obingresos.tboleto_amadeus a
                                   inner join punto_venta p on p.id_punto_venta = a.id_punto_venta
                                   where a.id_boleto_amadeus  = p_id_boleto;
-
+				/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                       select f.codigo,
                             m.codigo_internacional
                       into
@@ -61,6 +63,38 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                       select fp.codigo into v_codigo_tarjeta
                       from obingresos.tforma_pago fp
                       where fp.id_forma_pago = p_id_forma_pago;
+                ELSE
+
+                      select mon.codigo_internacional
+                      		 into
+                             v_moneda
+                      from param.tmoneda mon
+                      where mon.id_moneda = p_id_moneda;
+
+                      select
+                            fp.fop_code,
+                            mp.mop_code
+                            into
+                            v_forma_pago,
+                            v_codigo_tarjeta
+                      from obingresos.tmedio_pago_pw mp
+                      inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                      where mp.id_medio_pago_pw = p_id_forma_pago;
+
+                	/*select
+                          fp.fop_code,
+                          mp.mop_code,
+                          afp.id_moneda
+                          into
+                          v_forma_pago,
+                          v_codigo_tarjeta,
+                          v_moneda
+                    from obingresos.tmedio_pago_pw mp
+                    inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                    inner join obingresos.tboleto_amadeus_forma_pago afp on afp.id_medio_pago = mp.id_medio_pago_pw
+                    where mp.id_medio_pago_pw = p_id_forma_pago;*/
+
+                END IF;
 
       v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
                       substring(v_codigo_tarjeta from 3 for 2)
@@ -73,7 +107,7 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                 v_res = pxp.f_valida_numero_tarjeta_credito(p_numero_tarjeta,v_codigo_tarjeta);
             end if;
         end if;
-      
+
 
       if v_datos.voided = 'no' then
        INSERT INTO obingresos.tmod_forma_pago ( 	billete,
@@ -94,7 +128,7 @@ v_nombre_funcion = 'vef.f_act_forma_pago_amadeus';
                                                     hora_mod,
                                                     pagomco,
                                                     observa
-                                                    
+
                                                     )VALUES(
                                                     CAST(v_datos.nro_boleto as  DECIMAL),
                                                     v_forma_pago,
@@ -147,3 +181,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.f_forma_pago_amadeus_mod (p_id_boleto integer, p_id_forma_pago integer, p_numero_tarjeta varchar, p_id_auxiliar integer, p_usuario integer, p_codigo varchar, p_importe numeric, p_mco varchar, p_id_moneda integer)
+  OWNER TO postgres;

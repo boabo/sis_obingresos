@@ -385,6 +385,13 @@ class MODBoleto extends MODbase{
         $this->setParametro('id_auxiliar2','id_auxiliar2','integer');
         $this->setParametro('mco','mco','varchar');
         $this->setParametro('mco2','mco2','varchar');
+
+        /*Aumentando para las nuevos medios de pago (25/11/2020) Ismael Valdivia*/
+        $this->setParametro('id_moneda','id_moneda','integer');
+        $this->setParametro('id_moneda2','id_moneda2','integer');
+        /************************************************************************/
+
+
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -461,6 +468,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('tipo_comision','tipo_comision','varchar');
         $this->setParametro('mco','mco','varchar');
         $this->setParametro('mco2','mco2','varchar');
+        $this->setParametro('id_moneda','id_moneda','integer');
+        $this->setParametro('id_moneda2','id_moneda2','integer');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();

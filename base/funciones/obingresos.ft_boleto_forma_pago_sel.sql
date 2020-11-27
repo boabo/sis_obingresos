@@ -95,6 +95,7 @@ BEGIN
 
     	begin
     		--Sentencia de la consulta
+            IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 			v_consulta:='select
 						bfp.id_boleto_amadeus_forma_pago,
 						bfp.tipo,
@@ -129,6 +130,44 @@ BEGIN
                         left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
                         left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
                         where  ';
+            else
+
+            v_consulta:='select
+						bfp.id_boleto_amadeus_forma_pago,
+						bfp.tipo,
+						bfp.id_forma_pago,
+						bfp.id_boleto_amadeus,
+						bfp.estado_reg,
+						bfp.tarjeta,
+						bfp.ctacte,
+						bfp.importe,
+						bfp.numero_tarjeta,
+						bfp.id_usuario_ai,
+						bfp.id_usuario_reg,
+						bfp.usuario_ai,
+						bfp.fecha_reg,
+						bfp.id_usuario_mod,
+						bfp.fecha_mod,
+						usu1.cuenta as usr_reg,
+						usu2.cuenta as usr_mod,
+                        (mp.name || '' - '' || coalesce(mon.codigo_internacional ,''''))::varchar as forma_pago,
+                        fp.fop_code as codigo_forma_pago,
+                        mon.codigo_internacional as moneda,
+                        aux.nombre_auxiliar,
+                        bfp.codigo_tarjeta,
+                        bfp.mco,
+                        fp.fop_code,
+                        bfp.nro_cuota,
+                        bfp.nro_cupon
+                        from obingresos.tboleto_amadeus_forma_pago bfp
+						inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
+						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
+                        inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = bfp.id_medio_pago
+                        inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                        left join param.tmoneda mon on mon.id_moneda = bfp.id_moneda
+                        left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                        where';
+            end if;
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -150,13 +189,25 @@ BEGIN
 
 		begin
 			--Sentencia de la consulta de conteo de registros
-			v_consulta:='select count(id_boleto_forma_pago)
-					    from obingresos.tboleto_forma_pago bfp
-					    inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
-                        inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-					    left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                        where ';
+            IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                v_consulta:='select count(id_boleto_forma_pago)
+                            from obingresos.tboleto_forma_pago bfp
+                            inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
+                            left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
+                            inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                            left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                            where ';
+            else
+                v_consulta:='select count(id_boleto_forma_pago)
+                            from obingresos.tboleto_amadeus_forma_pago bfp
+                            inner join segu.tusuario usu1 on usu1.id_usuario = bfp.id_usuario_reg
+                            left join segu.tusuario usu2 on usu2.id_usuario = bfp.id_usuario_mod
+                            inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = bfp.id_medio_pago
+                            inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                            left join param.tmoneda mon on mon.id_moneda = bfp.id_moneda
+                            left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                            where ';
+            end if;
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;

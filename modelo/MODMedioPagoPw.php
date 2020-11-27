@@ -19,6 +19,8 @@ class MODMedioPagoPw extends MODbase{
         $this->transaccion='OBING_MPPW_SEL';
         $this->tipo_procedimiento='SEL';//tipo de transaccion
 
+        $this->setParametro('emision','emision','varchar');
+
         //Definicion de la lista del resultado del query
         $this->captura('id_medio_pago_pw','int4');
         $this->captura('estado_reg','varchar');

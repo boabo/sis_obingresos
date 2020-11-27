@@ -161,6 +161,7 @@ DECLARE
     v_consultado			integer;
     v_estado_canjeado		varchar;
     v_puntos_venta			varchar;
+    v_id_moneda_mp			integer;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -403,10 +404,21 @@ BEGIN
 	elsif(p_transaccion='OBING_BOLAMAVEN_UPD')then
 
         begin
-        	select fp.codigo into v_codigo_fp
-        	from obingresos.tforma_pago fp
-        	where fp.id_forma_pago = v_parametros.id_forma_pago;
 
+        	/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+        	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                select fp.codigo into v_codigo_fp
+                from obingresos.tforma_pago fp
+                where fp.id_forma_pago = v_parametros.id_forma_pago;
+            else
+
+              select fp.fop_code into v_codigo_fp
+              from obingresos.tmedio_pago_pw mp
+              inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+              where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
+
+            end if;
+        	/*********************************************************************************/
             update obingresos.tboleto_amadeus
             set comision = v_parametros.comision,
             tipo_comision=v_parametros.tipo_comision
@@ -446,63 +458,158 @@ BEGIN
 
             if (v_parametros.id_forma_pago is not null and v_parametros.id_forma_pago != 0) then
         			-- Forma de pago igual y importe distinto
+					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                       select a.id_forma_pago,
+                              a.importe
+                              into
+                              v_id_fpago,
+                              v_importe
+                       from obingresos.tboleto_amadeus_forma_pago a
+                       where a.id_forma_pago = v_parametros.id_forma_pago  and
+                       a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+                    ELSE
+                    	select a.id_medio_pago,
+                               a.importe
+                               into
+                               v_id_fpago,
+                               v_importe
+                       from obingresos.tboleto_amadeus_forma_pago a
+                       where a.id_medio_pago = v_parametros.id_forma_pago  and
+                       a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+                    end if;
+					/*******************************************************************************/
 
-                     select a.id_forma_pago,
-                     		a.importe
-                     		into
-                     		v_id_fpago,
-                     		v_importe
-                     from obingresos.tboleto_amadeus_forma_pago a
-                     where a.id_forma_pago = v_parametros.id_forma_pago  and
-                     a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
-
+                    --Aqui aumentar para mandar el id de la moneda
                     IF ( v_id_fpago = v_parametros.id_forma_pago and
                     		v_importe <> v_parametros.monto_forma_pago) THEN
 
                             delete from obingresos.tmod_forma_pago m
                             where m.billete = v_boleto.nro_boleto::numeric;
 
-                             perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
-            													v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_parametros.monto_forma_pago,
-                                                                 v_parametros.mco);
+                            /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                            IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                                v_id_moneda_mp = v_parametros.id_moneda;
+                            else
+                                v_id_moneda_mp = NULL;
+                            end if;
+                            /***********************************************************************************/
 
+                             perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+                                                                         v_parametros.id_forma_pago,
+                                                                         v_parametros.numero_tarjeta::varchar,
+                                                                         v_parametros.id_auxiliar,
+                                                                         p_id_usuario,
+                                                                         replace(upper(v_parametros.codigo_tarjeta),' ',''),
+                                                                         v_parametros.monto_forma_pago,
+                                                                         v_parametros.mco,
+                                                                         /*************/
+                                                                         v_id_moneda_mp);
+																		 /*************/
                     END IF;
 
                      --replicacion
-                  IF EXISTS (select 1 from obingresos.tboleto_amadeus_forma_pago a
-                                        where a.id_forma_pago = v_parametros.id_forma_pago  and
-                                        a.id_boleto_amadeus = v_parametros.id_boleto_amadeus) THEN
+                  /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                  IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                      IF EXISTS (select 1 from obingresos.tboleto_amadeus_forma_pago a
+                                            where a.id_forma_pago = v_parametros.id_forma_pago  and
+                                            a.id_boleto_amadeus = v_parametros.id_boleto_amadeus) THEN
 
-                               RAISE NOTICE 'Existe una forma de Pago';
+                                   RAISE NOTICE 'Existe una forma de Pago';
 
-                   ELSE
-                               delete from obingresos.tmod_forma_pago m
-                            where m.billete = v_boleto.nro_boleto::numeric;
-                             perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
-            													v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_parametros.monto_forma_pago,
-                                                                 v_parametros.mco);
-					END IF;
+                       ELSE
+                                  /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                                  IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                                      v_id_moneda_mp = v_parametros.id_moneda;
+                                  else
+                                      v_id_moneda_mp = NULL;
+                                  end if;
+                                  /***********************************************************************************/
+                                  delete from obingresos.tmod_forma_pago m
+                                  where m.billete = v_boleto.nro_boleto::numeric;
+                                  perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+                                                                              v_parametros.id_forma_pago,
+                                                                              v_parametros.numero_tarjeta::varchar,
+                                                                              v_parametros.id_auxiliar,
+                                                                              p_id_usuario,
+                                                                              replace(upper(v_parametros.codigo_tarjeta),' ',''),
+                                                                              v_parametros.monto_forma_pago,
+                                                                              v_parametros.mco,
+                                                                              /*************/
+                                                                              v_id_moneda_mp);
+                                                                              /*************/
+                        END IF;
+                    ELSE
+                    	IF EXISTS (select 1 from obingresos.tboleto_amadeus_forma_pago a
+                                            where a.id_medio_pago = v_parametros.id_forma_pago  and
+                                            a.id_boleto_amadeus = v_parametros.id_boleto_amadeus) THEN
+
+                                   RAISE NOTICE 'Existe una forma de Pago';
+
+                       ELSE
+                       			  /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                                  IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                                      v_id_moneda_mp = v_parametros.id_moneda;
+                                  else
+                                      v_id_moneda_mp = NULL;
+                                  end if;
+                                  /***********************************************************************************/
+                                  delete from obingresos.tmod_forma_pago m
+                                  where m.billete = v_boleto.nro_boleto::numeric;
+                                  perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+                                                                              v_parametros.id_forma_pago,
+                                                                              v_parametros.numero_tarjeta::varchar,
+                                                                              v_parametros.id_auxiliar,
+                                                                              p_id_usuario,
+                                                                              replace(upper(v_parametros.codigo_tarjeta),' ',''),
+                                                                              v_parametros.monto_forma_pago,
+                                                                              v_parametros.mco,
+                                                                              /*************/
+                                                                              v_id_moneda_mp);
+                                                                              /*************/
+                        END IF;
+                    end if;
 
                     IF(v_boleto.estado_informix = 'no_migra')THEN
 
                     delete from obingresos.tmod_forma_pago m
                     where m.billete = v_boleto.nro_boleto::numeric;
 
-                   perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago,
-                                                            v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                            p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_parametros.monto_forma_pago,
-                                                             v_parametros.mco);
+                    /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                    IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                        v_id_moneda_mp = v_parametros.id_moneda;
+                    else
+                        v_id_moneda_mp = NULL;
+                    end if;
+					/***********************************************************************************/
+                   perform obingresos.f_forma_pago_amadeus_mod(	v_parametros.id_boleto_amadeus,
+                    										   	v_parametros.id_forma_pago,
+                                                            	v_parametros.numero_tarjeta::varchar,
+                                                            	v_parametros.id_auxiliar,
+                                                            	p_id_usuario,
+                                                            	replace(upper(v_parametros.codigo_tarjeta),' ',''),
+                                                            	v_parametros.monto_forma_pago,
+                                                             	v_parametros.mco,
+                                                                /*************/
+                                                                v_id_moneda_mp
+                                                                /************/);
                     END IF;
 
 
                     delete from obingresos.tboleto_amadeus_forma_pago
           			where id_boleto_amadeus = v_parametros.id_boleto_amadeus;
-
-                    select fp.codigo into v_codigo_tarjeta
-                    from obingresos.tforma_pago fp
-                    where fp.id_forma_pago = v_parametros.id_forma_pago;
+                    /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                      select fp.codigo into v_codigo_tarjeta
+                      from obingresos.tforma_pago fp
+                      where fp.id_forma_pago = v_parametros.id_forma_pago;
+                    else
+                      select mp.mop_code into v_codigo_tarjeta
+                      from obingresos.tmedio_pago_pw mp
+                      inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                      where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
+                    end if;
+                    /*********************************************************************************/
 
                 v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
                                         substring(v_codigo_tarjeta from 3 for 2)
@@ -515,6 +622,8 @@ BEGIN
                 		v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
                 	end if;
                 end if;
+                /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                  select a.id_forma_pago,
                      		a.importe
                      		into
@@ -523,8 +632,20 @@ BEGIN
                      from obingresos.tboleto_amadeus_forma_pago a
                      where a.id_forma_pago = v_parametros.id_forma_pago  and
                      a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+                else
+                 select a.id_medio_pago,
+                     		a.importe
+                     		into
+                     		v_id_fpago,
+                     		v_importe
+                     from obingresos.tboleto_amadeus_forma_pago a
+                     where a.id_medio_pago = v_parametros.id_forma_pago  and
+                     a.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+                end if;
+                /******************************************************************************/
 
-
+            /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+            IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                 INSERT INTO
                   obingresos.tboleto_amadeus_forma_pago
                 (
@@ -555,47 +676,16 @@ BEGIN
                   null,
                   v_parametros.mco
                 );
+            ELSE
 
-                if (left (v_parametros.mco2::varchar,3)<> '930' and v_parametros.mco2 <> '' )then
-                    raise exception 'Segunda forma de pago el numero del MCO tiene que empezar con 390';
-                    end if;
-
-                    if (char_length(v_parametros.mco2::varchar) <> 15 and v_parametros.mco2 <> '') then
-                    raise exception 'Segunda forma de pago el numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
-                    end if;
-				 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
-           			IF(v_boleto.estado_informix = 'no_migra')THEN
-
-                    PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
-            													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,
-                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_parametros.monto_forma_pago2,
-                                                                 v_parametros.mco2);
-                    ELSE
-                    PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,v_parametros.id_forma_pago2,
-            													v_parametros.numero_tarjeta2::varchar, v_parametros.id_auxiliar2,
-                                                                p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_parametros.monto_forma_pago2,
-                                                                 v_parametros.mco2);
-                    END IF;
-              		select fp.codigo into v_codigo_tarjeta
-                    from obingresos.tforma_pago fp
-                    where fp.id_forma_pago = v_parametros.id_forma_pago2;
-
-                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
-                                            substring(v_codigo_tarjeta from 3 for 2)
-                                    else
-                                          NULL
-                                  end);
-                    if (v_codigo_tarjeta is not null) then
-                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
-                    end if;
-
-                     INSERT INTO
+            	INSERT INTO
                   obingresos.tboleto_amadeus_forma_pago
                 (
                   id_usuario_reg,
                   importe,
-                  id_forma_pago,
+                  id_medio_pago,
                   id_boleto_amadeus,
+                  id_moneda,
                   --ctacte,
                   numero_tarjeta,
                   codigo_tarjeta,
@@ -607,26 +697,193 @@ BEGIN
                 )
                 VALUES (
                   p_id_usuario,
-                  v_parametros.monto_forma_pago2,
-                  v_parametros.id_forma_pago2,
+                  v_parametros.monto_forma_pago,
+                  v_parametros.id_forma_pago,
                   v_parametros.id_boleto_amadeus,
+                  v_parametros.id_moneda,
                   --v_parametros.ctacte,
-                  v_parametros.numero_tarjeta2,
-                  replace(upper(v_parametros.codigo_tarjeta2),' ',''),
+                  v_parametros.numero_tarjeta,
+                  replace(upper(v_parametros.codigo_tarjeta),' ',''),
                   v_codigo_tarjeta,
                   p_id_usuario,
-                  v_parametros.id_auxiliar2,
-                  1,
-                  v_parametros.mco2
+                  v_parametros.id_auxiliar,
+                  null,
+                  v_parametros.mco
                 );
+            end if;
+			/*************************************************************************************/
+                if (left (v_parametros.mco2::varchar,3)<> '930' and v_parametros.mco2 <> '' )then
+                    raise exception 'Segunda forma de pago el numero del MCO tiene que empezar con 390';
+                    end if;
+
+                    if (char_length(v_parametros.mco2::varchar) <> 15 and v_parametros.mco2 <> '') then
+                    raise exception 'Segunda forma de pago el numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
+                    end if;
+				 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
+           			IF(v_boleto.estado_informix = 'no_migra')THEN
+					--Aumentar para mandar la moneda
+
+                     /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                    IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                        v_id_moneda_mp = v_parametros.id_moneda2;
+                    else
+                        v_id_moneda_mp = NULL;
+                    end if;
+					/***********************************************************************************/
+
+                    PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+                    											v_parametros.id_forma_pago2,
+            													v_parametros.numero_tarjeta2::varchar,
+                                                                v_parametros.id_auxiliar2,
+                                                                p_id_usuario,
+                                                                replace(upper(v_parametros.codigo_tarjeta2),' ',''),
+                                                                v_parametros.monto_forma_pago2,
+                                                                v_parametros.mco2,
+                                                                /*************/
+                                                                v_id_moneda_mp
+                                                                /************/);
+                    ELSE
+                    /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                    IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                        v_id_moneda_mp = v_parametros.id_moneda2;
+                    else
+                        v_id_moneda_mp = NULL;
+                    end if;
+					/***********************************************************************************/
+                    PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+                    											v_parametros.id_forma_pago2,
+            													v_parametros.numero_tarjeta2::varchar,
+                                                                v_parametros.id_auxiliar2,
+                                                                p_id_usuario,
+                                                                replace(upper(v_parametros.codigo_tarjeta2),' ',''),
+                                                                v_parametros.monto_forma_pago2,
+                                                                v_parametros.mco2,
+                                                                /*************/
+                                                                v_id_moneda_mp
+                                                                /************/);
+                    END IF;
+                     /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                      select fp.codigo into v_codigo_tarjeta
+                      from obingresos.tforma_pago fp
+                      where fp.id_forma_pago = v_parametros.id_forma_pago2;
+                    else
+                      select mp.mop_code into v_codigo_tarjeta
+                      from obingresos.tmedio_pago_pw mp
+                      inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                      where mp.id_medio_pago_pw = v_parametros.id_forma_pago2;
+                    end if;
+					/************************************************************************************/
+                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
+                                            substring(v_codigo_tarjeta from 3 for 2)
+                                    else
+                                          NULL
+                                  end);
+                    if (v_codigo_tarjeta is not null) then
+                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
+                    end if;
+				 /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                           INSERT INTO
+                        obingresos.tboleto_amadeus_forma_pago
+                      (
+                        id_usuario_reg,
+                        importe,
+                        id_forma_pago,
+                        id_boleto_amadeus,
+                        --ctacte,
+                        numero_tarjeta,
+                        codigo_tarjeta,
+                        tarjeta,
+                        id_usuario_fp_corregido,
+                        id_auxiliar,
+                        registro_mod,
+                        mco
+                      )
+                      VALUES (
+                        p_id_usuario,
+                        v_parametros.monto_forma_pago2,
+                        v_parametros.id_forma_pago2,
+                        v_parametros.id_boleto_amadeus,
+                        --v_parametros.ctacte,
+                        v_parametros.numero_tarjeta2,
+                        replace(upper(v_parametros.codigo_tarjeta2),' ',''),
+                        v_codigo_tarjeta,
+                        p_id_usuario,
+                        v_parametros.id_auxiliar2,
+                        1,
+                        v_parametros.mco2
+                      );
+                    else
+                    	 INSERT INTO
+                        obingresos.tboleto_amadeus_forma_pago
+                      (
+                        id_usuario_reg,
+                        importe,
+                        id_medio_pago,
+                        id_moneda,
+                        id_boleto_amadeus,
+                        --ctacte,
+                        numero_tarjeta,
+                        codigo_tarjeta,
+                        tarjeta,
+                        id_usuario_fp_corregido,
+                        id_auxiliar,
+                        registro_mod,
+                        mco
+                      )
+                      VALUES (
+                        p_id_usuario,
+                        v_parametros.monto_forma_pago2,
+                        v_parametros.id_forma_pago2,
+                        v_parametros.id_moneda,
+                        v_parametros.id_boleto_amadeus,
+                        --v_parametros.ctacte,
+                        v_parametros.numero_tarjeta2,
+                        replace(upper(v_parametros.codigo_tarjeta2),' ',''),
+                        v_codigo_tarjeta,
+                        p_id_usuario,
+                        v_parametros.id_auxiliar2,
+                        1,
+                        v_parametros.mco2
+                      );
+                    end if;
 
                 end if;
 
-                select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
-                from obingresos.tboleto_amadeus_forma_pago bfp
-                inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
-                inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
-                where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+                /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                  select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                  from obingresos.tboleto_amadeus_forma_pago bfp
+                  inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                  inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                  where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+                else
+            	  select sum(param.f_convertir_moneda(bfp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                  from obingresos.tboleto_amadeus_forma_pago bfp
+                  --inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                  inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                  where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
+                  /*if (v_parametros.id_moneda is not null) then
+                	select sum(param.f_convertir_moneda(v_parametros.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                    from obingresos.tboleto_amadeus_forma_pago bfp
+                    --inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                    inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                    where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+                  end if;
+
+                  if (v_parametros.id_moneda2 is not null) then
+                  	select sum(param.f_convertir_moneda(bfp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                    from obingresos.tboleto_amadeus_forma_pago bfp
+                    --inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                    inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                    where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+                  end if;*/
+
+
+
+                end if;
 
 
 				/*Verificamos si la moneda es ARS entonces tomamos el margen de error*/
@@ -878,10 +1135,15 @@ BEGIN
                select comision into v_importe_comision
                from obingresos.tboleto_amadeus
                where id_boleto_amadeus=v_id_boleto;
+
                 if EXISTS (select 1 from obingresos.tforma_pago_ant
                                         where id_boleto_amadeus = v_id_boleto)  then
+
                delete from obingresos.tforma_pago_ant
                where id_boleto_amadeus = v_id_boleto;
+
+              /*Aumentando condicion para los nuevos medios de pago (Ismael Valdivia 25/11/2020)*/
+              IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 
               insert into obingresos.tforma_pago_ant(	importe,
                               id_forma_pago,
@@ -891,22 +1153,45 @@ BEGIN
               a.id_boleto_amadeus
               from obingresos.tboleto_amadeus_forma_pago a
               where a.id_boleto_amadeus = v_id_boleto;
+              else
+              	insert into obingresos.tforma_pago_ant(	importe,
+                              id_medio_pago,
+                              id_boleto_amadeus
+                              )
+                select 	a.importe,
+                        a.id_medio_pago,
+                        a.id_boleto_amadeus
+                from obingresos.tboleto_amadeus_forma_pago a
+                where a.id_boleto_amadeus = v_id_boleto;
+              end if;
+			  /*********************************************************************************/
+              else
+                 IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 
-               else
-               insert into obingresos.tforma_pago_ant(	importe,
-                                                        id_forma_pago,
-                                                        id_boleto_amadeus
-                                                        )select a.importe,
-                                        a.id_forma_pago,
-                                        a.id_boleto_amadeus
-                                		from obingresos.tboleto_amadeus_forma_pago a
-                                		where a.id_boleto_amadeus = v_id_boleto;
+                 insert into obingresos.tforma_pago_ant(	importe,
+                                                          id_forma_pago,
+                                                          id_boleto_amadeus
+                                                          )select a.importe,
+                                          a.id_forma_pago,
+                                          a.id_boleto_amadeus
+                                          from obingresos.tboleto_amadeus_forma_pago a
+                                          where a.id_boleto_amadeus = v_id_boleto;
+                  else
+                  insert into obingresos.tforma_pago_ant(	importe,
+                                                          id_medio_pago,
+                                                          id_boleto_amadeus
+                                                          )
+                                   select a.importe,
+                                          a.id_medio_pago,
+                                          a.id_boleto_amadeus
+                                          from obingresos.tboleto_amadeus_forma_pago a
+                                          where a.id_boleto_amadeus = v_id_boleto;
+                  end if;
+                 /**********************************************************************/
 
                 end if ;
 
                v_comision_total = v_comision_total + v_importe_comision;
-
-
 
 
                 delete from obingresos.tboleto_amadeus_forma_pago
@@ -914,14 +1199,28 @@ BEGIN
 
 
             	if (v_saldo_fp1 > 0) then
-
-                v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago );
-
+                /*Aumentando los nuevos medios de pago*/
+                IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago,null );
+                else
+                	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago,v_parametros.id_moneda);
+                end if;
+				/************************************/
                     v_saldo_fp1 = v_saldo_fp1 - v_valor;
 
-                    select fp.codigo into v_codigo_tarjeta
-                    from obingresos.tforma_pago fp
-                    where fp.id_forma_pago = v_parametros.id_forma_pago;
+
+                     /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                      select fp.codigo into v_codigo_tarjeta
+                      from obingresos.tforma_pago fp
+                      where fp.id_forma_pago = v_parametros.id_forma_pago;
+                    else
+                      select mp.mop_code into v_codigo_tarjeta
+                      from obingresos.tmedio_pago_pw mp
+                      inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                      where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
+                    end if;
+                    /*********************************************************************************/
 
                     v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
                                             substring(v_codigo_tarjeta from 3 for 2)
@@ -940,15 +1239,26 @@ BEGIN
                         if (char_length(v_parametros.mco::varchar) <> 15 and v_parametros.mco <> '' ) then
                         raise exception 'El numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
                       end if;
-
-                     select a.id_forma_pago,
+					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                       select a.id_forma_pago,
+                              a.importe
+                              into
+                              v_id_fpago,
+                              v_importe
+                       from obingresos.tforma_pago_ant a
+                       where a.id_forma_pago = v_parametros.id_forma_pago  and
+                       a.id_boleto_amadeus = v_id_boleto;
+                    else
+                    	 select a.id_medio_pago,
                      		a.importe
                      		into
                      		v_id_fpago,
                      		v_importe
-                     from obingresos.tforma_pago_ant a
-                     where a.id_forma_pago = v_parametros.id_forma_pago  and
+                     from obingresos.tboleto_amadeus_forma_pago a
+                     where a.id_medio_pago = v_parametros.id_forma_pago  and
                      a.id_boleto_amadeus = v_id_boleto;
+                    end if;
 
                     IF ( v_id_fpago = v_parametros.id_forma_pago and
                     		v_importe <> v_valor) THEN
@@ -958,13 +1268,25 @@ BEGIN
                             where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                             where a.id_boleto_amadeus = v_id_boleto );
 
+							/*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                            IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                                v_id_moneda_mp = v_parametros.id_moneda2;
+                            else
+                                v_id_moneda_mp = NULL;
+                            end if;
+                            /***********************************************************************************/
 
 
-                             perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
-            															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
-                                                                		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_valor,
-                                                                 		v_parametros.mco);
-
+                             perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,
+                             											v_parametros.id_forma_pago,
+            															v_parametros.numero_tarjeta::varchar,
+                                                                        v_parametros.id_auxiliar,
+                                                                		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),
+                                                                        v_valor,
+                                                                 		v_parametros.mco,
+                                                                        /*************/
+                                                                        v_id_moneda_mp
+                                                                        /************/);
                     END IF;
 
                      IF EXISTS (select 1 from obingresos.tforma_pago_ant
@@ -980,10 +1302,21 @@ BEGIN
                       where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                       where a.id_boleto_amadeus = v_id_boleto );
 
+                      /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                      IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                          v_id_moneda_mp = v_parametros.id_moneda2;
+                      else
+                          v_id_moneda_mp = NULL;
+                      end if;
+                      /***********************************************************************************/
+
                              perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
                                                                 		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_valor,
-                                                                 		v_parametros.mco);
+                                                                 		v_parametros.mco,
+                                                                        /*************/
+                                                                        v_id_moneda_mp
+                                                                        /************/);
 					END IF;
 
                     IF( (select a.estado_informix
@@ -993,14 +1326,26 @@ BEGIN
                            delete from obingresos.tmod_forma_pago m
                             where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                             where a.id_boleto_amadeus = v_id_boleto );
+
+                             /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                              IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                                  v_id_moneda_mp = v_parametros.id_moneda2;
+                              else
+                                  v_id_moneda_mp = NULL;
+                              end if;
+                              /***********************************************************************************/
                                      perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago,
             															v_parametros.numero_tarjeta::varchar, v_parametros.id_auxiliar,
                                                                 		p_id_usuario,replace(upper(v_parametros.codigo_tarjeta),' ',''),v_valor,
-                                                                 		v_parametros.mco);
+                                                                 		v_parametros.mco,
+                                                                        /*************/
+                                                                        v_id_moneda_mp
+                                                                        /************/);
                     END IF;
 
 
-
+					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 
 					INSERT INTO obingresos.tboleto_amadeus_forma_pago( 	id_usuario_reg,
                                                                         importe,
@@ -1027,15 +1372,61 @@ BEGIN
                                                                         null,
                                                                         v_parametros.mco
                                                                       );
+                    else
+                    	INSERT INTO obingresos.tboleto_amadeus_forma_pago( 	id_usuario_reg,
+                                                                        importe,
+                                                                        id_medio_pago,
+                                                                        id_moneda,
+                                                                        id_boleto_amadeus,
+                                                                        numero_tarjeta,
+                                                                        codigo_tarjeta,
+                                                                        tarjeta,
+                                                                        id_usuario_fp_corregido,
+                                                                        id_auxiliar,
+                                                                        registro_mod,
+                                                                        mco
+                                                                      )
+                                                                      VALUES (
+                                                                        p_id_usuario,
+                                                                        v_valor,
+                                                                        v_parametros.id_forma_pago,
+                                                                        v_parametros.id_moneda,
+                                                                        v_id_boleto,
+                                                                        v_parametros.numero_tarjeta,
+                                                                        replace (upper(v_parametros.codigo_tarjeta),' ',''),
+                                                                        v_codigo_tarjeta,
+                                                                        p_id_usuario,
+                                                                        v_parametros.id_auxiliar,
+                                                                        null,
+                                                                        v_parametros.mco
+                                                                      );
+                    end if;
                                                                          --raise exception 'llega';
 
             	end if;
                 if (v_saldo_fp2 > 0) then
-              		v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2 );
+
+                /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+              			v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,null );
+                    else
+                    	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,v_parametros.id_moneda2 );
+                    end if;
+
              		v_saldo_fp2 = v_saldo_fp2 - v_valor;
-                    select fp.codigo into v_codigo_tarjeta
-                    from obingresos.tforma_pago fp
-                    where fp.id_forma_pago = v_parametros.id_forma_pago2;
+
+                     /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                      select fp.codigo into v_codigo_tarjeta
+                      from obingresos.tforma_pago fp
+                      where fp.id_forma_pago = v_parametros.id_forma_pago2;
+                    else
+                      select mp.mop_code into v_codigo_tarjeta
+                      from obingresos.tmedio_pago_pw mp
+                      inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
+                      where mp.id_medio_pago_pw = v_parametros.id_forma_pago2;
+                    end if;
+					/************************************************************************************/
 
                     v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
                                             substring(v_codigo_tarjeta from 3 for 2)
@@ -1060,18 +1451,41 @@ BEGIN
                         where a.id_boleto_amadeus = v_id_boleto
                     			)='no_migra')THEN
 
+                                /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                                  IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
+                                      v_id_moneda_mp = v_parametros.id_moneda2;
+                                  else
+                                      v_id_moneda_mp = NULL;
+                                  end if;
+                                  /***********************************************************************************/
+
+
                                  perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
                                                                 p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_valor,
-                                                                v_parametros.mco2);
+                                                                v_parametros.mco2,
+                                                                /*************/
+                                                                v_id_moneda_mp);
+                                                                /*************/
                                 ELSE
+                                 /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
+                                  IF(v_parametros.id_moneda2 is not null and v_parametros.id_moneda2 != 0) THEN
+                                      v_id_moneda_mp = v_parametros.id_moneda2;
+                                  else
+                                      v_id_moneda_mp = NULL;
+                                  end if;
+                                  /***********************************************************************************/
                                                 perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
                                                                 p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_valor,
-                                                                v_parametros.mco2);
+                                                                v_parametros.mco2,
+                                                                /*************/
+                                                                v_id_moneda_mp);
+                                                                /*************/
                     END IF;
 
-
+					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 
                     INSERT INTO obingresos.tboleto_amadeus_forma_pago ( id_usuario_reg,
                                                                         importe,
@@ -1100,6 +1514,37 @@ BEGIN
                                                                         null,
                                                                         v_parametros.mco2
                                                                       );
+                    else
+                    INSERT INTO obingresos.tboleto_amadeus_forma_pago ( id_usuario_reg,
+                                                                        importe,
+                                                                        id_medio_pago,
+                                                                        id_moneda,
+                                                                        id_boleto_amadeus,
+                                                                        --ctacte,
+                                                                        numero_tarjeta,
+                                                                        codigo_tarjeta,
+                                                                        tarjeta,
+                                                                        id_usuario_fp_corregido,
+                                                                        id_auxiliar,
+                                                                        registro_mod,
+                                                                        mco
+                                                                      )
+                                                                      VALUES (
+                                                                        p_id_usuario,
+                                                                        v_valor,
+                                                                        v_parametros.id_forma_pago2,
+                                                                        v_parametros.id_moneda2,
+                                                                        v_id_boleto,
+                                                                        --v_parametros.ctacte,
+                                                                        v_parametros.numero_tarjeta2,
+                                                                        replace(upper(v_parametros.codigo_tarjeta2),' ',''),
+                                                                        v_codigo_tarjeta,
+                                                                        p_id_usuario,
+                                                                        v_parametros.id_auxiliar2,
+                                                                        null,
+                                                                        v_parametros.mco2
+                                                                      );
+                    end if;
 
             	end if;
 
@@ -1945,7 +2390,7 @@ BEGIN
 			--raise exception 'id %',v_reporte = v_parametros.boletos;
            --- raise exception 'json %',v_parametros.boletos;
             if ( v_parametros.boletos = '' or v_parametros.boletos  is null )then
-      RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
+      			RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
 
      	      end if;
 
@@ -2185,34 +2630,74 @@ BEGIN
                   );
 
                   if(trim(v_tipo_pago_amadeus)='CA')then
+                  	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                          SELECT id_forma_pago into v_id_forma_pago
+                          FROM obingresos.tforma_pago
+                          WHERE codigo=v_tipo_pago_amadeus AND id_moneda=v_id_moneda;
 
-                      SELECT id_forma_pago into v_id_forma_pago
-                      FROM obingresos.tforma_pago
-                      WHERE codigo=v_tipo_pago_amadeus AND id_moneda=v_id_moneda;
+                          SELECT id_forma_pago into v_id_forma_pago
+                          FROM obingresos.tforma_pago
+                          WHERE codigo = v_tipo_pago_amadeus AND
+                                id_moneda = v_id_moneda AND
+                                id_lugar = param.f_obtener_padre_id_lugar((select suc.id_lugar
+                                           from vef.tpunto_venta pv
+                                           inner join vef.tsucursal suc on suc.id_sucursal=pv.id_sucursal
+                                           where pv.id_punto_venta=v_parametros.id_punto_venta),'pais');
 
-                      SELECT id_forma_pago into v_id_forma_pago
-                      FROM obingresos.tforma_pago
-                      WHERE codigo = v_tipo_pago_amadeus AND
-                            id_moneda = v_id_moneda AND
-                            id_lugar = param.f_obtener_padre_id_lugar((select suc.id_lugar
-                                       from vef.tpunto_venta pv
-                                       inner join vef.tsucursal suc on suc.id_sucursal=pv.id_sucursal
-                                       where pv.id_punto_venta=v_parametros.id_punto_venta),'pais');
+                          IF v_id_forma_pago IS NOT NULL THEN
+                            INSERT INTO obingresos.tboleto_amadeus_forma_pago
+                            (id_usuario_reg,
+                            id_boleto_amadeus,
+                            id_forma_pago,
+                            importe
+                            )
+                            VALUES(
+                            p_id_usuario,
+                            v_id_boleto,
+                            v_id_forma_pago,
+                            v_monto_pago_amadeus::numeric
+                            );
+                          END IF;
+                    else
+                    	/*Aumentando para las nuevos medios de pago (Ismael Valdivia 24/11/2020)*/
+                        /*select
+                              fp.id_forma_pago_pw
+                              into
+                              v_id_forma_pago
+                        from obingresos.tforma_pago_pw fp
+                        where fp.fop_code = v_tipo_pago_amadeus;*/
+                        --raise exception 'Aqui llega %',v_moneda;
+                        select
+                        		mp.id_medio_pago_pw
+                                into
+                              	v_id_forma_pago
+                        from obingresos.tforma_pago_pw fp
+                        inner join obingresos.tmedio_pago_pw mp on mp.forma_pago_id = fp.id_forma_pago_pw
+                        where fp.fop_code = v_tipo_pago_amadeus;
 
-                      IF v_id_forma_pago IS NOT NULL THEN
-                        INSERT INTO obingresos.tboleto_amadeus_forma_pago
-                        (id_usuario_reg,
-                        id_boleto_amadeus,
-                        id_forma_pago,
-                        importe
-                        )
-                        VALUES(
-                        p_id_usuario,
-                        v_id_boleto,
-                        v_id_forma_pago,
-                        v_monto_pago_amadeus::numeric
-                        );
-                      END IF;
+                        SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
+                        FROM param.tmoneda
+                        WHERE codigo_internacional=v_moneda;
+
+
+                        /************************************************************************/
+                        IF v_id_forma_pago IS NOT NULL THEN
+                            INSERT INTO obingresos.tboleto_amadeus_forma_pago
+                            (id_usuario_reg,
+                            id_boleto_amadeus,
+                            id_medio_pago,
+                            id_moneda,
+                            importe
+                            )
+                            VALUES(
+                            p_id_usuario,
+                            v_id_boleto,
+                            v_id_forma_pago,
+                            v_id_moneda,
+                            v_monto_pago_amadeus::numeric
+                            );
+                          END IF;
+                    end if;
 
                   end if;
 
@@ -2543,20 +3028,44 @@ BEGIN
             end if;
 
             IF(v_boleto.estado='borrador')THEN
-
-              select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
-              from obingresos.tboleto_amadeus_forma_pago bfp
-              inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
-              inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
-              where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
-
-              IF (COALESCE(v_monto_total_fp,0) <(v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
-              	raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
+			  /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+        	  IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                  select sum(param.f_convertir_moneda(fp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                  from obingresos.tboleto_amadeus_forma_pago bfp
+                  inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                  inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                  where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+              ELSE
+              	 select sum(param.f_convertir_moneda(bfp.id_moneda,bol.id_moneda_boleto,bfp.importe,bol.fecha_emision,'O',2)) into v_monto_total_fp
+                  from obingresos.tboleto_amadeus_forma_pago bfp
+                  --inner join obingresos.tforma_pago fp on fp.id_forma_pago=bfp.id_forma_pago
+                  inner join obingresos.tboleto_amadeus bol on bol.id_boleto_amadeus=bfp.id_boleto_amadeus
+                  where bfp.id_boleto_amadeus=v_parametros.id_boleto_amadeus;
               END IF;
 
-			  IF (COALESCE(v_monto_total_fp,0) >(v_boleto.total-COALESCE(v_boleto.comision,0)+0.02) and v_boleto.voided='no')THEN
-              	raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
-              END IF;
+
+              IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+
+                IF (COALESCE(v_monto_total_fp,0) <(v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
+                  raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
+                END IF;
+
+                IF (COALESCE(v_monto_total_fp,0) >(v_boleto.total-COALESCE(v_boleto.comision,0)+0.02) and v_boleto.voided='no')THEN
+                  raise exception 'El monto total de las formas de pago no iguala con el monto del boleto 2';
+                END IF;
+
+              ELSE
+
+              	IF (v_boleto.forma_pago != 'CC') THEN
+                  IF (COALESCE(v_monto_total_fp,0) <(v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
+                    raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
+                  END IF;
+
+                  IF (COALESCE(v_monto_total_fp,0) >(v_boleto.total-COALESCE(v_boleto.comision,0)+0.02) and v_boleto.voided='no')THEN
+                    raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
+                  END IF;
+                END IF;
+              end if;
 
               update obingresos.tboleto_amadeus
               set
@@ -2582,10 +3091,10 @@ BEGIN
                 FROM obingresos.tboleto_amadeus_forma_pago
                 WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
 
-            delete from obingresos.tmod_forma_pago m
-            where m.billete = (	select 	b.nro_boleto::numeric
-                         		from obingresos.tboleto_amadeus b
-             			 		where b.id_boleto_amadeus = v_parametros.id_boleto_amadeus);
+                delete from obingresos.tmod_forma_pago m
+                where m.billete = (	select 	b.nro_boleto::numeric
+                                    from obingresos.tboleto_amadeus b
+                                    where b.id_boleto_amadeus = v_parametros.id_boleto_amadeus);
 
 
               END IF;

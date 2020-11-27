@@ -17,6 +17,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.grupo = 'no';
                 this.tipo_usuario = 'cajero';
 
+                this.iniciar_tiempo='si';
+
 
                 Ext.Ajax.request({
                     url:'../../sis_ventas_facturacion/control/Venta/getVariablesBasicas',
@@ -27,8 +29,94 @@ header("content-type: text/javascript; charset=UTF-8");
                     timeout:this.timeout,
                     scope:this
                 });
-
             },
+
+            /*Aumentando para los nuevos medios de pago (Ismael Valdivia 24/11/2020)*/
+            fontMediosPago :function (variables) {
+              if (variables.instancias_de_pago_nuevas == 'no') {
+                this.Atributos[this.getIndAtributo('id_forma_pago')].config.tpl = '<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>';
+                this.Atributos[this.getIndAtributo('id_forma_pago')].config.fieldLabel = 'Forma de Pago BoA';
+                this.Atributos[this.getIndAtributo('tipo_comision')].config.fieldLabel = 'Tipo Comision';
+                this.Atributos[this.getIndAtributo('cambio')].config.fieldLabel = 'Cambio M/L';
+                this.Atributos[this.getIndAtributo('cambio_moneda_extranjera')].config.fieldLabel = 'Cambio M/E';
+                this.Atributos[this.getIndAtributo('monto_recibido_forma_pago')].config.fieldLabel = 'Importe Recibido Forma Pago M/L';
+                this.Atributos[this.getIndAtributo('monto_forma_pago')].config.fieldLabel = 'Importe Forma Pago BoA';
+                this.Atributos[this.getIndAtributo('numero_tarjeta')].config.fieldLabel = 'No Tarjeta';
+                this.Atributos[this.getIndAtributo('codigo_tarjeta')].config.fieldLabel = 'Codigo de Autorización 1';
+                this.Atributos[this.getIndAtributo('id_auxiliar')].config.fieldLabel = 'Cuenta Corriente';
+
+                this.Atributos[this.getIndAtributo('id_forma_pago2')].config.tpl = '<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>';
+                this.Atributos[this.getIndAtributo('id_forma_pago2')].config.fieldLabel = 'Forma de Pago 2';
+                this.Atributos[this.getIndAtributo('monto_forma_pago2')].config.fieldLabel = 'Importe Forma de Pago BoA 2';
+                this.Atributos[this.getIndAtributo('numero_tarjeta2')].config.fieldLabel = 'No Tarjeta 2';
+                this.Atributos[this.getIndAtributo('codigo_tarjeta2')].config.fieldLabel = 'Codigo de Autorización 2';
+                this.Atributos[this.getIndAtributo('id_auxiliar2')].config.fieldLabel = 'Cuenta Corriente';
+
+                this.Atributos[this.getIndAtributo('localizador')].config.fieldLabel = 'Pnr';
+                this.Atributos[this.getIndAtributo('nro_boleto')].config.fieldLabel = 'Billete: 930-';
+                this.Atributos[this.getIndAtributo('forma_pago_amadeus')].config.fieldLabel = 'Pago Amadeus';
+                this.Atributos[this.getIndAtributo('moneda')].config.fieldLabel = 'Moneda';
+                this.Atributos[this.getIndAtributo('total')].config.fieldLabel = 'Total M/L';
+                this.Atributos[this.getIndAtributo('comision')].config.fieldLabel = 'Comisión AGT M/L';
+                this.Atributos[this.getIndAtributo('comision_moneda_extranjera')].config.fieldLabel = 'Comisión AGT M/E';
+                this.Atributos[this.getIndAtributo('fecha_emision')].config.fieldLabel = 'Fecha Emision';
+                this.Atributos[this.getIndAtributo('agente_venta')].config.fieldLabel = 'Agente Venta';
+                this.Atributos[this.getIndAtributo('total_moneda_extranjera')].config.fieldLabel = 'Total M/E';
+                this.Atributos[this.getIndAtributo('pasajero')].config.fieldLabel = 'Pasajero';
+
+
+
+              } else {
+                this.Atributos[this.getIndAtributo('id_forma_pago')].config.tpl = '<tpl for="."><div class="x-combo-list-item"><p><b>Medio de Pago:<font color="red">{nombre}</font></b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p></div></tpl>';
+                this.Atributos[this.getIndAtributo('id_forma_pago')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/TarjetaCredito.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Medio de Pago BoA</span>';
+                this.Atributos[this.getIndAtributo('tipo_comision')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/comision.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Tipo Comisión</span>';
+                this.Atributos[this.getIndAtributo('cambio')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/MonedaDolar.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Cambio M/L</span>';
+                this.Atributos[this.getIndAtributo('cambio_moneda_extranjera')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/MonedaDolar.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Cambio M/E</span>';
+                this.Atributos[this.getIndAtributo('monto_recibido_forma_pago')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/BolsaDinero.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Importe Recibido Forma Pago M/L</span>';
+                this.Atributos[this.getIndAtributo('monto_forma_pago')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/BolsaDinero.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Importe Forma Pago BoA</span>';
+                this.Atributos[this.getIndAtributo('numero_tarjeta')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/TarjetaCreditos.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> No Tarjeta</span>';
+                this.Atributos[this.getIndAtributo('codigo_tarjeta')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/Codigo.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Codigo de Autorización 1</span>';
+                this.Atributos[this.getIndAtributo('id_auxiliar')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/CuentaCorriente.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Cuenta Corriente</span>';
+
+                this.Atributos[this.getIndAtributo('id_forma_pago2')].config.tpl = '<tpl for="."><div class="x-combo-list-item"><p><b>Medio de Pago:<font color="red">{nombre}</font></b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p></div></tpl>';
+                this.Atributos[this.getIndAtributo('id_forma_pago2')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/TarjetaCredito.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Medio de Pago</span>';
+                this.Atributos[this.getIndAtributo('monto_forma_pago2')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/BolsaDinero.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Importe Forma Pago BoA 2</span>';
+                this.Atributos[this.getIndAtributo('numero_tarjeta2')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/TarjetaCreditos.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> No Tarjeta 2</span>';
+                this.Atributos[this.getIndAtributo('codigo_tarjeta2')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/Codigo.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Codigo de Autorización 2</span>';
+                this.Atributos[this.getIndAtributo('id_auxiliar2')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/CuentaCorriente.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Cuenta Corriente</span>';
+
+
+                this.Atributos[this.getIndAtributo('localizador')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/Codigo.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> PNR</span>';
+                this.Atributos[this.getIndAtributo('nro_boleto')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/ticket.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Billete: 930-</span>';
+                this.Atributos[this.getIndAtributo('forma_pago_amadeus')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/TarjetaCreditos.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Pago Amadeus</span>';
+                this.Atributos[this.getIndAtributo('moneda')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/MonedaDolar.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Moneda</span>';
+                this.Atributos[this.getIndAtributo('total')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/BolsaDinero.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Total M/L</span>';
+                this.Atributos[this.getIndAtributo('comision')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/comision.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Comisión AGT M/L</span>';
+                this.Atributos[this.getIndAtributo('comision_moneda_extranjera')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/comision.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Comisión AGT M/E</span>';
+                this.Atributos[this.getIndAtributo('fecha_emision')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/calendario.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Fecha Emisión</span>';
+                this.Atributos[this.getIndAtributo('agente_venta')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/usuario.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Agente Venta</span>';
+                this.Atributos[this.getIndAtributo('total_moneda_extranjera')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/BolsaDinero.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Total M/E</span>';
+                this.Atributos[this.getIndAtributo('pasajero')].config.fieldLabel = '<img src="../../../lib/imagenes/facturacion/usuario.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Pasajero</span>';
+
+              }
+            },
+
+            condicionesRegionales : function() {
+              this.Cmp.id_forma_pago.store.baseParams.regionales = this.variables_globales.ESTACION_inicio;
+
+              if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
+                 this.ocultarComponente(this.Cmp.id_moneda2);
+                 this.ocultarComponente(this.Cmp.id_moneda);
+                 this.Cmp.id_moneda.allowBlank = true;
+                 this.Cmp.id_moneda2.allowBlank = true;
+              } else {
+                this.mostrarComponente(this.Cmp.id_moneda2);
+                this.mostrarComponente(this.Cmp.id_moneda);
+                this.Cmp.id_moneda.allowBlank = false;
+                this.Cmp.id_moneda2.allowBlank = true;
+              }
+            },
+            /*****************************************************************************/
 
             imprimirBoleto: function(){
                 //Ext.Msg.confirm('Confirmación','¿Está seguro de Imprimir el Comprobante?',function(btn){
@@ -51,6 +139,13 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             successGetVariables : function (response,request) {
                 //llama al constructor de la clase padre
+                var respuesta = JSON.parse(response.responseText);
+          			if('datos' in respuesta){
+          					this.variables_globales = respuesta.datos;
+                    /*Aumentando Variables para el cambio de las nuevas instancias de pago*/
+                    this.fontMediosPago(this.variables_globales);
+                    /**********************************************************************/
+          			}
                 Phx.vista.BoletoAmadeus.superclass.constructor.call(this,request.arguments);
                 this.store.baseParams.pes_estado = 'no_revisados';
                 this.store.baseParams.todos = 'no';
@@ -148,7 +243,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 //this.addButton('cerrar',{grupo:[0],text:'Cerrar Caja',iconCls: 'block',disabled:false,handler:this.preparaCerrarCaja,tooltip: '<b>Cerrar la Caja</b>'});
 
                 //this.store.baseParams.estado = 'borrador';
-                console.log("llega aqui el dato carga",this);
                 this.iniciarEventos();
                 this.finCons = true;
                 this.seleccionarPuntoVentaSucursal();
@@ -788,32 +882,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid:false,
                     form:true
                 },
-                {
-                    config:{
-                        name: 'agente_venta',
-                        fieldLabel: 'Agente Venta',
-                        disabled: true,
-                        anchor: '100%',
-                        gwidth: 270
-                    },
-                    type:'TextField',
-                    id_grupo:0,
-                    grid:true,
-                    form:true
-                },
-                {
-                    config:{
-                        name: 'codigo_agente',
-                        fieldLabel: 'Codigo Agente',
-                        anchor: '70%',
-                        disabled: true,
-                        gwidth: 100
-                    },
-                    type:'TextField',
-                    id_grupo:3,
-                    grid:true,
-                    form:true
-                },
+
                 {
                     config:{
                         name: 'tipo_comision',
@@ -842,6 +911,52 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config: {
+                        name: 'id_moneda',
+                        fieldLabel: '<img src="../../../lib/imagenes/facturacion/MonedaDolar.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Moneda</span>',
+                        allowBlank: true,
+                        //width:150,
+                        listWidth:250,
+                        resizable:true,
+                        // style: {
+                        //      background: '#EFFFD6',
+                        //      color: 'red',
+                        //      fontWeight:'bold'
+                        //    },
+                        emptyText: 'Moneda a pagar...',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_parametros/control/Moneda/listarMoneda',
+                            id: 'id_moneda',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'moneda',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_moneda', 'codigo', 'moneda', 'codigo_internacional'],
+                            remoteSort: true,
+                            baseParams: {filtrar: 'si',par_filtro: 'moneda.moneda#moneda.codigo#moneda.codigo_internacional'}
+                        }),
+                        valueField: 'id_moneda',
+                        gdisplayField : 'codigo_internacional',
+                        displayField: 'codigo_internacional',
+                        hiddenName: 'id_moneda',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p style="color:green;"><b style="color:black;">Moneda:</b> <b>{moneda}</b></p><p style="color:red;"><b style="color:black;">Código:</b> <b>{codigo_internacional}</b></p></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
+                        //disabled:true,
+                        minChars: 2
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 1,
+                    form: true
+                },
+                {
+                    config: {
                         name: 'id_forma_pago',
                         fieldLabel: 'Forma de Pago',
                         allowBlank: false,
@@ -857,13 +972,13 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos'}
+                            baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos',emision:'VENBOL'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
                         gdisplayField: 'forma_pago',
                         hiddenName: 'id_forma_pago',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>',
+                        tpl:'',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -890,16 +1005,17 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'cambio',
                         fieldLabel: 'Cambio M/L',
                         allowBlank:true,
-                        anchor: '80%',
+                        //anchor: '80%',
+                        width:100,
                         allowDecimals:true,
                         decimalPrecision:2,
                         allowNegative : false,
                         readOnly:true,
                         gwidth: 110,
-                        style: 'background-color: #3cf251;  background-image: none;'
+                        style: 'background-color: #3cf251;  background-image: none; height:30px; fontSize:20px;'
                     },
                     type:'NumberField',
-                    id_grupo:1,
+                    id_grupo:20,
                     grid:false,
                     form:true
                 },
@@ -908,16 +1024,17 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'cambio_moneda_extranjera',
                         fieldLabel: 'Cambio M/E',
                         allowBlank:true,
-                        anchor: '80%',
+                        //anchor: '80%',
+                        width:100,
                         allowDecimals:true,
                         decimalPrecision:2,
                         allowNegative : false,
                         readOnly:true,
                         gwidth: 110,
-                        style: 'background-color: #3cf251; background-image: none;'
+                        style: 'background-color: #3cf251;  background-image: none; height:30px; fontSize:20px;'
                     },
                     type:'NumberField',
-                    id_grupo:1,
+                    id_grupo:20,
                     grid:false,
                     form:true
                 },
@@ -942,17 +1059,43 @@ header("content-type: text/javascript; charset=UTF-8");
                 {
                     config:{
                         name: 'monto_forma_pago',
-                        fieldLabel: 'Importe Forma Pago',
+                        fieldLabel: 'Importe Forma Pago BoA',
                         allowBlank:false,
                         anchor: '80%',
                         allowDecimals:true,
                         decimalPrecision:2,
                         allowNegative : false,
                         disabled:true,
-                        gwidth: 110
+                        gwidth: 140
                     },
                     type:'NumberField',
                     id_grupo:1,
+                    grid:true,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'agente_venta',
+                        fieldLabel: 'Agente Venta',
+                        disabled: true,
+                        anchor: '100%',
+                        gwidth: 270
+                    },
+                    type:'TextField',
+                    id_grupo:0,
+                    grid:true,
+                    form:true
+                },
+                {
+                    config:{
+                        name: 'codigo_agente',
+                        fieldLabel: 'Codigo Agente',
+                        anchor: '70%',
+                        disabled: true,
+                        gwidth: 100
+                    },
+                    type:'TextField',
+                    id_grupo:3,
                     grid:true,
                     form:true
                 },
@@ -1092,6 +1235,52 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 {
                     config: {
+                        name: 'id_moneda2',
+                        fieldLabel: '<img src="../../../lib/imagenes/facturacion/MonedaDolar.svg" style="width:15px; vertical-align: middle;"><span style="vertical-align: middle;"> Moneda</span>',
+                        allowBlank: true,
+                        //width:150,
+                        listWidth:250,
+                        resizable:true,
+                        // style: {
+                        //      background: '#EFFFD6',
+                        //      color: 'red',
+                        //      fontWeight:'bold'
+                        //    },
+                        emptyText: 'Moneda a pagar...',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_parametros/control/Moneda/listarMoneda',
+                            id: 'id_moneda',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'moneda',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_moneda', 'codigo', 'moneda', 'codigo_internacional'],
+                            remoteSort: true,
+                            baseParams: {filtrar: 'si',par_filtro: 'moneda.moneda#moneda.codigo#moneda.codigo_internacional'}
+                        }),
+                        valueField: 'id_moneda',
+                        gdisplayField : 'codigo_internacional',
+                        displayField: 'codigo_internacional',
+                        hiddenName: 'id_moneda',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p style="color:green;"><b style="color:black;">Moneda:</b> <b>{moneda}</b></p><p style="color:red;"><b style="color:black;">Código:</b> <b>{codigo_internacional}</b></p></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
+                        //disabled:true,
+                        minChars: 2
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 4,
+                    form: true
+                },
+                {
+                    config: {
                         name: 'id_forma_pago2',
                         fieldLabel: 'Forma de Pago 2',
                         allowBlank: true,
@@ -1114,7 +1303,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         gdisplayField: 'forma_pago2',
                         hiddenName: 'id_forma_pago',
                         anchor: '100%',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>',
+                        tpl:'',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -1146,7 +1335,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         decimalPrecision:2,
                         allowNegative : false,
                         disabled:true,
-                        gwidth: 125,
+                        gwidth: 140,
                         style: 'background-color: #f2f23c;  background-image: none;'
                     },
                     type:'NumberField',
@@ -1512,6 +1701,10 @@ header("content-type: text/javascript; charset=UTF-8");
             bedit:false,
 
             iniciarEventos : function () {
+
+              /*Mandaremos el filtro para regionales (Ismael Valdivia 24/11/2020)*/
+              this.condicionesRegionales();
+              /*******************************************************************/
                 this.Cmp.monto_forma_pago.on('change',function(field,newValue,oldValue){
                     var valueOld = this.getMontoMonBol(oldValue, this.Cmp.moneda_fp1.getValue());
                     var valueNew = this.getMontoMonBol(newValue, this.Cmp.moneda_fp1.getValue());
@@ -1521,9 +1714,23 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },this);
 
+                /*Aqui aumentamos cuando se seleccione la moneda se resetee el medio de pago (26/11/2020)*/
+                this.Cmp.id_moneda.on('select',function(combo,record){
+                    this.Cmp.id_forma_pago.reset();
+                },this);
+
+                this.Cmp.id_moneda2.on('select',function(combo,record){
+                    this.Cmp.id_forma_pago2.reset();
+                },this);
+                /*****************************************************************************************/
+
+
                 this.Cmp.monto_recibido_forma_pago.on('change',function(field,newValue,oldValue){
                     //console.log('field',field,'newValue',newValue,'oldValue',oldValue,'ORIGINAL', this.Cmp.monto_forma_pago.getValue());
                     if(this.grupo=='no') {
+
+                      /*Aumentamos la condicion para los nuevos medios de pago (Ismael Valdivia 25/11/2020)*/
+                      if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                         if (this.Cmp.moneda.getValue() == this.Cmp.moneda_fp1.getValue()) {
 
                             console.log('monto_recibido, misma moneda de boleto, moneda forma de pago');
@@ -1627,8 +1834,117 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.cambio_moneda_extranjera.setValue(0);
                             /**********************************************************************************************************/
                         }
-                        //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                      }//Aqui Empieza la condicion para las nuevas instancias
+                      else {
+
+                        if (this.Cmp.moneda.getValue() == this.Cmp.id_moneda.lastSelectionText) {
+
+                            console.log('monto_recibido, misma moneda de boleto, moneda forma de pago');
+                            if (newValue > (this.Cmp.total.getValue() - this.Cmp.comision.getValue())) {
+                                console.log('A');
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue());
+
+
+                                if(this.Cmp.moneda_sucursal.getValue()=='USD') {
+                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                }else{
+
+
+                                    if(this.Cmp.id_moneda.lastSelectionText=='USD'){
+                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    }else{
+                                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                    }
+
+                                }
+
+                            } else {
+                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
+                            }
+
+                        } else if(this.Cmp.moneda.getValue() == 'USD' && this.Cmp.id_moneda.lastSelectionText == this.Cmp.moneda_sucursal.getValue()){
+
+                            console.log('monto_recibido, misma moneda sucursal y moneda forma de pago, boleto en usd');
+                            if (newValue > (this.Cmp.total_moneda_extranjera.getValue() * this.Cmp.tc.getValue() - this.Cmp.comision_moneda_extranjera.getValue() * this.Cmp.tc.getValue())) {
+                                console.log('B');
+                                this.Cmp.monto_forma_pago.setValue((this.Cmp.total_moneda_extranjera.getValue()/** this.Cmp.tc.getValue()*/ - this.Cmp.comision_moneda_extranjera.getValue()) * this.Cmp.tc.getValue());
+                                //console.log('a',this.Cmp.total_moneda_extranjera.getValue(),'b',this.Cmp.tc.getValue(),'c',this.Cmp.comision_moneda_extranjera.getValue(),'d',this.Cmp.tc.getValue())
+
+                                if(this.Cmp.moneda_sucursal.getValue()=='USD') {
+                                    console.log('B1');
+                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                }else{
+                                    console.log('B2');
+                                    if(this.Cmp.id_moneda.lastSelectionText=='USD'){
+                                        console.log('B21');
+                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    }else{
+                                        console.log('B22', newValue, 'ORIGINAL', this.Cmp.monto_forma_pago.getValue());
+                                        console.log('extranjero', newValue, this.Cmp.monto_forma_pago.getValue(), this.Cmp.tc.getValue());
+                                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                    }
+
+                                }
+
+                            } else {
+                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
+                            }
+                        }
+                        else if(this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.id_moneda.lastSelectionText == 'USD'){
+
+                            console.log('monto_recibido, misma moneda sucursal y moneda boleto, moneda forma de pago en usd');
+                            if (newValue > (this.Cmp.total_moneda_extranjera.getValue() - this.Cmp.comision_moneda_extranjera.getValue())) {
+                                console.log('C');
+                                this.Cmp.monto_forma_pago.setValue((this.Cmp.total.getValue() - this.Cmp.comision.getValue())/ this.Cmp.tc.getValue());
+
+                                //this.Cmp.monto_recibido_forma_pago.setValue((this.Cmp.total.getValue() - this.Cmp.comision.getValue())/ this.Cmp.tc.getValue());
+                                //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+
+                                if(this.Cmp.moneda_sucursal.getValue()=='USD') {
+                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                }else{
+
+                                    if(this.Cmp.id_moneda.lastSelectionText=='USD'){
+                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    }else{
+                                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                    }
+
+                                }
+                            } else {
+                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
+                            }
+                        }
+                        else { console.log('D');
+                            this.Cmp.monto_forma_pago.setValue(0);
+                            this.Cmp.cambio.setValue(0);
+                            /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                            this.Cmp.cambio_moneda_extranjera.setValue(0);
+                            /**********************************************************************************************************/
+                        }
+                      }//Aqui termina la condicion para las nuevas instancias
+
                     }else{
+
+                      if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                         var valueOld = this.Cmp.monto_forma_pago.getValue();
 
                         if (this.Cmp.moneda_fp1.getValue() !== 'USD') {
@@ -1696,6 +2012,76 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.monto_forma_pago2.setDisabled(false);
                         }
                         //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                      } /*Aqui empieza condicion para nuevas instancias de pago*/
+                      else {
+                        var valueOld = this.Cmp.monto_forma_pago.getValue();
+                        console.log("aqui calcular el grupo",this.Cmp.id_moneda.lastSelectionText);
+                        if (this.Cmp.id_moneda.lastSelectionText !== 'USD') {
+                            if (newValue > (this.total_grupo['total_boletos_'+this.Cmp.id_moneda.lastSelectionText] - this.total_grupo['total_comision_'+this.Cmp.id_moneda.lastSelectionText])) {
+                                console.log('AA');
+                                this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+this.Cmp.id_moneda.lastSelectionText] - this.total_grupo['total_comision_'+this.Cmp.id_moneda.lastSelectionText]);
+                                //this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+this.Cmp.moneda_fp1.getValue()] - this.total_grupo['total_comision_'+this.Cmp.moneda_fp1.getValue()]);
+                                //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+
+                                if(this.Cmp.moneda_sucursal.getValue()=='USD') {
+                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                }else{
+
+                                    if(this.Cmp.id_moneda.lastSelectionText=='USD'){
+                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    }else{
+                                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                    }
+
+                                }
+                            } else {
+                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
+                            }
+                        } else {
+                            if (newValue > (this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD'])) {
+                                console.log('BB');
+                                this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD']);
+                                //this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD']);
+                                //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+
+                                if(this.Cmp.moneda_sucursal.getValue()=='USD') {
+                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                }else{
+
+                                    if(this.Cmp.id_moneda.lastSelectionText=='USD'){
+                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    }else{
+                                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                    }
+
+                                }
+                            } else {
+
+                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.cambio.setValue(0);
+                                /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
+                                this.Cmp.cambio_moneda_extranjera.setValue(0);
+                                /**********************************************************************************************************/
+                            }
+                        }
+                        var valueNew = this.Cmp.monto_forma_pago.getValue();
+
+                        if (valueNew < valueOld) {
+
+                            this.Cmp.id_forma_pago2.setDisabled(false);
+                            this.Cmp.monto_forma_pago2.setDisabled(false);
+                        }
+                        //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                      }//Aqui termina condicion para las nuevos medios de pago
+
                     }
                 },this);
                 /*
@@ -1706,6 +2092,8 @@ header("content-type: text/javascript; charset=UTF-8");
                  });*/
 
                 this.Cmp.id_forma_pago.on('select', function (combo,record){
+
+                  if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                     if (record) {
                         this.Cmp.moneda_fp1.setValue(record.data.desc_moneda);
                         this.manejoComponentesFp1(record.data.id_forma_pago,record.data.codigo);
@@ -1769,10 +2157,79 @@ header("content-type: text/javascript; charset=UTF-8");
                     }else {
                         this.calculoFp1Grupo(record);
                     }
+                  } /*Aqui empieza condicion para nuevos medios de pago*/
+                  else {
+                    if (record) {
+                        this.Cmp.moneda_fp1.setValue(this.Cmp.id_moneda.lastSelectionText);
+                        this.manejoComponentesFp1(record.data.id_forma_pago,record.data.codigo);
+                    } else {
+                        this.manejoComponentesFp1(this.Cmp.id_forma_pago.getValue(),this.Cmp.codigo_forma_pago.getValue());
+                    }
+                    if (this.grupo == 'no') {
+
+                        var monto_pagado_fp2 = this.getMontoMonBol(this.Cmp.monto_forma_pago2.getValue(), this.Cmp.id_moneda2.lastSelectionText);
+
+                        if (monto_pagado_fp2 > -1) {
+                            //Si la forma de pago y el boleto estan en la misma moneda
+                            if (this.Cmp.moneda.getValue() == this.Cmp.moneda_fp1.getValue()) {
+                                console.log('id_forma_pago, misma moneda de boleto, moneda forma de pago');
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2);
+                                this.Cmp.monto_recibido_forma_pago.setValue(this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2);
+                                //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
+                            }
+                            //Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
+                            else if (this.Cmp.moneda.getValue() == 'USD' && this.Cmp.moneda_fp1.getValue() == this.Cmp.moneda_sucursal.getValue()) {
+                                console.log('id_forma_pago, misma moneda sucursal y moneda forma de pago, boleto en usd');
+                                //convertir de  dolares a moneda sucursal(multiplicar)
+                                //convertir de  moneda sucursal a dolares(dividir)
+
+                                /*Comentando porque el redondeo lo esta haciendo por todos los decimales cambiaremos para tomar igual q la base de datos solo los 2 primeros decimales Ismael Valdivia (07/01/2019)*/
+                                //this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
+                                //this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() -this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()), 2));
+                                /********************************************************************************************************/
+
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago.setValue(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue()).toFixed(2));
+                                this.Cmp.monto_recibido_forma_pago.setValue((((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) * this.Cmp.tc.getValue())).toFixed(2));
+                                /***********************/
+
+                                //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
+
+                                //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
+                            } else if (this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp1.getValue() == 'USD') {
+                                console.log('id_forma_pago, misma moneda sucursal y moneda boleto, moneda forma de pago en usd');
+
+                                /*Comentando porque el redondeo lo esta haciendo por todos los decimales cambiaremos para tomar igual q la base de datos solo los 2 primeros decimales Ismael Valdivia (07/01/2019)*/
+                                //this.Cmp.monto_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
+                                //this.Cmp.monto_recibido_forma_pago.setValue(this.round(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()), 2));
+                                /*******************************************************************************************************************/
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago.setValue(((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue()).toFixed(2));
+                                this.Cmp.monto_recibido_forma_pago.setValue((((this.Cmp.total.getValue() - this.Cmp.comision.getValue() - monto_pagado_fp2) / this.Cmp.tc.getValue())).toFixed(2));
+                                /***********************/
+
+
+
+                                //this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue()-this.Cmp.monto_forma_pago.getValue());
+
+                            } else {
+                                this.Cmp.monto_forma_pago.setValue(0);
+                                this.Cmp.monto_recibido_forma_pago.setValue(0);
+                            }
+                        } else {
+                            this.Cmp.monto_forma_pago.setValue(0);
+                        }
+                    }else {
+                        this.calculoFp1Grupo(this.Cmp.id_moneda.lastSelectionText);
+                    }
+                  } //Aqui termina if medios de pago
+
 
                 },this);
 
                 this.Cmp.id_forma_pago2.on('select', function (combo,record) {
+
+                  if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                     if (record) {
                         this.Cmp.moneda_fp2.setValue(record.data.desc_moneda);
                         this.manejoComponentesFp2(record.data.id_forma_pago,record.data.codigo);
@@ -1814,6 +2271,51 @@ header("content-type: text/javascript; charset=UTF-8");
                     }else {
                         this.calculoFp2Grupo(record);
                     }
+                  } /*Aqui inisia nuevos medios de pago*/ else {
+                    if (record) {
+                        this.Cmp.moneda_fp2.setValue(this.Cmp.id_moneda2.lastSelectionText);
+                        this.manejoComponentesFp2(record.data.id_forma_pago,record.data.codigo);
+                    } else {
+                        this.manejoComponentesFp2(this.Cmp.id_forma_pago2.getValue(),this.Cmp.codigo_forma_pago2.getValue());
+                    }
+                    if (this.grupo == 'no') {
+                        var monto_pagado_fp1 = this.getMontoMonBol(this.Cmp.monto_forma_pago.getValue(), this.Cmp.moneda_fp1.getValue());
+
+                        if (monto_pagado_fp1 > -1) {
+                            //Si la forma de pago y el boleto estan en la misma moneda
+                            if (this.Cmp.moneda.getValue() == this.Cmp.moneda_fp2.getValue()) {
+                                this.Cmp.monto_forma_pago2.setValue(this.Cmp.total.getValue() - monto_pagado_fp1);
+                            }
+                            //Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
+                            else if (this.Cmp.moneda.getValue() == 'USD' && this.Cmp.moneda_fp2.getValue() == this.Cmp.moneda_sucursal.getValue()) {
+                                //convertir de  dolares a moneda sucursal(multiplicar)
+                                /*Comentando esta parte para tomar los dos primeros decimales (Ismael Valdivia 07/01/2020)*/
+                                //this.Cmp.monto_forma_pago2.setValue(this.round(((this.Cmp.total.getValue() - monto_pagado_fp1) * this.Cmp.tc.getValue()), 2));
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago2.setValue(((this.Cmp.total.getValue() - monto_pagado_fp1) * this.Cmp.tc.getValue()).toFixed(2));
+                                /***********************/
+
+                                //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
+                            } else if (this.Cmp.moneda.getValue() == this.Cmp.moneda_sucursal.getValue() && this.Cmp.moneda_fp2.getValue() == 'USD') {
+                                //convertir de  moneda sucursal a dolares(dividir)
+                                /*Comentando esta parte para tomar los dos primeros decimales (Ismael Valdivia 07/01/2020)*/
+                                //this.Cmp.monto_forma_pago2.setValue(this.round(((this.Cmp.total.getValue() - monto_pagado_fp1) / this.Cmp.tc.getValue()), 2));
+                                /*Aumentando esta parte*/
+                                this.Cmp.monto_forma_pago2.setValue(((this.Cmp.total.getValue() - monto_pagado_fp1) / this.Cmp.tc.getValue()).toFixed(2));
+                                /***********************/
+
+                            } else {
+                                this.Cmp.monto_forma_pago2.setValue(0);
+                            }
+                        } else {
+                            this.Cmp.monto_forma_pago2.setValue(0);
+                        }
+                    }else {
+                        this.calculoFp2Grupo(this.Cmp.id_moneda2.lastSelectionText);
+                    }
+
+                  } /*Aqui finaliza condicion medios de pago*/
+
                 },this);
 
                 this.Cmp.tipo_comision.on('select', function (combo,record) {
@@ -1895,7 +2397,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
             onDestroy: function() {
           			//Phx.baseInterfaz.superclass.destroy.call(this,c);
-          			this.store.baseParams.id_punto_venta = '';
+          			this.iniciar_tiempo = 'no';
+                console.log("destroy ventana",this.iniciar_tiempo);
           			this.fireEvent('closepanel',this);
 
           			if (this.window) {
@@ -1921,7 +2424,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             function Ftimer(){
                               console.log("iniciamos el temporizador");
                               if (this.store.baseParams.primera_carga == 'no') {
-                                  if (this.store.baseParams.id_punto_venta != '') {
+                                  if (this.iniciar_tiempo == 'si') {
                                     this.onTraerBoletosTodosAutomatico();
                                   }
                               } else {
@@ -2113,6 +2616,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
 
             oncellclick : function(grid, rowIndex, columnIndex, e) {
+
                 var record = this.store.getAt(rowIndex),
                     fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
@@ -2135,8 +2639,16 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 }
                 if(fieldName == 'nro_boleto') {
-                    if(record.data.tipo_reg != 'summary'){
+                  if(record.data.tipo_reg != 'summary'){
+                    if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                         this.onButtonEdit(this);
+                    } else {
+                      if (record.data.forma_pago_amadeus != 'CC') {
+                        this.onButtonEdit(this);
+                      }
+                    }
+
+
                     }
                 }
             },
@@ -2190,6 +2702,8 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             calculoFp1Grupo : function (record) {
+
+              if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                 this.moneda_grupo_fp1 = record.data.desc_moneda;
                 if (this.moneda_grupo_fp2 == '') {
                     console.log('moneda grupo 2 vacio');
@@ -2218,10 +2732,43 @@ header("content-type: text/javascript; charset=UTF-8");
                         /***********************************************/
                     }
                 }
+              } /*Aqui inicia las condiciones para los nuevos medios de pago (Ismael Valdivia 25/11/2020)*/else{
+                this.moneda_grupo_fp1 = record;
+                if (this.moneda_grupo_fp2 == '') {
+                    console.log('moneda grupo 2 vacio');
+                    this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record]);
+                    /*Aumentando para calcular el monto recibido*/
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record]);
+                    /***********************************************/
+                } else if (this.moneda_grupo_fp2 == this.moneda_grupo_fp1) {
+                    console.log('moneda grupo 2 igual moneda grupo 1');
+                    this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.Cmp.monto_forma_pago2.getValue());
+                    /*Aumentando para calcular el monto recibido*/
+                    this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.Cmp.monto_forma_pago2.getValue());
+                    /***********************************************/
+                } else {
+                    if (this.moneda_grupo_fp2 == 'USD') {
+                        console.log('monedas distintas grupo 2 usd');
+                        this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        /*Aumentando para calcular el monto recibido*/
+                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        /***********************************************/
+                    } else {
+                        console.log('monedas distintas grupo 2 bob');
+                        this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        /*Aumentando para calcular el monto recibido*/
+                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        /***********************************************/
+                    }
+                }
+              }
+
+
+
 
             },
             calculoFp2Grupo : function (record) {
-              console.log("llega aqui calculo de grupo");
+              if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                 this.moneda_grupo_fp2 = record.data.desc_moneda;
                 if (this.moneda_grupo_fp1 == '') {
                     console.log('sin moneda fp 1');
@@ -2237,6 +2784,23 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo , 2));
                     }
                 }
+              } else {
+                this.moneda_grupo_fp2 = record;
+                if (this.moneda_grupo_fp1 == '') {
+                    console.log('sin moneda fp 1');
+                    this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record]);
+                } else if (this.moneda_grupo_fp2 == this.moneda_grupo_fp1) {
+                    console.log('con misma moneda grupos');
+                    this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record] - this.Cmp.monto_forma_pago.getValue());
+                } else {
+                    console.log('moneda grupos diferentes');
+                    if (this.moneda_grupo_fp1 == 'USD') {
+                        this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo , 2));
+                    } else {
+                        this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo , 2));
+                    }
+                }
+              }
             },
             onGrupo : function () {
                 Phx.vista.BoletoAmadeus.superclass.onButtonEdit.call(this);
@@ -2484,6 +3048,23 @@ header("content-type: text/javascript; charset=UTF-8");
                                 collapsed:false
                             }
                         ]
+                    },
+                    {
+                        bodyStyle: 'padding-right:10px;',
+                        items: [
+                            {
+                                xtype:'fieldset',
+                                layout: 'form',
+                                border: true,
+                                title: 'Cambio',
+                                bodyStyle: 'padding:0 10px 0;',
+                                columnWidth: 0.5,
+                                items:[],
+                                id_grupo:20,
+                                collapsible:true,
+                                collapsed:false
+                            }
+                        ]
                     }
                 ]
             }],
@@ -2516,8 +3097,7 @@ header("content-type: text/javascript; charset=UTF-8");
                   } else {
                       this.Cmp.id_forma_pago.setDisabled(false);
                       this.Cmp.monto_forma_pago.setDisabled(true);
-                      if (codigo_fp1.startsWith("CC") ||
-                          codigo_fp1.startsWith("SF")) {
+                      if (codigo_fp1.startsWith("CC") || codigo_fp1.startsWith("SF")) {
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.ocultarComponente(this.Cmp.mco);
                           this.Cmp.id_auxiliar.reset();
@@ -2539,7 +3119,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           /***********************************************/
 
                           //tarjeta de credito
-                      } else if (codigo_fp1.startsWith("CT")) {
+                      } else if (codigo_fp1.startsWith("CU")||codigo_fp1.startsWith("CT")) {
                           //cuenta corriente
                           this.ocultarComponente(this.Cmp.numero_tarjeta);
                           this.ocultarComponente(this.Cmp.mco);
@@ -2642,7 +3222,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
 
                           //tarjeta de credito
-                      } else if (codigo_fp1.startsWith("CT")) {
+                      } else if (codigo_fp1.startsWith("CT") || codigo_fp1.startsWith("CU")) {
                           //cuenta corriente
                           this.ocultarComponente(this.Cmp.numero_tarjeta);
                           this.ocultarComponente(this.Cmp.mco);
@@ -2749,7 +3329,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = true;
 
-                        } else if (codigo_fp2.startsWith("CT")) {
+                        } else if (codigo_fp2.startsWith("CT") || codigo_fp2.startsWith("CU")) {
                             //cuenta corriente
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.mco2);
@@ -2888,7 +3468,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = true;
 
-                        } else if (codigo_fp2.startsWith("CT")) {
+                        } else if (codigo_fp2.startsWith("CT") || codigo_fp2.startsWith("CU")) {
                             //cuenta corriente
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.mco2);
