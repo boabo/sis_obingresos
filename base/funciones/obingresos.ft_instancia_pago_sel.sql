@@ -42,16 +42,15 @@ BEGIN
 	if(p_transaccion='OBING_INSP_SEL')then
 
     	begin
+
     		--Sentencia de la consulta
 			v_consulta:='select
 						insp.id_instancia_pago,
 						insp.estado_reg,
 						insp.id_medio_pago,
-                        insp.instancia_pago_id,
+                        --insp.instancia_pago_id,
 						insp.nombre,
-						insp.codigo,
-						insp.codigo_forma_pago,
-						insp.codigo_medio_pago,
+						--insp.codigo_medio_pago,
 						insp.id_usuario_reg,
 						insp.fecha_reg,
 						insp.id_usuario_ai,
@@ -61,16 +60,28 @@ BEGIN
 						usu1.cuenta as usr_reg,
 						usu2.cuenta as usr_mod,
                         insp.fp_code,
-                        insp.ins_code
+                        insp.ins_code,
+
+                        /*(Ismael Valdivia 16/10/2020)*/
+
+
+                        mp.name,
+                        insp.codigo,
+                        fp.fop_code as codigo_fp,
+                        mp.mop_code as codigo_mp
+                        /************************************************************************/
+
 						from obingresos.tinstancia_pago insp
 						inner join segu.tusuario usu1 on usu1.id_usuario = insp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = insp.id_usuario_mod
+                        inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = insp.id_medio_pago
+                        inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
 				        where  ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-
+			raise notice 'Aqui llega consulta %',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
@@ -89,8 +100,10 @@ BEGIN
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select count(id_instancia_pago)
 					    from obingresos.tinstancia_pago insp
-					    inner join segu.tusuario usu1 on usu1.id_usuario = insp.id_usuario_reg
+						inner join segu.tusuario usu1 on usu1.id_usuario = insp.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = insp.id_usuario_mod
+                        inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = insp.id_medio_pago
+                        inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
 					    where ';
 
 			--Definicion de la respuesta

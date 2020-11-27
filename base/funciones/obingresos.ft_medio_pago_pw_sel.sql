@@ -42,11 +42,12 @@ BEGIN
 	if(p_transaccion='OBING_MPPW_SEL')then
 
     	begin
+        	--raise exception 'llega';
     		--Sentencia de la consulta
 			v_consulta:='select
 						mppw.id_medio_pago_pw,
 						mppw.estado_reg,
-						mppw.medio_pago_id,
+						--mppw.medio_pago_id,
 						mppw.forma_pago_id,
 						mppw.name,
 						mppw.mop_code,
@@ -58,8 +59,16 @@ BEGIN
 						mppw.id_usuario_mod,
 						mppw.fecha_mod,
 						usu1.cuenta as usr_reg,
-						usu2.cuenta as usr_mod
+						usu2.cuenta as usr_mod,
+
+                        array_to_string( mppw.regionales, '','',''null'')::varchar,
+                        array_to_string( mppw.sw_autorizacion, '','',''null'')::varchar,
+
+                        fp.name as nombre_fp,
+                        fp.fop_code
+
 						from obingresos.tmedio_pago_pw mppw
+                        inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mppw.forma_pago_id
 						inner join segu.tusuario usu1 on usu1.id_usuario = mppw.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = mppw.id_usuario_mod
 				        where  ';
@@ -67,7 +76,7 @@ BEGIN
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
 			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-
+			raise notice '%',v_consulta;
 			--Devuelve la respuesta
 			return v_consulta;
 
@@ -86,9 +95,10 @@ BEGIN
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select count(id_medio_pago_pw)
 					    from obingresos.tmedio_pago_pw mppw
-					    inner join segu.tusuario usu1 on usu1.id_usuario = mppw.id_usuario_reg
+					    inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mppw.forma_pago_id
+						inner join segu.tusuario usu1 on usu1.id_usuario = mppw.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = mppw.id_usuario_mod
-					    where ';
+				        where ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;

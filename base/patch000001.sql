@@ -1841,38 +1841,27 @@ ALTER TABLE obingresos.tmco_s
   OWNER TO postgres;
 /********************************************F-SCP-BVP-OBINGRESOS-0-10/07/2020********************************************/
 
-/********************************************I-SCP-MAY-OBINGRESOS-0-11/07/2020********************************************/
-CREATE TABLE obingresos.tfactura_no_utilizada (
-  id_factura_no_utilizada SERIAL,
-  id_lugar_pais INTEGER,
-  id_lugar_depto INTEGER,
-  id_sucursal INTEGER,
-  id_punto_venta INTEGER,
-  id_estado_factura INTEGER,
-  fecha DATE,
-  tipo_cambio NUMERIC(18,2),
-  id_moneda INTEGER,
-  nro_autorizacion VARCHAR(200),
-  nro_inicial INTEGER,
-  nro_final INTEGER,
-  nombre VARCHAR(300),
-  nit VARCHAR(200),
-  observaciones VARCHAR(500),
-  id_concepto_ingas INTEGER,
-  id_dosificacion INTEGER,
-  CONSTRAINT tfactura_manual_pkey PRIMARY KEY(id_factura_no_utilizada)
-) INHERITS (pxp.tbase)
-WITH (oids = false);
+/********************************************I-SCP-BVP-OBINGRESOS-0-16/11/2020********************************************/
 
-COMMENT ON COLUMN obingresos.tfactura_no_utilizada.nro_inicial
-IS 'numero factura inicial';
+ALTER TABLE obingresos.tmedio_pago_pw
+  ADD COLUMN sw_autorizacion VARCHAR(200) [];
 
-COMMENT ON COLUMN obingresos.tfactura_no_utilizada.nro_final
-IS 'numero factura final';
+ALTER TABLE obingresos.tmedio_pago_pw
+  ADD COLUMN regionales VARCHAR(200) [];
 
-COMMENT ON COLUMN obingresos.tfactura_no_utilizada.id_concepto_ingas
-IS 'concepto de gasto';
+ALTER TABLE obingresos.tmedio_pago_pw
+ ADD CONSTRAINT tmedio_pago_pw_fk FOREIGN KEY (forma_pago_id)
+   REFERENCES obingresos.tforma_pago_pw(id_forma_pago_pw)
+   ON DELETE NO ACTION
+   ON UPDATE NO ACTION
+   NOT DEFERRABLE;
 
-ALTER TABLE obingresos.tfactura_no_utilizada
-  OWNER TO postgres;
-/********************************************F-SCP-MAY-OBINGRESOS-0-11/07/2020********************************************/
+
+ ALTER TABLE obingresos.tinstancia_pago
+   ADD CONSTRAINT tinstancia_pago_fk FOREIGN KEY (id_medio_pago)
+     REFERENCES obingresos.tmedio_pago_pw(id_medio_pago_pw)
+     ON DELETE NO ACTION
+     ON UPDATE NO ACTION
+     NOT DEFERRABLE;
+
+/********************************************F-SCP-BVP-OBINGRESOS-0-16/11/2020********************************************/

@@ -49,34 +49,35 @@ BEGIN
         	insert into obingresos.tinstancia_pago(
 			estado_reg,
 			id_medio_pago,
-            instancia_pago_id,
+            --instancia_pago_id,
 			nombre,
 			codigo,
-			codigo_forma_pago,
-			codigo_medio_pago,
+			/*codigo_forma_pago,
+			codigo_medio_pago,*/
 			id_usuario_reg,
 			fecha_reg,
 			id_usuario_ai,
 			usuario_ai,
 			id_usuario_mod,
 			fecha_mod,
-            fp_code,
+            --fp_code,
             ins_code
           	) values(
 			'activo',
 			v_parametros.id_medio_pago,
-            v_parametros.instancia_pago_id,
+            --v_parametros.instancia_pago_id,
 			v_parametros.nombre,
-			v_parametros.codigo,
+            v_parametros.ins_code,
+			/*v_parametros.codigo,
 			v_parametros.codigo_forma_pago,
-			v_parametros.codigo_medio_pago,
+			v_parametros.codigo_medio_pago,*/
 			p_id_usuario,
 			now(),
 			v_parametros._id_usuario_ai,
 			v_parametros._nombre_usuario_ai,
 			null,
 			null,
-			v_parametros.fp_code,
+			--v_parametros.fp_code,
             v_parametros.ins_code
 
 
@@ -104,16 +105,16 @@ BEGIN
 			--Sentencia de la modificacion
 			update obingresos.tinstancia_pago set
 			id_medio_pago = v_parametros.id_medio_pago,
-            instancia_pago_id = v_parametros.instancia_pago_id,
+            --instancia_pago_id = v_parametros.instancia_pago_id,
 			nombre = v_parametros.nombre,
-			codigo = v_parametros.codigo,
-			codigo_forma_pago = v_parametros.codigo_forma_pago,
-			codigo_medio_pago = v_parametros.codigo_medio_pago,
+			codigo = v_parametros.ins_code,
+			/*codigo_forma_pago = v_parametros.codigo_forma_pago,
+			codigo_medio_pago = v_parametros.codigo_medio_pago,*/
 			id_usuario_mod = p_id_usuario,
 			fecha_mod = now(),
 			id_usuario_ai = v_parametros._id_usuario_ai,
 			usuario_ai = v_parametros._nombre_usuario_ai,
-            fp_code = v_parametros.fp_code,
+            --fp_code = v_parametros.fp_code,
             ins_code = v_parametros.ins_code
 			where id_instancia_pago=v_parametros.id_instancia_pago;
 
@@ -148,6 +149,7 @@ BEGIN
             return v_resp;
 
 		end;
+
 
 	else
 

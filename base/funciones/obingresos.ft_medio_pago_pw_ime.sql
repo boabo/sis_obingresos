@@ -30,6 +30,10 @@ DECLARE
 	v_mensaje_error         text;
 	v_id_medio_pago_pw	integer;
 
+    /*Aumentando Variables Ismael Valdivia (30/10/2020)*/
+    v_id_medio_pago_defecto	varchar;
+    v_cod_medio_pago_defecto varchar;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_medio_pago_pw_ime';
@@ -48,7 +52,7 @@ BEGIN
         	--Sentencia de la insercion
         	insert into obingresos.tmedio_pago_pw(
 			estado_reg,
-			medio_pago_id,
+			--medio_pago_id,
 			forma_pago_id,
 			name,
 			mop_code,
@@ -61,7 +65,7 @@ BEGIN
 			fecha_mod
           	) values(
 			'activo',
-			v_parametros.medio_pago_id,
+			--v_parametros.medio_pago_id,
 			v_parametros.forma_pago_id,
 			v_parametros.name,
 			v_parametros.mop_code,
@@ -98,7 +102,7 @@ BEGIN
 		begin
 			--Sentencia de la modificacion
 			update obingresos.tmedio_pago_pw set
-			medio_pago_id = v_parametros.medio_pago_id,
+			--medio_pago_id = v_parametros.medio_pago_id,
 			forma_pago_id = v_parametros.forma_pago_id,
 			name = v_parametros.name,
 			mop_code = v_parametros.mop_code,
@@ -134,6 +138,32 @@ BEGIN
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Medio Pago P W eliminado(a)');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_medio_pago_pw',v_parametros.id_medio_pago_pw::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_AUTORIZA_UDT'
+ 	#DESCRIPCION:	Actualizacion de autorizaciones
+ 	#AUTOR:		Ismael Valdivia
+ 	#FECHA:		16-10-2020 11:21:45
+	***********************************/
+
+	elsif(p_transaccion='OBING_AUTORIZA_UDT')then
+
+		begin
+			update obingresos.tmedio_pago_pw set
+			sw_autorizacion = string_to_array(v_parametros.sw_autorizacion,',')::varchar[],
+            /*Aumentando para incluir regionales en los conceptos de gasto (Ismael Valdivia 16/10/2020)*/
+            regionales = string_to_array(v_parametros.regionales,',')::varchar[]
+            /********************************************************************************************/
+            where id_medio_pago_pw=v_parametros.id_medio_pago_pw;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Instancia Pago eliminado(a)');
             v_resp = pxp.f_agrega_clave(v_resp,'id_medio_pago_pw',v_parametros.id_medio_pago_pw::varchar);
 
             --Devuelve la respuesta
