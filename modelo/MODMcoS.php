@@ -151,7 +151,7 @@ class MODMcoS extends MODbase{
 	function getDatatoFormRegMcoS(){
 		//Definicion de variables para ejecucion del procedimiento
 		$this->procedimiento='obingresos.ft_mco_s_ime';
-		$this->transaccion='OBING_GPTFINS_SEL';
+		$this->transaccion='OBING_GPTFINS_IME';
 		$this->tipo_procedimiento='IME';
 
         //Define los parametros para la funcion
