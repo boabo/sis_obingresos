@@ -2026,62 +2026,62 @@ header("content-type: text/javascript; charset=UTF-8");
                         var valueOld = this.Cmp.monto_forma_pago.getValue();
                         console.log("aqui calcular el grupo",this.Cmp.id_moneda.lastSelectionText);
                         if (this.Cmp.id_moneda.lastSelectionText !== 'USD') {
-                            if (newValue > (this.total_grupo['total_boletos_'+this.Cmp.id_moneda.lastSelectionText] - this.total_grupo['total_comision_'+this.Cmp.id_moneda.lastSelectionText])) {
+                            if (this.Cmp.monto_recibido_forma_pago.getValue() > (this.total_grupo['total_boletos_'+this.Cmp.id_moneda.lastSelectionText] - this.total_grupo['total_comision_'+this.Cmp.id_moneda.lastSelectionText])) {
                                 console.log('AA');
                                 this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+this.Cmp.id_moneda.lastSelectionText] - this.total_grupo['total_comision_'+this.Cmp.id_moneda.lastSelectionText]);
                                 //this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+this.Cmp.moneda_fp1.getValue()] - this.total_grupo['total_comision_'+this.Cmp.moneda_fp1.getValue()]);
                                 //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
 
                                 if(this.Cmp.moneda_sucursal.getValue()=='USD') {
-                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue());
                                 }else{
 
                                     if(this.Cmp.id_moneda.lastSelectionText=='USD'){
-                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio.setValue((this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
                                         this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
                                     }else{
-                                        this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
-                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                        this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
                                     }
 
                                 }
                             } else {
-                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_recibido_forma_pago.getValue());
                                 this.Cmp.cambio.setValue(0);
                                 /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
                                 this.Cmp.cambio_moneda_extranjera.setValue(0);
                                 /**********************************************************************************************************/
                             }
                         } else {
-                            if (newValue > (this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD'])) {
+                            if (this.Cmp.monto_recibido_forma_pago.getValue() > (this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD'])) {
                                 console.log('BB');
                                 this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD']);
                                 //this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_USD'] - this.total_grupo['total_comision_USD']);
                                 //this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
 
                                 if(this.Cmp.moneda_sucursal.getValue()=='USD') {
-                                    this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                    this.Cmp.cambio.setValue(this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue());
                                 }else{
 
                                     if(this.Cmp.id_moneda.lastSelectionText=='USD'){
-                                        this.Cmp.cambio.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
-                                        this.Cmp.cambio_moneda_extranjera.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
+                                        this.Cmp.cambio.setValue((this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue()) * this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue(this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue());
                                     }else{
                                         this.Cmp.cambio.setValue(newValue - this.Cmp.monto_forma_pago.getValue());
-                                        this.Cmp.cambio_moneda_extranjera.setValue((newValue - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
+                                        this.Cmp.cambio_moneda_extranjera.setValue((this.Cmp.monto_recibido_forma_pago.getValue() - this.Cmp.monto_forma_pago.getValue()) / this.Cmp.tc.getValue());
                                     }
 
                                 }
                             } else {
 
-                                this.Cmp.monto_forma_pago.setValue(newValue);
+                                this.Cmp.monto_forma_pago.setValue(this.Cmp.monto_recibido_forma_pago.getValue());
                                 this.Cmp.cambio.setValue(0);
                                 /*Aumentando porque el cambio se quedaba con el monto calculado anteriormente (Ismael Valdivia 07/01/2020)*/
                                 this.Cmp.cambio_moneda_extranjera.setValue(0);
                                 /**********************************************************************************************************/
                             }
                         }
-                        var valueNew = this.Cmp.monto_forma_pago.getValue();
+                        var valueNew = this.Cmp.monto_recibido_forma_pago.getValue();
 
                         if (valueNew < valueOld) {
 
@@ -2570,7 +2570,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.ocultarGrupo(3);
                 this.mostrarGrupo(0);
                 //this.ocultarGrupo(0);
-                // console.log("llega aqui el dato",this.Cmp.moneda.getValue());
+
 
                 /*Aqui para poner por defecto*/
 
@@ -2861,6 +2861,19 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.grupo = 'si';
                 var seleccionados = this.sm.getSelections();
                 this.total_grupo = new Object;
+
+                this.Cmp.id_moneda.store.load({params:{start:0,limit:50},
+                       callback : function (r) {
+                                for (var i = 0; i < r.length; i++) {
+                                  if (r[i].data.codigo_internacional == this.Cmp.moneda.getValue()) {
+                                    this.Cmp.id_moneda.setValue(r[i].data.id_moneda);
+                                    this.Cmp.id_moneda.fireEvent('select', this.Cmp.id_moneda,r[i]);
+                                  }
+                                }
+                        }, scope : this
+                    });
+
+                //console.log("llega aqui el dato22222222",this.Cmp.moneda.getValue());
                 //this.total_grupo['USD'] = 0;
                 //this.total_grupo[seleccionados[0].data.moneda_sucursal] = 0;
                 this.total_grupo['total_boletos_USD'] = 0;
