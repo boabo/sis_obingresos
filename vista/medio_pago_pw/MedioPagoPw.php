@@ -74,8 +74,8 @@ header("content-type: text/javascript; charset=UTF-8");
           									 fields: ['codigo','descripcion'],
           									 remoteSort : true,
           									 baseParams:{
-          										cod_subsistema:'PARAM',
-          										catalogo_tipo:'autorizaciones_concepto'
+          										cod_subsistema:'VEF',
+          										catalogo_tipo:'autorizaciones_concepto_ventas'
           									},
           								 }),
           								 valueField: 'codigo',

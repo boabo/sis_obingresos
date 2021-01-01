@@ -109,11 +109,18 @@ header("content-type: text/javascript; charset=UTF-8");
                  this.ocultarComponente(this.Cmp.id_moneda);
                  this.Cmp.id_moneda.allowBlank = true;
                  this.Cmp.id_moneda2.allowBlank = true;
+                 this.Cmp.id_forma_pago.store.baseParams.instancias_nuevas = 'no';
+                 this.Cmp.id_forma_pago2.store.baseParams.instancias_nuevas = 'no';
+
+
+
               } else {
                 this.mostrarComponente(this.Cmp.id_moneda2);
                 this.mostrarComponente(this.Cmp.id_moneda);
                 this.Cmp.id_moneda.allowBlank = false;
                 this.Cmp.id_moneda2.allowBlank = true;
+                this.Cmp.id_forma_pago.store.baseParams.instancias_nuevas = 'si';
+                this.Cmp.id_forma_pago2.store.baseParams.instancias_nuevas = 'si';
               }
             },
             /*****************************************************************************/
@@ -972,7 +979,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos',emision:'VENBOL'}
+                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
@@ -1296,7 +1303,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos'}
+                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
