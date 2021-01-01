@@ -2158,7 +2158,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(0);
-                                this.Cmp.monto_recibido_forma_pago.setValue(0);
+                                //this.Cmp.monto_recibido_forma_pago.setValue(0);
                             }
                         } else {
                             this.Cmp.monto_forma_pago.setValue(0);
@@ -2223,7 +2223,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                             } else {
                                 this.Cmp.monto_forma_pago.setValue(0);
-                                this.Cmp.monto_recibido_forma_pago.setValue(0);
+                                //this.Cmp.monto_recibido_forma_pago.setValue(0);
                             }
                         } else {
                             this.Cmp.monto_forma_pago.setValue(0);
