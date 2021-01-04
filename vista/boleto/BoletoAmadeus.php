@@ -1621,7 +1621,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
             ],
             tam_pag:50,
-            fwidth: '85%',
+            fwidth: '95%',
             fheight: '70%',
             title:'Boleto',
             ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVenta',
