@@ -2475,7 +2475,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.loadingShow();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
-                    params: {id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
+                    params: {moneda_base:this.store.baseParams.moneda_base,id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},
                     success:this.successSinc,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
