@@ -53,6 +53,15 @@ DECLARE
     v_id_estado_actual      integer;
     v_nro_final				integer;
 
+    v_cadena_cnx			varchar;
+    v_conexion				varchar;
+    v_id_factura			integer;
+    v_cajero				varchar;
+    v_tipo_pv				varchar;
+    v_consulta				varchar;
+    v_res_cone				varchar;
+    v_tipo_generacion		varchar;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_factura_no_utilizada_ime';
@@ -394,6 +403,88 @@ BEGIN
                      v_nro_factura := v_nro_factura + 1;
 
 
+					  --para registro en tipo factura
+                      IF(pxp.f_get_variable_global('migrar_facturas') ='true')THEN
+                      /*Establecemos la conexion con la base de datos*/
+                      v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                      v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+                      /*************************************************/
+
+
+                      select * FROM dblink(v_cadena_cnx,'select nextval(''sfe.tfactura_id_factura_seq'')',TRUE)AS t1(resp integer)
+                      into v_id_factura;
+
+
+
+                      /*Recuperamos el nombre del cajero que esta finalizando la factura*/
+                      SELECT per.nombre_completo2 into v_cajero
+                      from segu.tusuario usu
+                      inner join segu.vpersona2 per on per.id_persona = usu.id_persona
+                      where usu.id_usuario = p_id_usuario;
+                      /******************************************************************/
+
+
+
+                      v_tipo_pv= 'FAC.BOL.NO UTILIZADAS.CONTABLE ';
+
+                      SELECT dos.tipo_generacion
+                      INTO v_tipo_generacion
+                      FROM vef.tdosificacion dos
+                      WHERE dos.id_dosificacion = v_parametros.id_dosificacion;
+
+                      v_consulta = '
+                      INSERT INTO sfe.tfactura(
+                      id_factura,
+                      fecha_factura,
+                      nro_factura,
+                      nro_autorizacion,
+                      estado,
+                      nit_ci_cli,
+                      razon_social_cli,
+                      importe_total_venta,
+                      codigo_control,
+                      usuario_reg,
+                      tipo_factura,
+                      id_origen,
+                      sistema_origen,
+                      desc_ruta
+                      )
+                      values(
+                      '||v_id_factura||',
+                      '''||v_parametros.fecha||''',
+                      '''||v_nro_factura::varchar||''',
+                      '' '',
+                      ''NO UTILIZADA'',
+                      ''0'',
+                      ''NO UTILIZADA'',
+                      '||0::numeric||',
+                      '' '',
+                      '''||v_cajero||''',
+                      '''||v_tipo_generacion||''',
+                      '||v_id_venta||',
+                      ''ERP'',
+                      '''||v_tipo_pv::varchar||'''
+                      );';
+
+
+
+
+                        IF(v_conexion!='OK') THEN
+                        raise exception 'ERROR DE CONEXION A LA BASE DE DATOS CON DBLINK';
+                        ELSE
+
+
+
+                        perform dblink_exec(v_cadena_cnx,v_consulta,TRUE);
+
+
+
+                        v_res_cone=(select dblink_disconnect());
+
+
+
+                        END IF;
+                      end if;
 
 
             END LOOP;
