@@ -22,6 +22,11 @@ class ACTMedioPagoPw extends ACTbase{
             // }
         }
 
+        if($this->objParam->getParametro('id_medio_pago')!=''){
+            $this->objParam->addFiltro("mppw.id_medio_pago_pw = ".$this->objParam->getParametro('id_medio_pago'));
+        }
+
+
         // if($this->objParam->getParametro('regional')!=''){
         //     $this->objParam->addFiltro("''".$this->objParam->getParametro('regional')."''=ANY (mppw.regionales)");
         // }

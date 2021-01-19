@@ -22,6 +22,9 @@ $body$
     v_nombre_funcion   	text;
     v_resp				varchar;
 
+    v_record_json		jsonb;
+    v_contador_id		integer=1;
+
   BEGIN
 
     v_nombre_funcion = 'vef.ft_reportes_sel';
@@ -124,6 +127,79 @@ $body$
         return v_consulta;
 
       end;
+
+     /*********************************
+     #TRANSACCION:  'OBING_CALCULO_A7_SEL'
+     #DESCRIPCION:	Data para el listado Calculo A7
+     #AUTOR:		franklin.espinoza
+     #FECHA:		22-12-2020 15:14:58
+    ***********************************/
+    elsif(p_transaccion='OBING_CALCULO_A7_SEL')then
+
+      begin
+
+        if jsonb_typeof(v_parametros.dataA7->'dataA7') = 'array' then
+
+          create temp table ttcalculo_vuelos(
+          		  id_vuelo			integer,
+                  VueloID			integer,
+                  FechaVuelo		date,
+                  NroVuelo			varchar,
+                  RutaVl			varchar,
+                  NroPaxBoA			varchar,
+                  NroPAxSabsa		varchar,
+                  ImporteSabas		numeric,
+                  ImporteBoa		numeric
+          )on commit drop;
+          for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.dataA7->'dataA7') loop
+
+          	insert into ttcalculo_vuelos(
+              id_vuelo,
+              VueloID,
+              FechaVuelo,
+              NroVuelo,
+              RutaVl,
+              NroPaxBoA,
+              NroPAxSabsa,
+              ImporteSabas,
+              ImporteBoa
+            )values (
+            	v_contador_id,
+                (v_record_json->>'VueloID')::integer,
+                (v_record_json->>'FechaVuelo')::date,
+                (v_record_json->>'NroVuelo')::varchar,
+                (v_record_json->>'RutaVl')::varchar,
+                (v_record_json->>'NroPaxBoA')::varchar,
+                (v_record_json->>'NroPAxSabsa')::varchar,
+                (v_record_json->>'ImporteSabas')::numeric,
+                (v_record_json->>'ImporteBoa')::numeric
+            );
+          	v_contador_id = v_contador_id + 1;
+          end loop;
+        end if;
+
+        --Sentencia de la consulta de conteo de registros
+        v_consulta = 'select
+                          id_vuelo,
+                          VueloID vuelo_id,
+                          FechaVuelo fecha_vuelo,
+                          NroVuelo nro_vuelo,
+                          RutaVl ruta_vl,
+                          NroPaxBoA nro_pax_boa,
+                          ImporteBoa importe_boa,
+                          NroPAxSabsa nro_pax_sabsa,
+                          ImporteSabas importe_sabsa
+                      from ttcalculo_vuelos';
+
+
+      --Definicion de la respuesta
+      --v_consulta:=v_consulta||v_parametros.filtro;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+
 	else
 
 		raise exception 'Transaccion inexistente';

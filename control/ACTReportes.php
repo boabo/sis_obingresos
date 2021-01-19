@@ -11,13 +11,14 @@
 require_once(dirname(__FILE__).'/../reportes/RReporteCruceAtcXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteCruceLinkserXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteCruceTigoXLS.php');
+require_once(dirname(__FILE__).'/../reportes/RReporteCalculoA7XLS.php');
 
 class ACTReportes extends ACTbase{
 
 
     function  generarCruceTarjetasBoletos(){
 
-        $this->objFunc=$this->create('MODReportes');
+
         $tipo_rep = $this->objParam->getParametro('tipo_reporte');
 
         if($tipo_rep != 'pago_tigo'){
@@ -28,12 +29,13 @@ class ACTReportes extends ACTbase{
 
             $this->objParam->addFiltro("(1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = 1 ) or 
             ( 1 in (select id_usuario from vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta )))");
-
+            $this->objFunc=$this->create('MODReportes');
             $this->res=$this->objFunc->generarCruceTarjetasBoletos($this->objParam);
 
             //obtener titulo de reporte
             $titulo ='Cruce Tarjetas Boletos';
         }else{
+            $this->objFunc=$this->create('MODReportes');
             $this->res=$this->objFunc->generarCruceTigoBoletos($this->objParam);
             //obtener titulo de reporte
             $titulo ='Cruce Tigo Boletos';
@@ -98,5 +100,45 @@ class ACTReportes extends ACTbase{
 
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
+
+    function generarReporteCalculoA7(){
+        $this->objFunc=$this->create('MODReportes');
+        $this->res=$this->objFunc->generarReporteCalculoA7($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    /*function  generarReporteCalculoA7(){
+
+        $this->objFunc=$this->create('MODReportes');
+        $this->res=$this->objFunc->generarReporteCalculoA7($this->objParam);
+        //obtener titulo de reporte
+        $titulo ='Calculo A7';
+
+        $this->datos = $this->res->getDatos();
+
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo=uniqid(md5(session_id()).$titulo);
+        $nombreArchivo.='.xls';
+
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        $this->objParam->addParametro('datos',$this->datos);
+        $this->objParam->addParametro('fecha_desde',$this->objParam->getParametro('fecha_desde'));
+        $this->objParam->addParametro('fecha_hasta',$this->objParam->getParametro('fecha_hasta'));
+
+        //Instancia la clase de excel
+        $this->objReporteFormato = new RReporteCalculoA7XLS($this->objParam);
+
+        $this->objReporteFormato->imprimeDatos();
+        $this->objReporteFormato->generarReporte();
+
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado', 'Se generó con éxito el reporte: '.$nombreArchivo, 'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+    }*/
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
 }
 ?>
