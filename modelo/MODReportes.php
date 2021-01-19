@@ -158,7 +158,7 @@ class MODReportes extends MODbase{
         $office_id = $this->objParam->getParametro('id_punto_venta');
         $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
         $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
-
+        //var_dump('fechas',$fecha_desde, $fecha_hasta);exit;
 
         //variables para la conexion sql server.
         $bandera_conex = '';
@@ -188,7 +188,7 @@ class MODReportes extends MODbase{
             while ($row = mssql_fetch_array($query, MSSQL_ASSOC)) {
                 $record = json_decode(json_encode($row));
                 $data[] = $record;
-            }
+            }//var_dump('$data', $data);exit;
 
             $this->respuesta->datos = $data;
             $this->respuesta->depositos = $depo_date;
@@ -234,30 +234,16 @@ class MODReportes extends MODbase{
     /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
     function generarReporteCalculoA7(){
 
-        /*$this->procedimiento='obingresos.ft_reportes_sel';
-        $this->transaccion='OBING_DEPO_TIGO_SEL';
-        $this->tipo_procedimiento='SEL';//tipo de transaccion
 
-        $this->setParametro('fecha_desde','fecha_desde','date');
-        $this->setParametro('fecha_hasta','fecha_hasta','date');*/
-
-        //Definicion de la lista del resultado del query
-
-        //Ejecuta la instruccion
-        /*$this->armarConsulta();
-        $this->ejecutarConsulta();*/
-
-        //var_dump('fechas',$this->objParam->getParametro('fecha_desde'), $this->objParam->getParametro('fecha_hasta'));//exit;
+        $tipo_rep = $this->objParam->getParametro('tipo_rep');
         $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
         $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
-
-//var_dump($fecha_desde, $fecha_hasta);exit;
+        //var_dump('A', $tipo_rep, $fecha_desde,$fecha_hasta );exit;
         //variables para la conexion sql server.
         $bandera_conex = '';
         $conn = '';
         $param_conex = array();
         $conexion = '';
-        //$this->respuesta = new Mensaje();
 
         if ($conn != '') {
             $conexion->closeSQL();
@@ -274,18 +260,20 @@ class MODReportes extends MODbase{
             $error = 'select_db';
             throw new Exception("select_db: La seleccion de la bd SQL Server " . $param_conex[1] . " ha fallado.");
         } else {
-            $query = @mssql_query("exec Sabsa.Get_Datos_A7 '$fecha_desde','$fecha_hasta';", $conn);
+            if($tipo_rep == 'normal'){
+                $query = @mssql_query("exec Sabsa.Get_Datos_A7 '$fecha_desde','$fecha_hasta';", $conn);
+            }else {
+                $query = @mssql_query("exec Sabsa.Get_Datos_A7_Noexiste '$fecha_desde','$fecha_hasta';", $conn);
+            }
 
             $data = array();
             while ($row = mssql_fetch_array($query, MSSQL_ASSOC)) {
                 $record = json_decode(json_encode($row));
                 $data[] = $record;
             }
-
-            //$this->respuesta->datos = $data;
             mssql_free_result($query);
             $conexion->closeSQL();
-        }
+        } //var_dump('$data',$data);exit;
 
         $this->procedimiento='obingresos.ft_reportes_sel';
         $this->transaccion='OBING_CALCULO_A7_SEL';
@@ -296,6 +284,7 @@ class MODReportes extends MODbase{
         $this->setParametro('fecha_desde','fecha_desde','date');
         $this->setParametro('fecha_hasta','fecha_hasta','date');
         $this->setParametro('dataA7','dataA7','jsonb');
+        $this->setParametro('tipo_rep','tipo_rep','varchar');
 
         $this->captura('id_vuelo','integer');
         $this->captura('vuelo_id','integer');
@@ -306,16 +295,88 @@ class MODReportes extends MODbase{
         $this->captura('importe_boa','numeric');
         $this->captura('nro_pax_sabsa','varchar');
         $this->captura('importe_sabsa','numeric');
+        $this->captura('diferencia','numeric');
+        $this->captura('total_nac','integer');
+        $this->captura('total_inter','integer');
+        $this->captura('total_cero','integer');
 
-        //var_dump('$this->respuesta', $this->respuesta);exit;
-        //Devuelve la respuesta
+
         //Ejecuta la instruccion
-        $this->armarConsulta();
-        //var_dump($this->consulta);exit;
+        $this->armarConsulta(); //var_dump('consulta',$this->consulta);exit;
         $this->ejecutarConsulta();
 
         return $this->respuesta;
     }
     /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
+
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+    function detalleVueloCalculoA7(){
+        $this->procedimiento='obingresos.ft_reportes_sel';
+        $this->transaccion='OBING_DETALLE_A7_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('detalle_vuelo','detalle_vuelo','jsonb');
+
+        $this->setCount(false);
+        //Definicion de la lista del resultado del query
+        $this->captura('id_detalle','int4');
+        $this->captura('ato_origen','varchar');
+        $this->captura('ruta_completa','varchar');
+        $this->captura('nombre_pasajero','varchar');
+        $this->captura('nro_vuelo','varchar');
+        $this->captura('nro_asiento','varchar');
+        $this->captura('fecha_vuelo','date');
+        $this->captura('pnr','varchar');
+        $this->captura('nro_boleto','varchar');
+        $this->captura('hora_vuelo','varchar');
+        $this->captura('estado_vuelo','varchar');
+
+        $this->captura('valor_a7','numeric');
+        $this->captura('calculo_a7','numeric');
+        $this->captura('pax_id','varchar');
+        $this->captura('std_date','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();//var_dump('consulta',$this->consulta);exit;
+        $this->ejecutarConsulta();
+
+        return $this->respuesta;
+    }
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+
+
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Pasajero Calculo A7}**/
+    function detallePasajeroCalculoA7(){
+        $this->procedimiento='obingresos.ft_reportes_sel';
+        $this->transaccion='OBING_DET_PAX_A7_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setParametro('detalle_pasajero','detalle_pasajero','jsonb');
+
+        $this->setCount(false);
+        //Definicion de la lista del resultado del query
+        $this->captura('id_pasajero','int4');
+        $this->captura('passenger_id','varchar');
+        $this->captura('is_current','varchar');
+        $this->captura('posicion','varchar');
+        $this->captura('fecha_salida','varchar');
+        $this->captura('fecha_salida_show','date');
+
+        $this->captura('origen','varchar');
+        $this->captura('destino','varchar');
+        $this->captura('ticket','varchar');
+        $this->captura('std','varchar');
+
+        $this->captura('std_show','varchar');
+        $this->captura('sta','varchar');
+        $this->captura('sta_show','varchar');
+        $this->captura('here_a7','varchar');
+        $this->captura('is_sabsa','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();//var_dump('consulta',$this->consulta);exit;
+        $this->ejecutarConsulta();
+
+        return $this->respuesta;
+    }
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
 }
 ?>

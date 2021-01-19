@@ -768,7 +768,7 @@ BEGIN
                   numero_tkt		varchar,
                   tipo_19			varchar
             )on commit drop;
-
+--RAISE 'PASAJEROS: %', v_parametros.pasajeros->'pasajeroDR';
             --mas de un pasajero
 			      if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
            		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
@@ -817,9 +817,9 @@ BEGIN
             into v_pasajero_aux
             from obingresos.tboleto_amadeus tba
             where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
+--RAISE 'DATOS: %', v_pasajero_aux;
 
-
-            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
 
               select tp.posicion, tp.nombre, tp.tipo_19
               into v_posicion, v_pasajero, v_tipo_19
@@ -833,12 +833,20 @@ BEGIN
                 where similarity_dist(v_pasajero_aux, tp.nombre) < 0.38;
               end if;
 
-            else
+            else --raise 'B';
               select tp.posicion, tp.nombre, tp.tipo_19
               into v_posicion, v_pasajero, v_tipo_19
               from ttpasajero tp
               where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
             end if;
+            ---------------------------------------------------------
+            /*IF v_pasajero_aux IS NOT NULL OR v_pasajero_aux != '' THEN
+            	v_pasajero = v_pasajero_aux;
+            END IF;*/
+
+            ---------------------------------------------------------
+--RAISE 'DATOS: %, %, %', v_posicion, v_pasajero, v_tipo_19;
+
 
             v_contador_id = 1;
             create temp table ttasa(
@@ -2625,7 +2633,7 @@ BEGIN
     elsif(p_transaccion='OBING_GET_PV_SEL')then
 
       begin
-      			if (p_administrador = 1) then
+      			if (p_administrador = 1 or p_id_usuario = 48) then
                 	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
@@ -2956,6 +2964,3 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
-
-ALTER FUNCTION obingresos.ft_boleto_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
-  OWNER TO postgres;

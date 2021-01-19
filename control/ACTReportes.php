@@ -102,13 +102,19 @@ class ACTReportes extends ACTbase{
     }
 
     /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
-
     function generarReporteCalculoA7(){
-        $this->objFunc=$this->create('MODReportes');
-        $this->res=$this->objFunc->generarReporteCalculoA7($this->objParam);
+
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODReportes','generarReporteCalculoA7');
+        }else {
+            $this->objFunc=$this->create('MODReportes');
+            $this->res=$this->objFunc->generarReporteCalculoA7($this->objParam);
+        }
+
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
-
     /*function  generarReporteCalculoA7(){
 
         $this->objFunc=$this->create('MODReportes');
@@ -140,5 +146,93 @@ class ACTReportes extends ACTbase{
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
     }*/
     /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
+
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+    function detalleVueloCalculoA7(){
+
+        $idFlight = $this->objParam->getParametro('vuelo_id');
+
+        $data = array(
+            "user"=>"usuarioSABSA2018",
+            "pwd"=>"bOaSabS4.2018",
+            "idFlight"=>$idFlight
+        );
+
+        $json_data = json_encode($data);
+        $s = curl_init();
+        curl_setopt($s, CURLOPT_URL, 'http://172.17.59.75/soaMigracion/Sabsa/servDataSabsa.svc/SabsaDetalleManifiesto');
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+        $_out = curl_exec($s);//var_dump(json_decode($_out)->SabsaDetalleManifiestoResult);exit;
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        if (!$status) {
+            throw new Exception("No se pudo conectar con Resiber");
+        }
+        curl_close($s);
+        $res = json_decode($_out);
+        $this->objParam->addParametro('detalle_vuelo', $res->SabsaDetalleManifiestoResult);
+
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODReportes','detalleVueloCalculoA7');
+        }else {
+            $this->objFunc=$this->create('MODReportes');
+            $this->res=$this->objFunc->detalleVueloCalculoA7($this->objParam);
+        }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+    function detallePasajeroCalculoA7(){
+
+        $pax_id = $this->objParam->getParametro('pax_id');
+        $std_date = $this->objParam->getParametro('std_date');
+
+        $data = array(
+            "user"=>"usuarioSABSA2018",
+            "pwd"=>"bOaSabS4.2018",
+            "passengerId"=>$pax_id,
+            "stdCurrentFlight"=>$std_date,
+        );
+
+        $json_data = json_encode($data);
+        $s = curl_init();
+        curl_setopt($s, CURLOPT_URL, 'http://172.17.59.75/SoaMigracion/Sabsa/servDataSabsa.svc/GetRoutingPassengerA7');
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+        $_out = curl_exec($s);//var_dump(json_decode($_out)->SabsaDetalleManifiestoResult);exit;
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        if (!$status) {
+            throw new Exception("No se pudo conectar con Resiber");
+        }
+        curl_close($s);
+        $res = json_decode($_out); //var_dump('$res', $res);exit;
+        $this->objParam->addParametro('detalle_pasajero', $res->GetRoutingPassengerA7Result);
+
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODReportes','detallePasajeroCalculoA7');
+        }else {
+            $this->objFunc=$this->create('MODReportes');
+            $this->res=$this->objFunc->detallePasajeroCalculoA7($this->objParam);
+        }
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
 }
 ?>

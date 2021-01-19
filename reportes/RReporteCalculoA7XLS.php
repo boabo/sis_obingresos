@@ -1,6 +1,6 @@
 <?php
 
-class RReporteCruceTigoXLS{
+class RReporteCalculoA7XLS{
     private $docexcel;
     private $objWriter;
     private $numero;
@@ -9,8 +9,7 @@ class RReporteCruceTigoXLS{
     var $datos_detalle;
     var $datos_titulo;
     public  $url_archivo;
-    function __construct(CTParametro $objParam)
-    {
+    function __construct(CTParametro $objParam){
         $this->objParam = $objParam;
         $this->url_archivo = "../../../reportes_generados/".$this->objParam->getParametro('nombre_archivo');
         //ini_set('memory_limit','512M');
@@ -249,7 +248,7 @@ class RReporteCruceTigoXLS{
         foreach ($datos as $key => $rec){
             if('pago_both' == $rec->ResultType) {
                 if (null != $rec->TransactionDate && $rec->Pnr != $pnr) {
-                    $d_key = DateTime::createFromFormat('M j Y H:i:s:A', $rec->TransactionDate)->format('dmY');//DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('dmY')
+                    $d_key = DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('dmY');
                     $depo_date[$d_key] += $rec->TransactionAmount;
                 }
                 $styleGroup = array(
@@ -288,7 +287,7 @@ class RReporteCruceTigoXLS{
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila_total, '=G' . $fila_total . '-M' . $fila_total);
                         }
 
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila + 1, DateTime::createFromFormat('M j Y H:i:s:A', $rec->IssueDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y')
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila + 1, DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y'));
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila + 1, $rec->TicketNumber);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila + 1, $rec->OIDReservation);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila + 1, $rec->OIDIssue);
@@ -309,7 +308,7 @@ class RReporteCruceTigoXLS{
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, '');
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, '');
                         } else {
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('M j Y H:i:s:A', $rec->TransactionDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('d/m/Y')
+                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('d/m/Y'));
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $rec->Pnr);
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $rec->TransactionCode);
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->OrderNumber);
@@ -318,7 +317,7 @@ class RReporteCruceTigoXLS{
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->TransactionAmount);
                         }
 
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, DateTime::createFromFormat('M j Y H:i:s:A', $rec->IssueDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y')
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y'));
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->TicketNumber);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->OIDReservation);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $rec->OIDIssue);
@@ -354,7 +353,7 @@ class RReporteCruceTigoXLS{
                     }*/
                     if ($flag_left) {
                         if (null != $rec->TransactionDate) {
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('M j Y H:i:s:A', $rec->TransactionDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('d/m/Y')
+                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('d/m/Y'));
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $rec->Pnr);
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $rec->TransactionCode);
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->OrderNumber);
@@ -383,17 +382,17 @@ class RReporteCruceTigoXLS{
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, '');
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->TransactionAmount);
                         } else {*/
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, '');
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, '');
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, '');
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, '');
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, '');
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, '');
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, '');
                         //}
                     }
 
-                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila + 1, DateTime::createFromFormat('M j Y H:i:s:A', $rec->IssueDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y')
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila + 1, DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y'));
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila + 1, $rec->TicketNumber);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila + 1, $rec->OIDReservation);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila + 1, $rec->OIDIssue);
@@ -507,7 +506,7 @@ class RReporteCruceTigoXLS{
                 );
                 $this->docexcel->getActiveSheet()->getStyle('A' . $fila. ':N' . $fila)->applyFromArray($styleGroup);
 
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('M j Y H:i:s:A', $rec->TransactionDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('d/m/Y')
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('Y-m-d', $rec->TransactionDate)->format('d/m/Y'));
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $rec->Pnr);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $rec->TransactionCode);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->OrderNumber);
@@ -636,7 +635,7 @@ class RReporteCruceTigoXLS{
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, '');
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, '');
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, '');
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila , DateTime::createFromFormat('M j Y H:i:s:A', $rec->IssueDate)->format('d/m/Y'));//DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y')
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila , DateTime::createFromFormat('Y-m-d', $rec->IssueDate)->format('d/m/Y'));
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila , $rec->TicketNumber);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila , $rec->OIDReservation);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila , $rec->OIDIssue);
@@ -717,7 +716,7 @@ class RReporteCruceTigoXLS{
         foreach ($depo_date as $key => $depos){
             $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':B'.$fila)->applyFromArray($styleTitulos1);
             $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':B'.$fila);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('dmY', $key)->format('d/m/Y'));//DateTime::createFromFormat('dmY', $key)->format('d/m/Y')
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, DateTime::createFromFormat('dmY', $key)->format('d/m/Y'));
             $this->docexcel->getActiveSheet()->mergeCells('C'.$fila.':D'.$fila);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, round ( $depo_date[$key]* 0.972, 2));
             $this->docexcel->getActiveSheet()->mergeCells('E'.$fila.':F'.$fila);

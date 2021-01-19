@@ -62,7 +62,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 gwidth: 150,
                 format: 'd/m/Y',
                 hidden : false,
-                style: 'font-size: 170%; font-weight: bold; background-image: none;color: green;'
+                style: 'font-size: 170%; font-weight: bold; background-image: none;color: #00B167;'
             });
             this.fecha_ini = new Ext.form.DateField({
                 name: 'fecha_ini',
@@ -87,7 +87,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 gwidth: 150,
                 format: 'd/m/Y',
                 hidden : false,
-                style: 'font-size: 170%; font-weight: bold; background-image: none; color: red;'
+                style: 'font-size: 170%; font-weight: bold; background-image: none; color: #FF8F85;'
             });
             this.fecha_fin = new Ext.form.DateField({
                 name: 'fecha_fin',
@@ -110,14 +110,42 @@ header("content-type: text/javascript; charset=UTF-8");
             this.bandera_alta = 0;
             this.bandera_baja = 0;
 
+            this.grid.addListener('cellclick', this.mostrarDetalleVuelo,this);
+
             this.init();
 
         },
+
+        mostrarDetalleVuelo : function(grid, rowIndex, columnIndex, e) {
+
+            var record = this.store.getAt(rowIndex);
+            var fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
+
+
+
+            if (fieldName == 'vuelo_id') {
+
+                var rec = {maestro: this.getSelectedData()};
+
+                Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte/DetalleVueloA7.php',
+                    'Detalle Vuelo A7',
+                    {
+                        width: 1200,
+                        height:600
+                    },
+                    rec,
+                    this.idContenedor,
+                    'DetalleVueloA7'
+                );
+            }
+
+        },
+
         bactGroups:[0,1],
         bexcelGroups:[0,1],
         gruposBarraTareas: [
-            {name:  'altas', title: '<h1 style="text-align: center; color: green;"><i class="fa fa-user fa-2x" aria-hidden="true"></i>NORMAL</h1>',grupo: 0, height: 0} ,
-            {name: 'bajas', title: '<h1 style="text-align: center; color: red;"><i class="fa fa-user-times fa-2x" aria-hidden="true"></i>EXCEPCIÓN</h1>', grupo: 1, height: 1}
+            {name:  'normal', title: '<h1 style="text-align: center; color: #00B167;"><i class="fa fa-file-o fa-2x" aria-hidden="true"></i>C. LIQUIDACIÓN</h1>',grupo: 0, height: 0} ,
+            {name: 'existencia', title: '<h1 style="text-align: center; color: #FF8F85;"><i class="fa fa-file-o fa-2x" aria-hidden="true"></i>CONTROL VUELOS</h1>', grupo: 1, height: 1}
         ],
         iniciarEventos: function(){
 
@@ -139,50 +167,52 @@ header("content-type: text/javascript; charset=UTF-8");
                 anio = fecha_hasta.getFullYear();
                 this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
 
-                if(this.tabtbar.getActiveTab().name == 'bajas'){
+                /*if(this.tabtbar.getActiveTab().name == 'bajas'){
                     this.store.baseParams.estado_func = 'bajas';
                     var fecha = this.fecha_fin.getValue();
                     this.current_date = new Date(fecha.getFullYear(),fecha.getMonth()+1,1);
                 }else{
                     this.store.baseParams.estado_func = 'altas';
                     this.current_date = this.store.baseParams.fecha_fin;
-                }
+                }*/
 
                 this.load({params: {start: 0, limit: 50}});
             },this);
         },
         actualizarSegunTab: function(name, indice){
 
-            if(name == 'altas' ){
+            /*if(name == 'normal' || name == 'existencia' ){
                 this.fecha_ini.setValue(new Date(this.current_date.getFullYear(),this.current_date.getMonth(),1));
                 this.fecha_fin.setValue(new Date(this.current_date.getFullYear(),this.current_date.getMonth()+1,0));
                 this.bandera_alta = 1;
-            }else if(name == 'bajas' ){
+            }else if(name == 'existencia' ){
                 this.fecha_ini.setValue(new Date(this.current_date.getFullYear(),this.current_date.getMonth()-1,1));
                 this.fecha_fin.setValue(new Date(this.current_date.getFullYear(),this.current_date.getMonth(),0));
                 this.bandera_baja = 1;
+            }*/
+            this.store.baseParams.tipo_rep = name;
+            if ( (this.fecha_ini.getValue() != '' && this.fecha_ini.getValue() != undefined) || (this.fecha_fin.getValue() != '' && this.fecha_fin.getValue() != undefined) ) {
+
+
+                fecha_desde = this.fecha_ini.getValue();
+                dia = fecha_desde.getDate();
+                dia = dia < 10 ? "0" + dia : dia;
+                mes = fecha_desde.getMonth() + 1;
+                mes = mes < 10 ? "0" + mes : mes;
+                anio = fecha_desde.getFullYear();
+
+                this.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+                fecha_hasta = this.fecha_fin.getValue();
+                dia = fecha_hasta.getDate();
+                dia = dia < 10 ? "0" + dia : dia;
+                mes = fecha_hasta.getMonth() + 1;
+                mes = mes < 10 ? "0" + mes : mes;
+                anio = fecha_hasta.getFullYear();
+                this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
+
+                this.load({params: {start: 0, limit: 50}});
             }
-
-            this.store.baseParams.estado_func = name;
-
-            fecha_desde = this.fecha_ini.getValue();
-            dia =  fecha_desde.getDate();
-            dia = dia < 10 ? "0"+dia : dia;
-            mes = fecha_desde.getMonth() + 1;
-            mes = mes < 10 ? "0"+mes : mes;
-            anio = fecha_desde.getFullYear();
-
-            this.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
-
-            fecha_hasta = this.fecha_fin.getValue();
-            dia =  fecha_hasta.getDate();
-            dia = dia < 10 ? "0"+dia : dia;
-            mes = fecha_hasta.getMonth() + 1;
-            mes = mes < 10 ? "0"+mes : mes;
-            anio = fecha_hasta.getFullYear();
-            this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
-
-            this.load({params: {start: 0, limit: 50}});
         },
 
 
@@ -201,7 +231,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     fieldLabel: "Vuelo ID",
-                    gwidth: 200,
+                    gwidth: 100,
                     name: 'vuelo_id',
                     allowBlank:true,
                     maxLength:100,
@@ -210,7 +240,10 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                        if (value!= '0'){
+                            return String.format('<div style="color: #00B167; font-weight: bold; cursor:pointer;">{0} <i class="fa fa-eye fa-2x"></i> </div>', value);
+                        }
+
                     }
                 },
                 type:'TextField',
@@ -224,7 +257,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     fieldLabel: "Fecha Vuelo",
-                    gwidth: 200,
+                    gwidth: 90,
                     name: 'fecha_vuelo',
                     allowBlank:true,
                     maxLength:100,
@@ -233,7 +266,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     format:'d/m/Y',
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return value?value.dateFormat('d/m/Y'):''
+                        return value ? value.dateFormat('d/m/Y') : ''
                     }
                 },
                 type:'DateField',
@@ -247,7 +280,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     fieldLabel: "Nro. Vuelo",
-                    gwidth: 200,
+                    gwidth: 100,
                     name: 'nro_vuelo',
                     allowBlank:true,
                     maxLength:100,
@@ -256,7 +289,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
                     }
                 },
                 type:'TextField',
@@ -270,7 +303,7 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config:{
                     fieldLabel: "Ruta Vl",
-                    gwidth: 200,
+                    gwidth: 100,
                     name: 'ruta_vl',
                     allowBlank:true,
                     maxLength:100,
@@ -279,7 +312,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
                     }
                 },
                 type:'TextField',
@@ -292,8 +325,77 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Nro Pax BoA",
-                    gwidth: 200,
+                    fieldLabel: "A7 Nacional",
+                    gwidth: 100,
+                    name: 'total_nac',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'NumberField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "A7 Internacional",
+                    gwidth: 90,
+                    name: 'total_inter',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'NumberField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Sin A7",
+                    gwidth: 90,
+                    name: 'total_cero',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'NumberField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Total Pax BoA",
+                    gwidth: 110,
                     name: 'nro_pax_boa',
                     allowBlank:true,
                     maxLength:100,
@@ -302,7 +404,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
                     }
                 },
                 type:'TextField',
@@ -315,8 +417,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Importe Boa",
-                    gwidth: 100,
+                    fieldLabel: "Importe BoA (Bs.)",
+                    gwidth: 107,
                     name: 'importe_boa',
                     allowBlank:true,
                     maxLength:100,
@@ -324,8 +426,27 @@ header("content-type: text/javascript; charset=UTF-8");
                     anchor:'100%',
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                    renderer: function (value, p, record) {
+
+                        Number.prototype.formatDinero = function (c, d, t) {
+                            var n = this,
+                                c = isNaN(c = Math.abs(c)) ? 2 : c,
+                                d = d == undefined ? "." : d,
+                                t = t == undefined ? "," : t,
+                                s = n < 0 ? "-" : "",
+                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
+                                j = (j = i.length) > 3 ? j % 3 : 0;
+                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+                        };
+                        if(record.data.tipo_reg != 'summary'){
+
+                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
+                        }
+                        else{
+
+                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
+
+                        }
                     }
                 },
                 type:'NumberField',
@@ -339,8 +460,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Nro Pax Sabsa",
-                    gwidth: 200,
+                    fieldLabel: "Total Pax Sabsa",
+                    gwidth: 110,
                     name: 'nro_pax_sabsa',
                     allowBlank:true,
                     maxLength:100,
@@ -349,7 +470,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
                     }
                 },
                 type:'TextField',
@@ -362,8 +483,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Importe Sabsa",
-                    gwidth: 100,
+                    fieldLabel: "Importe Sabsa (Bs.)",
+                    gwidth: 120,
                     name: 'importe_sabsa',
                     allowBlank:true,
                     maxLength:100,
@@ -371,13 +492,74 @@ header("content-type: text/javascript; charset=UTF-8");
                     anchor:'100%',
                     disabled: true,
                     style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: green; font-weight: bold;">{0}</div>', value);
+                    renderer: function (value, p, record) {
+
+                        Number.prototype.formatDinero = function (c, d, t) {
+                            var n = this,
+                                c = isNaN(c = Math.abs(c)) ? 2 : c,
+                                d = d == undefined ? "." : d,
+                                t = t == undefined ? "," : t,
+                                s = n < 0 ? "-" : "",
+                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
+                                j = (j = i.length) > 3 ? j % 3 : 0;
+                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+                        };
+                        if(record.data.tipo_reg != 'summary'){
+
+                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
+                        }
+                        else{
+
+                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
+
+                        }
                     }
                 },
                 type:'NumberField',
                 filters:{pfiltro:'tca.nombre',type:'string'},
                 bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "(Imp. BoA - Imp. Sabsa) (Bs.)",
+                    gwidth: 200,
+                    name: 'diferencia',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record) {
+
+                        Number.prototype.formatDinero = function (c, d, t) {
+                            var n = this,
+                                c = isNaN(c = Math.abs(c)) ? 2 : c,
+                                d = d == undefined ? "." : d,
+                                t = t == undefined ? "," : t,
+                                s = n < 0 ? "-" : "",
+                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
+                                j = (j = i.length) > 3 ? j % 3 : 0;
+                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+                        };
+                        if(record.data.tipo_reg != 'summary'){
+
+                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
+                        }
+                        else{
+
+                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
+
+                        }
+                    }
+                },
+                type:'NumberField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
                 id_grupo:1,
                 grid:true,
                 form:false
@@ -396,7 +578,11 @@ header("content-type: text/javascript; charset=UTF-8");
             {name:'nro_pax_boa', type: 'string'},
             {name:'nro_pax_sabsa', type: 'string'},
             {name:'importe_boa', type: 'numeric'},
-            {name:'importe_sabsa', type: 'numeric'}
+            {name:'importe_sabsa', type: 'numeric'},
+            {name:'diferencia', type: 'numeric'},
+            {name:'total_nac', type: 'numeric'},
+            {name:'total_inter', type: 'numeric'},
+            {name:'total_cero', type: 'numeric'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',

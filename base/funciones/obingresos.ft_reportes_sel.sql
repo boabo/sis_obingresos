@@ -25,6 +25,18 @@ $body$
     v_record_json		jsonb;
     v_contador_id		integer=1;
 
+    v_tipo_cambio		numeric(18,2) = 0;
+
+    v_total_nacional	integer = 0;
+    v_total_inter		integer = 0;
+    v_total_sinA7		integer = 0;
+    v_total_pax_boa		integer = 0;
+    v_total_imp_boa		integer = 0;
+    v_total_pax_sabsa	integer = 0;
+    v_total_imp_sabsa	integer = 0;
+    v_total_diferencia	integer = 0;
+    v_total_valor		integer = 0;
+
   BEGIN
 
     v_nombre_funcion = 'vef.ft_reportes_sel';
@@ -128,7 +140,7 @@ $body$
 
       end;
 
-     /*********************************
+    /*********************************
      #TRANSACCION:  'OBING_CALCULO_A7_SEL'
      #DESCRIPCION:	Data para el listado Calculo A7
      #AUTOR:		franklin.espinoza
@@ -148,11 +160,15 @@ $body$
                   RutaVl			varchar,
                   NroPaxBoA			varchar,
                   NroPAxSabsa		varchar,
-                  ImporteSabas		numeric,
-                  ImporteBoa		numeric
+                  ImporteSabsa		numeric,
+                  ImporteBoa		numeric,
+                  diferencia		numeric,
+                  total_nac			integer,
+                  total_inter		integer,
+                  total_cero		integer
           )on commit drop;
           for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.dataA7->'dataA7') loop
-
+          	--raise 'v_record_json: %',(v_record_json->>'PaxA7Nac');
           	insert into ttcalculo_vuelos(
               id_vuelo,
               VueloID,
@@ -161,22 +177,70 @@ $body$
               RutaVl,
               NroPaxBoA,
               NroPAxSabsa,
-              ImporteSabas,
-              ImporteBoa
+              ImporteSabsa,
+              ImporteBoa,
+              diferencia,
+              total_nac,
+              total_inter,
+              total_cero
             )values (
             	v_contador_id,
                 (v_record_json->>'VueloID')::integer,
-                (v_record_json->>'FechaVuelo')::date,
+                case when v_parametros.tipo_rep = 'normal' then to_date(v_record_json->>'FechaVuelo', 'Mon DD YYYY HH24:MI:SS:AM') else to_date(v_record_json->>'FechaVuelo', 'YYYYMMDD') end,
                 (v_record_json->>'NroVuelo')::varchar,
                 (v_record_json->>'RutaVl')::varchar,
                 (v_record_json->>'NroPaxBoA')::varchar,
                 (v_record_json->>'NroPAxSabsa')::varchar,
-                (v_record_json->>'ImporteSabas')::numeric,
-                (v_record_json->>'ImporteBoa')::numeric
+                (v_record_json->>'ImporteSabsa')::numeric,
+                (v_record_json->>'ImporteBoa')::numeric,
+                (v_record_json->>'ImporteBoa')::numeric-(v_record_json->>'ImporteSabsa')::numeric,
+                (v_record_json->>'PaxA7Nac')::integer,
+                (v_record_json->>'PaxA7Int')::integer,
+                (v_record_json->>'PaxA70')::integer
             );
+
+            v_total_nacional = v_total_nacional + (v_record_json->>'PaxA7Nac')::integer;
+            v_total_inter = v_total_inter + (v_record_json->>'PaxA7Int')::integer;
+            v_total_sinA7 = v_total_sinA7 + (v_record_json->>'PaxA70')::integer;
+            v_total_pax_boa = v_total_pax_boa + (v_record_json->>'NroPaxBoA')::integer;
+            v_total_imp_boa = v_total_imp_boa + (v_record_json->>'ImporteBoa')::integer;
+            v_total_pax_sabsa = v_total_pax_sabsa + (v_record_json->>'NroPAxSabsa')::integer;
+            v_total_imp_sabsa = v_total_imp_sabsa + (v_record_json->>'ImporteSabsa')::integer;
+            v_total_diferencia = v_total_diferencia + ((v_record_json->>'ImporteBoa')::integer-(v_record_json->>'ImporteSabsa')::integer);
+
           	v_contador_id = v_contador_id + 1;
           end loop;
         end if;
+
+        	insert into ttcalculo_vuelos(
+              id_vuelo,
+              VueloID,
+              FechaVuelo,
+              NroVuelo,
+              RutaVl,
+              NroPaxBoA,
+              NroPAxSabsa,
+              ImporteSabsa,
+              ImporteBoa,
+              diferencia,
+              total_nac,
+              total_inter,
+              total_cero
+            )values (
+            	v_contador_id,
+                0::integer,
+                '31/12/9999'::date,
+                ''::varchar,
+                'TOTAL'::varchar,
+                v_total_pax_boa::varchar,
+                v_total_pax_sabsa::varchar,
+                v_total_imp_sabsa::numeric,
+                v_total_imp_boa::numeric,
+                v_total_diferencia::numeric,
+                v_total_nacional::integer,
+                v_total_inter::integer,
+                v_total_sinA7::integer
+            );
 
         --Sentencia de la consulta de conteo de registros
         v_consulta = 'select
@@ -188,8 +252,262 @@ $body$
                           NroPaxBoA nro_pax_boa,
                           ImporteBoa importe_boa,
                           NroPAxSabsa nro_pax_sabsa,
-                          ImporteSabas importe_sabsa
-                      from ttcalculo_vuelos';
+                          ImporteSabsa importe_sabsa,
+                          diferencia,
+                          total_nac,
+                          total_inter,
+                          total_cero
+                      from ttcalculo_vuelos
+                      order by fecha_vuelo asc
+
+                       ';
+
+
+      --Definicion de la respuesta
+      --v_consulta:=v_consulta||v_parametros.filtro;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+
+    /*********************************
+     #TRANSACCION:  'OBING_DETALLE_A7_SEL'
+     #DESCRIPCION:	Data para el listado Detalle Vuelo A7
+     #AUTOR:		franklin.espinoza
+     #FECHA:		22-12-2020 15:14:58
+    ***********************************/
+    elsif(p_transaccion='OBING_DETALLE_A7_SEL')then
+
+      begin
+
+        if jsonb_typeof(v_parametros.detalle_vuelo) = 'array' then
+
+          create temp table ttdetalle_vuelo(
+          		  id_detalle		integer,
+                  ato_origen		varchar,
+                  ruta_completa		varchar,
+                  nombre_pasajero	varchar,
+                  nro_vuelo			varchar,
+                  nro_asiento		varchar,
+                  fecha_vuelo		date,
+                  pnr				varchar,
+                  nro_boleto		varchar,
+                  hora_vuelo		varchar,
+                  estado_vuelo		varchar,
+                  valor_a7			numeric,
+                  calculo_a7		numeric,
+                  pax_id			varchar,
+                  std_date			varchar
+          )on commit drop;
+
+          for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.detalle_vuelo) loop
+
+          	if (v_record_json->>'PAX_A7')::numeric = 25 then
+            	select tc.venta
+                into v_tipo_cambio
+                from param.ttipo_cambio tc
+                where tc.id_moneda = 2 and tc.fecha = (v_record_json->>'PAX_FECHAVUELO')::date;
+            end if;
+
+          	insert into ttdetalle_vuelo(
+              	id_detalle,
+                ato_origen,
+                ruta_completa,
+                nombre_pasajero,
+                nro_vuelo,
+                nro_asiento,
+                fecha_vuelo,
+                pnr,
+                nro_boleto,
+                hora_vuelo,
+                estado_vuelo,
+                valor_a7,
+                calculo_a7,
+                pax_id,
+                std_date
+            )values (
+            	v_contador_id,
+                (v_record_json->>'PAX_AEROPUERTO_ORIGEN')::varchar,
+				(v_record_json->>'PAX_RUTACOMPLETA')::varchar,
+                (v_record_json->>'PAX_NOMBRECOMPLETO')::varchar,
+                (v_record_json->>'PAX_NROVUELO')::varchar,
+                (v_record_json->>'PAX_NROASIENTO')::varchar,
+                (v_record_json->>'PAX_FECHAVUELO')::date,
+                (v_record_json->>'PAX_PNR')::varchar,
+                (v_record_json->>'PAX_NRO_BOLETO')::varchar,
+                (v_record_json->>'PAX_HORA_PROG')::varchar,
+                (v_record_json->>'PAX_ESTADO')::varchar,
+                (v_record_json->>'PAX_A7')::numeric,
+                case when (v_record_json->>'PAX_A7')::numeric = 25 then 25 * v_tipo_cambio else  (v_record_json->>'PAX_A7')::numeric end,
+                (v_record_json->>'PAX_ID')::varchar,
+                (v_record_json->>'STD_ddMMyyyyHHmmss')::varchar
+            );
+
+            v_total_valor = case when (v_record_json->>'PAX_A7')::numeric = 25 then (25 * v_tipo_cambio)::integer else  (v_record_json->>'PAX_A7')::integer end;
+            v_total_inter = v_total_inter + v_total_valor;
+          	v_contador_id = v_contador_id + 1;
+          end loop;
+        end if;
+
+        insert into ttdetalle_vuelo(
+              	id_detalle,
+                ato_origen,
+                ruta_completa,
+                nombre_pasajero,
+                nro_vuelo,
+                nro_asiento,
+                fecha_vuelo,
+                pnr,
+                nro_boleto,
+                hora_vuelo,
+                estado_vuelo,
+                valor_a7,
+                calculo_a7,
+                pax_id,
+                std_date
+            )values (
+            	v_contador_id,
+                ''::varchar,
+				''::varchar,
+                'ZZZZZZZZZZZZZZZ'::varchar,
+                ''::varchar,
+                ''::varchar,
+                null::date,
+                ''::varchar,
+                ''::varchar,
+                ''::varchar,
+                'TOTAL'::varchar,
+                null::numeric,
+                v_total_inter::numeric,
+                ''::varchar,
+                ''::varchar
+            );
+
+        --Sentencia de la consulta de conteo de registros
+        v_consulta = 'select
+                          id_detalle,
+                          ato_origen,
+                          ruta_completa,
+                          nombre_pasajero,
+                          nro_vuelo,
+                          nro_asiento,
+                          fecha_vuelo,
+                          pnr,
+                          nro_boleto,
+                          hora_vuelo,
+                          estado_vuelo,
+                          valor_a7,
+                          calculo_a7,
+                          pax_id,
+                          std_date
+                      from ttdetalle_vuelo
+                      order by nombre_pasajero asc';
+
+
+      --Definicion de la respuesta
+      --v_consulta:=v_consulta||v_parametros.filtro;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+
+    /*********************************
+     #TRANSACCION:  'OBING_DET_PAX_A7_SEL'
+     #DESCRIPCION:	Data para el listado Detalle Pasajero A7
+     #AUTOR:		franklin.espinoza
+     #FECHA:		22-12-2020 15:14:58
+    ***********************************/
+    elsif(p_transaccion='OBING_DET_PAX_A7_SEL')then
+
+      begin
+
+        if jsonb_typeof(v_parametros.detalle_pasajero) = 'array' then
+
+          create temp table ttdetalle_pasajero(
+          		  id_pasajero		integer,
+                  passenger_id		varchar,
+                  is_current		varchar,
+                  posicion			varchar,
+                  fecha_salida		varchar,
+                  fecha_salida_show	date,
+                  origen			varchar,
+                  destino    		varchar,
+                  ticket    		varchar,
+                  std       		varchar,
+                  std_show			varchar,
+                  sta       		varchar,
+                  sta_show			varchar,
+                  here_a7			varchar,
+                  is_sabsa			varchar
+          )on commit drop;
+
+          for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.detalle_pasajero) loop
+
+          	if (v_record_json->>'PAX_A7')::numeric = 25 then
+            	select tc.venta
+                into v_tipo_cambio
+                from param.ttipo_cambio tc
+                where tc.id_moneda = 2 and tc.fecha = (v_record_json->>'PAX_FECHAVUELO')::date;
+            end if;
+
+          	insert into ttdetalle_pasajero(
+              	id_pasajero,
+                passenger_id,
+                is_current,
+                posicion,
+                fecha_salida,
+                fecha_salida_show,
+                origen,
+                destino,
+                ticket,
+                std,
+                std_show,
+                sta,
+                sta_show,
+                here_a7,
+                is_sabsa
+            )values (
+            	v_contador_id,
+                (v_record_json->>'PassengerId')::varchar,
+				(v_record_json->>'IsCurrent')::varchar,
+                (v_record_json->>'Position')::varchar,
+                (v_record_json->>'DepartureDate')::varchar,
+                (v_record_json->>'DepartureDateShow')::date,
+                (v_record_json->>'Origin')::varchar,
+                (v_record_json->>'Destination')::varchar,
+                (v_record_json->>'Ticket')::varchar,
+                (v_record_json->>'STD')::varchar,
+                (v_record_json->>'STDShow')::varchar,
+                (v_record_json->>'STA')::varchar,
+                (v_record_json->>'STAShow')::varchar,
+                (v_record_json->>'HereA7')::varchar,
+                (v_record_json->>'IsSabsa')::varchar
+            );
+          	v_contador_id = v_contador_id + 1;
+          end loop;
+        end if;
+
+        --Sentencia de la consulta de conteo de registros
+        v_consulta = 'select
+                          id_pasajero,
+                          passenger_id,
+                          is_current,
+                          posicion,
+                          fecha_salida,
+                          fecha_salida_show,
+                          origen,
+                          destino,
+                          ticket,
+                          std,
+                          std_show,
+                          sta,
+                          sta_show,
+                          here_a7,
+                          is_sabsa
+                      from ttdetalle_pasajero
+                      order by passenger_id asc';
 
 
       --Definicion de la respuesta
