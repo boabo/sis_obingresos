@@ -98,12 +98,20 @@ BEGIN
                   id_usuario_mod,
                   fecha_mod,
                   id_concepto_ingas,
-                  id_boleto,
+                  --id_boleto,
+                  nro_tkt_mco,
                   id_punto_venta,
                   tipo_cambio,
                   nro_mco,
                   pax,
-                  id_funcionario_emisor
+                  id_funcionario_emisor,
+                  pais_doc_orig,
+                  estacion_doc_orig,
+                  fecha_doc_orig,
+                  t_c_doc_orig,
+                  moneda_doc_orig,
+                  valor_total_doc_orig,
+                  valor_conv_doc_orig
                   ) values(
                   'activo',
                   v_parametros.estado,
@@ -123,8 +131,16 @@ BEGIN
                   v_parametros.id_punto_venta,
                   v_parametros.tipo_cambio,
                   v_parametros.nro_mco,
-                  v_parametros.pax,
-                  v_parametros.id_funcionario_emisor
+                  upper(v_parametros.pax),
+                  v_parametros.id_funcionario_emisor,
+
+                  upper(v_parametros.pais_doc_or),
+                  upper(v_parametros.estacion_doc_or),
+                  v_parametros.fecha_doc_or,
+                  v_parametros.t_c_doc_or,
+                  upper(v_parametros.moneda_doc_or),
+                  v_parametros.val_total_doc_or,
+                  v_parametros.val_conv_doc_or
 
                   )RETURNING id_mco into v_id_mco;
 
@@ -195,8 +211,16 @@ BEGIN
 			usuario_ai = v_parametros._nombre_usuario_ai,
             tipo_cambio = v_parametros.tipo_cambio,
             nro_mco  = v_parametros.nro_mco,
-            pax  = v_parametros.pax,
-            id_funcionario_emisor = v_parametros.id_funcionario_emisor
+            pax  = upper(v_parametros.pax),
+            id_funcionario_emisor = v_parametros.id_funcionario_emisor,
+            nro_tkt_mco = v_parametros.id_boleto,
+            pais_doc_orig = upper(v_parametros.pais_doc_or),
+            estacion_doc_orig = upper(v_parametros.estacion_doc_or),
+            fecha_doc_orig = v_parametros.fecha_doc_or,
+            t_c_doc_orig = v_parametros.t_c_doc_or,
+            moneda_doc_orig = upper(v_parametros.moneda_doc_or),
+            valor_total_doc_orig = v_parametros.val_total_doc_or,
+            valor_conv_doc_orig = v_parametros.val_conv_doc_or
 			where id_mco=v_parametros.id_mco;
 	     else
             select desc_persona into v_cajero
@@ -239,7 +263,7 @@ BEGIN
 		end;
 
 	/*********************************
- 	#TRANSACCION:  'OBING_GPTFINS_IME'
+ 	#TRANSACCION:  'OBING_GPTFINS_SEL'
  	#DESCRIPCION:	Captura de datos iniciales para registro MCO's
  	#AUTOR:		breydi.vasquez
  	#FECHA:		04-05-2020

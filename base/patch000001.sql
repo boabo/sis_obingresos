@@ -3814,3 +3814,61 @@ ALTER TABLE obingresos.tforma_pago_ant
 COMMENT ON COLUMN obingresos.tforma_pago_ant.id_medio_pago
 IS 'Campo para registrar el medio de pago';
 /********************************************F-SCP-IRVA-OBINGRESOS-0-27/11/2020********************************************/
+
+/********************************************I-SCP-BVP-OBINGRESOS-0-19/01/2021********************************************/
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN nro_tkt_mco VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.tmco_s.nro_tkt_mco
+IS 'Numero de mco o boleto de documentos originales.';
+
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN pais_doc_orig VARCHAR(25);
+
+COMMENT ON COLUMN obingresos.tmco_s.pais_doc_orig
+IS 'Pais de documentos originales mco o boleto.';
+
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN estacion_doc_orig VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.tmco_s.estacion_doc_orig
+IS 'Estacion de documentos originales mco o boleto.';
+
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN fecha_doc_orig DATE;
+
+COMMENT ON COLUMN obingresos.tmco_s.fecha_doc_orig
+IS 'Fecha de documentos orig mco o boleto.';
+
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN t_c_doc_orig NUMERIC(18,6);
+
+COMMENT ON COLUMN obingresos.tmco_s.t_c_doc_orig
+IS 'Tipo de cambmio de documentos originales mco o boleto.';
+
+
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN moneda_doc_orig VARCHAR(25);
+
+COMMENT ON COLUMN obingresos.tmco_s.moneda_doc_orig
+IS 'Moneda de documentos originales mco o boleto.';
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN valor_total_doc_orig NUMERIC(18,2);
+
+COMMENT ON COLUMN obingresos.tmco_s.valor_total_doc_orig
+IS 'Valor total de documentos originales.';
+
+
+ALTER TABLE obingresos.tmco_s
+  ADD COLUMN valor_conv_doc_orig NUMERIC(18,2);
+
+COMMENT ON COLUMN obingresos.tmco_s.valor_conv_doc_orig
+IS 'Valor total convertido de documentos originales.';
+
+/********************************************F-SCP-BVP-OBINGRESOS-0-19/01/2021********************************************/

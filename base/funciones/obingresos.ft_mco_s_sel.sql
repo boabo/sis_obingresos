@@ -43,71 +43,66 @@ BEGIN
 
     	begin
     		--Sentencia de la consulta
-			v_consulta:='select
-						imcos.id_mco,
-						imcos.estado_reg,
-						imcos.estado,
-						imcos.fecha_emision,
-						imcos.id_moneda,
-						imcos.motivo,
-						imcos.valor_total,
-						imcos.id_gestion,
-						imcos.id_usuario_reg,
-						imcos.fecha_reg,
-						imcos.id_usuario_ai,
-						imcos.usuario_ai,
-						imcos.id_usuario_mod,
-						imcos.fecha_mod,
-						usu1.cuenta as usr_reg,
-						usu2.cuenta as usr_mod,
-                        conig.codigo,
-                        conig.desc_ingas,
-                        mon.codigo_internacional,
-                        ges.gestion,
-                        imcos.id_boleto,
-                        bole.nro_boleto as tkt,
-                        bole.fecha_emision as fecha_doc_or,
-                        bole.total as val_total_doc_or,
-                        bole.moneda as moneda_doc_or,
-                        (case when bole.moneda = ''USD'' then
-                         round((bole.total * tc.oficial),2)
-                        else
+			v_consulta:=' select
+            			  imcos.id_mco,
+                          imcos.estado_reg,
+                          imcos.estado,
+                          imcos.fecha_emision,
+                          imcos.id_moneda,
+                          imcos.motivo,
+                          imcos.valor_total,
+                          imcos.id_gestion,
+                          imcos.id_usuario_reg,
+                          imcos.fecha_reg,
+                          imcos.id_usuario_ai,
+                          imcos.usuario_ai,
+                          imcos.id_usuario_mod,
+                          imcos.fecha_mod,
+                          usu1.cuenta as usr_reg,
+                          usu2.cuenta as usr_mod,
+                          conig.codigo,
+                          conig.desc_ingas,
+                          mon.codigo_internacional,
+                          ges.gestion,
+                          imcos.id_boleto,
+                          imcos.nro_tkt_mco as tkt,
+                          imcos.fecha_doc_orig as fecha_doc_or,
+                          imcos.valor_total_doc_orig as val_total_doc_or,
+                          imcos.moneda_doc_orig as moneda_doc_or,
+                          (case when imcos.moneda_doc_orig = ''USD'' then
+                          round((imcos.valor_total_doc_orig * imcos.t_c_doc_orig),2)
+                          else
                           0.00
-                        end)::numeric as val_conv_doc_or,
-                        tc.oficial as t_c_doc_or,
-                        lug.codigo as estacion_doc_or,
-                        lugp.codigo as pais_doc_or,
-                        imcos.id_punto_venta,
-						vpv.codigo as agt_tv_head,
-                        vpv.nombre as city_head ,
-                        vsu.codigo as suc_head,
-                        vsu.nombre as nombre_suc_head,
-                        pl.codigo as estacion_head,
-                        plf.nombre as pais_head,
-                        mon.codigo as desc_moneda,
-                        imcos.id_concepto_ingas,
-                        imcos.tipo_cambio,
-                        imcos.nro_mco,
-                        imcos.pax,
-                        imcos.id_funcionario_emisor,
-                        fun.desc_funcionario1
-						from obingresos.tmco_s imcos
-						inner join segu.tusuario usu1 on usu1.id_usuario = imcos.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = imcos.id_usuario_mod
-					    inner join param.tconcepto_ingas conig  on conig.id_concepto_ingas = imcos.id_concepto_ingas
-                        inner join param.tmoneda mon on mon.id_moneda =  imcos.id_moneda
-                        inner join param.tgestion ges on ges.id_gestion = imcos.id_gestion
-                        inner join obingresos.tboleto bole on bole.id_boleto = imcos.id_boleto
-                        inner join obingresos.tagencia age on age.id_agencia = bole.id_agencia
-                        inner join param.tlugar lug on lug.id_lugar = age.id_lugar
-                        inner join param.tlugar lugp on lugp.id_lugar = lug.id_lugar_fk
-                        inner join vef.tpunto_venta vpv on vpv.id_punto_venta = imcos.id_punto_venta
-                        inner join vef.tsucursal vsu on vsu.id_sucursal = vpv.id_sucursal
-                        inner join param.tlugar pl on pl.id_lugar = vsu.id_lugar
-                        inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
-                        inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
-	                    and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
-                        inner join param.ttipo_cambio tc on tc.id_moneda = bole.id_moneda_boleto and tc.fecha = bole.fecha_emision
+                          end)::numeric as val_conv_doc_or,
+                          imcos.t_c_doc_orig as t_c_doc_or,
+                          imcos.estacion_doc_orig as estacion_doc_or,
+                          imcos.pais_doc_orig as pais_doc_or,
+                          imcos.id_punto_venta,
+                          vpv.codigo as agt_tv_head,
+                          vpv.nombre as city_head ,
+                          vsu.codigo as suc_head,
+                          vsu.nombre as nombre_suc_head,
+                          pl.codigo as estacion_head,
+                          plf.nombre as pais_head,
+                          mon.codigo as desc_moneda,
+                          imcos.id_concepto_ingas,
+                          imcos.tipo_cambio,
+                          imcos.nro_mco,
+                          imcos.pax,
+                          imcos.id_funcionario_emisor,
+                          fun.desc_funcionario1
+                          from obingresos.tmco_s imcos
+                          inner join segu.tusuario usu1 on usu1.id_usuario = imcos.id_usuario_reg
+                          left join segu.tusuario usu2 on usu2.id_usuario = imcos.id_usuario_mod
+                          inner join param.tconcepto_ingas conig  on conig.id_concepto_ingas = imcos.id_concepto_ingas
+                          inner join param.tmoneda mon on mon.id_moneda =  imcos.id_moneda
+                          inner join param.tgestion ges on ges.id_gestion = imcos.id_gestion
+                          inner join vef.tpunto_venta vpv on vpv.id_punto_venta = imcos.id_punto_venta
+                          inner join vef.tsucursal vsu on vsu.id_sucursal = vpv.id_sucursal
+                          inner join param.tlugar pl on pl.id_lugar = vsu.id_lugar
+                          inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
+                          inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
+                          and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
 				        where  ';
 
 			--Definicion de la respuesta
@@ -132,22 +127,17 @@ BEGIN
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select count(id_mco)
 					    from obingresos.tmco_s imcos
-					    inner join segu.tusuario usu1 on usu1.id_usuario = imcos.id_usuario_reg
-						left join segu.tusuario usu2 on usu2.id_usuario = imcos.id_usuario_mod
-					    inner join param.tconcepto_ingas conig  on conig.id_concepto_ingas = imcos.id_concepto_ingas
+                        inner join segu.tusuario usu1 on usu1.id_usuario = imcos.id_usuario_reg
+                        left join segu.tusuario usu2 on usu2.id_usuario = imcos.id_usuario_mod
+                        inner join param.tconcepto_ingas conig  on conig.id_concepto_ingas = imcos.id_concepto_ingas
                         inner join param.tmoneda mon on mon.id_moneda =  imcos.id_moneda
                         inner join param.tgestion ges on ges.id_gestion = imcos.id_gestion
-                        inner join obingresos.tboleto bole on bole.id_boleto = imcos.id_boleto
-                        inner join obingresos.tagencia age on age.id_agencia = bole.id_agencia
-                        inner join param.tlugar lug on lug.id_lugar = age.id_lugar
-                        inner join param.tlugar lugp on lugp.id_lugar = lug.id_lugar_fk
                         inner join vef.tpunto_venta vpv on vpv.id_punto_venta = imcos.id_punto_venta
                         inner join vef.tsucursal vsu on vsu.id_sucursal = vpv.id_sucursal
                         inner join param.tlugar pl on pl.id_lugar = vsu.id_lugar
                         inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
                         inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
                         and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
-                        inner join param.ttipo_cambio tc on tc.id_moneda = bole.id_moneda_boleto and tc.fecha = bole.fecha_emision
 					    where ';
 
 			--Definicion de la respuesta
@@ -242,10 +232,10 @@ BEGIN
                           imcos.id_mco,
                           imcos.id_boleto,
                           imcos.nro_mco,
-                          bole.moneda,
-                          bole.total
+                          imcos.moneda_doc_orig as moneda,
+						  imcos.valor_total_doc_orig as total
                           from obingresos.tmco_s imcos
-                          inner join obingresos.tboleto bole on bole.id_boleto = imcos.id_boleto
+                          -- inner join obingresos.tboleto bole on bole.id_boleto = imcos.id_boleto
                           where imcos.nro_mco like '''||COALESCE(v_parametros.nro_mco,'-')||'%''
                           and ';
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -297,7 +287,7 @@ BEGIN
                             conig.codigo as t_concepto,
                             imcos.nro_mco,
                             imcos.pax,
-                            bole.nro_boleto as tkt,
+                            imcos.nro_tkt_mco as tkt,
                             fun.desc_funcionario2,
                             imcos.motivo,
                             imcos.valor_total,
@@ -308,7 +298,7 @@ BEGIN
                             inner join param.tmoneda mon on mon.id_moneda = imcos.id_moneda
                             inner join param.tconcepto_ingas conig  on conig.id_concepto_ingas = imcos.id_concepto_ingas
                             inner join param.tgestion ges on ges.id_gestion = imcos.id_gestion
-                            inner join obingresos.tboleto bole on bole.id_boleto = imcos.id_boleto
+                            -- inner join obingresos.tboleto bole on bole.id_boleto = imcos.id_boleto
                             inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
                             and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
                             where  ';

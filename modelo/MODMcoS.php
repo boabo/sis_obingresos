@@ -85,7 +85,7 @@ class MODMcoS extends MODbase{
 		$this->setParametro('id_moneda','id_moneda','int4');
 		$this->setParametro('motivo','motivo','text');
 		$this->setParametro('valor_total','valor_total','numeric');
-		$this->setParametro('id_boleto','id_boleto','int4');
+		$this->setParametro('id_boleto','id_boleto','varchar');
 		$this->setParametro('id_gestion','id_gestion','int4');
 		$this->setParametro('id_concepto_ingas','id_concepto_ingas','int4');
 		$this->setParametro('id_punto_venta','id_punto_venta','int4');
@@ -93,6 +93,16 @@ class MODMcoS extends MODbase{
 		$this->setParametro('nro_mco','nro_mco','varchar');
 		$this->setParametro('pax','pax','varchar');
 		$this->setParametro('id_funcionario_emisor','id_funcionario_emisor','int4');
+
+		$this->setParametro('pais_doc_or','pais_doc_or','varchar');
+		$this->setParametro('estacion_doc_or','estacion_doc_or','varchar');
+		$this->setParametro('fecha_doc_or','fecha_doc_or','date');
+		$this->setParametro('t_c_doc_or','t_c_doc_or','numeric');
+		$this->setParametro('moneda_doc_or','moneda_doc_or','varchar');
+		$this->setParametro('val_total_doc_or','val_total_doc_or','numeric');
+		$this->setParametro('val_conv_doc_or','val_conv_doc_or','numeric');
+
+
 		//Ejecuta la instruccion
 		$this->armarConsulta();
 		$this->ejecutarConsulta();
@@ -122,6 +132,16 @@ class MODMcoS extends MODbase{
 		$this->setParametro('pax','pax','varchar');
 		$this->setParametro('id_funcionario_emisor','id_funcionario_emisor','int4');
 		$this->setParametro('id_punto_venta','id_punto_venta','int4');
+
+		$this->setParametro('id_boleto','id_boleto','varchar');
+		$this->setParametro('pais_doc_or','pais_doc_or','varchar');
+		$this->setParametro('estacion_doc_or','estacion_doc_or','varchar');
+		$this->setParametro('fecha_doc_or','fecha_doc_or','date');
+		$this->setParametro('t_c_doc_or','t_c_doc_or','numeric');
+		$this->setParametro('moneda_doc_or','moneda_doc_or','varchar');
+		$this->setParametro('val_total_doc_or','val_total_doc_or','numeric');
+		$this->setParametro('val_conv_doc_or','val_conv_doc_or','numeric');
+
 
 		//Ejecuta la instruccion
 		$this->armarConsulta();
