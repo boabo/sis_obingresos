@@ -1381,14 +1381,14 @@ from detalle';
             from obingresos.tperiodo_venta pe
             where  v_parametros.fecha_ini::date between pe.fecha_ini and pe.fecha_fin;
 
-            if (v_id_periodo_venta_ini is null) then
+           /* if (v_id_periodo_venta_ini is null) then
                 select pe.id_periodo_venta
                 into v_id_periodo_venta_ini
                 from obingresos.tperiodo_venta pe
                 where pe.fecha_ini >= v_parametros.fecha_ini::date
                 order by pe.id_periodo_venta ASC
                 limit 1;
-            end if;
+            end if;*/
 
             select
             pe.id_periodo_venta
@@ -1396,14 +1396,15 @@ from detalle';
             from obingresos.tperiodo_venta pe
             where v_parametros.fecha_fin::date between pe.fecha_ini and pe.fecha_fin;
 
-            if (v_id_periodo_venta_fin is null) then
+            /*if (v_id_periodo_venta_fin is null) then
               select
               max(pe.id_periodo_venta)
               into v_id_periodo_venta_fin
               from obingresos.tperiodo_venta pe;
-            end if;
+            end if;*/
         /********************************************/
 
+     if (v_id_periodo_venta_fin is not null) then
 
     for v_fechas_periodos in   ( select
                                 pe.fecha_ini,
@@ -1420,6 +1421,7 @@ from detalle';
                                   from tbl_1
                              )
                     LOOP
+
                                       if (v_creditos.fecha between v_fechas_periodos.fecha_ini and v_fechas_periodos.fecha_fin)  then
                                               insert into temp (
                                                                   tipo,
@@ -1447,6 +1449,86 @@ from detalle';
                                       end if;
              		end loop;
             end loop;
+   else
+   			for v_creditos in (
+                                  select *
+                                  from tbl_1
+                             )
+                    LOOP
+
+                                      if (v_creditos.fecha between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date)  then
+                                              insert into temp (
+                                                                  tipo,
+                                                                  fecha_ini,
+                                                                  fecha_fin,
+                                                                  fecha,
+                                                                  monto,
+                                                                  ajuste,
+                                                                  autorizacion__nro_deposito,
+                                                                  nro_deposito_boa,
+                                                                  periodo/*Aumentando*/
+
+                                                                )
+                                              values (
+                                                                  v_creditos.tipo,
+                                                                  v_parametros.fecha_ini::date,--v_debitos_fecha.fecha_ini,
+                                                                  v_parametros.fecha_fin::date,--v_debitos_fecha.fecha_fin,
+                                                                  v_creditos.fecha,
+                                                                  v_creditos.monto,
+                                                                  v_creditos.ajuste,
+                                                                  v_creditos.autorizacion__nro_deposito,
+                                                                  v_creditos.nro_deposito_boa,
+                                                                  null/*Aumentando*/
+                                              );
+                                      end if;
+             		end loop;
+
+   end if;
+
+    /*for v_fechas_periodos in   ( select
+                                pe.fecha_ini,
+                                pe.fecha_fin,
+                                COALESCE(TO_CHAR(pe.fecha_ini,'DD')||' al '|| TO_CHAR(pe.fecha_fin,'DD')||' '||pe.mes||' '||EXTRACT(YEAR FROM pe.fecha_ini),'Periodo Vigente')::text as periodo
+                                from obingresos.tperiodo_venta pe
+                              	where pe.id_periodo_venta between v_id_periodo_venta_ini and v_id_periodo_venta_fin)
+
+   /**********************************************/
+      		loop
+
+              for v_creditos in (
+                                  select *
+                                  from tbl_1
+                             )
+                    LOOP
+
+                                 if (v_creditos.fecha between v_fechas_periodos.fecha_ini and v_fechas_periodos.fecha_fin)  then
+                                              insert into temp (
+                                                                  tipo,
+                                                                  fecha_ini,
+                                                                  fecha_fin,
+                                                                  fecha,
+                                                                  monto,
+                                                                  ajuste,
+                                                                  autorizacion__nro_deposito,
+                                                                  nro_deposito_boa,
+                                                                  periodo/*Aumentando*/
+
+                                                                )
+                                              values (
+                                                                  v_creditos.tipo,
+                                                                  v_fechas_periodos.fecha_ini,--v_debitos_fecha.fecha_ini,
+                                                                  v_fechas_periodos.fecha_fin,--v_debitos_fecha.fecha_fin,
+                                                                  v_creditos.fecha,
+                                                                  v_creditos.monto,
+                                                                  v_creditos.ajuste,
+                                                                  v_creditos.autorizacion__nro_deposito,
+                                                                  v_creditos.nro_deposito_boa,
+                                                                  v_fechas_periodos.periodo/*Aumentando*/
+                                              );
+                                      end if;
+             		end loop;
+            end loop;*/
+
 
 
            for v_debitos in (select
@@ -1512,18 +1594,21 @@ from detalle';
                             end loop;
 
 		/*******Obtenemos la fecha maxima del periodo*******/
-		select
+
+        --Comentando para Obtener datos desde la fecha inicial
+		/*select
         max(pe.fecha_fin)
         into v_fecha_maxima
         from obingresos.tmovimiento_entidad mo
         LEFT JOIN obingresos.tperiodo_venta pe ON pe.id_periodo_venta = mo.id_periodo_venta
         where mo.fecha >= v_parametros.fecha_ini::date and mo.fecha <= v_parametros.fecha_fin::date and
-              mo.id_agencia = v_parametros.id_agencia;
+              mo.id_agencia = v_parametros.id_agencia;*/
 
         /*Aumentando esta condicion*/
-        if (v_fecha_maxima is null) then
+        --Comentando para Obtener datos desde la fecha inicial
+        --if (v_fecha_maxima is null) then
         	v_fecha_maxima = v_parametros.fecha_ini::date;
-        end if;
+       -- end if;
         /***************************/
 
         /***********************************************************/
