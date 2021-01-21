@@ -36,7 +36,7 @@ Phx.vista.McoS=Ext.extend(Phx.gridInterfaz,{
                 },
                 success: function(resp){
                     var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-                    
+
                     if (reg.ROOT.datos.v_id_apertura_cierre =='') {
                       Ext.Ajax.request({
                                           url:'../../sis_ventas_facturacion/control/Venta/getVariablesBasicas',
@@ -365,12 +365,11 @@ otrafora:function(data,config){
             type:'Field',
             form:true
         },
-
         {
             config:{
                 name: 'id_concepto_ingas',
                 fieldLabel: 'Concepto',
-                allowBlank: true,
+                allowBlank: false,
                 emptyText : 'Concepto...',
                 store : new Ext.data.JsonStore({
                             url:'../../sis_parametros/control/ConceptoIngas/listarConceptoIngas',
@@ -557,7 +556,7 @@ otrafora:function(data,config){
 				allowBlank: true,
 				anchor: '140%',
 				gwidth: 100,
-        maxLength:14
+        maxLength:15
 			},
 				type:'TextField',
 				id_grupo: 7,
@@ -571,6 +570,7 @@ otrafora:function(data,config){
 				allowBlank: false,
 				anchor: '110%',
 				gwidth: 100,
+        style:'text-transform:uppercase'
 			},
 				type:'TextField',
 				id_grupo: 8,
@@ -711,81 +711,6 @@ otrafora:function(data,config){
 			form: true
 		},
 		{
-            config:{
-                name:'id_gestion',
-                fieldLabel:'Gestión',
-                allowBlank:true,
-                emptyText:'Gestión...',
-                store: new Ext.data.JsonStore({
-                         url: '../../sis_parametros/control/Gestion/listarGestion',
-                         id: 'id_gestion',
-                         root: 'datos',
-                         sortInfo:{
-                            field: 'gestion',
-                            direction: 'DESC'
-                    },
-                    totalProperty: 'total',
-                    fields: ['id_gestion','gestion','moneda','codigo_moneda'],
-                    // turn on remote sorting
-                    remoteSort: true,
-                    baseParams:{par_filtro:'gestion'}
-                    }),
-                valueField: 'id_gestion',
-                displayField: 'gestion',
-                gdisplayField: 'gestion',
-                hiddenName: 'id_gestion',
-                forceSelection:true,
-                typeAhead: false,
-                triggerAction: 'all',
-                lazyRender:true,
-                mode:'remote',
-                pageSize:5,
-                queryDelay:1000,
-                listWidth:200,
-                resizable:true,
-				width:150
-
-            },
-            type:'ComboBox',
-            id_grupo: 12,
-            filters:{
-                        pfiltro:'gestion',
-                        type:'string'
-                    },
-            grid:true,
-            form:true
-        },
-		{
-			config:{
-				name: 'usr_reg',
-				fieldLabel: 'Usr/Cajero',
-				allowBlank: true,
-				anchor: '100%',
-				gwidth: 100
-			},
-				type:'Field',
-				filters:{pfiltro:'usu1.cuenta',type:'string'},
-				id_grupo: 13,
-				grid:true,
-				form:true
-		},
-		{
-			config:{
-				name: 'fecha_reg',
-				fieldLabel: 'Fecha-Reg',
-				allowBlank: true,
-				anchor: '100%',
-				gwidth: 100,
-							format: 'd/m/Y',
-							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y H:i:s'):''}
-			},
-				type:'DateField',
-				filters:{pfiltro:'imcos.fecha_reg',type:'date'},
-				id_grupo: 14,
-				grid:true,
-				form:true
-		},
-		{
 			config:{
 				name: 'hora_reg',
 				fieldLabel: 'Hora-Reg',
@@ -819,7 +744,7 @@ otrafora:function(data,config){
                         fields: ['id_boleto','tkt', 'tkt_estac', 'tkt_pais','fecha_emision', 'total', 'moneda','val_conv', 'tipo_cambio'],
                         remoteSort: true
                     }),
-                valueField: 'id_boleto',
+                valueField: 'tkt',
                 hiddenValue: 'tkt',
                 displayField: 'tkt',
                 gdisplayField: 'tkt',
@@ -845,6 +770,81 @@ otrafora:function(data,config){
             form: true,
             grid: true
         },
+        {
+                config:{
+                    name:'id_gestion',
+                    fieldLabel:'Gestión',
+                    allowBlank:true,
+                    emptyText:'Gestión...',
+                    store: new Ext.data.JsonStore({
+                             url: '../../sis_parametros/control/Gestion/listarGestion',
+                             id: 'id_gestion',
+                             root: 'datos',
+                             sortInfo:{
+                                field: 'gestion',
+                                direction: 'DESC'
+                        },
+                        totalProperty: 'total',
+                        fields: ['id_gestion','gestion','moneda','codigo_moneda'],
+                        // turn on remote sorting
+                        remoteSort: true,
+                        baseParams:{par_filtro:'gestion'}
+                        }),
+                    valueField: 'id_gestion',
+                    displayField: 'gestion',
+                    gdisplayField: 'gestion',
+                    hiddenName: 'id_gestion',
+                    forceSelection:true,
+                    typeAhead: false,
+                    triggerAction: 'all',
+                    lazyRender:true,
+                    mode:'remote',
+                    pageSize:5,
+                    queryDelay:1000,
+                    listWidth:200,
+                    resizable:true,
+    				width:150
+
+                },
+                type:'ComboBox',
+                id_grupo: 12,
+                filters:{
+                            pfiltro:'gestion',
+                            type:'string'
+                        },
+                grid:true,
+                form:true
+            },
+        {
+    			config:{
+    				name: 'usr_reg',
+    				fieldLabel: 'Usr/Cajero',
+    				allowBlank: true,
+    				anchor: '100%',
+    				gwidth: 100
+    			},
+    				type:'Field',
+    				filters:{pfiltro:'usu1.cuenta',type:'string'},
+    				id_grupo: 13,
+    				grid:true,
+    				form:true
+    		},
+    		{
+    			config:{
+    				name: 'fecha_reg',
+    				fieldLabel: 'Fecha-Reg',
+    				allowBlank: true,
+    				anchor: '100%',
+    				gwidth: 120,
+    							format: 'd/m/Y',
+    							renderer:function (value,p,record){return value?value.dateFormat('d/m/Y H:i:s'):''}
+    			},
+    				type:'DateField',
+    				filters:{pfiltro:'imcos.fecha_reg',type:'date'},
+    				id_grupo: 14,
+    				grid:true,
+    				form:true
+    		},
 		{
 			config:{
 				name: 'pais_doc_or',
@@ -852,6 +852,7 @@ otrafora:function(data,config){
 				allowBlank: true,
 				anchor: '0%',
 				gwidth: 100,
+        style:'text-transform:uppercase'
 			},
 				type:'Field',
 				id_grupo: 17,
@@ -865,6 +866,7 @@ otrafora:function(data,config){
 				allowBlank: true,
 				anchor: '0%',
 				gwidth: 100,
+        style:'text-transform:uppercase'
 			},
 				type:'Field',
 				id_grupo: 18,
@@ -905,6 +907,7 @@ otrafora:function(data,config){
 				allowBlank: true,
 				anchor: '0%',
 				gwidth: 100,
+        style:'text-transform:uppercase'
 			},
 				type:'Field',
 				id_grupo: 21,
@@ -919,7 +922,7 @@ otrafora:function(data,config){
 				anchor: '0%',
 				gwidth: 100,
 			},
-				type:'Field',
+				type:'NumberField',
 				id_grupo: 22,
 				grid:false,
 				form:true
@@ -932,7 +935,7 @@ otrafora:function(data,config){
 				anchor: '0%',
 				gwidth: 100,
 			},
-				type:'Field',
+				type:'NumberField',
 				id_grupo: 23,
 				grid:false,
 				form:true
@@ -1131,8 +1134,6 @@ otrafora:function(data,config){
     {name:'t_c_doc_or', type: 'numeric'},
     {name:'val_conv_doc_or', type: 'numeric'},
 
-
-
 	],
 	sortInfo:{
 		field: 'id_mco',
@@ -1163,7 +1164,6 @@ otrafora:function(data,config){
                 this.Cmp.fecha_doc_or.setValue(rec.data.fecha_emision);
                 this.Cmp.moneda_doc_or.setValue(rec.data.moneda);
                 this.Cmp.val_total_doc_or.setValue(rec.data.total);
-                this.Cmp.val_conv_doc_or.setValue(rec.data.val_conv);
                 this.Cmp.val_conv_doc_or.setValue(rec.data.val_conv);
                 this.Cmp.t_c_doc_or.setValue(rec.data.tipo_cambio);
             }, this);
@@ -1385,7 +1385,6 @@ otrafora:function(data,config){
 
     },
     onButtonNew: function() {
-console.log('nuevo',this);
 
         var date = new Date();
         var day = date.getDate();
@@ -1476,6 +1475,7 @@ console.log('nuevo',this);
         this.Cmp.city_head.setDisabled(true);
         this.Cmp.suc_head.setDisabled(true);
         this.Cmp.hora_reg.setDisabled(true);
+        this.Cmp.id_boleto.setValue(rec.data.tkt);
         var me = this;
         this.carac(me);
     },
