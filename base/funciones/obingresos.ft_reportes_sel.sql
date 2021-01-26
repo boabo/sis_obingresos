@@ -31,10 +31,10 @@ $body$
     v_total_inter		integer = 0;
     v_total_sinA7		integer = 0;
     v_total_pax_boa		integer = 0;
-    v_total_imp_boa		integer = 0;
+    v_total_imp_boa		numeric = 0;
     v_total_pax_sabsa	integer = 0;
-    v_total_imp_sabsa	integer = 0;
-    v_total_diferencia	integer = 0;
+    v_total_imp_sabsa	numeric = 0;
+    v_total_diferencia	numeric = 0;
     v_total_valor		integer = 0;
 
   BEGIN
@@ -165,7 +165,9 @@ $body$
                   diferencia		numeric,
                   total_nac			integer,
                   total_inter		integer,
-                  total_cero		integer
+                  total_cero		integer,
+                  MatriculaBoa		varchar,
+                  MatriculaSabsa	varchar
           )on commit drop;
           for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.dataA7->'dataA7') loop
           	--raise 'v_record_json: %',(v_record_json->>'PaxA7Nac');
@@ -182,31 +184,35 @@ $body$
               diferencia,
               total_nac,
               total_inter,
-              total_cero
+              total_cero,
+              MatriculaBoa,
+              MatriculaSabsa
             )values (
             	v_contador_id,
                 (v_record_json->>'VueloID')::integer,
                 case when v_parametros.tipo_rep = 'normal' then to_date(v_record_json->>'FechaVuelo', 'Mon DD YYYY HH24:MI:SS:AM') else to_date(v_record_json->>'FechaVuelo', 'YYYYMMDD') end,
                 (v_record_json->>'NroVuelo')::varchar,
-                (v_record_json->>'RutaVl')::varchar,
+                case when v_parametros.tipo_rep = 'normal' then (v_record_json->>'RutaVl')::varchar else (v_record_json->>'RutaSabsa')::varchar end,
                 (v_record_json->>'NroPaxBoA')::varchar,
                 (v_record_json->>'NroPAxSabsa')::varchar,
                 (v_record_json->>'ImporteSabsa')::numeric,
                 (v_record_json->>'ImporteBoa')::numeric,
-                (v_record_json->>'ImporteBoa')::numeric-(v_record_json->>'ImporteSabsa')::numeric,
-                (v_record_json->>'PaxA7Nac')::integer,
-                (v_record_json->>'PaxA7Int')::integer,
-                (v_record_json->>'PaxA70')::integer
+                coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric)-(v_record_json->>'ImporteSabsa')::numeric,
+                coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer),
+                coalesce((v_record_json->>'PaxA7Int')::integer,0::integer),
+                coalesce((v_record_json->>'PaxA70')::integer,0::integer),
+                case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaBoa')::varchar end,
+                case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaSabsa')::varchar end
             );
 
-            v_total_nacional = v_total_nacional + (v_record_json->>'PaxA7Nac')::integer;
-            v_total_inter = v_total_inter + (v_record_json->>'PaxA7Int')::integer;
-            v_total_sinA7 = v_total_sinA7 + (v_record_json->>'PaxA70')::integer;
+            v_total_nacional = v_total_nacional + coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer);
+            v_total_inter = v_total_inter + coalesce((v_record_json->>'PaxA7Int')::integer,0::integer);
+            v_total_sinA7 = v_total_sinA7 + coalesce((v_record_json->>'PaxA70')::integer,0::integer);
             v_total_pax_boa = v_total_pax_boa + (v_record_json->>'NroPaxBoA')::integer;
-            v_total_imp_boa = v_total_imp_boa + (v_record_json->>'ImporteBoa')::integer;
+            v_total_imp_boa = v_total_imp_boa + (v_record_json->>'ImporteBoa')::numeric;
             v_total_pax_sabsa = v_total_pax_sabsa + (v_record_json->>'NroPAxSabsa')::integer;
-            v_total_imp_sabsa = v_total_imp_sabsa + (v_record_json->>'ImporteSabsa')::integer;
-            v_total_diferencia = v_total_diferencia + ((v_record_json->>'ImporteBoa')::integer-(v_record_json->>'ImporteSabsa')::integer);
+            v_total_imp_sabsa = v_total_imp_sabsa + (v_record_json->>'ImporteSabsa')::numeric;
+            v_total_diferencia = v_total_diferencia + (coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric)-(v_record_json->>'ImporteSabsa')::numeric);
 
           	v_contador_id = v_contador_id + 1;
           end loop;
@@ -256,7 +262,9 @@ $body$
                           diferencia,
                           total_nac,
                           total_inter,
-                          total_cero
+                          total_cero,
+                          MatriculaBoa matricula_boa,
+                          MatriculaSabsa matricula_sabsa
                       from ttcalculo_vuelos
                       order by fecha_vuelo asc
 

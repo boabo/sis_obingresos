@@ -325,6 +325,52 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
+                    fieldLabel: "Matricula BoA",
+                    gwidth: 100,
+                    name: 'matricula_boa',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            {
+                config:{
+                    fieldLabel: "Matricula SABSA",
+                    gwidth: 100,
+                    name: 'matricula_sabsa',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            {
+                config:{
                     fieldLabel: "A7 Nacional",
                     gwidth: 100,
                     name: 'total_nac',
@@ -582,7 +628,10 @@ header("content-type: text/javascript; charset=UTF-8");
             {name:'diferencia', type: 'numeric'},
             {name:'total_nac', type: 'numeric'},
             {name:'total_inter', type: 'numeric'},
-            {name:'total_cero', type: 'numeric'}
+            {name:'total_cero', type: 'numeric'},
+
+            {name:'matricula_boa', type: 'string'},
+            {name:'matricula_sabsa', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',
