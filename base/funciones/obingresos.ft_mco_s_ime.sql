@@ -81,7 +81,7 @@ BEGIN
 					raise 'El campo pax no debe estar vacio';
 			end if;
 
-          if v_parametros.fecha_emision::date = now()::date then
+          if v_parametros.fecha_emision::date <= now()::date then
                   --Sentencia de la insercion
                   insert into obingresos.tmco_s(
                   estado_reg,
@@ -149,7 +149,7 @@ BEGIN
                 from segu.vusuario
                 where id_usuario = p_id_usuario;
 
-            	raise exception 'Estimad@: % no puede realizar un registro en otra fecha que no sea la de hoy: %', v_cajero, to_char(CURRENT_DATE,'DD/MM/YYYY');
+            	raise exception 'Estimad@: % no puede realizar un registro con una fecha mayor a la de hoy: %', v_cajero, to_char(CURRENT_DATE,'DD/MM/YYYY');
          end if;
 
 			--Definicion de la respuesta
