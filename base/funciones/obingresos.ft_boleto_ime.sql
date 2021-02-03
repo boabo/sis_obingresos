@@ -484,7 +484,9 @@ BEGIN
                     IF ( v_id_fpago = v_parametros.id_forma_pago and
                     		v_importe <> v_parametros.monto_forma_pago) THEN
 
-                            delete from obingresos.tmod_forma_pago m
+                            /*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia)*/
+
+                            /*delete from obingresos.tmod_forma_pago m
                             where m.billete = v_boleto.nro_boleto::numeric;
 
                             /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
@@ -505,7 +507,8 @@ BEGIN
                                                                          v_parametros.mco,
                                                                          /*************/
                                                                          v_id_moneda_mp);
-																		 /*************/
+																		 /*************/*/
+                    		/*************************************************************************************************/
                     END IF;
 
                      --replicacion
@@ -524,8 +527,9 @@ BEGIN
                                   else
                                       v_id_moneda_mp = NULL;
                                   end if;
+                                  /*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
                                   /***********************************************************************************/
-                                  delete from obingresos.tmod_forma_pago m
+                                 /* delete from obingresos.tmod_forma_pago m
                                   where m.billete = v_boleto.nro_boleto::numeric;
                                   perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
                                                                               v_parametros.id_forma_pago,
@@ -536,8 +540,9 @@ BEGIN
                                                                               v_parametros.monto_forma_pago,
                                                                               v_parametros.mco,
                                                                               /*************/
-                                                                              v_id_moneda_mp);
+                                                                              v_id_moneda_mp);*/
                                                                               /*************/
+                                  /*****************************************************************************************/
                         END IF;
                     ELSE
                     	IF EXISTS (select 1 from obingresos.tboleto_amadeus_forma_pago a
@@ -554,7 +559,8 @@ BEGIN
                                       v_id_moneda_mp = NULL;
                                   end if;
                                   /***********************************************************************************/
-                                  delete from obingresos.tmod_forma_pago m
+                                  /*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                                  /*delete from obingresos.tmod_forma_pago m
                                   where m.billete = v_boleto.nro_boleto::numeric;
                                   perform obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
                                                                               v_parametros.id_forma_pago,
@@ -565,13 +571,14 @@ BEGIN
                                                                               v_parametros.monto_forma_pago,
                                                                               v_parametros.mco,
                                                                               /*************/
-                                                                              v_id_moneda_mp);
+                                                                              v_id_moneda_mp);*/
                                                                               /*************/
                         END IF;
                     end if;
 
                     IF(v_boleto.estado_informix = 'no_migra')THEN
-
+					/*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                    /*
                     delete from obingresos.tmod_forma_pago m
                     where m.billete = v_boleto.nro_boleto::numeric;
 
@@ -592,7 +599,7 @@ BEGIN
                                                              	v_parametros.mco,
                                                                 /*************/
                                                                 v_id_moneda_mp
-                                                                /************/);
+                                                                /************/);*/
                     END IF;
 
 
@@ -660,7 +667,8 @@ BEGIN
                   id_usuario_fp_corregido,
                   id_auxiliar,
                   registro_mod,
-                  mco
+                  mco,
+                  modificado
                 )
                 VALUES (
                   p_id_usuario,
@@ -674,7 +682,8 @@ BEGIN
                   p_id_usuario,
                   v_parametros.id_auxiliar,
                   null,
-                  v_parametros.mco
+                  v_parametros.mco,
+                  'si'
                 );
             ELSE
 
@@ -693,7 +702,8 @@ BEGIN
                   id_usuario_fp_corregido,
                   id_auxiliar,
                   registro_mod,
-                  mco
+                  mco,
+                  modificado
                 )
                 VALUES (
                   p_id_usuario,
@@ -708,7 +718,8 @@ BEGIN
                   p_id_usuario,
                   v_parametros.id_auxiliar,
                   null,
-                  v_parametros.mco
+                  v_parametros.mco,
+                  'si'
                 );
             end if;
 			/*************************************************************************************/
@@ -730,8 +741,8 @@ BEGIN
                         v_id_moneda_mp = NULL;
                     end if;
 					/***********************************************************************************/
-
-                    PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+					/*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                    /*PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
                     											v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar,
                                                                 v_parametros.id_auxiliar2,
@@ -741,7 +752,7 @@ BEGIN
                                                                 v_parametros.mco2,
                                                                 /*************/
                                                                 v_id_moneda_mp
-                                                                /************/);
+                                                                /************/);*/
                     ELSE
                     /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
                     IF(v_parametros.id_moneda is not null and v_parametros.id_moneda != 0) THEN
@@ -750,7 +761,8 @@ BEGIN
                         v_id_moneda_mp = NULL;
                     end if;
 					/***********************************************************************************/
-                    PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
+                    /*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                    /*PERFORM obingresos.f_forma_pago_amadeus_mod(v_parametros.id_boleto_amadeus,
                     											v_parametros.id_forma_pago2,
             													v_parametros.numero_tarjeta2::varchar,
                                                                 v_parametros.id_auxiliar2,
@@ -760,7 +772,7 @@ BEGIN
                                                                 v_parametros.mco2,
                                                                 /*************/
                                                                 v_id_moneda_mp
-                                                                /************/);
+                                                                /************/);*/
                     END IF;
                      /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                     IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
@@ -798,7 +810,8 @@ BEGIN
                         id_usuario_fp_corregido,
                         id_auxiliar,
                         registro_mod,
-                        mco
+                        mco,
+                        modificado
                       )
                       VALUES (
                         p_id_usuario,
@@ -812,7 +825,8 @@ BEGIN
                         p_id_usuario,
                         v_parametros.id_auxiliar2,
                         1,
-                        v_parametros.mco2
+                        v_parametros.mco2,
+                        'si'
                       );
                     else
                     	 INSERT INTO
@@ -830,7 +844,8 @@ BEGIN
                         id_usuario_fp_corregido,
                         id_auxiliar,
                         registro_mod,
-                        mco
+                        mco,
+                        modificado
                       )
                       VALUES (
                         p_id_usuario,
@@ -845,7 +860,8 @@ BEGIN
                         p_id_usuario,
                         v_parametros.id_auxiliar2,
                         1,
-                        v_parametros.mco2
+                        v_parametros.mco2,
+                        'si'
                       );
                     end if;
 
@@ -1263,8 +1279,8 @@ BEGIN
                     IF ( v_id_fpago = v_parametros.id_forma_pago and
                     		v_importe <> v_valor) THEN
 
-
-                            delete from obingresos.tmod_forma_pago m
+							/*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                           /* delete from obingresos.tmod_forma_pago m
                             where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                             where a.id_boleto_amadeus = v_id_boleto );
 
@@ -1286,7 +1302,7 @@ BEGIN
                                                                  		v_parametros.mco,
                                                                         /*************/
                                                                         v_id_moneda_mp
-                                                                        /************/);
+                                                                        /************/);*/
                     END IF;
 
                      IF EXISTS (select 1 from obingresos.tforma_pago_ant
@@ -1297,8 +1313,8 @@ BEGIN
 
                    ELSE
 
-
-                      delete from obingresos.tmod_forma_pago m
+						/*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                      /*delete from obingresos.tmod_forma_pago m
                       where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                       where a.id_boleto_amadeus = v_id_boleto );
 
@@ -1316,14 +1332,14 @@ BEGIN
                                                                  		v_parametros.mco,
                                                                         /*************/
                                                                         v_id_moneda_mp
-                                                                        /************/);
+                                                                        /************/);*/
 					END IF;
 
                     IF( (select a.estado_informix
                     	from obingresos.tboleto_amadeus a
                         where a.id_boleto_amadeus = v_id_boleto)='no_migra')THEN
 
-                           delete from obingresos.tmod_forma_pago m
+                           /*delete from obingresos.tmod_forma_pago m
                             where m.billete = (select a.nro_boleto::numeric	from obingresos.tboleto_amadeus a
                             where a.id_boleto_amadeus = v_id_boleto );
 
@@ -1340,7 +1356,7 @@ BEGIN
                                                                  		v_parametros.mco,
                                                                         /*************/
                                                                         v_id_moneda_mp
-                                                                        /************/);
+                                                                        /************/);*/
                     END IF;
 
 
@@ -1357,7 +1373,8 @@ BEGIN
                                                                         id_usuario_fp_corregido,
                                                                         id_auxiliar,
                                                                         registro_mod,
-                                                                        mco
+                                                                        mco,
+                                                                        modificado
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1370,7 +1387,8 @@ BEGIN
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar,
                                                                         null,
-                                                                        v_parametros.mco
+                                                                        v_parametros.mco,
+                                                                        'si'
                                                                       );
                     else
                     	INSERT INTO obingresos.tboleto_amadeus_forma_pago( 	id_usuario_reg,
@@ -1384,7 +1402,8 @@ BEGIN
                                                                         id_usuario_fp_corregido,
                                                                         id_auxiliar,
                                                                         registro_mod,
-                                                                        mco
+                                                                        mco,
+                                                                        modificado
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1398,7 +1417,8 @@ BEGIN
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar,
                                                                         null,
-                                                                        v_parametros.mco
+                                                                        v_parametros.mco,
+                                                                        'si'
                                                                       );
                     end if;
                                                                          --raise exception 'llega';
@@ -1459,13 +1479,13 @@ BEGIN
                                   end if;
                                   /***********************************************************************************/
 
-
-                                 perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
+								/*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                                /* perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
                                                                 p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_valor,
                                                                 v_parametros.mco2,
                                                                 /*************/
-                                                                v_id_moneda_mp);
+                                                                v_id_moneda_mp);*/
                                                                 /*************/
                                 ELSE
                                  /*Mandamos el id moneda de la forma de pago seleccionada 24/11/2020 Ismael Valdivia*/
@@ -1475,12 +1495,14 @@ BEGIN
                                       v_id_moneda_mp = NULL;
                                   end if;
                                   /***********************************************************************************/
-                                                perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
+
+                                  /*Comentamos esta parte para no insertar en la tabla tmod_forma_pago (Ismael Valdivia 03/02/2021)*/
+                                            /*    perform obingresos.f_forma_pago_amadeus_mod(v_id_boleto,v_parametros.id_forma_pago2,
                                                                 v_parametros.numero_tarjeta2::varchar,v_parametros.id_auxiliar2,
                                                                 p_id_usuario,replace(upper(v_parametros.codigo_tarjeta2),' ',''),v_valor,
                                                                 v_parametros.mco2,
                                                                 /*************/
-                                                                v_id_moneda_mp);
+                                                                v_id_moneda_mp);*/
                                                                 /*************/
                     END IF;
 
@@ -1498,7 +1520,8 @@ BEGIN
                                                                         id_usuario_fp_corregido,
                                                                         id_auxiliar,
                                                                         registro_mod,
-                                                                        mco
+                                                                        mco,
+                                                                        modificado
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1512,7 +1535,8 @@ BEGIN
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar2,
                                                                         null,
-                                                                        v_parametros.mco2
+                                                                        v_parametros.mco2,
+                                                                        'si'
                                                                       );
                     else
                     INSERT INTO obingresos.tboleto_amadeus_forma_pago ( id_usuario_reg,
@@ -1527,7 +1551,8 @@ BEGIN
                                                                         id_usuario_fp_corregido,
                                                                         id_auxiliar,
                                                                         registro_mod,
-                                                                        mco
+                                                                        mco,
+                                                                        modificado
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1542,7 +1567,8 @@ BEGIN
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar2,
                                                                         null,
-                                                                        v_parametros.mco2
+                                                                        v_parametros.mco2,
+                                                                        'si'
                                                                       );
                     end if;
 
@@ -3086,18 +3112,22 @@ BEGIN
               id_usuario_cajero=NULL
               where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
 
-              IF (v_boleto.forma_pago = 'CC') THEN
+              /*Comentando para que no se borre la forma de pago insertarda Ismael Valdivia (03/02/2020)*/
+
+              /*IF (v_boleto.forma_pago = 'CC') THEN
               	DELETE
                 FROM obingresos.tboleto_amadeus_forma_pago
                 WHERE id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
 
                 delete from obingresos.tmod_forma_pago m
                 where m.billete = (	select 	b.nro_boleto::numeric
                                     from obingresos.tboleto_amadeus b
                                     where b.id_boleto_amadeus = v_parametros.id_boleto_amadeus);
+                /*********************************************************************/
 
 
-              END IF;
+              END IF;*/
 
             END IF;
 

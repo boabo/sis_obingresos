@@ -54,6 +54,56 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true
                 },
                 {
+                    //configuracion del componente
+                    config:{
+                        labelSeparator:'',
+                        //inputType:'hidden',
+                        name: 'moneda_desc'
+                    },
+                    type:'TextField',
+                    form:true
+                },
+                {
+                    config: {
+                        name: 'id_moneda',
+                        fieldLabel: 'Moneda',
+                        allowBlank: true,
+                        listWidth:250,
+                        resizable:true,
+                        emptyText: 'Moneda a pagar...',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_parametros/control/Moneda/listarMoneda',
+                            id: 'id_moneda',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'moneda',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_moneda', 'codigo', 'moneda', 'codigo_internacional'],
+                            remoteSort: true,
+                            baseParams: {filtrar: 'si',par_filtro: 'moneda.moneda#moneda.codigo#moneda.codigo_internacional'}
+                        }),
+                        valueField: 'id_moneda',
+                        gdisplayField : 'codigo_internacional',
+                        displayField: 'codigo_internacional',
+                        hiddenName: 'id_moneda',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p style="color:green;"><b style="color:black;">Moneda:</b> <b>{moneda}</b></p><p style="color:red;"><b style="color:black;">Código:</b> <b>{codigo_internacional}</b></p></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
+                        //disabled:true,
+                        minChars: 2
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 1,
+                    form: true
+                },
+                {
                     config: {
                         name: 'id_forma_pago',
                         fieldLabel: 'Forma de Pago',
@@ -70,13 +120,13 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.nombre#forpa.codigo#mon.codigo_internacional',sw_tipo_venta:'boletos'}
+                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
                         gdisplayField: 'forma_pago',
                         hiddenName: 'id_forma_pago',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p><p><b>Moneda:<font color="red">{desc_moneda}</font></b></p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>Medio de Pago:<font color="red">{nombre}</font></b></p><b><p>Codigo:<font color="green">{codigo}</font></b></p></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -84,12 +134,11 @@ header("content-type: text/javascript; charset=UTF-8");
                         mode: 'remote',
                         pageSize: 15,
                         queryDelay: 1000,
-                        anchor: '60%',
-                        gwidth: 350,
-                        listWidth:'20%',
+                        gwidth: 150,
+                        listWidth:250,
                         resizable:true,
                         minChars: 2,
-                        disabled:false,
+                        //disabled:true,
                         renderer : function(value, p, record) {
                             return String.format('{0}', record.data['forma_pago']);
                         }
@@ -399,20 +448,57 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 Phx.vista.BoletoAmadeusFormaPago.superclass.onButtonEdit.call(this);
                 this.manejoComponentesFP(this.sm.getSelected().data['codigo']);
+
+                this.Cmp.id_moneda.store.load({params:{start:0,limit:50},
+
+                       callback : function (r) {
+                                for (var j = 0; j < r.length; j++) {
+                                  if (r[j].data.codigo_internacional == this.maestro.moneda) {
+                                    this.Cmp.id_moneda.setValue(r[j].data.id_moneda);
+                                    this.Cmp.id_moneda.fireEvent('select', this.Cmp.id_moneda,r[j]);
+                                  }
+                                }
+                              //  console.log("aqui data this",this);
+                        }, scope : this
+                    });
+
+                this.Cmp.id_moneda.on('select', function (combo,record){
+                   this.Cmp.moneda_desc.reset();
+                    this.Cmp.moneda_desc.setValue(record.data.codigo_internacional);
+                },this);
+
+
+
+                this.Cmp.id_forma_pago.store.load({params:{start:0,limit:50},
+                       callback : function (r) {
+                                for (var i = 0; i < r.length; i++) {
+                                  if (r[i].data.codigo == this.maestro.forma_pago_amadeus) {
+                                    this.Cmp.id_forma_pago.setValue(r[i].data.id_forma_pago);
+                                    this.Cmp.id_forma_pago.fireEvent('select', this.Cmp.id_forma_pago,r[i]);
+                                  }
+                                }
+                        }, scope : this
+                    });
+
+
+
+
+
             },
             iniciarEventos : function () {
                 this.Cmp.id_forma_pago.on('select', function (combo,record,index){
                     this.manejoComponentesFP(record.data.codigo);
-                    if (this.maestro.moneda == record.data.desc_moneda){
+                    console.log();
+                    if (this.maestro.moneda == this.Cmp.moneda_desc.getValue()){
                         this.Cmp.importe.setValue(this.monto_fp);
                     }
                     //Si el boleto esta en usd y la forma de pago es distinta a usd y la forma de pago es igual a la moneda de la sucursal
-                    else if (this.maestro.moneda == 'USD' && record.data.desc_moneda == this.maestro.moneda_sucursal) {
+                    else if (this.maestro.moneda == 'USD' && this.Cmp.moneda_desc.getValue() == this.maestro.moneda_sucursal) {
                         //convertir de  dolares a moneda sucursal(multiplicar)
                         this.Cmp.importe.setValue(this.round((this.monto_fp*this.maestro.tc),2));
 
                         //Si el boleto esta en moneda sucursal y la forma de pago es usd y la moneda de la sucursales distinta a usd
-                    } else if (this.maestro.moneda == this.maestro.moneda_sucursal && record.data.desc_moneda == 'USD') {
+                    } else if (this.maestro.moneda == this.maestro.moneda_sucursal && this.Cmp.moneda_desc.getValue() == 'USD') {
                         //convertir de  moneda sucursal a dolares(dividir)
                         this.Cmp.importe.setValue(this.round((this.monto_fp/this.maestro.tc),2));
 
@@ -432,7 +518,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.numero_tarjeta.allowBlank = false;
                     this.Cmp.codigo_tarjeta.allowBlank = false;
                     //tarjeta de credito
-                } else if (codigoFp.startsWith("CT")) {
+                } else if (codigoFp.startsWith("CU")||codigoFp.startsWith("CT")) {
                     //cuenta corriente
                     this.ocultarComponente(this.Cmp.numero_tarjeta);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta);
@@ -484,7 +570,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.getPagina(this.idContenedorPadre).reload()
             },
             onButtonNew : function () {
-
                 console.log('punto venta', Phx.CP.getPagina(this.idContenedorPadre).id_punto_venta);
                 Phx.vista.BoletoAmadeusFormaPago.superclass.onButtonNew.call(this);
                 //Si no hay ningun registro el monto_fp es el total del boleto
@@ -494,6 +579,37 @@ header("content-type: text/javascript; charset=UTF-8");
                     //Si hay mas de un registro el monto_fp es el saldo a pagar del padre
                     this.monto_fp =  (this.maestro.total - this.maestro.comision) - this.maestro.monto_total_fp;
                 }
+
+                this.Cmp.id_moneda.store.load({params:{start:0,limit:50},
+
+                       callback : function (r) {
+                                for (var j = 0; j < r.length; j++) {
+                                  if (r[j].data.codigo_internacional == this.maestro.moneda) {
+                                    this.Cmp.id_moneda.setValue(r[j].data.id_moneda);
+                                    this.Cmp.id_moneda.fireEvent('select', this.Cmp.id_moneda,r[j]);
+                                  }
+                                }
+                              //  console.log("aqui data this",this);
+                        }, scope : this
+                    });
+
+                    this.Cmp.id_moneda.on('select', function (combo,record){
+                       this.Cmp.moneda_desc.reset();
+                        this.Cmp.moneda_desc.setValue(record.data.codigo_internacional);
+                    },this);
+
+                this.Cmp.id_forma_pago.store.load({params:{start:0,limit:50},
+                       callback : function (r) {
+                                for (var i = 0; i < r.length; i++) {
+                                  if (r[i].data.codigo == this.maestro.forma_pago_amadeus) {
+                                    this.Cmp.id_forma_pago.setValue(r[i].data.id_forma_pago);
+                                    this.Cmp.id_forma_pago.fireEvent('select', this.Cmp.id_forma_pago,r[i]);
+                                  }
+                                }
+                        }, scope : this
+                    });
+
+
 
                 this.ocultarComponente(this.Cmp.numero_tarjeta);
                 this.ocultarComponente(this.Cmp.codigo_tarjeta);

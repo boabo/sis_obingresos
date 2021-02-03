@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /********************************************I-SCP-JRR-OBINGRESOS-0-10/12/2015********************************************/
 CREATE TABLE obingresos.tcomprobante (
   id_comprobante SERIAL NOT NULL,
@@ -3872,3 +3871,16 @@ COMMENT ON COLUMN obingresos.tmco_s.valor_conv_doc_orig
 IS 'Valor total convertido de documentos originales.';
 
 /********************************************F-SCP-BVP-OBINGRESOS-0-19/01/2021********************************************/
+/********************************************I-SCP-IRVA-OBINGRESOS-0-03/02/2021********************************************/
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ADD COLUMN modificado VARCHAR(5);
+
+COMMENT ON COLUMN obingresos.tboleto_amadeus_forma_pago.modificado
+IS 'Campo que ayudara a saber las formas de pago modificadas para los boletos el valor es de (si,no)';
+
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  ALTER COLUMN modificado SET DEFAULT 'no';   
+
+  ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+  DROP CONSTRAINT fk_tboleto_amadeus_forma_pago__id_forma_pago RESTRICT;
+/********************************************F-SCP-IRVA-OBINGRESOS-0-03/02/2021********************************************/
