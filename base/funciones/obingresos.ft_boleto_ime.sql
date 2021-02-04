@@ -1444,8 +1444,8 @@ BEGIN
                                                                         id_usuario_fp_corregido,
                                                                         id_auxiliar,
                                                                         registro_mod,
-                                                                        mco,
-                                                                        modificado
+                                                                        mco--,
+                                                                        --modificado
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1459,8 +1459,8 @@ BEGIN
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar,
                                                                         null,
-                                                                        v_parametros.mco,
-                                                                        'si'
+                                                                        v_parametros.mco--,
+                                                                        --'si'
                                                                       );
                     end if;
                                                                          --raise exception 'llega';
