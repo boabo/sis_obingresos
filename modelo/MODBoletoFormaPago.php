@@ -137,6 +137,7 @@ class MODBoletoFormaPago extends MODbase{
         $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
         $this->setParametro('id_auxiliar','id_auxiliar','integer');
         $this->setParametro('mco','mco','varchar');
+        $this->setParametro('id_moneda','id_moneda','integer');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -193,6 +194,7 @@ class MODBoletoFormaPago extends MODbase{
         $this->setParametro('codigo_tarjeta','codigo_tarjeta','varchar');
         $this->setParametro('id_auxiliar','id_auxiliar','integer');
         $this->setParametro('mco','mco','varchar');
+        $this->setParametro('id_moneda','id_moneda','integer');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

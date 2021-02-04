@@ -162,6 +162,10 @@ DECLARE
     v_estado_canjeado		varchar;
     v_puntos_venta			varchar;
     v_id_moneda_mp			integer;
+    v_forma_pago_amadeus	varchar;
+    v_forma_pago_erp  		varchar;
+    v_moneda_amadeus		varchar;
+   	v_moneda_erp			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -651,6 +655,8 @@ BEGIN
                 end if;
                 /******************************************************************************/
 
+
+
             /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
             IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                 INSERT INTO
@@ -702,8 +708,8 @@ BEGIN
                   id_usuario_fp_corregido,
                   id_auxiliar,
                   registro_mod,
-                  mco,
-                  modificado
+                  mco--,
+                  --modificado
                 )
                 VALUES (
                   p_id_usuario,
@@ -718,11 +724,47 @@ BEGIN
                   p_id_usuario,
                   v_parametros.id_auxiliar,
                   null,
-                  v_parametros.mco,
-                  'si'
+                  v_parametros.mco--,
+                  --'si'
                 );
             end if;
 			/*************************************************************************************/
+
+             /*Aqui pondremos la condicion para ver si los medios de pago son distintos*/
+                select ama.forma_pago,
+                       list (fp2.fop_code),
+                       ama.moneda,
+                       list (mon.codigo_internacional)
+
+                       into
+                       v_forma_pago_amadeus,
+                       v_forma_pago_erp,
+                       v_moneda_amadeus,
+                       v_moneda_erp
+
+                from obingresos.tboleto_amadeus ama
+                inner join obingresos.tboleto_amadeus_forma_pago fp on fp.id_boleto_amadeus = ama.id_boleto_amadeus
+                inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = fp.id_medio_pago
+                inner join obingresos.tforma_pago_pw fp2 on fp2.id_forma_pago_pw = mp.forma_pago_id
+                inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                where ama.id_boleto_amadeus = v_parametros.id_boleto_amadeus
+                group by ama.forma_pago, ama.moneda;
+                /**************************************************************************/
+
+
+                if ((v_forma_pago_amadeus != v_forma_pago_erp) OR (v_moneda_amadeus != v_moneda_erp)) then
+
+                      UPDATE
+                      obingresos.tboleto_amadeus_forma_pago
+                      SET
+                      modificado='si'
+                      WHERE id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+                end if;
+
+
+
+
                 if (left (v_parametros.mco2::varchar,3)<> '930' and v_parametros.mco2 <> '' )then
                     raise exception 'Segunda forma de pago el numero del MCO tiene que empezar con 390';
                     end if;
@@ -1424,6 +1466,42 @@ BEGIN
                                                                          --raise exception 'llega';
 
             	end if;
+
+
+                 /*Aqui pondremos la condicion para ver si los medios de pago son distintos*/
+                  select ama.forma_pago,
+                         list (fp2.fop_code),
+                         ama.moneda,
+                         list (mon.codigo_internacional)
+
+                         into
+                         v_forma_pago_amadeus,
+                         v_forma_pago_erp,
+                         v_moneda_amadeus,
+                         v_moneda_erp
+
+                  from obingresos.tboleto_amadeus ama
+                  inner join obingresos.tboleto_amadeus_forma_pago fp on fp.id_boleto_amadeus = ama.id_boleto_amadeus
+                  inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = fp.id_medio_pago
+                  inner join obingresos.tforma_pago_pw fp2 on fp2.id_forma_pago_pw = mp.forma_pago_id
+                  inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                  where ama.id_boleto_amadeus = v_id_boleto
+                  group by ama.forma_pago, ama.moneda;
+                  /**************************************************************************/
+
+
+                  if ((v_forma_pago_amadeus != v_forma_pago_erp) OR (v_moneda_amadeus != v_moneda_erp)) then
+
+                        UPDATE
+                        obingresos.tboleto_amadeus_forma_pago
+                        SET
+                        modificado='si'
+                        WHERE id_boleto_amadeus = v_id_boleto;
+
+                  end if;
+                /***********************************************************************************/
+
+
                 if (v_saldo_fp2 > 0) then
 
                 /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
@@ -3081,7 +3159,7 @@ BEGIN
                 END IF;
 
               ELSE
-
+				--raise exception '% , %',v_monto_total_fp,(v_boleto.total-COALESCE(v_boleto.comision,0));
               	IF (v_boleto.forma_pago != 'CC') THEN
                   IF (COALESCE(v_monto_total_fp,0) <(v_boleto.total-COALESCE(v_boleto.comision,0)) and v_boleto.voided='no')THEN
                     raise exception 'El monto total de las formas de pago no iguala con el monto del boleto';
@@ -3111,6 +3189,38 @@ BEGIN
               tipo_comision = 'ninguno',
               id_usuario_cajero=NULL
               where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
+
+
+              /*Aqui pondremos la condicion para ver si los medios de pago son distintos*/
+                select ama.forma_pago,
+                       list (fp2.fop_code)::varchar,
+                       ama.moneda,
+                       list (mon.codigo_internacional)::varchar
+
+                       into
+                       v_forma_pago_amadeus,
+                       v_forma_pago_erp,
+                       v_moneda_amadeus,
+                       v_moneda_erp
+
+                from obingresos.tboleto_amadeus ama
+                inner join obingresos.tboleto_amadeus_forma_pago fp on fp.id_boleto_amadeus = ama.id_boleto_amadeus
+                inner join obingresos.tmedio_pago_pw mp on mp.id_medio_pago_pw = fp.id_medio_pago
+                inner join obingresos.tforma_pago_pw fp2 on fp2.id_forma_pago_pw = mp.forma_pago_id
+                inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                where ama.id_boleto_amadeus = v_parametros.id_boleto_amadeus
+                group by ama.forma_pago, ama.moneda;
+                /**************************************************************************/
+
+                if ((v_forma_pago_amadeus != v_forma_pago_erp) OR (v_moneda_amadeus != v_moneda_erp)) then
+
+                      UPDATE
+                      obingresos.tboleto_amadeus_forma_pago
+                      SET
+                      modificado='si'
+                      WHERE id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+                end if;
 
               /*Comentando para que no se borre la forma de pago insertarda Ismael Valdivia (03/02/2020)*/
 
