@@ -404,7 +404,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 mode: 'local',
                 gwidth: 50,
                 anchor: "10%",
-                store:['TODOS','BCO','BCR','BEC','BIS','BME','BNB','BUN','BPM','ECF','TMY','QRB'],
+                store:['TODOS','BCO','BCR','BEC','BIS','BME','BNB','BUN','BPM','ECF','TMY','QRB','QRK','BCK'],
                 enableMultiSelect: true,
             }),
         }
