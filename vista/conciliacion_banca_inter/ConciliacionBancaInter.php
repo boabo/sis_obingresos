@@ -32,7 +32,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     lazyRender:true,
                     mode: 'local',
                     gwidth: 150,
-                    store:['BIS','BUN','BNB','BME','BPM','TMY','BEC','BCR','BCO','ECF','QRB']
+                    store:['BIS','BUN','BNB','BME','BPM','TMY','BEC','BCR','BCO','ECF','QRB','QRK','BCK']
                 },
                 type:'ComboBox',
                 id_grupo:1,
