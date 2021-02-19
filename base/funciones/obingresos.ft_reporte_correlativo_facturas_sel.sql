@@ -87,7 +87,7 @@ $body$
             from vef.tsucursal
             where id_sucursal = v_parametros.id_sucursal;
 
-            select nombre into v_nom_esta
+            select codigo into v_nom_esta
             from param.tlugar
             where id_lugar = v_parametros.id_lugar;
 
