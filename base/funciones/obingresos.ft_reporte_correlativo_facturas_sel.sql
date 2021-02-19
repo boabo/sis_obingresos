@@ -39,6 +39,18 @@ $body$
     v_punto_venta_falla varchar;
     v_tipo_generacion	varchar;
 
+    v_conexion varchar;
+    v_cadena_cnx	varchar;
+        v_res_cone	varchar;
+
+    v_cod_punto  varchar;
+    v_nom_pv	varchar;
+    v_nom_suc	varchar;
+    v_nom_esta	varchar;
+    v_filtro_pv	varchar;
+    v_cod_pv_suc varchar;
+    v_consl_carga varchar=' ';
+
   BEGIN
 
     v_nombre_funcion = 'vef.ft_reporte_correlativo_facturas_sel';
@@ -64,6 +76,22 @@ $body$
        		v_id_punto_venta:= '';
        ELSE
        		v_id_punto_venta:= ' and ven.id_punto_venta = '||v_parametros.id_punto_venta||'  ' ;
+
+            select codigo, nombre  into v_cod_punto, v_nom_pv
+            from vef.tpunto_venta
+            where id_punto_venta = v_parametros.id_punto_venta
+            and tipo = 'carga'
+            limit 1;
+
+            select nombre into v_nom_suc
+            from vef.tsucursal
+            where id_sucursal = v_parametros.id_sucursal;
+
+            select nombre into v_nom_esta
+            from param.tlugar
+            where id_lugar = v_parametros.id_lugar;
+
+
        END IF;
 
        --si es opcion TODOS en sucursal
@@ -155,12 +183,133 @@ $body$
 
               END LOOP;
 
+              -- control caraga comentado revisar tarda mucho
+              /*
+			  IF v_cod_punto is not null THEN
+
+              			v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                        v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+
+                  FOR v_autorizaciones in SELECT nro_autorizacion
+                                           FROM dblink(''||v_cadena_cnx||'',
+                                                    '
+                                                    SELECT DISTINCT nro_autorizacion
+                                                    from sfe.tfactura
+                                                    WHERE sistema_origen = ''CARGA''
+                                                    and lower(tipo_factura) = '''||v_parametros.tipo_generacion||'''
+                                                    and 0 = 0
+                                                    and fecha_factura BETWEEN '''||v_parametros.fecha_desde||''' and '''||v_parametros.fecha_hasta||'''
+                                                    ')
+                                        AS t1(
+                                              nro_autorizacion varchar
+                                              )
+                                          LOOP
+
+										SELECT min_fac, max_fac into v_resultado_fac
+                                        	FROM dblink(''||v_cadena_cnx||'',
+                                                    'select min(nro_factura) as min_fac, max(nro_factura) as max_fac
+                                                    from sfe.tfactura
+                                                    where nro_autorizacion = '''||(v_autorizaciones.nro_autorizacion)::varchar||'''
+                                                    and fecha_factura BETWEEN '''||v_parametros.fecha_desde||''' and '''||v_parametros.fecha_hasta||'''
+                                                    and sistema_origen = ''CARGA''
+                                                    ')
+                                            AS t2 (min_fac integer, max_fac integer);
+
+
+
+                                        IF (v_resultado_fac.min_fac is not null and v_resultado_fac.max_fac is not null) THEN
+
+
+                                          FOR i IN v_resultado_fac.min_fac .. v_resultado_fac.max_fac LOOP
+
+                                              IF NOT EXISTS(select 1
+                                              			FROM dblink(''||v_cadena_cnx||'',
+                                                        '
+                                                        select nro_factura
+                                                        from sfe.tfactura
+                                                      where lower(tipo_factura) = '''||v_parametros.tipo_generacion||'''
+                                                      and nro_autorizacion = '''||(v_autorizaciones.nro_autorizacion)::varchar||'''
+                                                      and sistema_origen = ''CARGA''
+                                                      and nro_factura = '''||i||'''
+                                                        ')
+                                                        AS t3 (nro_factura varchar)
+                                                      )THEN
+
+                                                  v_bandera:='false';
+                                                  v_v_autorizacion_falla:=(v_autorizaciones.nro_autorizacion::varchar);
+                                                  v_nro_fac:=i;
+
+	                                              v_errores = v_errores ||' -->Nro Autorización:'||v_v_autorizacion_falla ||' Nro Factura: '|| v_nro_fac || ' Tipo: ' ||initcap(v_parametros.tipo_generacion)||', ';
+
+                                              END IF;
+
+
+                                          END LOOP;
+
+                                        END IF;
+
+
+
+                  END LOOP;
+                     v_res_cone=(select dblink_disconnect());
+              END IF;*/
 
 
 
               IF(v_bandera='true')THEN
 
-                    v_consulta = ' select  (lu.codigo)::varchar as estacion,
+    				IF v_cod_punto is not null THEN
+
+                        v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                        v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+
+						v_consl_carga = 'union
+
+
+                                    (SELECT
+                                    	   estacion,
+                                           sucursal,
+                                           (select nombre
+                                              from vef.tpunto_venta
+                                              where codigo = codigo_punto_venta
+                                              and tipo = ''carga''
+                                              limit 1) as punto_venta,
+                                    	   nro_autorizacion,
+                                    	   nro_desde,
+                                           nro_hasta,
+                                           cantidad
+                                                    FROM dblink('''||v_cadena_cnx||''',
+                                                                ''select
+                                                                  '''''||v_nom_esta||'''''::varchar as estacion,
+                                                                  '''''||v_nom_suc||'''''::varchar as sucursal,
+                                                                  codigo_punto_venta,
+                                                                  nro_autorizacion,
+                                                                  min(nro_factura)::integer as nro_desde,
+                                                                  max(nro_factura)::integer as nro_hasta,
+                                                                  count(id_factura)::integer as cantidad
+
+                                                              from sfe.tfactura
+                                                              where
+                                                              fecha_factura BETWEEN '''''||v_parametros.fecha_desde||''''' and '''''||v_parametros.fecha_hasta||'''''
+                                                              and sistema_origen = ''''CARGA''''
+                                                              and lower(tipo_factura) = '''''||v_parametros.tipo_generacion||'''''
+                                                              and  codigo_punto_venta = '''''||v_cod_punto||'''''
+                                                              group by nro_autorizacion, codigo_punto_venta
+                                                              order by nro_autorizacion
+                                                                 '')
+                                                    AS t1(
+                                                    	  estacion varchar,
+                                                          sucursal varchar,
+                                                          codigo_punto_venta varchar,
+                                                    	  nro_autorizacion varchar,
+                                                          nro_desde integer,
+                                                          nro_hasta integer,
+                                                          cantidad integer
+                                                          ) ) ';
+
+                    END IF;
+
+                    v_consulta = ' (select  (lu.codigo)::varchar as estacion,
                                           (su.codigo||'' - ''||su.nombre)::varchar as sucursal,
                                           (pv.nombre)::varchar as punto_venta,
                                           dos.nroaut,
@@ -178,13 +327,15 @@ $body$
                                   '||v_id_punto_venta||'
                                   '||v_id_lugar||'
                                   and ven.fecha BETWEEN '''||v_parametros.fecha_desde||''' and '''||v_parametros.fecha_hasta||'''
-
-
                                   group by lu.codigo, pv.nombre ,dos.nroaut, su.codigo, su.nombre
-                                  order by lu.codigo ';
+                                  order by lu.codigo )
+                                  '||v_consl_carga||'
+                                  ';
 
                          raise notice '%', v_consulta;
-
+                         IF v_cod_punto is not null THEN
+							v_res_cone=(select dblink_disconnect());
+                         END IF;
 
 
                          return v_consulta;
@@ -345,3 +496,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_reporte_correlativo_facturas_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
