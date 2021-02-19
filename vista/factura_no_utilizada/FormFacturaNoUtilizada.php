@@ -403,7 +403,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_sucursal', 'nombre', 'codigo'],
                         remoteSort: true,
-                        baseParams: {tipo_usuario: 'cajero', par_filtro: 'suc.nombre#suc.codigo'}
+                        //baseParams: {tipo_usuario: 'cajero', par_filtro: 'suc.nombre#suc.codigo'}
+                        baseParams: {par_filtro: 'suc.nombre#suc.codigo'}
                     }),
                     valueField: 'id_sucursal',
                     gdisplayField: 'nombre_sucursal',
