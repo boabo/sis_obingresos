@@ -45,15 +45,16 @@ header("content-type: text/javascript; charset=UTF-8");
                             direction: 'ASC'
                         },
                         totalProperty: 'total',
-                        fields: ['id_lugar', 'codigo'],
+                        fields: ['id_lugar', 'codigo','nombre'],
                         remoteSort: true,
-                        baseParams: {tipo_usuario: 'todos', par_filtro: 'codigo', lugar_estacion: 'Bol', _adicionar: true}
+                        //baseParams: {tipo_usuario: 'todos', par_filtro: 'codigo', lugar_estacion: 'Bol', _adicionar: true}
+                        baseParams: {par_filtro: 'codigo', lugar_estacion: 'Bol', _adicionar: true}
                     }),
                     valueField: 'id_lugar',
                     displayField: 'codigo',
                     gdisplayField: 'codigo',
                     hiddenName: 'id_lugar',
-                    tpl: '<tpl for="."><div class="x-combo-list-item"><p><b></b> {codigo}</p></div></tpl>',
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><p><b>{codigo}</b></p><p><span style="color: green;"> {nombre}<span></p></div></tpl>',
                     forceSelection: true,
                     typeAhead: false,
                     triggerAction: 'all',
@@ -63,6 +64,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     queryDelay: 1000,
                     gwidth: 150,
                     width: 200,
+                    listWidth: 400,
                     resizable: true,
                     minChars: 2,
                     renderer: function (value, p, record) {
