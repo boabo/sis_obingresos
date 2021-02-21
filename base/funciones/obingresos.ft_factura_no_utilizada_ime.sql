@@ -320,7 +320,7 @@ BEGIN
 
                       ) values(
                         v_parametros.id_sucursal,
-                        12, ---id_cliente
+                        103,--nombre de factura SIN NOMBRE--12, ---id_cliente
                         v_id_proceso_wf,
                         v_id_estado_wf,
                         'activo',
@@ -611,7 +611,7 @@ BEGIN
            FROM vef.tventa ven
            WHERE ven.id_dosificacion = v_parametros.id_dosificacion;
 
-           v_inicial = v_inicial + 1 ;
+           v_inicial = COALESCE(v_inicial, 0) + 1 ;
 
 
             --Definicion de la respuesta

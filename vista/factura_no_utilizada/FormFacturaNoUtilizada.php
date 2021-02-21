@@ -175,6 +175,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 /********************************************************************************/
 
                 this.Cmp.id_punto_venta.store.baseParams.id_punto_venta = this.data.objPadre.variables_globales.id_punto_venta;
+
+                this.Cmp.id_dosificacion.store.baseParams.id_sucursal = this.data.objPadre.variables_globales.id_sucursal;
+
                 this.Cmp.id_punto_venta.store.load({params:{start:0,limit:this.tam_pag},
                     callback : function (r) {
                         this.Cmp.id_punto_venta.setValue(this.data.objPadre.variables_globales.id_punto_venta);
@@ -182,6 +185,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                         //console.log('llega id_sucursal 444', this.Cmp.id_sucursal.getValue())
                         this.Cmp.id_dosificacion.store.baseParams.id_sucursal= this.Cmp.id_sucursal.getValue();
+                        this.Cmp.id_dosificacion.store.baseParams.id_sucursal = this.data.objPadre.variables_globales.id_sucursal;
 
                         this.Cmp.id_punto_venta.fireEvent('select',this.Cmp.id_punto_venta, this.Cmp.id_punto_venta.store.getById(this.data.objPadre.variables_globales.id_punto_venta));
 
@@ -408,7 +412,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     }),
                     valueField: 'id_sucursal',
                     gdisplayField: 'nombre_sucursal',
-                    displayField: 'nombre',
+                    //displayField: 'nombre',
+                    //(may) a solicitud de Marcelo Caballero mostrar el codigo de Sucursal
+                    displayField: 'codigo',
                     hiddenName: 'id_sucursal',
                     tpl: '<tpl for="."><div class="x-combo-list-item"><p><b>Codigo:</b> {codigo}</p><p><b>Nombre:</b> {nombre}</p></div></tpl>',
                     forceSelection: true,
@@ -452,7 +458,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_dosificacion', 'nroaut', 'desc_actividad_economica','inicial','final','fecha_dosificacion', 'nro_tramite','tipo', 'tipo_generacion', 'id_sucursal','fecha_limite'],
                         remoteSort: true,
-                        baseParams: {filtro_usuario: 'si',par_filtro: 'dos.nroaut', tipo_generacion : 'manual', controlfecha: 'si'}
+                        //baseParams: {filtro_usuario: 'si',par_filtro: 'dos.nroaut', tipo_generacion : 'manual', controlfecha: 'si'}
+                        baseParams: {par_filtro: 'dos.nroaut', tipo_generacion : 'manual', controlfecha: 'si'}
                     }),
                     valueField: 'id_dosificacion',
                     displayField: 'desc_actividad_economica',
