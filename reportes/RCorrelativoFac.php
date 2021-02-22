@@ -62,12 +62,12 @@ class CustomReportLibroBancos extends MYPDF {
             $this->setTextColor(0,0,0);
 
 
-                $this->Cell($width1, $height, 'Estación', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
-                $this->Cell($width7, $height, 'Sucursal', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
-                $this->Cell($width2, $height, 'Punto de Venta', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
-                $this->Cell($width4, $height, 'Del Número', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
-                $this->Cell($width5, $height, 'Al Número', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
-                $this->Cell($width6, $height, 'Cantidad', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            $this->Cell($width1, $height, 'Estación', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            $this->Cell($width7, $height, 'Sucursal', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            $this->Cell($width2, $height, 'Punto de Venta', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            $this->Cell($width4, $height, 'Del Número', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            $this->Cell($width5, $height, 'Al Número', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            $this->Cell($width6, $height, 'Cantidad', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
 
         }else{//FACTURAS
             $this->Cell(265, $height2, 'Tipo: FACTURACION '.$tipo_generacion, 0, 0, 'C', false, '', 1, false, 'T', 'C');
@@ -76,11 +76,11 @@ class CustomReportLibroBancos extends MYPDF {
             $this->Ln();
 
             $width1 = 18;
-            $width2 = 65;
-            $width3 = 40;
-            $width4 = 25;
-            $width5 = 25;
-            $width6 = 25;
+            //$width2 = 65;
+            $width3 = 65;
+            $width4 = 40;
+            $width5 = 30;
+            $width6 = 30;
             $width7 = 65;
 
             $height = 5;
@@ -91,7 +91,7 @@ class CustomReportLibroBancos extends MYPDF {
 
             $this->Cell($width1, $height, 'Estación', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
             $this->Cell($width7, $height, 'Sucursal', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
-            $this->Cell($width2, $height, 'Punto de Venta', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
+            //$this->Cell($width2, $height, 'Punto de Venta', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
             $this->Cell($width3, $height, 'Nro Autorización', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
             $this->Cell($width4, $height, 'Del Número', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
             $this->Cell($width5, $height, 'Al Número', $blackAll, 0, 'C', true, '', 1, false, 'T', 'C');
@@ -193,17 +193,17 @@ Class RCorrelativoFac extends Report {
             $pdf->tablenumbers=array(0,0,0,0,0,0);
 
 
-           // $RowArray;
+            // $RowArray;
             foreach($dataSource->getDataset() as $row) {
 
-                    $RowArray = array(
-                        'estacion'  =>  $row['estacion'],
-                        'sucursal'  =>  $row['sucursal'],
-                        'punto_venta'  => $row['punto_venta'],
-                        'nro_desde' => $row['nro_desde'],
-                        'nro_hasta' => $row['nro_hasta'],
-                        'cantidad' => $row['cantidad']
-                    );
+                $RowArray = array(
+                    'estacion'  =>  $row['estacion'],
+                    'sucursal'  =>  $row['sucursal'],
+                    'punto_venta'  => $row['punto_venta'],
+                    'nro_desde' => $row['nro_desde'],
+                    'nro_hasta' => $row['nro_hasta'],
+                    'cantidad' => $row['cantidad']
+                );
 
                 $pdf-> MultiRow($RowArray, $fill = false, $border = 1) ;
 
@@ -211,11 +211,11 @@ Class RCorrelativoFac extends Report {
 
         }else{ //FACTURAS
             $width1 = 18;
-            $width2 = 65;
-            $width3 = 40;
-            $width4 = 25;
-            $width5 = 25;
-            $width6 = 25;
+            //$width2 = 65;
+            $width3 = 65;
+            $width4 = 40;
+            $width5 = 30;
+            $width6 = 30;
             $width7 = 65;
 
             $pdf->Ln();
@@ -231,9 +231,9 @@ Class RCorrelativoFac extends Report {
 
 
             $pdf->SetFillColor(255,255,255, true);
-            $pdf->tablewidths=array($width1,$width7,$width2,$width3,$width4,$width5,$width6);
-            $pdf->tablealigns=array('C','C','C','C','C','C','C');
-            $pdf->tablenumbers=array(0,0,0,0,0,0,0);
+            $pdf->tablewidths=array($width1,$width7,$width3,$width4,$width5,$width6);
+            $pdf->tablealigns=array('C','C','C','C','C','C');
+            $pdf->tablenumbers=array(0,0,0,0,0,0);
 
 
             // $RowArray;
@@ -242,7 +242,6 @@ Class RCorrelativoFac extends Report {
                 $RowArray = array(
                     'estacion'  =>  $row['estacion'],
                     'sucursal'  =>  $row['sucursal'],
-                    'punto_venta'  => $row['punto_venta'],
                     'nroaut'  => $row['nroaut'],
                     'nro_desde' => $row['nro_desde'],
                     'nro_hasta' => $row['nro_hasta'],

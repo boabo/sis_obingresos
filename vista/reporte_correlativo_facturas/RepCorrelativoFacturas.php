@@ -132,9 +132,35 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config: {
+                    name: 'tipo_reporte',
+                    fieldLabel: 'Tipo de Reporte',
+                    typeAhead: true,
+                    allowBlank: false,
+                    triggerAction: 'all',
+                    emptyText: 'Tipo...',
+                    selectOnFocus: true,
+                    mode: 'local',
+                    store: new Ext.data.ArrayStore({
+                        fields: ['ID', 'valor'],
+                        data: [['consolidado', 'Consolidado'],
+                            ['detallado', 'Detallado']
+                        ]
+                    }),
+                    valueField: 'ID',
+                    displayField: 'valor',
+                    width: 200,
+
+                },
+                type: 'ComboBox',
+                id_grupo: 0,
+                form: true
+            },
+
+            {
+                config: {
                     name: 'id_punto_venta',
                     fieldLabel: 'Punto de Venta',
-                    allowBlank: false,
+                    allowBlank: true,
                     emptyText: 'Elija un Punto...',
                     store: new Ext.data.JsonStore({
                         url: '../../sis_ventas_facturacion/control/PuntoVenta/listarPuntoVenta',
@@ -293,6 +319,18 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.id_punto_venta.reset();
                 this.Cmp.id_punto_venta.store.baseParams.id_sucursal = rec.data.id_sucursal;
                 this.Cmp.id_punto_venta.modificado = true;
+            }, this);
+
+            this.getComponente('tipo_reporte').on('select', function (cmp, rec, indice) {
+                console.log('llegaid_rec', rec.data.valor)
+                console.log('llegaid_rec', rec)
+                if(rec.data.valor=='Consolidado'){
+                    this.ocultarComponente(this.Cmp.id_punto_venta);
+                    this.Cmp.id_punto_venta.reset();
+                }else{
+                    this.mostrarComponente(this.Cmp.id_punto_venta);
+                }
+
             }, this);
 
 

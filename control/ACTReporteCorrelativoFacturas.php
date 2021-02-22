@@ -17,6 +17,7 @@ include_once(dirname(__FILE__).'/../../lib/lib_general/cls_correo_externo.php');
 
 require_once(dirname(__FILE__).'/../reportes/RCorrelativoFac.php');
 //require_once(dirname(__FILE__).'/../../sis_obingresos/reportes/RCorrelativoFac.php');
+//require_once(dirname(__FILE__).'/../reportes/RCorrelativoFacConsolidado.php');
 
 class ACTReporteCorrelativoFacturas extends ACTbase{
 
@@ -28,6 +29,7 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
 
         $id_lugar = $this->objParam->getParametro('id_lugar');
         $id_sucursal = $this->objParam->getParametro('id_sucursal');
+        //$tipo_reporte = $this->objParam->getParametro('tipo_reporte');
         $id_punto_venta = $this->objParam->getParametro('id_punto_venta');
         $tipo_generacion = $this->objParam->getParametro('tipo_generacion');
         $fecha_desde = $this->objParam->getParametro('fecha_desde');
@@ -40,6 +42,7 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
 
         $dataSource->putParameter('id_lugar', $id_lugar);
         $dataSource->putParameter('id_sucursal', $id_sucursal);
+        //$dataSource->putParameter('tipo_reporte', $tipo_reporte);
         $dataSource->putParameter('id_punto_venta', $id_punto_venta);
         $dataSource->putParameter('tipo_generacion', $tipo_generacion);
         $dataSource->putParameter('fecha_desde', $fecha_desde);
@@ -54,7 +57,14 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
             $dataSource->setDataSet($datosCorrelativo);
 
             $nombreArchivo = 'CorrelativoFac.pdf';
-            $reporte = new RCorrelativoFac();
+
+            //if($tipo_reporte == 'consolidado'){
+                $reporte = new RCorrelativoFac();
+            /*}else{
+                $reporte = new RCorrelativoFac();
+            }*/
+
+
 
 
             $reporte->setDataSource($dataSource);

@@ -23,6 +23,7 @@ class MODReporteCorrelativoFacturas extends MODbase{
 
         $this->setParametro('id_lugar','id_lugar','int4');
         $this->setParametro('id_sucursal','id_sucursal','int4');
+        //$this->setParametro('tipo_reporte','tipo_reporte','varchar');
         $this->setParametro('id_punto_venta','id_punto_venta','int4');
         $this->setParametro('tipo_generacion','tipo_generacion','varchar');
         $this->setParametro('fecha_desde','fecha_desde','date');

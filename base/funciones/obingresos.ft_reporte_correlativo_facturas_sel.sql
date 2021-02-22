@@ -311,25 +311,27 @@ $body$
 
                     v_consulta = ' (select  (lu.codigo)::varchar as estacion,
                                           (su.codigo||'' - ''||su.nombre)::varchar as sucursal,
-                                          (pv.nombre)::varchar as punto_venta,
+                                          ''no''::varchar as punto_venta,
                                           dos.nroaut,
                                           min(ven.nro_factura)::integer as nro_desde,
                                           max(ven.nro_factura)::integer as nro_hasta,
-                                          count(pv.id_punto_venta)::integer as cantidad
+                                          count(dos.nroaut)::integer as cantidad
 
                                   from vef.tventa ven
-                                  left join vef.tdosificacion dos on dos.id_dosificacion = ven.id_dosificacion
-                                  left join vef.tpunto_venta pv on pv.id_punto_venta = ven.id_punto_venta
+                                  inner join vef.tdosificacion dos on dos.id_dosificacion = ven.id_dosificacion
+
                                   left join vef.tsucursal su on su.id_sucursal = ven.id_sucursal
                                   left join param.tlugar lu on lu.id_lugar = su.id_lugar
 
                                   where ven.tipo_factura = '''||v_parametros.tipo_generacion||'''
-                                  '||v_id_punto_venta||'
+
                                   '||v_id_lugar||'
+                                  '||v_id_sucursal||'
                                   and ven.fecha BETWEEN '''||v_parametros.fecha_desde||''' and '''||v_parametros.fecha_hasta||'''
-                                  group by lu.codigo, pv.nombre ,dos.nroaut, su.codigo, su.nombre
+                                  group by lu.codigo ,dos.nroaut, su.codigo, su.nombre
                                   order by lu.codigo )
                                   '||v_consl_carga||'
+
                                   ';
 
                          raise notice '%', v_consulta;
