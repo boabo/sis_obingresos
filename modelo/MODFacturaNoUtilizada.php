@@ -92,6 +92,8 @@ class MODFacturaNoUtilizada extends MODbase{
 
         $this->setParametro('estado_reg','estado_reg','varchar');
 
+        $this->setParametro('nroaut','nroaut','varchar');
+
         //$this->setParametro('estacion','estacion','varchar');
 
 

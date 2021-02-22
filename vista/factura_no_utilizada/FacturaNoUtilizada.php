@@ -1120,7 +1120,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 direction: 'DESC'
             },
 
-            bdel:true,
+            bdel:false,
             bsave:false,
             bnew:true,
             bexcel:false,

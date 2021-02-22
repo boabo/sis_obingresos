@@ -102,7 +102,8 @@ BEGIN
 			id_usuario_reg,
 			id_usuario_ai,
 			fecha_mod,
-			id_usuario_mod
+			id_usuario_mod,
+            nro_autorizacion
 
           	) values(
             /*v_parametros.id_lugar_pais,
@@ -126,7 +127,8 @@ BEGIN
 			p_id_usuario,
 			v_parametros._id_usuario_ai,
 			null,
-			null
+			null,
+            v_parametros.nroaut
 
 
 			)RETURNING id_factura_no_utilizada into v_id_factura_no_utilizada;
@@ -454,7 +456,7 @@ BEGIN
                       '||v_id_factura||',
                       '''||v_parametros.fecha||''',
                       '''||v_nro_factura::varchar||''',
-                      '' '',
+                      '''||v_parametros.nroaut::varchar||''',
                       ''NO UTILIZADA'',
                       ''0'',
                       ''NO UTILIZADA'',
