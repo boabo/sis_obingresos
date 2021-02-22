@@ -61,6 +61,7 @@ DECLARE
     v_consulta				varchar;
     v_res_cone				varchar;
     v_tipo_generacion		varchar;
+    v_inicial_dosificacion	integer;
 
 BEGIN
 
@@ -611,7 +612,22 @@ BEGIN
            FROM vef.tventa ven
            WHERE ven.id_dosificacion = v_parametros.id_dosificacion;
 
-           v_inicial = COALESCE(v_inicial, 0) + 1 ;
+          -- raise exception 'llega %',v_parametros.id_dosificacion;
+
+           IF (v_inicial is null)THEN
+           		SELECT dos.inicial
+                 INTO v_inicial_dosificacion
+                 FROM vef.tdosificacion dos
+                 WHERE dos.id_dosificacion = v_parametros.id_dosificacion;
+
+                v_inicial = v_inicial_dosificacion;
+
+           ELSE
+
+           		v_inicial = COALESCE(v_inicial, 0) + 1 ;
+
+           END IF;
+
 
 
             --Definicion de la respuesta
