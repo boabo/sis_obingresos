@@ -62,6 +62,7 @@ DECLARE
     v_res_cone				varchar;
     v_tipo_generacion		varchar;
     v_inicial_dosificacion	integer;
+    v_id_dosificacion		integer;
 
 BEGIN
 
@@ -560,8 +561,8 @@ BEGIN
 
 		begin
 
-            SELECT fnu.nro_inicial, fnu.nro_final
-            INTO v_nro_factura, v_nro_final
+            SELECT fnu.nro_inicial, fnu.nro_final, fnu.id_dosificacion
+            INTO v_nro_factura, v_nro_final, v_id_dosificacion
             FROM obingresos.tfactura_no_utilizada fnu
             WHERE  fnu.id_factura_no_utilizada= v_parametros.id_factura_no_utilizada;
 
@@ -571,7 +572,8 @@ BEGIN
 
                     delete
                     from vef.tventa v
-           			where v.nro_factura =v_nro_factura;
+           			where v.nro_factura =v_nro_factura
+                    and v.id_dosificacion = v_id_dosificacion;
 
 
                      --nro factura
