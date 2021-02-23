@@ -197,8 +197,8 @@ header("content-type: text/javascript; charset=UTF-8");
             //this.Cmp.id_centro_costo.store.baseParams.id_depto = this.maestro.id_depto;
 
             // fecha factura no utilizada
-            var fecha = new Date();
-            this.Cmp.fecha.setValue(fecha);
+            //var fecha = new Date();
+            //this.Cmp.fecha.setValue(fecha);
 
             // tipo de cambio
             //console.log('llega tipo de cambio', this.getTipoCambio('si') );
@@ -217,7 +217,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             //fecha
             //console.log('llega fechaaa', this.getComponente('fecha') );
-            this.cmpFecha = this.getComponente('fecha');
+            //this.cmpFecha = this.getComponente('fecha');
 
 
             //completa datos de la dosificacion
@@ -231,6 +231,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.final.setValue(rec.data.final);
                 this.Cmp.tipo.setValue(rec.data.tipo);
                 this.getNroFacInicial('si');
+
+                this.Cmp.fecha.setValue(rec.data.fecha_limite);
 
                 //console.log('llega id_moneda get',this.Cmp.id_moneda.getValue() )
                 //this.Cmp.id_moneda.setValue('BOB');
@@ -686,6 +688,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     style: {
                         background: '#EFFFD6'
                     },
+                    readOnly: true,
                     format: 'd/m/Y',
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
                 },
@@ -758,7 +761,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     decimalPrecision: 15
                 },
                 type: 'NumberField',
-                //valorInicial: 1,
+                valorInicial: 1,
                 id_grupo: 1,
                 form: true
             },
@@ -830,6 +833,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     style: {
                         background: '#EFFFD6'
                     },
+                    readOnly: true,
                     allowDecimals:false,
                     allowNegative:false
                 },

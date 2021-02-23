@@ -403,8 +403,7 @@ BEGIN
                              estado = va_codigo_estado[1]
                           where id_proceso_wf = v_id_proceso_wf;
 
-                     --nro factura
-                     v_nro_factura := v_nro_factura + 1;
+
 
 
 					  --para registro en tipo factura
@@ -489,6 +488,9 @@ BEGIN
 
                         END IF;
                       end if;
+
+                      --nro factura
+                     v_nro_factura := v_nro_factura + 1;
 
 
             END LOOP;
