@@ -293,6 +293,29 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
+                //filters:{pfiltro:'NroVuelo',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            {
+                config:{
+                    fieldLabel: "Ruta BoA",
+                    gwidth: 100,
+                    name: 'ruta_vl',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
                 //filters:{pfiltro:'tca.nombre',type:'string'},
                 //bottom_filter : true,
                 id_grupo:1,
@@ -302,9 +325,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Ruta Vl",
+                    fieldLabel: "Ruta SABSA",
                     gwidth: 100,
-                    name: 'ruta_vl',
+                    name: 'ruta_sabsa',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -562,8 +585,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },
                 type:'NumberField',
-                filters:{pfiltro:'tca.nombre',type:'string'},
-                bottom_filter : true,
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
                 id_grupo:1,
                 grid:true,
                 form:false
@@ -631,7 +654,8 @@ header("content-type: text/javascript; charset=UTF-8");
             {name:'total_cero', type: 'numeric'},
 
             {name:'matricula_boa', type: 'string'},
-            {name:'matricula_sabsa', type: 'string'}
+            {name:'matricula_sabsa', type: 'string'},
+            {name:'ruta_sabsa', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',

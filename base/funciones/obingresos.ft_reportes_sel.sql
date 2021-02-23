@@ -167,7 +167,8 @@ $body$
                   total_inter		integer,
                   total_cero		integer,
                   MatriculaBoa		varchar,
-                  MatriculaSabsa	varchar
+                  MatriculaSabsa	varchar,
+                  RutaSabsa		    varchar
           )on commit drop;
           for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.dataA7->'dataA7') loop
           	--raise 'v_record_json: %',(v_record_json->>'PaxA7Nac');
@@ -186,13 +187,14 @@ $body$
               total_inter,
               total_cero,
               MatriculaBoa,
-              MatriculaSabsa
+              MatriculaSabsa,
+              RutaSabsa
             )values (
             	v_contador_id,
                 (v_record_json->>'VueloID')::integer,
                 case when v_parametros.tipo_rep = 'normal' then to_date(v_record_json->>'FechaVuelo', 'Mon DD YYYY HH24:MI:SS:AM') else to_date(v_record_json->>'FechaVuelo', 'YYYYMMDD') end,
                 (v_record_json->>'NroVuelo')::varchar,
-                case when v_parametros.tipo_rep = 'normal' then (v_record_json->>'RutaVl')::varchar else (v_record_json->>'RutaSabsa')::varchar end,
+                case when v_parametros.tipo_rep = 'normal' then (v_record_json->>'RutaVl')::varchar else (v_record_json->>'RutaBoa')::varchar end,
                 (v_record_json->>'NroPaxBoA')::varchar,
                 (v_record_json->>'NroPAxSabsa')::varchar,
                 (v_record_json->>'ImporteSabsa')::numeric,
@@ -202,7 +204,8 @@ $body$
                 coalesce((v_record_json->>'PaxA7Int')::integer,0::integer),
                 coalesce((v_record_json->>'PaxA70')::integer,0::integer),
                 case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaBoa')::varchar end,
-                case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaSabsa')::varchar end
+                case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaSabsa')::varchar end,
+                (v_record_json->>'RutaSabsa')::varchar
             );
 
             v_total_nacional = v_total_nacional + coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer);
@@ -264,16 +267,16 @@ $body$
                           total_inter,
                           total_cero,
                           MatriculaBoa matricula_boa,
-                          MatriculaSabsa matricula_sabsa
+                          MatriculaSabsa matricula_sabsa,
+                          RutaSabsa ruta_sabsa
                       from ttcalculo_vuelos
                       order by fecha_vuelo asc
-
                        ';
 
 
       --Definicion de la respuesta
-      --v_consulta:=v_consulta||v_parametros.filtro;
-
+      	--v_consulta:=v_consulta||v_parametros.filtro;
+		--v_consulta:=v_consulta||' order by fecha_vuelo asc';
         --Devuelve la respuesta
         return v_consulta;
 

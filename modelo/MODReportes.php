@@ -301,6 +301,7 @@ class MODReportes extends MODbase{
         $this->captura('total_cero','integer');
         $this->captura('matricula_boa','varchar');
         $this->captura('matricula_sabsa','varchar');
+        $this->captura('ruta_sabsa','varchar');
 
 
         //Ejecuta la instruccion

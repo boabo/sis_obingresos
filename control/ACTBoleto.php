@@ -2203,7 +2203,7 @@ class ACTBoleto extends ACTbase{
                 'Content-Length: ' . strlen($json_data))
         );
         $_out = curl_exec($s);//var_dump(json_decode($_out)->TraerReservaExchResult);exit;
-        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);//var_dump('$status', curl_getinfo($s));exit;
         if (!$status) {
             throw new Exception("No se pudo conectar con Resiber");
         }

@@ -830,7 +830,7 @@ BEGIN
                 select tp.posicion, tp.nombre, tp.tipo_19
                 into v_posicion, v_pasajero, v_tipo_19
                 from ttpasajero tp
-                where similarity_dist(v_pasajero_aux, tp.nombre) < 0.38;
+                where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
               end if;
 
             else --raise 'B';
@@ -2633,7 +2633,7 @@ BEGIN
     elsif(p_transaccion='OBING_GET_PV_SEL')then
 
       begin
-      			if (p_administrador = 1 or p_id_usuario = 48) then
+      			if (p_administrador = 1 or p_id_usuario in(48,725,68)) then
                 	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
@@ -2798,7 +2798,7 @@ BEGIN
       elsif(p_transaccion='OBING_GET_PV_CONT')then
 
         begin
-        if (p_administrador = 1) then
+        if (p_administrador = 1 or p_id_usuario in(48,725,68)) then
                 	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
