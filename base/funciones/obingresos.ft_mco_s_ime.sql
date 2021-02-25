@@ -263,13 +263,13 @@ BEGIN
 		end;
 
 	/*********************************
- 	#TRANSACCION:  'OBING_GPTFINS_SEL'
+ 	#TRANSACCION:  'OBING_GPTFIN_IME'
  	#DESCRIPCION:	Captura de datos iniciales para registro MCO's
  	#AUTOR:		breydi.vasquez
  	#FECHA:		04-05-2020
 	***********************************/
 
-	elsif(p_transaccion='OBING_GPTFINS_IME')then
+	elsif(p_transaccion='OBING_GPTFIN_IME')then
 
 		begin
         	-- seleccion de estacion
