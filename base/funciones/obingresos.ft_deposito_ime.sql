@@ -83,7 +83,7 @@ DECLARE
 
     v_tipo_deposito			varchar;
 
-
+	v_agt_boolean			boolean;
 
 BEGIN
 
@@ -126,34 +126,36 @@ BEGIN
             depo.fecha = v_parametros.fecha --and
             --depo.monto_deposito = v_parametros.monto_deposito
             group by per.nombre_completo1, depo.estado;
+	if pxp.f_existe_parametro(p_tabla,'agt') then
+    	v_agt_boolean = case when v_parametros.agt = 'TMY' then true else false end;
+    else
+    	v_agt_boolean = false;
+    end if;
+	if v_parametros.tipo = 'banca' and v_agt_boolean then /* franklin.espinoza 23/02/2021 se valida la fecha_venta y nro de deposito para depositos tigomoney */
 
+    	/*CONTROL TIGO MONEY PARA NUM DE DEPOSITO Y LA FECHA VENTA*/
+        SELECT per.nombre_completo1, count(per.nombre) as existe, depo.estado
+        into v_verificar_existencia
+        FROM obingresos.tdeposito depo
+        inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+        inner join segu.vpersona per on per.id_persona = usu.id_persona
+        WHERE depo.nro_deposito = v_parametros.nro_deposito and depo.fecha_venta = v_parametros.fecha_venta
+        group by per.nombre_completo1, depo.estado;
+        /*----------------------------------------------*/
 
-            if v_parametros.tipo = 'banca' and v_parametros.agt = 'TMY' then /* franklin.espinoza 23/02/2020 se valida la fecha_venta y nro de deposito para depositos tigomoney */
-
-              /*CONTROL TIGO MONEY PARA NUM DE DEPOSITO Y LA FECHA VENTA*/
-                SELECT per.nombre_completo1, count(per.nombre) as existe, depo.estado
-                into v_verificar_existencia
-                FROM obingresos.tdeposito depo
-                inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
-                inner join segu.vpersona per on per.id_persona = usu.id_persona
-                WHERE depo.nro_deposito = v_parametros.nro_deposito and depo.fecha_venta = v_parametros.fecha_venta
-                group by per.nombre_completo1, depo.estado;
-                /*----------------------------------------------*/
-
-            else
-                    /*CONTROL PARA NUM DE DEPOSITO Y LA FECHA*/
-                    SELECT per.nombre_completo1,
-                           count(per.nombre) as existe,
-                           depo.estado
-                           into v_verificar_existencia
-                    FROM obingresos.tdeposito depo
-                    inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
-                    inner join segu.vpersona per on per.id_persona = usu.id_persona
-                    WHERE depo.nro_deposito = v_parametros.nro_deposito and depo.fecha = v_parametros.fecha
-                    group by per.nombre_completo1, depo.estado;
-                    /*----------------------------------------------*/
-          end if;
-
+    else
+            /*CONTROL PARA NUM DE DEPOSITO Y LA FECHA*/
+            SELECT per.nombre_completo1,
+                   count(per.nombre) as existe,
+                   depo.estado
+                   into v_verificar_existencia
+            FROM obingresos.tdeposito depo
+            inner join segu.tusuario usu on usu.id_usuario = depo.id_usuario_reg
+            inner join segu.vpersona per on per.id_persona = usu.id_persona
+            WHERE depo.nro_deposito = v_parametros.nro_deposito and depo.fecha = v_parametros.fecha
+            group by per.nombre_completo1, depo.estado;
+            /*----------------------------------------------*/
+	end if;
 
 
    /*AUMENTANDO CONDICION*/
@@ -1247,6 +1249,3 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
-
-ALTER FUNCTION obingresos.ft_deposito_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
-  OWNER TO postgres;
