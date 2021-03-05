@@ -29,11 +29,11 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
 
         $id_lugar = $this->objParam->getParametro('id_lugar');
         $id_sucursal = $this->objParam->getParametro('id_sucursal');
-        //$tipo_reporte = $this->objParam->getParametro('tipo_reporte');
         $id_punto_venta = $this->objParam->getParametro('id_punto_venta');
         $tipo_generacion = $this->objParam->getParametro('tipo_generacion');
         $fecha_desde = $this->objParam->getParametro('fecha_desde');
         $fecha_hasta = $this->objParam->getParametro('fecha_hasta');
+        $tipo_reporte = $this->objParam->getParametro('tipo_reporte');
 
         $this->objParam->addParametroConsulta('ordenacion','id_punto_venta');
         $this->objParam->addParametroConsulta('dir_ordenacion','ASC');
@@ -42,11 +42,11 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
 
         $dataSource->putParameter('id_lugar', $id_lugar);
         $dataSource->putParameter('id_sucursal', $id_sucursal);
-        //$dataSource->putParameter('tipo_reporte', $tipo_reporte);
         $dataSource->putParameter('id_punto_venta', $id_punto_venta);
         $dataSource->putParameter('tipo_generacion', $tipo_generacion);
         $dataSource->putParameter('fecha_desde', $fecha_desde);
         $dataSource->putParameter('fecha_hasta', $fecha_hasta);
+        $dataSource->putParameter('tipo_reporte', $tipo_reporte);
 
         $this->objFunc = $this->create('MODReporteCorrelativoFacturas');
         $resultCorrelativo = $this->objFunc->reporteCorrelativoFacturas($this->objParam);

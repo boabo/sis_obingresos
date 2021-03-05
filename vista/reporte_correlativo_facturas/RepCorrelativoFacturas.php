@@ -227,8 +227,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         fields: ['ID', 'valor'],
                         data: [['manual', 'Facturación Manual'],
                             ['computarizada', 'Facturación Computarizada'],
-                            ['recibo', 'Recibo Oficial'],
-                            ['mcos', 'MCOs']
+                            ['recibo', 'Recibo Oficial']//,
+                            //['mcos', 'MCOs']
                         ]
                     }),
                     valueField: 'ID',
