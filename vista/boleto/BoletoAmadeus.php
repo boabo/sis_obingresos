@@ -103,6 +103,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             condicionesRegionales : function() {
               this.Cmp.id_forma_pago.store.baseParams.regionales = this.variables_globales.ESTACION_inicio;
+              this.Cmp.id_forma_pago2.store.baseParams.regionales = this.variables_globales.ESTACION_inicio;
 
               if (this.variables_globales.instancias_de_pago_nuevas == 'no') {
                  this.ocultarComponente(this.Cmp.id_moneda2);
