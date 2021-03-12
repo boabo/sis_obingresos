@@ -51,6 +51,15 @@ $body$
     v_cod_pv_suc varchar;
     v_consl_carga varchar=' ';
 
+    v_sql_tabla				varchar;
+    v_sql_tabla_todo		varchar;
+    v_datos_venta			record;
+    v_resultado_correlativo	record;
+
+    v_min_id_punto_venta	integer;
+    v_bandera_fac			integer;
+    v_lugar_vacio			varchar;
+
   BEGIN
 
     v_nombre_funcion = 'vef.ft_reporte_correlativo_facturas_sel';
@@ -111,6 +120,29 @@ $body$
 
         v_bandera:='true';
         v_errores = '';
+
+        v_sql_tabla_todo = 'CREATE TEMPORARY TABLE temp_correlativo_todo
+    		(	estacion VARCHAR,
+            	id_sucursal INTEGER,
+                id_punto_venta INTEGER,
+                nroaut VARCHAR,
+                nro_factura INTEGER,
+                tipo_generacion VARCHAR,
+                bandera INTEGER
+  			) ON COMMIT DROP';
+
+        v_sql_tabla = 'CREATE TEMPORARY TABLE temp_correlativo
+    		(	estacion VARCHAR,
+            	id_sucursal INTEGER,
+                id_punto_venta INTEGER,
+                nroaut VARCHAR,
+                nro_factura_ini INTEGER,
+                nro_factura_fin INTEGER,
+                tipo_generacion VARCHAR
+  			) ON COMMIT DROP';
+
+        EXECUTE(v_sql_tabla_todo);
+         EXECUTE(v_sql_tabla);
 
         --PARA TIPO DE DOCUMENTO manual y computarizada
         IF (v_parametros.tipo_generacion in ('manual', 'computarizada') ) THEN
@@ -309,7 +341,11 @@ $body$
 
                     END IF;
 
-                    v_consulta = ' (select  (lu.codigo)::varchar as estacion,
+                    --10-03-2021 (may) modificacion segun el reporte si es Detallado(con punto de venta) o consolidado(sin punto de venta)
+					--consolidado(sin punto de venta)
+                    IF (v_parametros.tipo_reporte = 'consolidado') THEN
+
+                                  v_consulta = ' (select  (lu.codigo)::varchar as estacion,
                                           (su.codigo||'' - ''||su.nombre)::varchar as sucursal,
                                           ''no''::varchar as punto_venta,
                                           dos.nroaut,
@@ -333,6 +369,165 @@ $body$
                                   '||v_consl_carga||'
 
                                   ';
+
+                    ELSE  --Detallado(con punto de venta)
+
+
+                         FOR v_datos_venta IN ( SELECT  lu.codigo as estacion,
+                                                ven.id_sucursal,
+                                                ven.id_punto_venta,
+                                                dos.nroaut,
+                                                ven.nro_factura
+
+                                        FROM vef.tventa ven
+                                        inner join vef.tdosificacion dos on dos.id_dosificacion = ven.id_dosificacion
+                                        left join vef.tsucursal su on su.id_sucursal = ven.id_sucursal
+                                        left join param.tlugar lu on lu.id_lugar = su.id_lugar
+                                        left join vef.tpunto_venta pv on pv.id_punto_venta = ven.id_punto_venta
+
+                                        WHERE  ven.tipo_factura =  v_parametros.tipo_generacion
+                                        and (case when v_parametros.id_lugar = 0 then ven.estado!='borrador'
+                                      			else lu.id_lugar = v_parametros.id_lugar end)
+
+                                        and (case when v_parametros.id_sucursal = 0 then ven.estado!='borrador'
+                                      			else ven.id_sucursal = v_parametros.id_sucursal end)
+
+                                        and (case when v_parametros.id_punto_venta = 0 then ven.estado!='borrador'
+                                      			else ven.id_punto_venta = v_parametros.id_punto_venta end)
+
+                                        --and lu.id_lugar = v_parametros.id_lugar
+                                        --and su.id_sucursal =v_parametros.id_sucursal
+                                        and ven.fecha BETWEEN v_parametros.fecha_desde and v_parametros.fecha_hasta
+                                        ORDER BY ven.nro_factura) LOOP
+
+
+                                     insert into temp_correlativo_todo (estacion,
+                                                                     id_sucursal,
+                                                                    id_punto_venta,
+                                                                    nroaut,
+                                                                    nro_factura,
+                                                                    tipo_generacion,
+                                                                    bandera
+                                                                    )
+                                                                  values (
+                                                                  v_datos_venta.estacion,
+                                                                  v_datos_venta.id_sucursal,
+                                                                  v_datos_venta.id_punto_venta,
+                                                                  v_datos_venta.nroaut,
+                                                                  v_datos_venta.nro_factura,
+                                                                  v_parametros.tipo_generacion,
+                                                                  0
+                                                                  );
+
+
+                         END LOOP;
+
+
+                         v_lugar_vacio = '' ;
+                          select min(tc.nro_factura) as min_fac, max(tc.nro_factura) as max_fac
+                          into v_resultado_fac
+                          from temp_correlativo_todo tc;
+
+                          /*select min(tc.nro_factura) as min_fac, max(tc.nro_factura) as max_fac
+                          into v_resultado_fac
+                          from temp_correlativo_todo tc
+                          left join vef.tsucursal su on su.id_sucursal = tc.id_sucursal
+                          left join param.tlugar lu on lu.id_lugar = su.id_lugar
+                          left join vef.tpunto_venta pv on pv.id_punto_venta = tc.id_punto_venta
+                          WHERE  tc.tipo_generacion =  v_parametros.tipo_generacion
+                          and (case when v_parametros.id_lugar = 0 then tc.nro_factura is not null
+                                  else lu.id_lugar = v_parametros.id_lugar end)
+
+                          and (case when v_parametros.id_sucursal = 0 then tc.nro_factura is not null
+                                  else tc.id_sucursal = v_parametros.id_sucursal end)
+
+                          and (case when v_parametros.id_punto_venta = 0 then tc.nro_factura is not null
+                                  else tc.id_punto_venta = v_parametros.id_punto_venta end);*/
+
+
+                          select tc.id_punto_venta
+                          into v_min_id_punto_venta
+                          from temp_correlativo_todo tc
+                          where tc.nro_factura = v_resultado_fac.min_fac;
+
+                          v_min_id_punto_venta = v_min_id_punto_venta;
+
+
+                          IF (v_resultado_fac.min_fac is not null and v_resultado_fac.max_fac is not null) THEN
+
+								--v_min_id_punto_venta = 0;
+                                v_bandera_fac = 1;
+
+                            FOR i IN v_resultado_fac.min_fac .. v_resultado_fac.max_fac LOOP
+
+                            	select tc.*
+                                into v_resultado_correlativo
+                                from temp_correlativo_todo tc
+                                where tc.nro_factura = i;
+
+                               --raise notice 'lllegabd % - %',v_min_id_punto_venta,v_resultado_correlativo.id_punto_venta ;
+                            --raise exception 'lllegabd % - %',v_min_id_punto_venta,v_resultado_correlativo.id_punto_venta ;
+                            	IF (v_min_id_punto_venta = v_resultado_correlativo.id_punto_venta) THEN
+
+
+                                         UPDATE temp_correlativo_todo SET
+                                         bandera = v_bandera_fac
+                                         WHERE nro_factura = i;
+
+                                         v_min_id_punto_venta = v_min_id_punto_venta;
+                                         v_bandera_fac =v_bandera_fac ;
+
+                                ELSE
+                                 		v_bandera_fac = v_bandera_fac +1 ;
+
+                                		 UPDATE temp_correlativo_todo SET
+                                         bandera = v_bandera_fac
+                                         WHERE nro_factura = i;
+
+                                		select tc.id_punto_venta
+                                        into v_min_id_punto_venta
+                                        from temp_correlativo_todo tc
+                                        where tc.nro_factura = i;
+
+                                        v_min_id_punto_venta = v_min_id_punto_venta;
+
+
+                                END IF;
+
+
+                            	--raise exception 'llega % - %',v_resultado_fac.min_fac , i;
+
+                            END LOOP;
+
+                         END IF;
+
+
+
+
+                          v_consulta = ' (select  (tc.estacion)::varchar as estacion,
+                                                  (su.codigo||'' - ''||su.nombre)::varchar as sucursal,
+                                                  pv.nombre::varchar as punto_venta,
+                                                  tc.nroaut,
+                                                  min(tc.nro_factura)::integer as nro_desde,
+                                                  max(tc.nro_factura)::integer as nro_hasta,
+                                                  count(tc.bandera)::integer as cantidad
+
+                                          from temp_correlativo_todo tc
+                                          left join vef.tsucursal su on su.id_sucursal = tc.id_sucursal
+                                          left join vef.tpunto_venta pv on pv.id_punto_venta = tc.id_punto_venta
+
+                                          where tc.tipo_generacion = '''||v_parametros.tipo_generacion||'''
+
+                                          group by tc.estacion ,su.codigo, su.nombre, pv.nombre,tc.nroaut, tc.bandera,tc.id_punto_venta
+                                          order by tc.nroaut ASC, nro_desde ASC)
+                                          '||v_consl_carga||'
+
+                              ';
+
+
+                    END IF;
+
+
 
                          raise notice '%', v_consulta;
                          IF v_cod_punto is not null THEN
