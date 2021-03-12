@@ -19,7 +19,7 @@ class MODDeposito extends MODbase{
         $this->monedaBase();
         if ($this->monedaBase() == 'BOB') {
           $this->cone = new conexion();
-          $this->informix = $this->cone->conectarPDOInformix();
+          //$this->informix = $this->cone->conectarPDOInformix();
           $this->link = $this->cone->conectarpdo(); //conexion a pxp(postgres)
         }
 
@@ -156,7 +156,7 @@ class MODDeposito extends MODbase{
         /* Replica al sistema Ingresos Franklin Espinoza Alvarez*/
           if($this->aParam->getParametro('tipo') == 'venta_propia'){
 
-            $this->insertatDepositoInformix();
+            //$this->insertatDepositoInformix();
         }
       }
         //Devuelve la respuesta
@@ -408,46 +408,46 @@ class MODDeposito extends MODbase{
     }
 
     function sincronizarDeposito (){
-      try {
-          $hora= date ("h:i:s");
-          $codigo_padre = $this->aParam->getParametro('codigo_padre');
-          $estacion = $this->aParam->getParametro('estacion');
-          $codigo = $this->aParam->getParametro('codigo');
-          $tipo_cambio = $this->aParam->getParametro('tipo_cambio');
-          $fechaventa =  $this->aParam->getParametro('fecha_venta');
-          $this->informix->beginTransaction();
-          $sql_in = "INSERT INTO ingresos:deposito ( pais,
-                                                        estacion,
-                                                        agt,
-                                                        fecini,
-                                                        fecfin,
-                                                        tcambio,
-                                                        montoitf,
-                                                        observa,
-                                                        fechareg,
-                                                        horareg
-                                                       )
-                                                       VALUES
-                                                       (
-                                                       '".$codigo_padre."',
-                                                       '".$estacion."' ,
-                                                       '".$codigo."' ,
-                                                       '".$fechaventa."',
-                                                       '".$fechaventa."',
-                                                       '".$tipo_cambio."',
-                                                       0,
-                                                       'ERP BOA',
-                                                       TODAY,
-                                                       '".$hora."' )";
-          $info_nota_ins = $this->informix->prepare($sql_in);
-
-          $info_nota_ins->execute();
-          $this->informix->commit();
-          $this->insertarDepositoSincronizado();
-          return true;
-      } catch (Exception $e) {
-          $this->informix->rollBack();
-      }
+      // try {
+      //     $hora= date ("h:i:s");
+      //     $codigo_padre = $this->aParam->getParametro('codigo_padre');
+      //     $estacion = $this->aParam->getParametro('estacion');
+      //     $codigo = $this->aParam->getParametro('codigo');
+      //     $tipo_cambio = $this->aParam->getParametro('tipo_cambio');
+      //     $fechaventa =  $this->aParam->getParametro('fecha_venta');
+      //     $this->informix->beginTransaction();
+      //     $sql_in = "INSERT INTO ingresos:deposito ( pais,
+      //                                                   estacion,
+      //                                                   agt,
+      //                                                   fecini,
+      //                                                   fecfin,
+      //                                                   tcambio,
+      //                                                   montoitf,
+      //                                                   observa,
+      //                                                   fechareg,
+      //                                                   horareg
+      //                                                  )
+      //                                                  VALUES
+      //                                                  (
+      //                                                  '".$codigo_padre."',
+      //                                                  '".$estacion."' ,
+      //                                                  '".$codigo."' ,
+      //                                                  '".$fechaventa."',
+      //                                                  '".$fechaventa."',
+      //                                                  '".$tipo_cambio."',
+      //                                                  0,
+      //                                                  'ERP BOA',
+      //                                                  TODAY,
+      //                                                  '".$hora."' )";
+      //     $info_nota_ins = $this->informix->prepare($sql_in);
+      //
+      //     $info_nota_ins->execute();
+      //     $this->informix->commit();
+      //     $this->insertarDepositoSincronizado();
+      //     return true;
+      // } catch (Exception $e) {
+      //     $this->informix->rollBack();
+      // }
     }
 
     function insertarDepositoSincronizado(){
