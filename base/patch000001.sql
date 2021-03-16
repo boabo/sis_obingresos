@@ -3884,3 +3884,26 @@ ALTER TABLE obingresos.tboleto_amadeus_forma_pago
   ALTER TABLE obingresos.tboleto_amadeus_forma_pago
   DROP CONSTRAINT fk_tboleto_amadeus_forma_pago__id_forma_pago RESTRICT;
 /********************************************F-SCP-IRVA-OBINGRESOS-0-03/02/2021********************************************/
+
+/********************************************I-SCP-FEA-OBINGRESOS-0-16/03/2021********************************************/
+CREATE TABLE obingresos.testablecimiento_punto_venta (
+  id_establecimiento_punto_venta SERIAL NOT NULL,
+  codigo_estable VARCHAR(20) NOT NULL,
+  nombre_estable VARCHAR(256) NOT NULL,
+  office_id INTEGER,
+  PRIMARY KEY(id_establecimiento_punto_venta)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+COMMENT ON COLUMN obingresos.testablecimiento_punto_venta.codigo_estable
+IS 'Valor Administradora(ATC,LINKSER) que identifica a un punto de venta BOA.';
+
+COMMENT ON COLUMN obingresos.testablecimiento_punto_venta.nombre_estable
+IS 'Nombre Descriptivo Adminstradora(ATC, LINKSER).';
+
+COMMENT ON COLUMN obingresos.testablecimiento_punto_venta.office_id
+IS 'Identifador oficina BOA relacionado con establecimiento Administradora.';
+
+ALTER TABLE obingresos.testablecimiento_punto_venta
+  ALTER COLUMN codigo_estable SET STATISTICS 0;
+/********************************************F-SCP-FEA-OBINGRESOS-0-16/03/2021********************************************/
