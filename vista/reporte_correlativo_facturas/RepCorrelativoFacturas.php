@@ -54,7 +54,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     displayField: 'codigo',
                     gdisplayField: 'codigo',
                     hiddenName: 'id_lugar',
-                    tpl: '<tpl for="."><div class="x-combo-list-item"><p><b>{codigo}</b></p><p><span style="color: green;"> {nombre}<span></p></div></tpl>',
+                    tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{nombre}</b> <span style="color:green;font-weight:bold;"> ({codigo})</span></p></div></tpl>',
                     forceSelection: true,
                     typeAhead: false,
                     triggerAction: 'all',
@@ -79,7 +79,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid: true,
                 form: true
             },
-            {
+            /*{
                 config: {
                     name: 'id_sucursal',
                     fieldLabel: 'Sucursal',
@@ -124,6 +124,54 @@ header("content-type: text/javascript; charset=UTF-8");
                     minChars: 2,
                     resizable: true,
                     hidden: false
+                },
+                type: 'ComboBox',
+                id_grupo: 0,
+                form: true
+            },*/
+
+            {
+                config: {
+                    name: 'id_sucursal',
+                    fieldLabel: 'Sucursal',
+                    allowBlank: false,
+                    emptyText: 'Elija una Sucursal...',
+                    store: new Ext.data.JsonStore({
+                        url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursalXestacion',
+                        id: 'id_sucursal',
+                        root: 'datos',
+                        sortInfo: {
+                            field: 'nombre',
+                            direction: 'ASC'
+                        },
+                        totalProperty: 'total',
+                        fields: ['id_sucursal', 'nombre', 'codigo', 'id_lugar'],
+                        remoteSort: true,
+                        baseParams: {par_filtro: 'nombre#codigo', x_estacion: 'x_estacion',_adicionar:'si'}
+                    }),
+                    valueField: 'id_sucursal',
+                    gdisplayField: 'nombre_sucursal',
+                    displayField: 'nombre',
+                    hiddenName: 'id_sucursal',
+                    tpl: new Ext.XTemplate([
+                        '<tpl for=".">',
+                        '<div class="x-combo-list-item">',
+                        '<p><b>{nombre}<span style="color: green;">( {codigo} )</span> </b></p></div>',
+                        '</div></tpl>'
+                    ]),
+                    forceSelection: true,
+                    typeAhead: false,
+                    triggerAction: 'all',
+                    lazyRender: true,
+                    listWidth: 320,
+                    mode: 'remote',
+                    pageSize: 15,
+                    width: 200,
+                    queryDelay: 1000,
+                    minChars: 2,
+                    resizable: true,
+                    hidden: false,
+                    style:'margin-bottom: 10px;'
                 },
                 type: 'ComboBox',
                 id_grupo: 0,
@@ -183,9 +231,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     tpl: new Ext.XTemplate([
                         '<tpl for=".">',
                         '<div class="x-combo-list-item">',
-                        '<div class="awesomecombo-item {checked}">',
                         '<p><b>Código: {codigo}</b></p>',
-                        '</div><p><b>Nombre: </b> <span style="color: green;">{nombre}</span></p>',
+                        '<p><b>Nombre: <span style="color: green;">{nombre}</span></b></p>',
                         '</div></tpl>'
                     ]),
                     forceSelection: true,
