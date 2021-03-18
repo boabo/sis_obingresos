@@ -85,6 +85,7 @@ DECLARE
 
 	v_agt_boolean			boolean;
 
+  v_id_aux				integer=null;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_deposito_ime';
@@ -99,6 +100,10 @@ BEGIN
 
 	if(p_transaccion='OBING_DEP_INS')then
         begin
+
+            IF (pxp.f_existe_parametro(p_tabla, 'id_auxiliar'))THEN
+            	v_id_aux = v_parametros.id_auxiliar;
+            END IF;
 
         	if (pxp.f_existe_parametro(p_tabla,'id_moneda_deposito')) then
 
@@ -196,6 +201,40 @@ BEGIN
                 v_parametros.fecha_venta,
                 v_parametros.monto_total
                 )RETURNING id_deposito into v_id_deposito;
+
+        elsif (v_parametros.tipo = 'cuenta_corriente') then
+
+              	insert into obingresos.tdeposito(
+                  estado_reg,
+                  nro_deposito,
+                  monto_deposito,
+                  id_moneda_deposito,
+                  fecha,
+                  id_usuario_reg,
+                  fecha_reg,
+                  id_usuario_ai,
+                  usuario_ai,
+                  id_usuario_mod,
+                  fecha_mod,
+                  tipo,
+                  monto_total,
+                  id_auxiliar
+                  ) values(
+                  'activo',
+                  v_parametros.nro_deposito,
+                  v_parametros.monto_deposito,
+                  v_id_moneda,
+                  v_parametros.fecha,
+                  p_id_usuario,
+                  now(),
+                  v_parametros._id_usuario_ai,
+                  v_parametros._nombre_usuario_ai,
+                  null,
+                  null,
+                  v_parametros.tipo,
+                  v_parametros.monto_deposito,
+                  v_parametros.id_auxiliar
+                  )RETURNING id_deposito into v_id_deposito;
 
         elsif(v_parametros.tipo = 'venta_propia') then
 
@@ -620,6 +659,10 @@ BEGIN
                 where m.codigo_internacional = v_parametros.moneda;
             end if;
 
+            IF (pxp.f_existe_parametro(p_tabla,'id_auxiliar'))THEN
+            	v_id_aux = v_parametros.id_auxiliar;
+            END IF;
+
             if (v_parametros.tipo = 'banca') then
                 --Sentencia de la modificacion
                 update obingresos.tdeposito set
@@ -637,6 +680,21 @@ BEGIN
                 monto_total = v_parametros.monto_total,
                 agt = v_parametros.agt
                 where id_deposito=v_parametros.id_deposito;
+
+            elsif (v_parametros.tipo = 'cuenta_corriente') then
+                update obingresos.tdeposito set
+                  nro_deposito = v_parametros.nro_deposito,
+                  monto_deposito = v_parametros.monto_deposito,
+                  id_moneda_deposito = v_id_moneda,
+                  fecha = v_parametros.fecha,
+                  id_usuario_mod = p_id_usuario,
+                  fecha_mod = now(),
+                  id_usuario_ai = v_parametros._id_usuario_ai,
+                  usuario_ai = v_parametros._nombre_usuario_ai,
+                  monto_total = v_parametros.monto_deposito,
+                  id_auxiliar = v_parametros.id_auxiliar
+                  where id_deposito=v_parametros.id_deposito;
+
             elsif (v_parametros.tipo = 'venta_propia')then
 
             select nro_deposito

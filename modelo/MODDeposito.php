@@ -146,6 +146,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('monto_total','monto_total','numeric');
         $this->setParametro('id_periodo_venta','id_periodo_venta','int4');
         $this->setParametro('id_apertura_cierre_caja','id_apertura_cierre_caja','int4');
+        $this->setParametro('id_auxiliar','id_auxiliar','int4');
         //Ejecuta la instruccion
         $this->monedaBase();
 
@@ -208,7 +209,7 @@ class MODDeposito extends MODbase{
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('fecha_venta','fecha_venta','date');
         $this->setParametro('monto_total','monto_total','numeric');
-
+        $this->setParametro('id_auxiliar','id_auxiliar','int4');
         $this->monedaBase();
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -692,6 +693,35 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
             $this->informix->rollBack();
         }
 
+    }
+    function listarDepositoCc(){
+      //Definicion de variables para ejecucion del procedimiento
+      $this->procedimiento='obingresos.ft_deposito_sel';
+      $this->transaccion='OBING_DEPCC_SEL';
+      $this->tipo_procedimiento='SEL';
+
+      $this->captura('id_deposito','int4');
+      $this->captura('monto_deposito','numeric');
+      $this->captura('nro_deposito','varchar');
+      $this->captura('fecha','date');
+      $this->captura('estado_reg','varchar');
+      $this->captura('id_moneda_deposito','int4');
+      $this->captura('tipo','varchar');      
+      $this->captura('desc_moneda','varchar');
+      $this->captura('fecha_reg','timestamp');
+      $this->captura('fecha_mod','timestamp');
+      $this->captura('usr_reg','varchar');
+      $this->captura('usr_mod','varchar');
+      $this->captura('id_auxiliar','int4');
+      $this->captura('codigo_auxiliar','varchar');
+      $this->captura('nombre_auxiliar','varchar');
+      //Ejecuta la instruccion
+      $this->armarConsulta();
+      // echo $this->consulta;exit;
+      $this->ejecutarConsulta();
+
+      //Devuelve la respuesta
+      return $this->respuesta;
     }
 }
 ?>

@@ -438,6 +438,21 @@ class ACTDeposito extends ACTbase{
         $this->res=$this->objFunc->eliminar($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+
+    function listarDepositoCc (){
+      if ($this->objParam->getParametro('tipo_deposito')=='auxiliar'){
+          $this->objParam->addFiltro("dep.id_auxiliar is not null ");
+      }
+  		if ($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+  			$this->objReporte=new Reporte($this->objParam, $this);
+  			$this->res=$this->objReporte->generarReporteListado('MODDeposito','listarDepositoCc');
+  		}
+  		else {
+  			$this->objFunSeguridad=$this->create('MODDeposito');
+  			$this->res=$this->objFunSeguridad->listarDepositoCc($this->objParam);
+  		}
+      $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 }
 
 ?>

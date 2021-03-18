@@ -3879,7 +3879,7 @@ COMMENT ON COLUMN obingresos.tboleto_amadeus_forma_pago.modificado
 IS 'Campo que ayudara a saber las formas de pago modificadas para los boletos el valor es de (si,no)';
 
 ALTER TABLE obingresos.tboleto_amadeus_forma_pago
-  ALTER COLUMN modificado SET DEFAULT 'no';   
+  ALTER COLUMN modificado SET DEFAULT 'no';
 
   ALTER TABLE obingresos.tboleto_amadeus_forma_pago
   DROP CONSTRAINT fk_tboleto_amadeus_forma_pago__id_forma_pago RESTRICT;
@@ -3907,3 +3907,14 @@ IS 'Identifador oficina BOA relacionado con establecimiento Administradora.';
 ALTER TABLE obingresos.testablecimiento_punto_venta
   ALTER COLUMN codigo_estable SET STATISTICS 0;
 /********************************************F-SCP-FEA-OBINGRESOS-0-16/03/2021********************************************/
+/********************************************I-SCP-BVP-OBINGRESOS-0-18/03/2021********************************************/
+ALTER TABLE obingresos.tdeposito
+  ADD COLUMN id_auxiliar INTEGER;
+
+ALTER TABLE obingresos.tdeposito
+  ADD CONSTRAINT tdeposito_fk1 FOREIGN KEY (id_auxiliar)
+    REFERENCES conta.tauxiliar(id_auxiliar)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+    NOT DEFERRABLE;
+/********************************************F-SCP-BVP-OBINGRESOS-0-18/03/2021********************************************/

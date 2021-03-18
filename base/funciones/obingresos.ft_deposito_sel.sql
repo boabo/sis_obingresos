@@ -364,6 +364,77 @@ BEGIN
 
 		end;
 
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEPCC_SEL'
+ 	#DESCRIPCION:	Listar depositos cuenta corriente
+ 	#AUTOR:		bvasquez
+ 	#FECHA:		18-03-2021
+	***********************************/
+
+	elsif(p_transaccion='OBING_DEPCC_SEL')then
+
+		begin
+
+    		--Sentencia de la consulta
+			v_consulta:='select dep.id_deposito,
+                                dep.monto_deposito,
+                                dep.nro_deposito,
+                                dep.fecha,
+                                dep.estado_reg,
+                                dep.id_moneda_deposito,
+                                dep.tipo,
+                                mon.codigo_internacional as desc_moneda,
+                                dep.fecha_reg,
+                                dep.fecha_mod,
+                                usu1.cuenta as usr_reg,
+                                usu2.cuenta as usr_mod,
+                                aux.id_auxiliar,
+                                aux.codigo_auxiliar,
+                                aux.nombre_auxiliar
+
+                        from obingresos.tdeposito dep
+                        inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
+                        left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
+                        inner join param.tmoneda mon on mon.id_moneda = dep.id_moneda_deposito
+                        left join conta.tauxiliar aux on aux.id_auxiliar = dep.id_auxiliar
+                        where ';
+
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+			v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+			raise notice 'resp %',v_consulta;
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_DEPCC_CONT'
+ 	#DESCRIPCION:	Conteo registros depositos cuenta corriente
+ 	#AUTOR:		bvasquez
+ 	#FECHA:		18-03-2021
+	***********************************/
+
+	elsif(p_transaccion='OBING_DEPCC_CONT')then
+
+		begin
+
+    		--Sentencia de la consulta
+			v_consulta:='select count(dep.id_deposito)
+                        from obingresos.tdeposito dep
+                        inner join segu.tusuario usu1 on usu1.id_usuario = dep.id_usuario_reg
+                        left join segu.tusuario usu2 on usu2.id_usuario = dep.id_usuario_mod
+                        inner join param.tmoneda mon on mon.id_moneda = dep.id_moneda_deposito
+                        left join conta.tauxiliar aux on aux.id_auxiliar = dep.id_auxiliar
+                        where ';
+
+			--Definicion de la respuesta
+			v_consulta:=v_consulta||v_parametros.filtro;
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
 
 
   	else
