@@ -21,22 +21,62 @@ header("content-type: text/javascript; charset=UTF-8");
                 type:'Field',
                 form:true
             },
+            // {
+            //     config:{
+            //         name: 'banco',
+            //         fieldLabel: 'Banco',
+            //         allowBlank:false,
+            //         emptyText:'Banco...',
+            //         typeAhead: true,
+            //         triggerAction: 'all',
+            //         lazyRender:true,
+            //         mode: 'local',
+            //         gwidth: 150,
+            //         store:['BIS','BUN','BNB','BME','BPM','TMY','BEC','BCR','BCO','ECF','QRB','QRK','BCK']
+            //     },
+            //     type:'ComboBox',
+            //     id_grupo:1,
+            //     form:true
+            // },
             {
-                config:{
+                config: {
                     name: 'banco',
                     fieldLabel: 'Banco',
-                    allowBlank:false,
-                    emptyText:'Banco...',
-                    typeAhead: true,
+                    allowBlank: true,
+                    emptyText: 'Banco...',
+                    store : new Ext.data.JsonStore({
+   									 url : '../../sis_parametros/control/Catalogo/listarCatalogoCombo',
+   									 id : 'id_catalogo',
+   									 root : 'datos',
+   									 sortInfo : {
+   										 field : 'codigo',
+   										 direction : 'ASC'
+   									 },
+   									 totalProperty : 'total',
+   									 fields: ['codigo','descripcion'],
+   									 remoteSort : true,
+   									 baseParams:{
+   										cod_subsistema:'OBINGRESOS',
+   										catalogo_tipo:'bancos_skybiz'
+   									},
+   								 }),
+                    valueField: 'codigo',
+                    gdisplayField : 'descripcion',
+                    displayField: 'descripcion',
+                    forceSelection: true,
+                    typeAhead: false,
                     triggerAction: 'all',
-                    lazyRender:true,
-                    mode: 'local',
-                    gwidth: 150,
-                    store:['BIS','BUN','BNB','BME','BPM','TMY','BEC','BCR','BCO','ECF','QRB','QRK','BCK']
+                    lazyRender: true,
+                    mode: 'remote',
+                    pageSize: 15,
+                    width:250,
+                    queryDelay: 1000,
+                    minChars: 2,
+                    resizable:true
                 },
-                type:'ComboBox',
-                id_grupo:1,
-                form:true
+                type: 'ComboBox',
+                id_grupo: 0,
+                form: true
             },
             {
                 config:{
@@ -55,7 +95,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     name: 'fecha_ini',
                     fieldLabel: 'Fecha Inicio',
                     allowBlank: false,
-                    anchor: '30%',
+                    width:250,
                     gwidth: 100,
                     format: 'd/m/Y',
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
@@ -71,7 +111,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     name: 'fecha_fin',
                     fieldLabel: 'Fecha Fin',
                     allowBlank: false,
-                    anchor: '30%',
+                    width:250,
                     gwidth: 100,
                     format: 'd/m/Y',
                     renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}

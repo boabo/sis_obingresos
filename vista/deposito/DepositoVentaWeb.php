@@ -224,28 +224,68 @@ header("content-type: text/javascript; charset=UTF-8");
                     form:true
                 },
 
+                // {
+                //     config:{
+                //         name: 'agt',
+                //         fieldLabel: 'Banco',
+                //         allowBlank:false,
+                //         emptyText:'Banco...',
+                //         typeAhead: true,
+                //         triggerAction: 'all',
+                //         lazyRender:true,
+                //         mode: 'local',
+                //         gwidth: 150,
+                //         store:['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','BPM','ECF','QRB','QRK','BCK']
+                //     },
+                //     type:'ComboBox',
+                //     filters:{
+                //         type: 'list',
+                //         options: ['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','BPM','ECF','QRB','QRK','BCK'],
+                //     },
+                //     id_grupo:1,
+                //     grid:true,
+                //     form:true,
+                //     bottom_filter : true
+                // },
                 {
-                    config:{
+                    config: {
                         name: 'agt',
                         fieldLabel: 'Banco',
-                        allowBlank:false,
-                        emptyText:'Banco...',
-                        typeAhead: true,
+                        allowBlank: true,
+                        emptyText: 'Banco...',
+                        store : new Ext.data.JsonStore({
+       									 url : '../../sis_parametros/control/Catalogo/listarCatalogoCombo',
+       									 id : 'id_catalogo',
+       									 root : 'datos',
+       									 sortInfo : {
+       										 field : 'codigo',
+       										 direction : 'ASC'
+       									 },
+       									 totalProperty : 'total',
+       									 fields: ['codigo','descripcion'],
+       									 remoteSort : true,
+       									 baseParams:{
+       										cod_subsistema:'OBINGRESOS',
+       										catalogo_tipo:'bancos_skybiz'
+       									},
+       								 }),
+                        valueField: 'codigo',
+                        gdisplayField : 'descripcion',
+                        displayField: 'descripcion',
+                        forceSelection: true,
+                        typeAhead: false,
                         triggerAction: 'all',
-                        lazyRender:true,
-                        mode: 'local',
-                        gwidth: 150,
-                        store:['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','BPM','ECF','QRB','QRK','BCK']
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        width:250,
+                        queryDelay: 1000,
+                        minChars: 2,
+                        resizable:true
                     },
-                    type:'ComboBox',
-                    filters:{
-                        type: 'list',
-                        options: ['BIS','BUN','BNB','BME','TMY','BEC','BCR','BCO','BPM','ECF','QRB','QRK','BCK'],
-                    },
-                    id_grupo:1,
-                    grid:true,
-                    form:true,
-                    bottom_filter : true
+                    type: 'ComboBox',
+                    id_grupo: 0,
+                    form: true
                 },
                 {
                     config:{
@@ -394,19 +434,56 @@ header("content-type: text/javascript; charset=UTF-8");
             bdel:true,
             bsave:false,
             cmbBanco : new Ext.form.AwesomeCombo({
-                name: 'agt',
-                fieldLabel: 'Seleccione Bancos...',
-                emptyText:'Seleccione los Bancos',
-                typeAhead: true,
-                triggerAction: 'all',
-                lazyRender:true,
-                forceSelection: true,
-                mode: 'local',
-                gwidth: 50,
-                anchor: "10%",
-                store:['TODOS','BCO','BCR','BEC','BIS','BME','BNB','BUN','BPM','ECF','TMY','QRB','QRK','BCK'],
-                enableMultiSelect: true,
+              name: 'banco',
+              fieldLabel: 'Banco',
+              allowBlank: true,
+              emptyText: 'Banco...',
+              store : new Ext.data.JsonStore({
+               url : '../../sis_parametros/control/Catalogo/listarCatalogoCombo',
+               id : 'id_catalogo',
+               root : 'datos',
+               sortInfo : {
+                 field : 'codigo',
+                 direction : 'ASC'
+               },
+               totalProperty : 'total',
+               fields: ['codigo','descripcion'],
+               remoteSort : true,
+               baseParams:{
+                cod_subsistema:'OBINGRESOS',
+                catalogo_tipo:'bancos_skybiz',
+                '_adicionar':'si'
+              },
+             }),
+              valueField: 'codigo',
+              gdisplayField : 'descripcion',
+              displayField: 'descripcion',
+              forceSelection: true,
+              typeAhead: false,
+              triggerAction: 'all',
+              lazyRender: true,
+              mode: 'remote',
+              pageSize: 15,
+              width:250,
+              queryDelay: 1000,
+              minChars: 2,
+              resizable:true,
+              enableMultiSelect: true,
             }),
+            // cmbBanco : new Ext.form.AwesomeCombo({
+            //     name: 'agt',
+            //     fieldLabel: 'Seleccione Bancos...',
+            //     emptyText:'Seleccione los Bancos',
+            //     typeAhead: true,
+            //     triggerAction: 'all',
+            //     lazyRender:true,
+            //     forceSelection: true,
+            //     mode: 'local',
+            //     gwidth: 50,
+            //     anchor: "10%",
+            //     store:['TODOS','BCO','BCR','BEC','BIS','BME','BNB','BUN','BPM','ECF','TMY','QRB','QRK','BCK'],
+            //     enableMultiSelect: true,
+            // }),
         }
     )
 </script>
