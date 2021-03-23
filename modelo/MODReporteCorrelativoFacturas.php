@@ -42,6 +42,41 @@ class MODReporteCorrelativoFacturas extends MODbase{
         $this->armarConsulta();
         //echo $this->getConsulta();
         //exit;
+
+        $this->ejecutarConsulta();
+        //var_dump('llega',$this->respuesta);exit;
+        return $this->respuesta;
+    }
+
+    function repCorrelativoFacturasTfactura(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_reporte_correlativo_facturas_sel';
+        $this->transaccion='OBING_RCFACFAC_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        $this->setCount(false);
+        // $this->setTipoRetorno('record');
+
+        $this->setParametro('id_lugar','id_lugar','int4');
+        $this->setParametro('id_sucursal','id_sucursal','int4');
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
+        $this->setParametro('tipo_generacion','tipo_generacion','varchar');
+        $this->setParametro('fecha_desde','fecha_desde','date');
+        $this->setParametro('fecha_hasta','fecha_hasta','date');
+        $this->setParametro('tipo_reporte','tipo_reporte','varchar');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('estacion','varchar');
+        $this->captura('sucursal','varchar');
+        $this->captura('punto_venta','varchar');
+        $this->captura('nroaut','varchar');
+        $this->captura('nro_desde','int4');
+        $this->captura('nro_hasta','int4');
+        $this->captura('cantidad','int4');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        //echo $this->getConsulta();
+        //exit;
         $this->ejecutarConsulta();
 
         return $this->respuesta;

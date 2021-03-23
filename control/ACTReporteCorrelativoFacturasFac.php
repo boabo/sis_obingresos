@@ -1,7 +1,7 @@
 <?php
 /**
  *@package pXP
- *@file ACTReporteCorrelativoFacturas.php
+ *@file ACTReporteCorrelativoFacturasFac.php
  *@author  Maylee Perez Pastor
  *@date 24-07-2020 05:58:00
  *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
@@ -15,12 +15,14 @@ include_once(dirname(__FILE__).'/../../lib/PHPMailer/class.phpmailer.php');
 include_once(dirname(__FILE__).'/../../lib/PHPMailer/class.smtp.php');
 include_once(dirname(__FILE__).'/../../lib/lib_general/cls_correo_externo.php');
 
-require_once(dirname(__FILE__).'/../reportes/RCorrelativoFac.php');
 
-class ACTReporteCorrelativoFacturas extends ACTbase{
+require_once(dirname(__FILE__).'/../reportes/RCorrelativoFacTFac.php');
+//require_once(dirname(__FILE__).'/../../sis_obingresos/reportes/RCorrelativoFac.php');
+//require_once(dirname(__FILE__).'/../reportes/RCorrelativoFacConsolidado.php');
 
+class ACTReporteCorrelativoFacturasFac extends ACTbase{
 
-    function reporteCorrelativoFacturas(){
+    function repCorrelativoFacturasTfactura(){
 
         $dataSource = new DataSource();
 
@@ -47,23 +49,16 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
         $dataSource->putParameter('tipo_reporte', $tipo_reporte);
 
         $this->objFunc = $this->create('MODReporteCorrelativoFacturas');
-        $resultCorrelativo = $this->objFunc->reporteCorrelativoFacturas($this->objParam);
+        $resultCorrelativo = $this->objFunc->repCorrelativoFacturasTfactura($this->objParam);
 
         if($resultCorrelativo->getTipo()=='EXITO'){
 
             $datosCorrelativo = $resultCorrelativo->getDatos();
             $dataSource->setDataSet($datosCorrelativo);
 
-            $nombreArchivo = 'CorrelativoFac.pdf';
+            $nombreArchivo = 'CorrelativoFacTFac.pdf';
 
-            //if($tipo_reporte == 'consolidado'){
-                $reporte = new RCorrelativoFac();
-            /*}else{
-                $reporte = new RCorrelativoFac();
-            }*/
-
-
-
+            $reporte = new RCorrelativoFacTFac();
 
             $reporte->setDataSource($dataSource);
             $reportWriter = new ReportWriter($reporte, dirname(__FILE__).'/../../reportes_generados/'.$nombreArchivo);
@@ -83,7 +78,6 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
 
 
     }
-
 
 }
 
