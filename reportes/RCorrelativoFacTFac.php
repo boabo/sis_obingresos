@@ -35,11 +35,7 @@ class CustomReportLibroBancos extends MYPDF {
 
         //if($tipo_reporte == 'CONSOLIDADO'){
 
-        $this->Cell(230, $height2, 'CONTROL DE CORRELATIVIDAD', 0, 0, 'C', false, '', 1, false, 'T', 'C');
-
-        $this->Ln();
-        $this->SetFontSize(13);
-        $this->Cell(265, $height2, '( FACTURAS ) ', 0, 0, 'C', false, '', 1, false, 'T', 'C');
+        $this->Cell(230, $height2, 'CONTROL CORRELATIVIDAD DE FACTURAS', 0, 0, 'C', false, '', 1, false, 'T', 'C');
 
         //var_dump('reporte', $this->getDataSource()->getParameter('id_punto_venta')); exit;
         $this->Ln();
