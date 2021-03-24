@@ -1078,6 +1078,22 @@ $body$
               		---- si la sucursal NO es null o marcado como todos
                  	IF (v_parametros.id_sucursal is not null and v_parametros.id_sucursal != 0) THEN
 
+                    		IF NOT EXISTS (select pv.codigo
+                                       from vef.tpunto_venta pv
+                                       left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
+                                       where pv.tipo = 'carga'
+                                       and pv.id_sucursal = v_parametros.id_sucursal) THEN
+
+                                       select (codigo||' - '|| nombre)
+                                       into v_nom_suc
+                                       from vef.tsucursal
+                                       where id_sucursal = v_parametros.id_sucursal;
+
+                                       raise exception 'La Sucursal % no existen Puntos de Venta de tipo Carga.',v_nom_suc;
+                            END IF;
+
+
+
                     		FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
                                                    from vef.tpunto_venta pv
                                                    left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
@@ -1218,6 +1234,13 @@ $body$
 
                         IF v_cod_punto is not null THEN
 
+                        	select lu.codigo
+                            into v_nom_esta
+                            from param.tlugar lu
+                            left join vef.tsucursal su on su.id_lugar = lu.id_lugar
+                            left join vef.tpunto_venta pv on pv.id_sucursal = su.id_sucursal
+                            where pv.codigo = v_cod_punto;
+
                           v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
                           v_conexion = (SELECT dblink_connect(v_cadena_cnx));
 
@@ -1266,7 +1289,16 @@ $body$
                                                             ) )
                                                             order by  estacion ASC, sucursal ASC, punto_venta ASC, nro_desde ASC';
 
-                      	END IF;
+                      	ELSE
+
+                        	 select nombre
+                             into v_nom_pv
+                             from vef.tpunto_venta
+                             where id_punto_venta = v_parametros.id_punto_venta;
+
+                        	raise exception 'EL Punto de Venta % no es de tipo Carga.', v_nom_pv;
+
+                        END IF;
 
                   END IF;
 
