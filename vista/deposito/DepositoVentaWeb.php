@@ -248,45 +248,21 @@ header("content-type: text/javascript; charset=UTF-8");
                 //     bottom_filter : true
                 // },
                 {
-                    config: {
-                        name: 'agt',
-                        fieldLabel: 'Banco',
-                        allowBlank: true,
-                        emptyText: 'Banco...',
-                        store : new Ext.data.JsonStore({
-       									 url : '../../sis_parametros/control/Catalogo/listarCatalogoCombo',
-       									 id : 'id_catalogo',
-       									 root : 'datos',
-       									 sortInfo : {
-       										 field : 'codigo',
-       										 direction : 'ASC'
-       									 },
-       									 totalProperty : 'total',
-       									 fields: ['codigo','descripcion'],
-       									 remoteSort : true,
-       									 baseParams:{
-       										cod_subsistema:'OBINGRESOS',
-       										catalogo_tipo:'bancos_skybiz'
-       									},
-       								 }),
-                        valueField: 'codigo',
-                        gdisplayField : 'descripcion',
-                        displayField: 'descripcion',
-                        forceSelection: true,
-                        typeAhead: false,
-                        triggerAction: 'all',
-                        lazyRender: true,
-                        mode: 'remote',
-                        pageSize: 15,
-                        width:250,
-                        queryDelay: 1000,
-                        minChars: 2,
-                        resizable:true
-                    },
-                    type: 'ComboBox',
-                    id_grupo: 0,
-                    form: true
-                },
+            			config:{
+            				name: 'agt',
+            				fieldLabel: 'Banco',
+            				allowBlank: true,
+            				anchor: '80%',
+            				gwidth: 100,
+            				maxLength:255
+            			},
+            			type:'TextField',
+            			filters:{pfiltro:'skybiz.banco',type:'string'},
+            			id_grupo:1,
+            			grid:true,
+            			form:true,
+            			bottom_filter : true
+            		},
                 {
                     config:{
                         name: 'estado_reg',
