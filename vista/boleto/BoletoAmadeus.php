@@ -18,6 +18,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.tipo_usuario = 'cajero';
 
                 this.iniciar_tiempo='si';
+                this.actualizar_automatico=0;
 
 
                 Ext.Ajax.request({
@@ -2418,28 +2419,153 @@ header("content-type: text/javascript; charset=UTF-8");
           					this.form.destroy();
           			}
 
+                if (this.timer_id != undefined) {
+                  Ext.TaskMgr.stop(this.timer_id);
+                  console.log("Proceso Automatico eliminado");
+                }
+
+                if (this.timer_actualizar != undefined) {
+                  Ext.TaskMgr.stop(this.timer_actualizar);
+                  console.log("Proceso Actualizar Automatico eliminado");
+                }
+
+                if (this.timer_actualizar_automatico != undefined) {
+                  Ext.TaskMgr.stop(this.timer_actualizar_automatico);
+                  console.log("Proceso Actualizar VG eliminado");
+                }
+
           			Phx.CP.destroyPage(this.idContenedor);
           			delete this;
 
           	},
 
+            onButtonAct:function () {
+              Phx.vista.BoletoAmadeus.superclass.onButtonAct.call(this);
+              this.iniciarTiempo();
+              if (this.timer_actualizar != undefined) {
+                Ext.TaskMgr.stop(this.timer_actualizar);
+              }
+
+              if (this.timer_actualizar_automatico != undefined) {
+                Ext.TaskMgr.stop(this.timer_actualizar_automatico);
+              }
+
+              this.actualizar_automatico = 0;
+              console.log("Se Cancelo el proceso automatico de actualizar");
+
+
+
+            },
+
             iniciarTiempo:function () {
-                            /*Aumentando para que los boletos sean traidos de manera automatica (Ismael Valdivia 10/01/2020)*/
-                            this.timer_id=Ext.TaskMgr.start({
-                               run: Ftimer,
-                               interval:30000,
-                               scope:this
-                           });
-                            /************************************************************************************************/
+                        /*Aqui Iniciamos El timer para verificar la variable Global*/
+                        Ext.Ajax.request({
+                            url:'../../sis_obingresos/control/Boleto/actualizarTablaError',
+                            params:{error: 'si'},
+                            success:function(resp){
+                                var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+                                if (reg.ROOT.datos.automatico == 'si') {
+                                  /*Aumentando para que los boletos sean traidos de manera automatica (Ismael Valdivia 10/01/2020)*/
+                                    this.timer_id=Ext.TaskMgr.start({
+                                       run: Ftimer,
+                                       interval:30000,
+                                       //interval:3000,
+                                       scope:this
+                                   });
+                                  /************************************************************************************************/
+
+                                } else {
+                                  if (this.timer_id != undefined) {
+                                    Ext.TaskMgr.stop(this.timer_id);
+                                    console.log("Proceso Automatico eliminado por la VaGl");
+                                    }
+
+                                    this.timer_actualizar_automatico=Ext.TaskMgr.start({
+                                       run: FactualizarAutomatico,
+                                       interval:300000,
+                                       //interval:10000,
+                                       scope:this
+                                   });
+
+                                   function FactualizarAutomatico(){
+                                     if (this.actualizar_automatico > 0) {
+                                       this.onButtonAct();
+                                     } else {
+                                       this.actualizar_automatico = 1;
+                                     }
+                                     console.log("Se Inicio el proceso automatico de actualizar");
+                                   }
+
+                                }
+                            },
+                            failure: this.conexionFailure,
+                            timeout:this.timeout,
+                            scope:this
+                        });
+
+                      /********************************************************************/
+
+
                             function Ftimer(){
-                              console.log("iniciamos el temporizador");
-                              if (this.store.baseParams.primera_carga == 'no') {
-                                  if (this.iniciar_tiempo == 'si') {
-                                    this.onTraerBoletosTodosAutomatico();
-                                  }
-                              } else {
-                                this.store.baseParams.primera_carga = 'no';
+
+                              if (this.timer_actualizar_automatico != undefined) {
+                                Ext.TaskMgr.stop(this.timer_actualizar_automatico);
                               }
+                              /*Aumenanto para verificar si el servicio Amadeus Cae*/
+                              Ext.Ajax.request({
+                                  url:'../../sis_obingresos/control/Boleto/verificarErrorAmadeus',
+                                  params:{error: 'si'},
+                                  success:function(resp){
+                                      var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
+
+                                      if (reg.ROOT.datos.error <= 5) {
+
+                                        if (this.store.baseParams.primera_carga == 'no') {
+                                            if (this.iniciar_tiempo == 'si') {
+                                              console.log("Se inicio el proceso automatico");
+                                              this.onTraerBoletosTodosAutomatico();
+                                            }
+                                        } else {
+                                          this.store.baseParams.primera_carga = 'no';
+                                        }
+                                      } else {
+                                            Ext.TaskMgr.stop(this.timer_id);
+
+                                            Ext.Msg.show({
+                                             title:'<h1 style="color:red"><center>ERROR SERVICIO AMADEUS</center></h1>',
+                                             msg: 'Se tiene problemas con el servicio Amadeus, <b style="color:red">Favor Actualizar el navegador dentro de 30 min</b> si el error persiste contactarse con Informática',
+                                             maxWidth : 550,
+                                             width: 550,
+                                             buttons: Ext.Msg.OK,
+                                             scope:this
+                                          });
+
+                                          this.timer_actualizar=Ext.TaskMgr.start({
+                                             run: Factualizar,
+                                             interval:1800000,
+                                             //interval:5000,
+                                             scope:this
+                                         });
+
+                                         function Factualizar(){
+                                          console.log("aqui llega",this.actualizar_automatico);
+                                           if (this.actualizar_automatico > 0) {
+                                             this.onButtonAct();
+                                           } else {
+                                             this.actualizar_automatico = 1;
+                                           }
+                                           console.log("Se Inicio el proceso automatico de actualizar");
+                                         }
+                                           console.log("Se Cancelo el proceso automatico");
+                                      }
+                                  },
+                                  failure: this.conexionFailure,
+                                  timeout:this.timeout,
+                                  scope:this
+                              });
+                              /*****************************************************/
+                              //Ext.TaskMgr.stop(this.timer_id);
+
                           }
 
 
@@ -2479,6 +2605,7 @@ header("content-type: text/javascript; charset=UTF-8");
              },*/
              /********************FUNCION PARA TRAER AUTOMATICAMENTE LOS BOLETOS AMADEUS (ISMAEL VALDIVIA 10/01/2020)*************************/
              onTraerBoletosTodosAutomatico : function () {
+
                  Ext.Ajax.request({
                      url:'../../sis_obingresos/control/Boleto/traerBoletosJson',
                      params: {moneda_base:this.store.baseParams.moneda_base,id_punto_venta: this.id_punto_venta,start:0,limit:this.tam_pag,sort:'id_boleto_amadeus',dir:'DESC',fecha:this.campo_fecha.getValue().dateFormat('Ymd'), todos:'si'},

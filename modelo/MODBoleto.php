@@ -1228,5 +1228,45 @@ class MODBoleto extends MODbase{
 
     		return $this->respuesta;
   	}
+
+    function insertarErrorAmadeus(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_error_amadeus_ime';
+        $this->transaccion='OBING_ERR_AMA_INS';
+        $this->tipo_procedimiento='IME';
+        $this->setParametro('error','error','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function verificarErrorAmadeus(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_error_amadeus_ime';
+        $this->transaccion='OBING_VERI_AMA_INS';
+        $this->tipo_procedimiento='IME';
+        $this->setParametro('error','error','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+
+    function actualizarTablaError(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_error_amadeus_ime';
+        $this->transaccion='OBING_VG_UPD_INS';
+        $this->tipo_procedimiento='IME';
+        $this->setParametro('error','error','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 }
 ?>

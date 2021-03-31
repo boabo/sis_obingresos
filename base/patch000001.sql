@@ -3918,3 +3918,19 @@ ALTER TABLE obingresos.tdeposito
     ON UPDATE NO ACTION
     NOT DEFERRABLE;
 /********************************************F-SCP-BVP-OBINGRESOS-0-18/03/2021********************************************/
+
+/********************************************I-SCP-IRVA-OBINGRESOS-0-31/03/2021********************************************/
+CREATE TABLE obingresos.terror_amadeus (
+  nro_errores NUMERIC(18,2) DEFAULT 0
+)
+WITH (oids = false);
+
+COMMENT ON TABLE obingresos.terror_amadeus
+IS 'Tabla donde se almacenara los errores de Amadeus';
+
+COMMENT ON COLUMN obingresos.terror_amadeus.nro_errores
+IS 'Campo donde se ira almacenando si el servicio amadeus cae';
+
+ALTER TABLE obingresos.terror_amadeus
+  OWNER TO postgres;
+/********************************************F-SCP-IRVA-OBINGRESOS-0-31/03/2021********************************************/
