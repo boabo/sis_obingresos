@@ -2462,6 +2462,15 @@ BEGIN
 
       -- RAISE EXCEPTION ' El servicio de Amadeus que recupera los boletos por punto de venta no responde, comuníquese con Informática para reportar el problema.';
 
+	  /*Si nos manda el id Agencia*/
+      if (pxp.f_existe_parametro(p_tabla,'id_agencia')) then
+          v_id_agencia = v_parametros.id_agencia;
+      else
+        v_id_agencia = NULL;
+      end if;
+      /***************************/
+
+
         	if (pxp.f_get_variable_global('vef_tiene_apertura_cierre') = 'si') then
 
             	select id_usuario into v_id_usuario
@@ -2726,7 +2735,7 @@ BEGIN
                   p_id_usuario,
                   v_id_boleto,
                   v_agente_venta::varchar,
-                  v_parametros.id_agencia::integer,
+                  v_id_agencia,--v_parametros.id_agencia::integer,
                   v_tipo_pago_amadeus::varchar,
                   v_code::varchar,
                   v_issue_indicator::varchar
@@ -3048,9 +3057,20 @@ BEGIN
 	elsif(p_transaccion='OBING_BOL_MOD')then
 
 		begin
+
+        	/*Si nos manda el id Agencia*/
+            if (pxp.f_existe_parametro(p_tabla,'id_agencia')) then
+                v_id_agencia = v_parametros.id_agencia;
+            else
+              v_id_agencia = NULL;
+            end if;
+            /***************************/
+
+
+
 			--Sentencia de la modificacion
 			update obingresos.tboleto set
-			id_agencia = v_parametros.id_agencia,
+			id_agencia = v_id_agencia,--v_parametros.id_agencia,
 			id_moneda_boleto = v_parametros.id_moneda_boleto,
 			comision = v_parametros.comision,
 			fecha_emision = v_parametros.fecha_emision,
