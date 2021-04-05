@@ -1391,11 +1391,11 @@ class ACTBoleto extends ACTbase{
         $result = curl_exec($session);//var_dump($result);exit;
         curl_close($session);
 
-        //$respuesta = json_decode($result);
-        $respuesta = null;
+        $respuesta = json_decode($result);
+        //$respuesta = null;
         /*********************Aumentando para verificar la respuesta del servicio de amadeus (Ismael Valdivia 26/11/2020)*****************/
-        //$respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
-        $respuesta_json = null;
+        $respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
+        //$respuesta_json = null;
 
         if ($respuesta_json->queryReportDataDetails == false || $respuesta_json->queryReportDataDetails == '' || $respuesta_json->queryReportDataDetails == null) {
           $this->objParam->addParametro('error', 'si');
