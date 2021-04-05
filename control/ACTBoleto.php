@@ -1391,14 +1391,17 @@ class ACTBoleto extends ACTbase{
         $result = curl_exec($session);//var_dump($result);exit;
         curl_close($session);
 
-        $respuesta = json_decode($result);
-        //$respuesta = null;
+        //$respuesta = json_decode($result);
+        $respuesta = null;
         /*********************Aumentando para verificar la respuesta del servicio de amadeus (Ismael Valdivia 26/11/2020)*****************/
-        $respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
-        //$respuesta_json = null;
+        //$respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
+        $respuesta_json = null;
 
         if ($respuesta_json->queryReportDataDetails == false || $respuesta_json->queryReportDataDetails == '' || $respuesta_json->queryReportDataDetails == null) {
           $this->objParam->addParametro('error', 'si');
+          $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+          $this->objParam->addParametro('data_enviada', $data_string);
+          $this->objParam->addParametro('respuesta_recibida', $result);
           $this->objFunc = $this->create('MODBoleto');
           $this->res = $this->objFunc->insertarErrorAmadeus($this->objParam);
           throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
@@ -1406,6 +1409,9 @@ class ACTBoleto extends ACTbase{
 
         if ($respuesta == false || $respuesta == '' || $respuesta == null) {
           $this->objParam->addParametro('error', 'si');
+          $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+          $this->objParam->addParametro('data_enviada', $data_string);
+          $this->objParam->addParametro('respuesta_recibida', $result);
           $this->objFunc = $this->create('MODBoleto');
           $this->res = $this->objFunc->insertarErrorAmadeus($this->objParam);
           throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
@@ -1476,6 +1482,17 @@ class ACTBoleto extends ACTbase{
         curl_close($session);
 
         $respuesta = json_decode($result);
+
+
+        if ($respuesta == false || $respuesta == '' || $respuesta == null) {
+          $this->objParam->addParametro('error', 'si');
+          $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+          $this->objParam->addParametro('data_enviada', $data_string);
+          $this->objParam->addParametro('respuesta_recibida', $result);
+          $this->objFunc = $this->create('MODBoleto');
+          $this->res = $this->objFunc->insertarErrorAmadeus($this->objParam);
+          throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
+        }
 
         if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 

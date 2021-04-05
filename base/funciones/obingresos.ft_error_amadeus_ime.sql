@@ -30,6 +30,7 @@ DECLARE
 	v_mensaje_error         text;
     v_num_error				numeric;
     v_actulizar_automatico	varchar;
+    v_existe_error			numeric;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_error_amadeus_ime';
@@ -47,9 +48,33 @@ BEGIN
         begin
 
 
-        	update obingresos.terror_amadeus set
-			nro_errores = (nro_errores + 1);
 
+        	select count (err.id_punto_venta)
+            	   into
+                   v_existe_error
+            from obingresos.terror_amadeus err
+            where err.id_punto_venta = v_parametros.id_punto_venta;
+
+
+            if (v_existe_error > 0) then
+              update obingresos.terror_amadeus set
+              nro_errores = (nro_errores + 1),
+              datos_enviados = v_parametros.data_enviada,
+              datos_recibidos = v_parametros.respuesta_recibida
+              where id_punto_venta = v_parametros.id_punto_venta;
+            else
+              insert into obingresos.terror_amadeus(
+                                                    nro_errores,
+                                                    id_punto_venta,
+                                                    datos_enviados,
+                                                    datos_recibidos
+                                                    ) values(
+                                                    0,
+                                                    v_parametros.id_punto_venta,
+                                                    v_parametros.data_enviada,
+                                                    v_parametros.respuesta_recibida
+                                                    );
+            end if;
 			--Definicion de la respuesta
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Error Actualizado');
 
@@ -69,10 +94,11 @@ BEGIN
 
 		begin
 
-		 	select err.nro_errores
+        	select err.nro_errores
                     INTO
                     v_num_error
-            from obingresos.terror_amadeus err;
+            from obingresos.terror_amadeus err
+            where err.id_punto_venta = v_parametros.id_punto_venta;
 
 
             --v_actulizar_automatico = pxp.f_get_variable_global('traida_boletos_amadeus_automatico');
@@ -108,7 +134,8 @@ BEGIN
             if (v_actulizar_automatico = 'si') then
 
               update obingresos.terror_amadeus set
-              nro_errores = 0;
+              nro_errores = 0
+              where id_punto_venta = v_parametros.id_punto_venta;
 
             end if;
 

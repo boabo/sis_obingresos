@@ -3934,3 +3934,13 @@ IS 'Campo donde se ira almacenando si el servicio amadeus cae';
 ALTER TABLE obingresos.terror_amadeus
   OWNER TO postgres;
 /********************************************F-SCP-IRVA-OBINGRESOS-0-31/03/2021********************************************/
+/********************************************I-SCP-IRVA-OBINGRESOS-0-05/04/2021********************************************/
+ALTER TABLE obingresos.terror_amadeus
+  ADD COLUMN id_punto_venta INTEGER;
+
+ALTER TABLE obingresos.terror_amadeus
+  ADD COLUMN datos_enviados TEXT;
+
+ALTER TABLE obingresos.terror_amadeus
+  ADD COLUMN datos_recibidos TEXT;
+  /********************************************F-SCP-IRVA-OBINGRESOS-0-05/04/2021********************************************/

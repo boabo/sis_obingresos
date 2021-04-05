@@ -1235,10 +1235,14 @@ class MODBoleto extends MODbase{
         $this->transaccion='OBING_ERR_AMA_INS';
         $this->tipo_procedimiento='IME';
         $this->setParametro('error','error','varchar');
+        $this->setParametro('data_enviada','data_enviada','varchar');
+        $this->setParametro('respuesta_recibida','respuesta_recibida','varchar');
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
         //Devuelve la respuesta
+        //var_dump("aqui llega para insertar",$this->respuesta);
         return $this->respuesta;
     }
 
@@ -1248,6 +1252,7 @@ class MODBoleto extends MODbase{
         $this->transaccion='OBING_VERI_AMA_INS';
         $this->tipo_procedimiento='IME';
         $this->setParametro('error','error','varchar');
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -1262,6 +1267,7 @@ class MODBoleto extends MODbase{
         $this->transaccion='OBING_VG_UPD_INS';
         $this->tipo_procedimiento='IME';
         $this->setParametro('error','error','varchar');
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();

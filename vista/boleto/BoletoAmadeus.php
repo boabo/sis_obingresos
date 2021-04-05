@@ -2461,7 +2461,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         /*Aqui Iniciamos El timer para verificar la variable Global*/
                         Ext.Ajax.request({
                             url:'../../sis_obingresos/control/Boleto/actualizarTablaError',
-                            params:{error: 'si'},
+                            params:{error: 'si',
+                                    id_punto_venta: this.id_punto_venta},
                             success:function(resp){
                                 var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
                                 if (reg.ROOT.datos.automatico == 'si') {
@@ -2514,7 +2515,8 @@ header("content-type: text/javascript; charset=UTF-8");
                               /*Aumenanto para verificar si el servicio Amadeus Cae*/
                               Ext.Ajax.request({
                                   url:'../../sis_obingresos/control/Boleto/verificarErrorAmadeus',
-                                  params:{error: 'si'},
+                                  params:{error: 'si',
+                                          id_punto_venta: this.id_punto_venta},
                                   success:function(resp){
                                       var reg = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText));
 
@@ -2543,7 +2545,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                           this.timer_actualizar=Ext.TaskMgr.start({
                                              run: Factualizar,
                                              interval:1800000,
-                                             //interval:5000,
+                                             //interval:15000,
                                              scope:this
                                          });
 
