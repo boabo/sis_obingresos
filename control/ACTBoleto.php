@@ -1395,17 +1395,20 @@ class ACTBoleto extends ACTbase{
         //$respuesta = null;
         /*********************Aumentando para verificar la respuesta del servicio de amadeus (Ismael Valdivia 26/11/2020)*****************/
         $respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
+
+        $verificacion_error = $respuesta_json->errorGroup;
+
         //$respuesta_json = null;
 
-        if ($respuesta_json->queryReportDataDetails == false || $respuesta_json->queryReportDataDetails == '' || $respuesta_json->queryReportDataDetails == null) {
-          $this->objParam->addParametro('error', 'si');
-          $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
-          $this->objParam->addParametro('data_enviada', $data_string);
-          $this->objParam->addParametro('respuesta_recibida', $result);
-          $this->objFunc = $this->create('MODBoleto');
-          $this->res = $this->objFunc->insertarErrorAmadeus($this->objParam);
-          throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
-        }
+        // if ($respuesta_json->queryReportDataDetails == false || $respuesta_json->queryReportDataDetails == '' || $respuesta_json->queryReportDataDetails == null) {
+        //   $this->objParam->addParametro('error', 'si');
+        //   $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
+        //   $this->objParam->addParametro('data_enviada', $data_string);
+        //   $this->objParam->addParametro('respuesta_recibida', $result);
+        //   $this->objFunc = $this->create('MODBoleto');
+        //   $this->res = $this->objFunc->insertarErrorAmadeus($this->objParam);
+        //   throw new Exception("El servicio de Amadeus no responde. Vuelva a intentar a traer los boletos. Si el error persiste consulte con informática.");
+        // }
 
         if ($respuesta == false || $respuesta == '' || $respuesta == null) {
           $this->objParam->addParametro('error', 'si');
@@ -1421,6 +1424,7 @@ class ACTBoleto extends ACTbase{
 
         if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
+          if ($verificacion_error == null) {
             $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
             $this->objParam->addParametro('boletos', $respuesta->Boa_RITRetrieveSales_JSResult);
             $this->objParam->addParametro('fecha_emision', $fecha);
@@ -1443,6 +1447,7 @@ class ACTBoleto extends ACTbase{
                 $this->res->imprimirRespuesta($this->res->generarJson());
                 exit;
             }
+          }
         }
 
 
@@ -1483,6 +1488,10 @@ class ACTBoleto extends ACTbase{
 
         $respuesta = json_decode($result);
 
+        $respuesta_json = json_decode($respuesta->Boa_RITRetrieveSales_JSResult);
+
+        $verificacion_error = $respuesta_json->errorGroup;
+
 
         if ($respuesta == false || $respuesta == '' || $respuesta == null) {
           $this->objParam->addParametro('error', 'si');
@@ -1496,6 +1505,7 @@ class ACTBoleto extends ACTbase{
 
         if(isset($respuesta->Boa_RITRetrieveSales_JSResult)) {
 
+          if ($verificacion_error == null) {
             $this->objParam->addParametro('id_punto_venta', $this->objParam->getParametro('id_punto_venta'));
             $this->objParam->addParametro('boletos', $respuesta->Boa_RITRetrieveSales_JSResult);
             $this->objParam->addParametro('fecha_emision', $fecha);
@@ -1518,6 +1528,7 @@ class ACTBoleto extends ACTbase{
                 $this->res->imprimirRespuesta($this->res->generarJson());
                 exit;
             }
+          }
         }
         //var_dump($this->objParam->getParametro('tipoReporte'));exit;
         if ($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid') {

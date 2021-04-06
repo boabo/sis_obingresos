@@ -2742,6 +2742,12 @@ BEGIN
                   --case when v_voided = 'EMDS' then 'EMDS' else 'ORIG' end
                   );
 
+                  /*Aumentando para que se actualize el contador de error en 0 cuando se haga el insert*/
+                  update obingresos.terror_amadeus set
+                  nro_errores = 0
+                  where id_punto_venta = v_parametros.id_punto_venta::integer;
+                  /*************************************************************************************/
+
                   if(trim(v_tipo_pago_amadeus)='CA')then
                   	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                           SELECT id_forma_pago into v_id_forma_pago
