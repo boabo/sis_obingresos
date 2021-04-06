@@ -134,6 +134,15 @@ header("content-type: text/javascript; charset=UTF-8");
         constructor : function(config) {
             Phx.vista.CruceTarjetasBoletos.superclass.constructor.call(this, config);
 
+            this.addButton('btnObs',{
+                grupo:[0,1,2],
+                text :'Cosulta Archivo Plano',
+                iconCls : 'bchecklist',
+                disabled: false,
+                handler : this.consultaArchivoPlano,
+                tooltip : '<b>Archivo Plano</b><br/><b>Lista de pagos Administradora</b>'
+            });
+
             this.init();
 
             this.Cmp.fecha_desde.on('valid',function(){
@@ -152,6 +161,25 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.tipo_reporte.focus(false,  5);
                 }});
 
+
+        },
+
+        consultaArchivoPlano: function (){
+
+            var record = {fecha_desde: this.Cmp.fecha_desde.getValue(), fecha_hasta: this.Cmp.fecha_hasta.getValue()};
+            if ( this.Cmp.fecha_desde.getValue() != '' && this.Cmp.fecha_hasta.getValue() ) {
+                var rec = {maestro: record};
+                Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte/DetallePagosAdministradora.php',
+                    'Detalle Pagos Administradora',
+                    {
+                        width: 1200,
+                        height: 500
+                    },
+                    rec,
+                    this.idContenedor,
+                    'DetallePagosAdministradora'
+                );
+            }
 
         },
 

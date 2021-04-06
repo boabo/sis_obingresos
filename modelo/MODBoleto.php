@@ -949,6 +949,8 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento='SEL';//tipo de transaccion
         //Define los parametros para la funcion
 
+        $this->setCount(false);
+
         $this->setParametro('localizador','localizador','jsonb');
         $this->setParametro('ct','ct','jsonb');
         $this->setParametro('fc','fc','jsonb');
@@ -1019,6 +1021,7 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento = 'SEL';//tipo de transaccion
         //Define los parametros para la funcion
 
+        $this->setCount(false);
 
         $this->setParametro('pnr', 'pnr', 'varchar');
         $this->setParametro('tipo', 'tipo', 'varchar');

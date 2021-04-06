@@ -205,7 +205,7 @@ $body$
                 coalesce((v_record_json->>'PaxA70')::integer,0::integer),
                 case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaBoa')::varchar end,
                 case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaSabsa')::varchar end,
-                (v_record_json->>'RutaSabsa')::varchar
+                (v_record_json->>'RutaPax')::varchar
             );
 
             v_total_nacional = v_total_nacional + coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer);

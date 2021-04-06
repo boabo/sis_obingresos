@@ -36,7 +36,7 @@ class MODReportes extends MODbase{
 
     function generarCruceTarjetasBoletos(){
 
-        $this->procedimiento='obingresos.ft_reportes_sel';
+        /*$this->procedimiento='obingresos.ft_reportes_sel';
         $this->transaccion='OBING_PUVE_CT_SEL';
         $this->tipo_procedimiento='SEL';//tipo de transaccion
 
@@ -63,10 +63,10 @@ class MODReportes extends MODbase{
 
         //Ejecuta la instruccion
         $this->armarConsulta(); //echo $this->consulta; exit;
-        $this->ejecutarConsulta();
+        $this->ejecutarConsulta();*/
 
         //recuperamos los registros a migrar de la bd
-        $datos = $this->respuesta;//var_dump('datos',$datos->datos);exit;
+        //$datos = $this->respuesta;//var_dump('datos',$datos->datos);exit;
 
         $this->respuesta = new Mensaje();
 
@@ -111,15 +111,56 @@ class MODReportes extends MODbase{
 
             $data = array();
 
+            $cone = new conexion();
+            $link = $cone->conectarpdo();
+            /** Office ID Lugar **/
+            $sql = "select tpv.nombre, tpv.office_id, tpv.codigo, tlug.nombre as lugar
+                    from vef.tpunto_venta tpv 
+                    inner join vef.tsucursal tsu on tsu.id_sucursal = tpv.id_sucursal
+                    inner join param.tlugar tlug on tlug.id_lugar = tsu.id_lugar
+                    where tpv.estado_reg = 'activo' /*and tpv.office_id is not null*/
+                    order by lugar
+                    ";
+
+            $consulta = $link->query($sql);
+            $consulta->execute();
+            $office_ids = $consulta->fetchAll(PDO::FETCH_ASSOC);
+            /** Office ID Lugar **/
+
+            /** Establecimiento Punto Venta**/
+            $sql = "SELECT 	tep.codigo_estable, tep.nombre_estable, tep.tipo_estable
+                    FROM obingresos.testablecimiento_punto_venta tep
+                    ";
+
+            $consulta = $link->query($sql);
+            $consulta->execute();
+            $list = $consulta->fetchAll(PDO::FETCH_ASSOC);
+
+            /*var_dump('$office_ids', $office_ids);
+            var_dump('$list', $list);exit;*/
+            /** Establecimiento Punto Venta**/
             while ($row = mssql_fetch_array($query, MSSQL_ASSOC)){
 
                 $record = json_decode(json_encode($row));
-                $punto_index = array_search($row['Iatacode'], $this->array_column($datos->datos, 'codigo'));
-                $record->NameOffice = $datos->datos[$punto_index]["nombre"];
-                $record->NamePlace = $datos->datos[$punto_index]["lugar"];
+
+                if($row['Iatacode']!=null) {
+                    /*$punto_index = array_search($row['Iatacode'], $this->array_column($datos->datos, 'codigo'));
+                    $record->NameOffice = $datos->datos[$punto_index]["nombre"];
+                    $record->NamePlace = $datos->datos[$punto_index]["lugar"];*/
+                    $punto_index = array_search($row['Iatacode'], $this->array_column($office_ids, 'codigo'));
+                    $record->NameOffice = $office_ids[$punto_index]["nombre"];
+                    $record->NamePlace = $office_ids[$punto_index]["lugar"];
+                }
+
+                if($row['EstablishmentCode']!=null) {
+                    $estable_index = array_search(ltrim($row['EstablishmentCode'], '0'), $this->array_column($list, 'codigo_estable'));
+                    $record->NameEstable = $list[$estable_index]["nombre_estable"];
+                    $record->TypeEstable = $list[$estable_index]["tipo_estable"];
+                }
+
                 $data[] = $record;
             }
-
+            //var_dump('$data',$data);exit;
             $this->respuesta->datos = $data;
             mssql_free_result($query);
             $conexion->closeSQL();
@@ -158,7 +199,7 @@ class MODReportes extends MODbase{
         $office_id = $this->objParam->getParametro('id_punto_venta');
         $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
         $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
-        //var_dump('fechas',$fecha_desde, $fecha_hasta);exit;
+        //var_dump('fechas',$fecha_desde, $fecha_hasta, $office_id);exit;
 
         //variables para la conexion sql server.
         $bandera_conex = '';
@@ -381,5 +422,273 @@ class MODReportes extends MODbase{
         return $this->respuesta;
     }
     /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+
+    /**{developer:franklin.espinoza, date:12/03/2021, description: Detalle Pagos realizados por la Administradora}**/
+    function getDetallePagosAdministradora(){
+
+
+        $tipo_administrador = $this->objParam->getParametro('tipo_administrador');
+        $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
+        $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
+
+        //variables para la conexion sql server.
+        $conn = '';
+        $param_conex = array();
+        $conexion = '';
+        $this->respuesta = new Mensaje();
+
+        if ($conn != '') {
+            $conexion->closeSQL();
+        }
+
+        $conexion = new ConexionSqlServer('172.17.110.6', 'SPConnection', 'Passw0rd', 'DBStage');//172.17.58.22
+        $conn = $conexion->conectarSQL();
+
+
+        if($conn=='connect') {
+            $error = 'connect';
+            throw new Exception("connect: La conexión a la bd SQL Server ".$param_conex[1]." ha fallado.");
+        }else if($conn=='select_db'){
+            $error = 'select_db';
+            throw new Exception("select_db: La seleccion de la bd SQL Server ".$param_conex[1]." ha fallado.");
+        }else {
+            var_dump('ANTES', $conn);exit;
+            //$query = @mssql_query("exec DBStage.dbo.spa_GetCruceTarjetas '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
+            $query = @mssql_query("exec DBStage.dbo.spa_getAtcLinkserLoadedData '2560','$fecha_desde','$fecha_hasta','$tipo_administrador';", $conn);
+
+            var_dump('DESPUES');
+            //$query = @mssql_query(utf8_decode('select * from AuxBSPVersion'), $conn);
+
+            $data = array();
+            //$row = mssql_fetch_array($query, MSSQL_ASSOC);
+            //var_dump('$row', $row);exit;
+            while ( $row = mssql_fetch_array($query, MSSQL_ASSOC) ){
+                var_dump('entra fila', $row);exit;
+                $record = json_decode(json_encode($row));
+                $data[] = $record;
+            }
+            var_dump('$data',$data);exit;
+            $this->respuesta->datos = $data;
+            mssql_free_result($query);
+            $conexion->closeSQL();
+        } var_dump('sale',$this->respuesta);exit;
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /**{developer:franklin.espinoza, date:12/03/2021, description: Detalle Pagos realizados por la Administradora}**/
+
+
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
+    function getTicketInformationRecursive(){
+        $nro_ticket = $this->objParam->getParametro('nro_ticket');
+
+        $this->respuesta = new Mensaje();
+        $conexion = new ConexionSqlServer('172.17.110.6', 'SPConnection', 'Passw0rd', 'DBStage');
+        $conn = $conexion->conectarSQL();
+
+        $query_string = "Select DBStage.dbo.fn_getTicketInformation('$nro_ticket') "; // boleto miami 9303852215072
+
+        @mssql_query('SET CONCAT_NULL_YIELDS_NULL ON');
+        @mssql_query('SET ANSI_WARNINGS ON');
+        @mssql_query('SET ANSI_PADDING ON');
+
+        $query = @mssql_query($query_string, $conn);
+        $row = mssql_fetch_array($query, MSSQL_ASSOC);
+
+        $data_json_string = $row['computed'];
+        $data_json = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $data_json_string), true);
+        //var_dump('$data_json', $data_json);exit;
+        mssql_free_result($query);
+        $conexion->closeSQL();
+        $temp = array();
+        $temp['datajson'] = $data_json;
+        //$this->respuesta->datos = $temp;
+
+        //$this->respuesta->setDatos(array('data_json' => $data_json));
+        $this->respuesta->addLastRecDatos($temp);
+        //$this->respuesta->setMensaje('EXITO', 'MODReportes.php', 'Request Success', 'Se pudo encontrar el ticket solicitado desde AMADEUS.', 'modelo');
+        
+        return $this->respuesta;
+    }
+    /**{developer:franklin.espinoza, date:22/12/2020, description: Reporte Calculo A7}**/
+
+    function getDetalleConciliacionAdministradora(){
+
+        $fuente = $this->objParam->getParametro('tipo_reporte');
+        $office_id = 'todos';
+
+        $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
+        $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
+
+
+
+        //variables para la conexion sql server.
+        $bandera_conex='';
+        $conn = '';
+        $ids_fallas = '';
+        $ids_exitos = '';
+        $param_conex = array();
+        $conexion = '';
+
+        if ($conn != '') {
+            $conexion->closeSQL();
+        }
+
+        $conexion = new ConexionSqlServer('172.17.110.6', 'SPConnection', 'Passw0rd', 'DBStage');//172.17.58.22
+        $conn = $conexion->conectarSQL();
+
+
+        if($conn=='connect') {
+            $error = 'connect';
+            throw new Exception("connect: La conexión a la bd SQL Server ".$param_conex[1]." ha fallado.");
+        }else if($conn=='select_db'){
+            $error = 'select_db';
+            throw new Exception("select_db: La seleccion de la bd SQL Server ".$param_conex[1]." ha fallado.");
+        }else {
+
+            $query = @mssql_query("exec DBStage.dbo.spa_GetAtcLinkserInformation '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
+
+            //$row = mssql_fetch_array($query, MSSQL_ASSOC);
+            //var_dump('$row', $row);
+            $data = array();
+            while ($row = mssql_fetch_array($query, MSSQL_ASSOC)){
+                $record = json_decode(json_encode($row));
+                $data[] = $record;
+            }
+
+
+            mssql_free_result($query);
+            $conexion->closeSQL();
+        }
+
+        $rec_conciliacion = array();
+        $switch = true;
+        $rec_adm = null;
+        $rec_boa = array();//var_dump('$data', $data);exit;
+        foreach ($data as $key => $rec){
+
+            if ( $rec->ResultType == 'pago_administradora' ){
+                $temp_adm = array(
+                    'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'pago_cod'=>$rec->PaymentKey,'establecimiento'=>ltrim($rec->EstablishmentCode,'0'),
+                    'terminal'=>$rec->TerminalNumber,'lote'=>$rec->LotNumber,'pago_ticket'=>$rec->PaymentTicket,
+                    'fecha_pago'=>DateTime::createFromFormat('M j Y g:i:s:a', $rec->PaymentDate)->format('d/m/Y'),
+                    'hora_pago'=>$rec->PaymentHour,'moneda_adm'=>$rec->Currency,'monto_pago'=>$rec->PaymentAmmount,'auth_codigo_adm'=>$rec->AuthorizationCode,
+                    'num_tarjeta_adm'=>$rec->CreditCardNumber
+                    );
+                $rec_conciliacion [] = array ('tipo'=>$rec->ResultType,'administradora'=>$temp_adm);
+            } else if ( $rec->ResultType == 'pago_ret' ){
+
+                $temp_bo = array(
+                    'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'numero_documento'=>$rec->TicketNumber, 'codigo_iata'=>$rec->Iatacode,
+                    'oficina_venta'=>$rec->OIDIssue,'oficina_reserva'=>$rec->OIDReservation,'monto_venta'=>$rec->PaymentAmount,
+                    'auth_codigo_boa'=>$rec->AuthorizationCodeFP,'num_tarjeta_boa'=>$rec->AccountCardNumber,
+                    'fecha_venta'=>DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y'),
+                    'moneda_boa'=>$rec->PaymentCurrency,'mp'=>$rec->mp,'IP'=>$rec->IP
+                );
+                $rec_conciliacion [] = array ('tipo'=>$rec->ResultType,'boa'=>$temp_bo);
+
+            } else if ( $rec->ResultType == 'pago_both' ){
+                if( $rec->AuthorizationCode != $data[$key+1]->AuthorizationCode ){
+                    if($switch) {
+                        $temp_adm = array(
+                            'tipo' => $rec->ResultType, 'admin' => $rec->Formato, 'pago_cod' => $rec->PaymentKey, 'establecimiento' => ltrim($rec->EstablishmentCode,'0'),
+                            'terminal' => $rec->TerminalNumber, 'lote' => $rec->LotNumber, 'pago_ticket' => $rec->PaymentTicket,
+                            'fecha_pago' => DateTime::createFromFormat('M j Y g:i:s:a', $rec->PaymentDate)->format('d/m/Y'),
+                            'hora_pago' => $rec->PaymentHour, 'moneda_adm' => $rec->Currency, 'monto_pago' => $rec->PaymentAmmount, 'auth_codigo_adm' => $rec->AuthorizationCode,
+                            'num_tarjeta_adm' => $rec->CreditCardNumber
+                        );
+
+                        $temp_boa = array(
+                            'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'numero_documento' => $rec->TicketNumber, 'codigo_iata' => $rec->Iatacode,
+                            'oficina_venta' => $rec->OIDIssue,'oficina_reserva' => $rec->OIDReservation, 'monto_venta' => $rec->PaymentAmount,
+                            'auth_codigo_boa' => $rec->AuthorizationCodeFP, 'num_tarjeta_boa' => $rec->AccountCardNumber,
+                            'fecha_venta' => DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y'),
+                            'moneda_boa' => $rec->PaymentCurrency, 'mp' => $rec->mp, 'IP' => $rec->IP
+                        );
+                        $rec_conciliacion [] = array('tipo'=>$rec->ResultType, 'administradora' => $temp_adm, 'boa' => $temp_boa);
+                    }else{
+                        $temp_boa = array(
+                            'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'numero_documento'=>$rec->TicketNumber, 'codigo_iata'=>$rec->Iatacode,
+                            'oficina_venta'=>$rec->OIDIssue,'oficina_reserva'=>$rec->OIDReservation,'monto_venta'=>$rec->PaymentAmount,
+                            'auth_codigo_boa'=>$rec->AuthorizationCodeFP,'num_tarjeta_boa'=>$rec->AccountCardNumber,
+                            'fecha_venta'=>DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y'),
+                            'moneda_boa'=>$rec->PaymentCurrency,'mp'=>$rec->mp,'IP'=>$rec->IP
+                        );
+                        $rec_boa [] = $temp_boa;
+
+                        $rec_conciliacion [] = array('tipo'=>$rec->ResultType, 'administradora' => $rec_adm, 'boa' => $rec_boa);
+                    }
+                    $rec_adm = null;
+                    $rec_boa = array();
+                    $switch = true;
+                }else{
+                    if($switch){
+                        $temp_adm = array(
+                            'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'pago_cod'=>$rec->PaymentKey,'establecimiento'=>ltrim($rec->EstablishmentCode,'0'),
+                            'terminal'=>$rec->TerminalNumber,'lote'=>$rec->LotNumber,'pago_ticket'=>$rec->PaymentTicket,
+                            'fecha_pago'=>DateTime::createFromFormat('M j Y g:i:s:a', $rec->PaymentDate)->format('d/m/Y'),
+                            'hora_pago'=>$rec->PaymentHour,'moneda_adm'=>$rec->Currency,'monto_pago'=>$rec->PaymentAmmount,'auth_codigo_adm'=>$rec->AuthorizationCode,
+                            'num_tarjeta_adm'=>$rec->CreditCardNumber
+                        );
+
+                        $temp_boa = array(
+                            'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'numero_documento' => $rec->TicketNumber, 'codigo_iata' => $rec->Iatacode,
+                            'oficina_venta' => $rec->OIDIssue,'oficina_reserva' => $rec->OIDReservation, 'monto_venta' => $rec->PaymentAmount,
+                            'auth_codigo_boa' => $rec->AuthorizationCodeFP, 'num_tarjeta_boa' => $rec->AccountCardNumber,
+                            'fecha_venta' => DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y'),
+                            'moneda_boa' => $rec->PaymentCurrency, 'mp' => $rec->mp, 'IP' => $rec->IP
+                        );
+
+                        $rec_adm = $temp_adm;
+                        $rec_boa [] = $temp_boa;
+                        $switch = false;
+                    }else{
+                        $temp_boa = array(
+                            'tipo'=>$rec->ResultType, 'admin'=>$rec->Formato,'numero_documento'=>$rec->TicketNumber, 'codigo_iata'=>$rec->Iatacode,
+                            'oficina_venta'=>$rec->OIDIssue,'oficina_reserva'=>$rec->OIDReservation,'monto_venta'=>$rec->PaymentAmount,
+                            'auth_codigo_boa'=>$rec->AuthorizationCodeFP,'num_tarjeta_boa'=>$rec->AccountCardNumber,
+                            'fecha_venta'=>DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y'),
+                            'moneda_boa'=>$rec->PaymentCurrency,'mp'=>$rec->mp,'IP'=>$rec->IP
+                        );
+                        $rec_boa [] = $temp_boa;
+                        $switch = false;
+                    }
+                }
+            }
+        }
+
+        //var_dump('$rec_conciliacion',$rec_conciliacion);exit;
+
+        $this->procedimiento='obingresos.ft_conciliacion_sel';
+        $this->transaccion='OBING_CONCILIACION';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setCount(false);
+
+        $this->arreglo['dataStage'] = json_encode(array('dataStage'=>$rec_conciliacion));
+
+        $this->setParametro('fecha_desde','fecha_desde','date');
+        $this->setParametro('fecha_hasta','fecha_hasta','date');
+        $this->setParametro('dataStage','dataStage','jsonb');
+        $this->setParametro('tipo_reporte','tipo_reporte','varchar');
+        $this->setParametro('tipo_rep','tipo_rep','varchar');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_conciliacion','int4');
+        $this->captura('dataPago','text');
+        $this->captura('observaciones','varchar');
+        $this->captura('id_relacion','varchar');
+        $this->captura('tipo','varchar');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta(); //echo $this->consulta; exit;
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 }
 ?>

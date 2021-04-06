@@ -325,7 +325,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Ruta SABSA",
+                    fieldLabel: "Ruta PAX",
                     gwidth: 100,
                     name: 'ruta_sabsa',
                     allowBlank:true,

@@ -177,7 +177,7 @@ class MODMcoS extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('id_punto_venta','id_punto_venta','int4');
 		//Ejecuta la instruccion
-		$this->armarConsulta();
+		$this->armarConsulta(); //echo $this->consulta;exit;
 		$this->ejecutarConsulta();
 
 		//Devuelve la respuesta
