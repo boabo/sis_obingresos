@@ -1164,7 +1164,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'id_auxiliar',
                         fieldLabel: 'Cuenta Corriente',
                         allowBlank: true,
-                        emptyText: 'Cuenta Corriente...',
+                        emptyText: '',
                         store: new Ext.data.JsonStore({
                             url: '../../sis_contabilidad/control/Auxiliar/listarAuxiliar',
                             id: 'id_auxiliar',
@@ -1417,7 +1417,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'id_auxiliar2',
                         fieldLabel: 'Cuenta Corriente',
                         allowBlank: true,
-                        emptyText: 'Cuenta Corriente...',
+                        emptyText: '',
                         store: new Ext.data.JsonStore({
                             url: '../../sis_contabilidad/control/Auxiliar/listarAuxiliar',
                             id: 'id_auxiliar',
