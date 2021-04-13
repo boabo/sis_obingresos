@@ -674,7 +674,8 @@ BEGIN
                   id_auxiliar,
                   registro_mod,
                   mco,
-                  modificado
+                  modificado,
+                  nro_documento
                 )
                 VALUES (
                   p_id_usuario,
@@ -689,7 +690,8 @@ BEGIN
                   v_parametros.id_auxiliar,
                   null,
                   v_parametros.mco,
-                  'si'
+                  'si',
+                  v_parametros.nro_documento
                 );
             ELSE
 
@@ -710,6 +712,7 @@ BEGIN
                   registro_mod,
                   mco--,
                   --modificado
+                  ,nro_documento
                 )
                 VALUES (
                   p_id_usuario,
@@ -726,6 +729,7 @@ BEGIN
                   null,
                   v_parametros.mco--,
                   --'si'
+                  ,v_parametros.nro_documento
                 );
             end if;
 			/*************************************************************************************/
@@ -853,7 +857,8 @@ BEGIN
                         id_auxiliar,
                         registro_mod,
                         mco,
-                        modificado
+                        modificado,
+                        nro_documento
                       )
                       VALUES (
                         p_id_usuario,
@@ -868,7 +873,8 @@ BEGIN
                         v_parametros.id_auxiliar2,
                         1,
                         v_parametros.mco2,
-                        'si'
+                        'si',
+                        v_parametros.nro_documento_2
                       );
                     else
                     	 INSERT INTO
@@ -887,7 +893,8 @@ BEGIN
                         id_auxiliar,
                         registro_mod,
                         mco,
-                        modificado
+                        modificado,
+                        nro_documento
                       )
                       VALUES (
                         p_id_usuario,
@@ -903,7 +910,8 @@ BEGIN
                         v_parametros.id_auxiliar2,
                         1,
                         v_parametros.mco2,
-                        'si'
+                        'si',
+                        v_parametros.nro_documento_2
                       );
                     end if;
 
@@ -1416,7 +1424,8 @@ BEGIN
                                                                         id_auxiliar,
                                                                         registro_mod,
                                                                         mco,
-                                                                        modificado
+                                                                        modificado,
+                                                                        nro_documento
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1430,7 +1439,8 @@ BEGIN
                                                                         v_parametros.id_auxiliar,
                                                                         null,
                                                                         v_parametros.mco,
-                                                                        'si'
+                                                                        'si',
+                                                                        v_parametros.nro_documento
                                                                       );
                     else
                     	INSERT INTO obingresos.tboleto_amadeus_forma_pago( 	id_usuario_reg,
@@ -1446,6 +1456,7 @@ BEGIN
                                                                         registro_mod,
                                                                         mco--,
                                                                         --modificado
+                                                                        ,nro_documento
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1461,6 +1472,7 @@ BEGIN
                                                                         null,
                                                                         v_parametros.mco--,
                                                                         --'si'
+                                                                        ,v_parametros.nro_documento
                                                                       );
                     end if;
                                                                          --raise exception 'llega';
@@ -1599,7 +1611,8 @@ BEGIN
                                                                         id_auxiliar,
                                                                         registro_mod,
                                                                         mco,
-                                                                        modificado
+                                                                        modificado,
+                                                                        nro_documento
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1614,7 +1627,8 @@ BEGIN
                                                                         v_parametros.id_auxiliar2,
                                                                         null,
                                                                         v_parametros.mco2,
-                                                                        'si'
+                                                                        'si',
+                                                                        v_parametros.nro_documento_2
                                                                       );
                     else
                     INSERT INTO obingresos.tboleto_amadeus_forma_pago ( id_usuario_reg,
@@ -1630,7 +1644,8 @@ BEGIN
                                                                         id_auxiliar,
                                                                         registro_mod,
                                                                         mco,
-                                                                        modificado
+                                                                        modificado,
+                                                                        nro_documento
                                                                       )
                                                                       VALUES (
                                                                         p_id_usuario,
@@ -1646,7 +1661,8 @@ BEGIN
                                                                         v_parametros.id_auxiliar2,
                                                                         null,
                                                                         v_parametros.mco2,
-                                                                        'si'
+                                                                        'si',
+                                                                        v_parametros.nro_documento_2
                                                                       );
                     end if;
 
