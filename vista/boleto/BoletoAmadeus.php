@@ -1182,7 +1182,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre_auxiliar',
                         gdisplayField: 'codigo_auxiliar',
                         hiddenName: 'id_auxiliar',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><b><p style="color:red;">{nombre_auxiliar}</p><p>Codigo: <span style="color:green;">{codigo_auxiliar}</span></p></b></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -1476,7 +1476,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre_auxiliar',
                         gdisplayField: 'nombre_auxiliar2',
                         hiddenName: 'id_auxiliar',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><b><p style="color:red;">{nombre_auxiliar}</p><p>Codigo: <span style="color:green;">{codigo_auxiliar}</span></p></b></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -1831,14 +1831,30 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.Cmp.id_moneda.on('select',function(combo,record){
                     this.Cmp.id_venta.reset()
                     this.Cmp.id_venta.store.baseParams.id_moneda=record.data.id_moneda;
+                    this.Cmp.id_venta.store.baseParams.id_auxiliar_anticipo=this.Cmp.id_auxiliar.getValue();
                     this.Cmp.id_venta.modificado = true;
                 },this);
 
                 this.Cmp.id_moneda2.on('select',function(combo,record){
                     this.Cmp.id_venta_2.reset()
                     this.Cmp.id_venta_2.store.baseParams.id_moneda=record.data.id_moneda;
+                    this.Cmp.id_venta_2.store.baseParams.id_auxiliar_anticipo=this.Cmp.id_auxiliar2.getValue();
                     this.Cmp.id_venta_2.modificado = true;
                 },this);
+                /*filtro de recibo por id_auxiliar ****/
+                this.Cmp.id_auxiliar.on('select', function(c,r){
+                    this.Cmp.id_venta.reset()
+                    this.Cmp.id_venta.store.baseParams.id_moneda=this.Cmp.id_moneda.getValue();
+                    this.Cmp.id_venta.store.baseParams.id_auxiliar_anticipo=r.data.id_auxiliar;
+                    this.Cmp.id_venta.modificado = true;
+                },this)
+
+                this.Cmp.id_auxiliar2.on('select', function(c,r){
+                    this.Cmp.id_venta_2.reset()
+                    this.Cmp.id_venta_2.store.baseParams.id_moneda=this.Cmp.id_moneda2.getValue();
+                    this.Cmp.id_venta_2.store.baseParams.id_auxiliar_anticipo=r.data.id_auxiliar;
+                    this.Cmp.id_venta_2.modificado = true;
+                },this)
                 /*****************************************************************************************/
 
 
@@ -3900,7 +3916,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
-                            this.Cmp.id_ventao_2.reset();
+                            this.Cmp.id_venta_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3979,7 +3995,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.mostrarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
-                            this.Cmp.id_ventao_2.reset();
+                            this.Cmp.id_venta_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
