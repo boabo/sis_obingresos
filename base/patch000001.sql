@@ -3943,8 +3943,15 @@ ALTER TABLE obingresos.terror_amadeus
 
 ALTER TABLE obingresos.terror_amadeus
   ADD COLUMN datos_recibidos TEXT;
-  /********************************************F-SCP-IRVA-OBINGRESOS-0-05/04/2021********************************************/
-  /********************************************I-SCP-BVP-OBINGRESOS-0-13/04/2021********************************************/
-  ALTER TABLE obingresos.tboleto_amadeus_forma_pago
-  ADD COLUMN nro_documento INTEGER;
-  /********************************************F-SCP-BVP-OBINGRESOS-0-13/04/2021********************************************/
+/********************************************F-SCP-IRVA-OBINGRESOS-0-05/04/2021********************************************/
+/********************************************I-SCP-BVP-OBINGRESOS-0-13/04/2021********************************************/
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+ADD COLUMN nro_documento INTEGER;
+/********************************************F-SCP-BVP-OBINGRESOS-0-13/04/2021********************************************/
+/********************************************I-SCP-BVP-OBINGRESOS-0-22/04/2021********************************************/
+ALTER TABLE obingresos.tboleto_amadeus_forma_pago
+RENAME COLUMN nro_documento TO id_venta;
+
+COMMENT ON COLUMN obingresos.tboleto_amadeus_forma_pago.id_venta
+IS 'se registra el id_venta relacionado a la tabla vef.tventa.';
+/********************************************F-SCP-BVP-OBINGRESOS-0-22/04/2021********************************************/
