@@ -417,11 +417,11 @@ BEGIN
               select codigo into v_mon_recibo_2 from param.tmoneda where id_moneda = v_parametros.id_moneda2;
 
  			        if ((v_parametros.monto_forma_pago > v_parametros.saldo_recibo) or (v_parametros.saldo_recibo <= 0 and v_parametros.saldo_recibo is not null)) then
- 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la forma de pago recibo anticipo.',v_mon_recibo,v_parametros.saldo_recibo, v_mon_recibo, v_parametros.monto_forma_pago;
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la forma de pago recibo anticipo.',v_mon_recibo,v_parametros.saldo_recibo, v_mon_recibo, v_parametros.monto_forma_pago-v_parametros.saldo_recibo;
               end if;
 
               if ((v_parametros.monto_forma_pago2 > v_parametros.saldo_recibo_2) or (v_parametros.saldo_recibo_2 <= 0 and v_parametros.saldo_recibo_2 is not null)) then
- 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la segunda forma de pago recibo anticipo.',v_mon_recibo_2,v_parametros.saldo_recibo_2, v_mon_recibo_2, v_parametros.monto_forma_pago2;
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la segunda forma de pago recibo anticipo.',v_mon_recibo_2,v_parametros.saldo_recibo_2, v_mon_recibo_2, v_parametros.monto_forma_pago2-v_parametros.saldo_recibo_2;
               end if;
               /******************************************************************************************************************/
 
@@ -1192,11 +1192,11 @@ BEGIN
               select codigo into v_mon_recibo_2 from param.tmoneda where id_moneda = v_parametros.id_moneda2;
 
  			        if ((v_parametros.monto_forma_pago > v_parametros.saldo_recibo) or (v_parametros.saldo_recibo <= 0 and v_parametros.saldo_recibo is not null)) then
- 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la forma de pago recibo anticipo.',v_mon_recibo,v_parametros.saldo_recibo, v_mon_recibo, v_parametros.monto_forma_pago;
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la forma de pago recibo anticipo.',v_mon_recibo,v_parametros.saldo_recibo, v_mon_recibo, v_parametros.monto_forma_pago-v_parametros.saldo_recibo;
               end if;
 
               if ((v_parametros.monto_forma_pago2 > v_parametros.saldo_recibo_2) or (v_parametros.saldo_recibo_2 <= 0 and v_parametros.saldo_recibo_2 is not null)) then
- 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la segunda forma de pago recibo anticipo.',v_mon_recibo_2,v_parametros.saldo_recibo_2, v_mon_recibo_2, v_parametros.monto_forma_pago2;
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la segunda forma de pago recibo anticipo.',v_mon_recibo_2,v_parametros.saldo_recibo_2, v_mon_recibo_2, v_parametros.monto_forma_pago2-v_parametros.saldo_recibo_2;
               end if;
               /******************************************************************************************************************/
 
