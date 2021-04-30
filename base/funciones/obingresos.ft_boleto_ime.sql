@@ -166,6 +166,8 @@ DECLARE
     v_forma_pago_erp  		varchar;
     v_moneda_amadeus		varchar;
    	v_moneda_erp			varchar;
+    v_mon_recibo			varchar;
+    v_mon_recibo_2			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -408,6 +410,20 @@ BEGIN
 	elsif(p_transaccion='OBING_BOLAMAVEN_UPD')then
 
         begin
+
+             /** control de saldo para medio de pago recibo anticipo si saldos son menores o iguales a 0 no permite el pago***/
+
+              select codigo into v_mon_recibo from param.tmoneda where id_moneda = v_parametros.id_moneda;
+              select codigo into v_mon_recibo_2 from param.tmoneda where id_moneda = v_parametros.id_moneda2;
+
+ 			        if ((v_parametros.monto_forma_pago > v_parametros.saldo_recibo) or (v_parametros.saldo_recibo <= 0 and v_parametros.saldo_recibo is not null)) then
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la forma de pago recibo anticipo.',v_mon_recibo,v_parametros.saldo_recibo, v_mon_recibo, v_parametros.monto_forma_pago;
+              end if;
+
+              if ((v_parametros.monto_forma_pago2 > v_parametros.saldo_recibo_2) or (v_parametros.saldo_recibo_2 <= 0 and v_parametros.saldo_recibo_2 is not null)) then
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la segunda forma de pago recibo anticipo.',v_mon_recibo_2,v_parametros.saldo_recibo_2, v_mon_recibo_2, v_parametros.monto_forma_pago2;
+              end if;
+              /******************************************************************************************************************/
 
         	/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
         	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
@@ -1170,6 +1186,19 @@ BEGIN
 	elsif(p_transaccion='OBING_MODAMAFPGR_UPD')then
 
         begin
+        /** control de saldo para medio de pago recibo anticipo si saldos son menores o iguales a 0 no permite el pago***/
+
+              select codigo into v_mon_recibo from param.tmoneda where id_moneda = v_parametros.id_moneda;
+              select codigo into v_mon_recibo_2 from param.tmoneda where id_moneda = v_parametros.id_moneda2;
+
+ 			        if ((v_parametros.monto_forma_pago > v_parametros.saldo_recibo) or (v_parametros.saldo_recibo <= 0 and v_parametros.saldo_recibo is not null)) then
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la forma de pago recibo anticipo.',v_mon_recibo,v_parametros.saldo_recibo, v_mon_recibo, v_parametros.monto_forma_pago;
+              end if;
+
+              if ((v_parametros.monto_forma_pago2 > v_parametros.saldo_recibo_2) or (v_parametros.saldo_recibo_2 <= 0 and v_parametros.saldo_recibo_2 is not null)) then
+ 	             raise 'El saldo del recibo es: % % Falta un monto de % % para la segunda forma de pago recibo anticipo.',v_mon_recibo_2,v_parametros.saldo_recibo_2, v_mon_recibo_2, v_parametros.monto_forma_pago2;
+              end if;
+              /******************************************************************************************************************/
 
         	v_comision_total = 0;
         	v_saldo_fp1 = v_parametros.monto_forma_pago;

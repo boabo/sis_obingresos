@@ -391,6 +391,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('id_moneda2','id_moneda2','integer');
         $this->setParametro('id_venta','id_venta','integer');
         $this->setParametro('id_venta_2','id_venta_2','integer');
+        $this->setParametro('saldo_recibo','saldo_recibo','numeric');
+        $this->setParametro('saldo_recibo_2','saldo_recibo_2','numeric');
         /************************************************************************/
 
 
@@ -474,6 +476,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('id_moneda2','id_moneda2','integer');
         $this->setParametro('id_venta','id_venta','integer');
         $this->setParametro('id_venta_2','id_venta_2','integer');
+        $this->setParametro('saldo_recibo','saldo_recibo','numeric');
+        $this->setParametro('saldo_recibo_2','saldo_recibo_2','numeric');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
