@@ -353,6 +353,9 @@ $body$
                       inner join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
                       where b.fecha_emision BETWEEN ''' || v_parametros.fecha_ini || ''' and ''' || v_parametros.fecha_fin || ''' and
                       b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo = ''' || v_banco_aux || '''
+                      /*Aumentando para tomar solo estas agencias*/
+                      and b.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                      /******************************************/
                       group by b.fecha_emision
                       order  by b.fecha_emision)
 
@@ -446,6 +449,10 @@ $body$
                                     left join obingresos.tboleto_stage bree on bree.nro_boleto = vwm.nro_boleto_reemision and bree.estado_reg = ''activo''
 
                                     where b.fecha_emision BETWEEN ''' || v_parametros.fecha_ini || ''' and ''' || v_parametros.fecha_fin || ''' and vwm.tipo in (''anulado'',''reemision'')
+                                    /*Aumentando para tomar solo estas agencias*/
+                                    and b.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                                    and bree.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                                    /******************************************/
                                     group by b.localizador,b.fecha_emision,bree.localizador,bree.fecha_emision,vwm.tipo),
 
                         reemision as (select max(bree.id_boleto),bree.localizador,bree.fecha_emision,(''PNR : '' || coalesce(banu.localizador,''"no identificado"'') || coalesce(''('' || banu.fecha_emision || '')'',''()'') ||'' anulado y  reemitido con PNR ''||bree.localizador)::varchar as observaciones
@@ -455,6 +462,10 @@ $body$
                                     trim(both '' '' from banu.localizador) != ''''
 
                                     where bree.fecha_emision BETWEEN ''' || v_parametros.fecha_ini || ''' and ''' || v_parametros.fecha_fin || ''' and vwm.tipo in (''reemision'')
+                                    /*Aumentando para tomar solo estas agencias*/
+                                    and bree.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                                    and banu.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                                    /******************************************/
                                     group by bree.localizador,bree.fecha_emision,banu.localizador,banu.fecha_emision),
 
                         emision_manual as (select max(bree.id_boleto), vwm.pnr_antiguo,vwm.fecha_reserva_antigua,bree.localizador,bree.fecha_emision,(''Emision Manual del pnr :  (''||vwm.pnr_antiguo||'') con el nuevo pnr : ( ''||bree.localizador||'')'')::varchar as observaciones
@@ -463,6 +474,9 @@ $body$
                                     where (bree.fecha_emision BETWEEN ''' || v_parametros.fecha_ini || ''' and ''' || v_parametros.fecha_fin || ''' or
                                     vwm.fecha_reserva_antigua BETWEEN ''' || v_parametros.fecha_ini || ''' and ''' || v_parametros.fecha_fin || ''')
                                     and vwm.tipo in (''emision_manual'')
+                                    /*Aumentando para tomar solo estas agencias*/
+                                    and bree.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                                    /******************************************/
                                     group by vwm.pnr_antiguo,vwm.fecha_reserva_antigua,bree.localizador,bree.fecha_emision),
 
 
@@ -485,6 +499,9 @@ $body$
                                   left join emision_manual man on man.localizador = b.localizador and man.fecha_emision = b.fecha_emision
                                   where b.fecha_emision BETWEEN ''' || v_parametros.fecha_ini || ''' and ''' || v_parametros.fecha_fin || ''' and
                                   b.estado_reg = ''activo'' and b.voided = ''no'' and fp.codigo = ''' || v_banco_aux || '''
+                                  /*Aumentando para tomar solo estas agencias*/
+                                  and b.agtnoiata in (''CBBOB08TK'',''CBBOB0801'')
+                                  /******************************************/
                                   group by b.fecha_emision,b.localizador,anu.localizador,anu.observaciones,
                                     ree.localizador,man.localizador,ree.observaciones,man.observaciones
                                   order  by b.fecha_emision),
