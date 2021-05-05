@@ -13,6 +13,8 @@ require_once(dirname(__FILE__).'/../reportes/RReporteCruceLinkserXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteCruceTigoXLS.php');
 require_once(dirname(__FILE__).'/../reportes/RReporteCalculoA7XLS.php');
 
+include_once(dirname(__FILE__).'/../../lib/lib_modelo/ConexionSqlServer.php');
+
 class ACTReportes extends ACTbase{
 
 
@@ -234,5 +236,77 @@ class ACTReportes extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
     /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
+
+
+    /**{developer:franklin.espinoza, date:12/03/2021, description: Detalle Pagos realizados por la Administradora}**/
+    function  getDetallePagosAdministradora(){
+
+        //$tipo_administrador = $this->objParam->getParametro('tipo_administrador'); //var_dump('$tipo_administrador', $tipo_administrador);exit;
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteListado('MODReportes','getDetallePagosAdministradora');
+        }else {
+            $this->objFunc=$this->create('MODReportes');
+            $this->res=$this->objFunc->getDetallePagosAdministradora($this->objParam);
+        }
+
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /**{developer:franklin.espinoza, date:12/03/2021, description: Detalle Pagos realizados por la Administradora}**/
+
+    function getTicketInformationRecursive() {
+        /*$nro_ticket = $this->objParam->getParametro('nro_ticket');
+        $array = array();
+
+
+        $conexion = new ConexionSqlServer('172.17.110.6', 'SPConnection', 'Passw0rd', 'DBStage');
+        $conn = $conexion->conectarSQL();
+
+        $query_string = "Select DBStage.dbo.fn_getTicketInformation('$nro_ticket') "; // boleto miami 9303852215072
+
+        //$query_string = "select * from AuxBSPVersion";
+        //$query_string = utf8_decode("select FlightItinerary from FactTicket where TicketNumber = '9302400056027'");
+        @mssql_query('SET CONCAT_NULL_YIELDS_NULL ON');
+        @mssql_query('SET ANSI_WARNINGS ON');
+        @mssql_query('SET ANSI_PADDING ON');
+
+        $query = @mssql_query($query_string, $conn);
+        $row = mssql_fetch_array($query, MSSQL_ASSOC);
+
+        $data_json_string = $row['computed'];
+        $data_json = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $data_json_string), true);
+
+        $dataJson = new Mensaje();
+        if($data_json != null) {
+            $send = array(
+                "nro_ticket" =>  $nro_ticket,
+                "data" =>  $data_json,
+            );echo json_encode($send);
+            $temp = Array();
+            $temp['data_json'] = json_encode($data_json);
+            //$dataJson->setDatos($temp);
+            $dataJson->addLastRecDatos($temp);
+            $dataJson->setMensaje('EXITO', 'Reportes.php', 'Request Success', 'Se pudo encontrar el ticket solicitado desde AMADEUS.', 'control');
+        } else {
+            $send = array(
+                "error" => false,
+                "errorTicket" => true,
+                "message" =>  "No se pudo encontrar el ticket solicitado, el mismo puede estar en un estado VOID o no haber sido emitido por AMADEUS",
+            );echo json_encode($send);
+            $dataJson->setMensaje('ERROR', 'Reportes.php', 'Request Error', 'No se pudo encontrar el ticket solicitado, el mismo puede estar en un estado VOID o no haber sido emitido por AMADEUS.', 'control');
+        }
+
+        $dataJson->imprimirRespuesta($dataJson->generarJson());*/
+        $this->objFunc=$this->create('MODReportes');
+        $this->res=$this->objFunc->getTicketInformationRecursive($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+    function getDetalleConciliacionAdministradora() {
+        $this->objFunc=$this->create('MODReportes');
+        $this->res=$this->objFunc->getDetalleConciliacionAdministradora($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 }
 ?>

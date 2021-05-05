@@ -279,7 +279,7 @@ header("content-type: text/javascript; charset=UTF-8");
             grupoDateFin: [0,1],
 
             seleccionarPuntoVentaSucursal : function () {
-
+                var validado = false;
                 var storeCombo = new Ext.data.JsonStore({
                     url: '../../sis_ventas_facturacion/control/PuntoVenta/listarPuntoVenta',
                     id: 'id_punto_venta',
@@ -505,6 +505,24 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'voucher_code'
                     },
                     type:'Field',
+                    form:true
+                },
+                {
+                    config:{
+                        labelSeparator:'',
+                        inputType:'hidden',
+                        name: 'saldo_recibo'
+                    },
+                    type:'NumberField',
+                    form:true
+                },
+                {
+                    config:{
+                        labelSeparator:'',
+                        inputType:'hidden',
+                        name: 'saldo_recibo_2'
+                    },
+                    type:'NumberField',
                     form:true
                 },
                 {
@@ -1164,7 +1182,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'id_auxiliar',
                         fieldLabel: 'Cuenta Corriente',
                         allowBlank: true,
-                        emptyText: 'Cuenta Corriente...',
+                        emptyText: '',
                         store: new Ext.data.JsonStore({
                             url: '../../sis_contabilidad/control/Auxiliar/listarAuxiliar',
                             id: 'id_auxiliar',
@@ -1182,7 +1200,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre_auxiliar',
                         gdisplayField: 'codigo_auxiliar',
                         hiddenName: 'id_auxiliar',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><b><p style="color:red;">{nombre_auxiliar}</p><p>Codigo: <span style="color:green;">{codigo_auxiliar}</span></p></b></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -1203,6 +1221,58 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid: true,
                     form: true
                 },
+                {
+                    config: {
+                        name: 'id_venta',
+                        fieldLabel: 'Nro. Recibo',
+                        allowBlank: true,
+                        emptyText: '',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_ventas_facturacion/control/Venta/listarReciboBoletosAmadeus',
+                            id: 'id_venta',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'v.nro_factura, v.nombre_factura ',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_venta', 'nro_factura','nombre_factura','total_venta','saldo', 'tex_saldo','moneda'],
+                            remoteSort: true,
+                            baseParams: {par_filtro: 'v.nro_factura#v.nombre_factura'}
+                        }),
+                        valueField: 'id_venta',
+                        displayField: 'nro_factura',
+                        gdisplayField: 'nro_factura',
+                        hiddenName: 'id_venta',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><div style="font-weight:bold;">Numero <span style="color:blue;"">&nbsp;{nro_factura}</span><br> Nombre: <span style="color:green;"">{nombre_factura}</span> <br> Monto: <span style="color:red;">&nbsp;&nbsp;{total_venta}&nbsp;&nbsp;&nbsp{tex_saldo}</span><br></div></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
+                        gwidth: 150,
+                        listWidth:370,
+                        resizable:true,
+                        minChars: 1,
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 1,
+                    grid: false,
+                    form: true
+                },
+                // {
+            		// 	config:{
+            		// 		name: 'nro_documento',
+            		// 		fieldLabel: 'Nro. Recibo',
+            		// 		allowBlank: true,
+                //     hidden:true,
+            		// 	},
+            		// 	type:'NumberField',
+            		// 	id_grupo:1,
+            		// 	form:true,
+            		// },
                 {
                     config:{
                         name: 'nro_cupon',
@@ -1406,7 +1476,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         name: 'id_auxiliar2',
                         fieldLabel: 'Cuenta Corriente',
                         allowBlank: true,
-                        emptyText: 'Cuenta Corriente...',
+                        emptyText: '',
                         store: new Ext.data.JsonStore({
                             url: '../../sis_contabilidad/control/Auxiliar/listarAuxiliar',
                             id: 'id_auxiliar',
@@ -1424,7 +1494,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nombre_auxiliar',
                         gdisplayField: 'nombre_auxiliar2',
                         hiddenName: 'id_auxiliar',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><p>{nombre_auxiliar}</p><p>Codigo:{codigo_auxiliar}</p> </div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><b><p style="color:red;">{nombre_auxiliar}</p><p>Codigo: <span style="color:green;">{codigo_auxiliar}</span></p></b></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -1445,6 +1515,58 @@ header("content-type: text/javascript; charset=UTF-8");
                     grid: true,
                     form: true
                 },
+                {
+                    config: {
+                        name: 'id_venta_2',
+                        fieldLabel: 'Nro. Recibo',
+                        allowBlank: true,
+                        emptyText: '',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_ventas_facturacion/control/Venta/listarReciboBoletosAmadeus',
+                            id: 'id_venta',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'v.nro_factura, v.nombre_factura ',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['id_venta', 'nro_factura','nombre_factura','total_venta','saldo','tex_saldo','moneda'],
+                            remoteSort: true,
+                            baseParams: {par_filtro: 'v.nro_factura#v.nombre_factura'}
+                        }),
+                        valueField: 'id_venta',
+                        displayField: 'nro_factura',
+                        gdisplayField: 'nro_factura',
+                        hiddenName: 'id_venta',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><div style="font-weight:bold;">Numero <span style="color:blue;"">&nbsp;{nro_factura}</span><br> Nombre: <span style="color:green;"">{nombre_factura}</span> <br> Monto: <span style="color:red;">&nbsp;&nbsp;{total_venta}&nbsp;&nbsp;&nbsp{tex_saldo}</span><br></div></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 15,
+                        queryDelay: 1000,
+                        gwidth: 150,
+                        listWidth:370,
+                        resizable:true,
+                        minChars: 1,
+                    },
+                    type: 'ComboBox',
+                    id_grupo: 4,
+                    grid: false,
+                    form: true
+                },
+                // {
+            		// 	config:{
+            		// 		name: 'nro_documento_2',
+            		// 		fieldLabel: 'Nro. Recibo',
+            		// 		allowBlank: true,
+                //     hidden:true,
+            		// 	},
+            		// 	type:'NumberField',
+            		// 	id_grupo:4,
+            		// 	form:true,
+            		// },
                 {
                     config:{
                         name: 'nro_cupon_2',
@@ -1711,7 +1833,6 @@ header("content-type: text/javascript; charset=UTF-8");
             bedit:false,
 
             iniciarEventos : function () {
-
               /*Mandaremos el filtro para regionales (Ismael Valdivia 24/11/2020)*/
               this.condicionesRegionales();
               /*******************************************************************/
@@ -1724,14 +1845,34 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },this);
 
-                /*Aqui aumentamos cuando se seleccione la moneda se resetee el medio de pago (26/11/2020)*/
-                // this.Cmp.id_moneda.on('select',function(combo,record){
-                //     this.Cmp.id_forma_pago.reset();
-                // },this);
-                //
-                // this.Cmp.id_moneda2.on('select',function(combo,record){
-                //     this.Cmp.id_forma_pago2.reset();
-                // },this);
+                /*Aqui aumentamos cuando se seleccione la moneda se resetee el combo recibo  (22/04/2021)*/
+                this.Cmp.id_moneda.on('select',function(combo,record){
+                    this.Cmp.id_venta.reset()
+                    this.Cmp.id_venta.store.baseParams.id_moneda=record.data.id_moneda;
+                    this.Cmp.id_venta.store.baseParams.id_auxiliar_anticipo=this.Cmp.id_auxiliar.getValue();
+                    this.Cmp.id_venta.modificado = true;
+                },this);
+
+                this.Cmp.id_moneda2.on('select',function(combo,record){
+                    this.Cmp.id_venta_2.reset()
+                    this.Cmp.id_venta_2.store.baseParams.id_moneda=record.data.id_moneda;
+                    this.Cmp.id_venta_2.store.baseParams.id_auxiliar_anticipo=this.Cmp.id_auxiliar2.getValue();
+                    this.Cmp.id_venta_2.modificado = true;
+                },this);
+                /*filtro de recibo por id_auxiliar ****/
+                this.Cmp.id_auxiliar.on('select', function(c,r){
+                    this.Cmp.id_venta.reset()
+                    this.Cmp.id_venta.store.baseParams.id_moneda=this.Cmp.id_moneda.getValue();
+                    this.Cmp.id_venta.store.baseParams.id_auxiliar_anticipo=r.data.id_auxiliar;
+                    this.Cmp.id_venta.modificado = true;
+                },this)
+
+                this.Cmp.id_auxiliar2.on('select', function(c,r){
+                    this.Cmp.id_venta_2.reset()
+                    this.Cmp.id_venta_2.store.baseParams.id_moneda=this.Cmp.id_moneda2.getValue();
+                    this.Cmp.id_venta_2.store.baseParams.id_auxiliar_anticipo=r.data.id_auxiliar;
+                    this.Cmp.id_venta_2.modificado = true;
+                },this)
                 /*****************************************************************************************/
 
 
@@ -3287,6 +3428,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                       this.ocultarComponente(this.Cmp.mco);
                       this.ocultarComponente(this.Cmp.id_auxiliar);
+                      this.ocultarComponente(this.Cmp.id_venta);
                       this.Cmp.numero_tarjeta.allowBlank = true;
                       this.Cmp.numero_tarjeta.allowBlank = true;
                       this.Cmp.mco.allowBlank = true;
@@ -3304,6 +3446,10 @@ header("content-type: text/javascript; charset=UTF-8");
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                           this.mostrarComponente(this.Cmp.nro_cupon);
                           this.mostrarComponente(this.Cmp.nro_cuota);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
+                          this.Cmp.saldo_recibo.reset();
+                          this.Cmp.numero_tarjeta.reset();
                           /***********************************************/
                           this.Cmp.numero_tarjeta.allowBlank = false;
                           this.Cmp.codigo_tarjeta.allowBlank = false;
@@ -3328,27 +3474,66 @@ header("content-type: text/javascript; charset=UTF-8");
                           /***********************************************/
 
                           this.mostrarComponente(this.Cmp.id_auxiliar);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
 
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                           this.Cmp.nro_cupon.reset();
                           this.Cmp.nro_cuota.reset();
+                          this.Cmp.saldo_recibo.reset();
                           this.Cmp.nro_cupon.allowBlank = true;
                           this.Cmp.nro_cuota.allowBlank = true;
                           /***********************************************/
+                          this.Cmp.id_auxiliar.reset();
+                          this.Cmp.id_auxiliar.label.dom.innerHTML='Cuenta Corriente';
+                          this.Cmp.id_auxiliar.store.baseParams.ro_activo='no';
+                          this.Cmp.id_auxiliar.modificado = true;
 
                           this.Cmp.numero_tarjeta.allowBlank = true;
                           this.Cmp.mco2.allowBlank = true;
                           this.Cmp.codigo_tarjeta.allowBlank = true;
                           this.Cmp.id_auxiliar.allowBlank = false;
-                      } else if (codigo_fp1.startsWith("MCO")) {
+                      }else if (codigo_fp1.startsWith("RANT")) {
+                        //cuenta corriente
+                        this.ocultarComponente(this.Cmp.numero_tarjeta);
+                        this.ocultarComponente(this.Cmp.mco);
+                        this.ocultarComponente(this.Cmp.codigo_tarjeta);
+
+                        /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                        this.ocultarComponente(this.Cmp.nro_cupon);
+                        this.ocultarComponente(this.Cmp.nro_cuota);
+                        this.Cmp.nro_cupon.allowBlank = true;
+                        this.Cmp.nro_cuota.allowBlank = true;
+                        /******************************************/
+                        this.Cmp.id_auxiliar.reset();
+                        this.Cmp.id_auxiliar.label.dom.innerHTML='Grupo';
+                        this.Cmp.id_auxiliar.store.baseParams.ro_activo='si';
+                        this.Cmp.id_auxiliar.modificado = true;
+                        this.Cmp.id_venta.reset();
+                        this.Cmp.id_venta.modificado = true;
+                        this.mostrarComponente(this.Cmp.id_auxiliar);
+                        this.mostrarComponente(this.Cmp.id_venta);
+                        this.Cmp.numero_tarjeta.reset();
+                        this.Cmp.codigo_tarjeta.reset();
+                        this.Cmp.saldo_recibo.reset();
+                        this.Cmp.numero_tarjeta.allowBlank = true;
+                        this.Cmp.mco2.allowBlank = true;
+                        this.Cmp.codigo_tarjeta.allowBlank = true;
+                        this.Cmp.id_auxiliar.allowBlank = false;
+                      }
+                      else if (codigo_fp1.startsWith("MCO")) {
                           //mco
                           this.ocultarComponente(this.Cmp.numero_tarjeta);
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.Cmp.id_auxiliar.reset();
                           this.mostrarComponente(this.Cmp.mco);
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
+                          this.Cmp.saldo_recibo.reset();
+                          this.Cmp.numero_tarjeta.reset();
                           this.Cmp.mco.allowBlank = false;
                           this.Cmp.codigo_tarjeta.allowBlank = true;
                           this.Cmp.id_auxiliar.allowBlank = true;
@@ -3366,9 +3551,12 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.mco);
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
                           this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
                           this.Cmp.id_auxiliar.reset();
+                          this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.allowBlank = true;
                           this.Cmp.mco.allowBlank = true;
                           this.Cmp.codigo_tarjeta.allowBlank = true;
@@ -3391,6 +3579,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
                       this.ocultarComponente(this.Cmp.mco);
                       this.ocultarComponente(this.Cmp.id_auxiliar);
+                      this.ocultarComponente(this.Cmp.id_venta);
+
                       this.Cmp.numero_tarjeta.allowBlank = true;
                       this.Cmp.numero_tarjeta.allowBlank = true;
                       this.Cmp.mco.allowBlank = true;
@@ -3409,6 +3599,10 @@ header("content-type: text/javascript; charset=UTF-8");
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                           this.ocultarComponente(this.Cmp.nro_cupon);
                           this.ocultarComponente(this.Cmp.nro_cuota);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
+                          this.Cmp.saldo_recibo.reset();
+                          this.Cmp.numero_tarjeta.reset();
                           this.Cmp.nro_cupon.allowBlank = true;
                           this.Cmp.nro_cuota.allowBlank = true;
                           /******************************************/
@@ -3424,30 +3618,68 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.numero_tarjeta);
                           this.ocultarComponente(this.Cmp.mco);
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_venta);
 
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                           this.ocultarComponente(this.Cmp.nro_cupon);
                           this.ocultarComponente(this.Cmp.nro_cuota);
+                          this.Cmp.id_venta.reset();
                           this.Cmp.nro_cupon.allowBlank = true;
                           this.Cmp.nro_cuota.allowBlank = true;
                           /******************************************/
+                          this.Cmp.id_auxiliar.reset();
+                          this.Cmp.id_auxiliar.label.dom.innerHTML='Cuenta Corriente';
+                          this.Cmp.id_auxiliar.store.baseParams.ro_activo='no';
+                          this.Cmp.id_auxiliar.modificado = true;
 
                           this.mostrarComponente(this.Cmp.id_auxiliar);
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
-
-
+                          this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.allowBlank = true;
                           this.Cmp.mco2.allowBlank = true;
                           this.Cmp.codigo_tarjeta.allowBlank = true;
                           this.Cmp.id_auxiliar.allowBlank = false;
-                      } else if (codigo_fp1.startsWith("MCO")) {
+                      } else if (codigo_fp1.startsWith("RANT")) {
+                        //cuenta corriente
+                        this.ocultarComponente(this.Cmp.numero_tarjeta);
+                        this.ocultarComponente(this.Cmp.mco);
+                        this.ocultarComponente(this.Cmp.codigo_tarjeta);
+
+                        /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                        this.ocultarComponente(this.Cmp.nro_cupon);
+                        this.ocultarComponente(this.Cmp.nro_cuota);
+                        this.Cmp.nro_cupon.allowBlank = true;
+                        this.Cmp.nro_cuota.allowBlank = true;
+                        /******************************************/
+                        this.Cmp.id_auxiliar.reset();
+                        this.Cmp.id_auxiliar.label.dom.innerHTML='Grupo';
+                        this.Cmp.id_auxiliar.store.baseParams.ro_activo='si';
+                        this.Cmp.id_auxiliar.modificado = true;
+                        this.Cmp.id_venta.reset();
+                        this.Cmp.id_venta.modificado = true;
+                        this.mostrarComponente(this.Cmp.id_auxiliar);
+                        this.mostrarComponente(this.Cmp.id_venta);
+                        this.Cmp.numero_tarjeta.reset();
+                        this.Cmp.codigo_tarjeta.reset();
+                        this.Cmp.saldo_recibo.reset();
+
+                        this.Cmp.numero_tarjeta.allowBlank = true;
+                        this.Cmp.mco2.allowBlank = true;
+                        this.Cmp.codigo_tarjeta.allowBlank = true;
+                        this.Cmp.id_auxiliar.allowBlank = false;
+                      }
+                      else if (codigo_fp1.startsWith("MCO")) {
                           //mco
                           this.ocultarComponente(this.Cmp.numero_tarjeta);
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.Cmp.id_auxiliar.reset();
                           this.mostrarComponente(this.Cmp.mco);
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
+                          this.Cmp.saldo_recibo.reset();
+                          this.Cmp.numero_tarjeta.reset();
                           this.Cmp.mco.allowBlank = false;
                           this.Cmp.codigo_tarjeta.allowBlank = true;
                           this.Cmp.id_auxiliar.allowBlank = true;
@@ -3463,9 +3695,12 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.mco);
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
                           this.ocultarComponente(this.Cmp.id_auxiliar);
+                          this.ocultarComponente(this.Cmp.id_venta);
+                          this.Cmp.id_venta.reset();
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
                           this.Cmp.id_auxiliar.reset();
+                          this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.allowBlank = true;
                           this.Cmp.mco.allowBlank = true;
                           this.Cmp.codigo_tarjeta.allowBlank = true;
@@ -3475,6 +3710,26 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 }
 
+                // seleccion de id_venta para controles con monto de recibo
+                this.Cmp.id_venta.on('select', function(d, r, i){
+
+                    var saldo = r.data.saldo;
+                    var imp1 = this.Cmp.monto_forma_pago.getValue();
+                    var mon_sel = r.data.moneda;
+                    var dif = imp1 - saldo;
+                    this.Cmp.saldo_recibo.setValue(saldo);
+                    if (imp1 > saldo){
+                        Ext.Msg.show({
+                         title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                         msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',
+                         maxWidth : 400,
+                         width: 380,
+                         buttons: Ext.Msg.OK,
+                         scope:this
+                        });
+                    }
+
+                },this)
             },
             manejoComponentesFp2 : function (id_fp2,codigo_fp2){
               if (this.store.baseParams.moneda_base == 'ARS') {
@@ -3487,7 +3742,9 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.ocultarComponente(this.Cmp.mco2);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                         this.ocultarComponente(this.Cmp.id_auxiliar2);
-
+                        this.ocultarComponente(this.Cmp.id_venta_2);
+                        this.Cmp.id_venta_2.reset();
+                        this.Cmp.saldo_recibo_2.reset();
                         /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                         this.ocultarComponente(this.Cmp.nro_cupon_2);
                         this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3513,7 +3770,10 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.mco2);
-
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
+                            this.Cmp.numero_tarjeta2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.mostrarComponente(this.Cmp.nro_cupon_2);
                             this.mostrarComponente(this.Cmp.nro_cuota_2);
@@ -3541,21 +3801,56 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.nro_cupon_2.allowBlank = true;
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_auxiliar2.reset();
+                            this.Cmp.id_auxiliar2.label.dom.innerHTML='Cuenta Corriente';
+                            this.Cmp.id_auxiliar2.store.baseParams.ro_activo='no';
+                            this.Cmp.id_auxiliar2.modificado = true;
 
                             this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.numero_tarjeta2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = false;
-                        } else if (codigo_fp2.startsWith("MCO")) {
+                        }else if (codigo_fp2.startsWith("RANT")) {
+                          //cuenta corriente
+                          this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                          this.ocultarComponente(this.Cmp.mco2);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                          this.Cmp.id_auxiliar2.reset();
+                          this.Cmp.id_auxiliar2.label.dom.innerHTML='Grupo';
+                          this.Cmp.id_auxiliar2.store.baseParams.ro_activo='si';
+                          this.Cmp.id_auxiliar2.modificado = true;
+                          this.Cmp.id_venta_2.reset();
+                          this.Cmp.id_venta_2.modificado = true;
+                          this.mostrarComponente(this.Cmp.id_auxiliar2);
+                          this.mostrarComponente(this.Cmp.id_venta_2);
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon_2);
+                          this.ocultarComponente(this.Cmp.nro_cuota_2);
+                          this.Cmp.nro_cupon_2.reset();
+                          this.Cmp.saldo_recibo_2.reset();
+                          this.Cmp.nro_cupon_2.allowBlank = true;
+                          /**********************************************/
+
+                          this.Cmp.numero_tarjeta2.reset();
+                          this.Cmp.mco2.allowBlank = true;
+                          this.Cmp.numero_tarjeta2.allowBlank = true;
+                          this.Cmp.id_auxiliar2.allowBlank = false;
+
+                        }
+                        else if (codigo_fp2.startsWith("MCO")) {
                             //mco
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.Cmp.id_auxiliar2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
                             this.mostrarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-
+                            this.ocultarComponente(this.Cmp.id_venta_2);
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3573,7 +3868,9 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
-
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3597,7 +3894,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.mco2);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
-
+                    this.ocultarComponente(this.Cmp.id_venta_2);
+                    this.Cmp.id_venta_2.reset();
+                    this.Cmp.saldo_recibo_2.reset();
                     /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                     this.ocultarComponente(this.Cmp.nro_cupon_2);
                     this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3622,7 +3921,9 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.ocultarComponente(this.Cmp.mco2);
                         this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                         this.ocultarComponente(this.Cmp.id_auxiliar2);
-
+                        this.ocultarComponente(this.Cmp.id_venta_2);
+                        this.Cmp.id_venta_2.reset();
+                        this.Cmp.saldo_recibo_2.reset();
                         /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                         this.ocultarComponente(this.Cmp.nro_cupon_2);
                         this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3650,12 +3951,15 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.mco2);
-
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
                             this.Cmp.nro_cupon_2.reset();
                             this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
+                            this.Cmp.numero_tarjeta2.reset();
                             this.Cmp.nro_cupon_2.allowBlank = true;
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
@@ -3670,6 +3974,12 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_auxiliar2.reset();
+                            this.Cmp.id_auxiliar2.label.dom.innerHTML='Cuenta Corriente';
+                            this.Cmp.id_auxiliar2.store.baseParams.ro_activo='no';
+                            this.Cmp.id_auxiliar2.modificado = true;
                             this.mostrarComponente(this.Cmp.id_auxiliar2);
 
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
@@ -3677,6 +3987,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
                             this.Cmp.nro_cupon_2.reset();
                             this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
                             this.Cmp.nro_cupon_2.allowBlank = true;
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
@@ -3687,14 +3998,43 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.mco2.allowBlank = true;
                             this.Cmp.numero_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = false;
-                        } else if (codigo_fp2.startsWith("MCO")) {
+                        }  else if (codigo_fp2.startsWith("RANT")) {
+                          //cuenta corriente
+                          this.ocultarComponente(this.Cmp.numero_tarjeta2);
+                          this.ocultarComponente(this.Cmp.mco2);
+                          this.ocultarComponente(this.Cmp.codigo_tarjeta2);
+                          this.Cmp.id_auxiliar2.reset();
+                          this.Cmp.id_auxiliar2.label.dom.innerHTML='Grupo';
+                          this.Cmp.id_auxiliar2.store.baseParams.ro_activo='si';
+                          this.Cmp.id_auxiliar2.modificado = true;
+                          this.Cmp.id_venta_2.reset();
+                          this.Cmp.id_venta_2.modificado = true;
+                          this.mostrarComponente(this.Cmp.id_auxiliar2);
+                          this.mostrarComponente(this.Cmp.id_venta_2);
+                          /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
+                          this.ocultarComponente(this.Cmp.nro_cupon_2);
+                          this.ocultarComponente(this.Cmp.nro_cuota_2);
+                          this.Cmp.nro_cupon_2.reset();
+                          this.Cmp.saldo_recibo_2.reset();
+                          this.Cmp.nro_cuota_2.allowBlank = true;
+                          /**********************************************/
+
+                          this.Cmp.numero_tarjeta2.reset();
+                          this.Cmp.mco2.allowBlank = true;
+                          this.Cmp.numero_tarjeta2.allowBlank = true;
+                          this.Cmp.id_auxiliar2.allowBlank = false;
+
+                        }
+                        else if (codigo_fp2.startsWith("MCO")) {
                             //mco
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
-
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -3713,12 +4053,14 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
-
+                            this.ocultarComponente(this.Cmp.id_venta_2);
+                            this.Cmp.id_venta_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
                             this.Cmp.nro_cupon_2.reset();
                             this.Cmp.nro_cuota_2.reset();
+                            this.Cmp.saldo_recibo_2.reset();
                             this.Cmp.nro_cupon_2.allowBlank = true;
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
@@ -3737,12 +4079,14 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.mco2);
                     this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
-
+                    this.ocultarComponente(this.Cmp.id_venta_2);
+                    this.Cmp.id_venta_2.reset();
                     /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                     this.ocultarComponente(this.Cmp.nro_cupon_2);
                     this.ocultarComponente(this.Cmp.nro_cuota_2);
                     this.Cmp.nro_cupon_2.reset();
                     this.Cmp.nro_cuota_2.reset();
+                    this.Cmp.saldo_recibo_2.reset();
                     this.Cmp.nro_cupon_2.allowBlank = true;
                     this.Cmp.nro_cuota_2.allowBlank = true;
                     /**********************************************/
@@ -3755,7 +4099,25 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.monto_forma_pago2.setDisabled(true);
                 }
               }
+              // seleccion de id_venta_2 para controles con monto de recibo
+              this.Cmp.id_venta_2.on('select', function(d, r, i){
+                  var saldo = r.data.saldo;
+                  var imp2 = this.Cmp.monto_forma_pago2.getValue();
+                  var mon_sel = r.data.moneda;
+                  var dif = imp2 - saldo;
+                  this.Cmp.saldo_recibo_2.setValue(saldo);
+                  if (imp2 > saldo){
+                      Ext.Msg.show({
+                       title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                       msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',
+                       maxWidth : 400,
+                       width: 380,
+                       buttons: Ext.Msg.OK,
+                       scope:this
+                      });
+                  }
 
+              },this)
             },
             formViajeroFrecuente: function () {
 

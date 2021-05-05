@@ -389,6 +389,10 @@ class MODBoleto extends MODbase{
         /*Aumentando para las nuevos medios de pago (25/11/2020) Ismael Valdivia*/
         $this->setParametro('id_moneda','id_moneda','integer');
         $this->setParametro('id_moneda2','id_moneda2','integer');
+        $this->setParametro('id_venta','id_venta','integer');
+        $this->setParametro('id_venta_2','id_venta_2','integer');
+        $this->setParametro('saldo_recibo','saldo_recibo','numeric');
+        $this->setParametro('saldo_recibo_2','saldo_recibo_2','numeric');
         /************************************************************************/
 
 
@@ -470,6 +474,10 @@ class MODBoleto extends MODbase{
         $this->setParametro('mco2','mco2','varchar');
         $this->setParametro('id_moneda','id_moneda','integer');
         $this->setParametro('id_moneda2','id_moneda2','integer');
+        $this->setParametro('id_venta','id_venta','integer');
+        $this->setParametro('id_venta_2','id_venta_2','integer');
+        $this->setParametro('saldo_recibo','saldo_recibo','numeric');
+        $this->setParametro('saldo_recibo_2','saldo_recibo_2','numeric');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -949,6 +957,8 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento='SEL';//tipo de transaccion
         //Define los parametros para la funcion
 
+        $this->setCount(false);
+
         $this->setParametro('localizador','localizador','jsonb');
         $this->setParametro('ct','ct','jsonb');
         $this->setParametro('fc','fc','jsonb');
@@ -1019,6 +1029,7 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento = 'SEL';//tipo de transaccion
         //Define los parametros para la funcion
 
+        $this->setCount(false);
 
         $this->setParametro('pnr', 'pnr', 'varchar');
         $this->setParametro('tipo', 'tipo', 'varchar');
