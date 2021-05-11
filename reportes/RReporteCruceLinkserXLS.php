@@ -522,13 +522,13 @@ class RReporteCruceLinkserXLS
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFont()->setBold(true);
                     $fila++;
                     $index_total = $fila;
-                }else{
+                }/*else{
                     $this->docexcel->getActiveSheet()->mergeCells('K'.$fila.':R'.$fila);
                     $this->docexcel->getActiveSheet()->setCellValue('K' . $fila, 'Estación: ' . $sales_place.' Moneda: ' . $ticket->PaymentCurrency);
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFont()->setBold(true);
-                }
+                }*/
             }
 
             $this->docexcel->getActiveSheet()->getStyle('K' . $fila . ':R' . $fila)->applyFromArray($styleGroup);

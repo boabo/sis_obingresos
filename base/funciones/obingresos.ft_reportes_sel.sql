@@ -168,7 +168,8 @@ $body$
                   total_cero		integer,
                   MatriculaBoa		varchar,
                   MatriculaSabsa	varchar,
-                  RutaSabsa		    varchar
+                  RutaSabsa		    varchar,
+                  StatusVl			varchar
           )on commit drop;
           for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.dataA7->'dataA7') loop
           	--raise 'v_record_json: %',(v_record_json->>'PaxA7Nac');
@@ -188,7 +189,8 @@ $body$
               total_cero,
               MatriculaBoa,
               MatriculaSabsa,
-              RutaSabsa
+              RutaSabsa,
+              StatusVl
             )values (
             	v_contador_id,
                 (v_record_json->>'VueloID')::integer,
@@ -205,7 +207,8 @@ $body$
                 coalesce((v_record_json->>'PaxA70')::integer,0::integer),
                 case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaBoa')::varchar end,
                 case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaSabsa')::varchar end,
-                (v_record_json->>'RutaPax')::varchar
+                (v_record_json->>'RutaPax')::varchar,
+                (v_record_json->>'StatusVl')::varchar
             );
 
             v_total_nacional = v_total_nacional + coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer);
@@ -268,7 +271,8 @@ $body$
                           total_cero,
                           MatriculaBoa matricula_boa,
                           MatriculaSabsa matricula_sabsa,
-                          RutaSabsa ruta_sabsa
+                          RutaSabsa ruta_sabsa,
+                          StatusVl status
                       from ttcalculo_vuelos
                       order by fecha_vuelo asc
                        ';
@@ -550,3 +554,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_reportes_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

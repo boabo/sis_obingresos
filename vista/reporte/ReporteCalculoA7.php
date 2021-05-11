@@ -51,6 +51,40 @@ header("content-type: text/javascript; charset=UTF-8");
             this.current_date = new Date();
             this.diasMes = [31, new Date(this.current_date.getFullYear(), 2, 0).getDate(), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
+            /*this.txtSearch = new Ext.form.TextField();
+            this.txtSearch.enableKeyEvents = true;
+            this.txtSearch.maxLength = 13;
+            this.txtSearch.maxLengthText = 'Ha exedido el numero de caracteres permitidos';
+            this.txtSearch.msgTarget = 'under';*/
+
+            this.etiqueta_vuelo = new Ext.form.Label({
+                name: 'label_vuelo',
+                grupo: [0,1],
+                fieldLabel: 'Nro. Vuelo:',
+                text: 'Nro. Vuelo:',
+                //style: {color: 'green', font_size: '12pt'},
+                readOnly:true,
+                anchor: '150%',
+                gwidth: 150,
+                format: 'd/m/Y',
+                hidden : false,
+                style: 'font-size: 170%; font-weight: bold; background-image: none;color: #00B167;'
+            });
+
+            this.txtSearch = new Ext.form.TextField({
+                name: 'campo_search',
+                grupo: [0,1],
+                fieldLabel: 'Fecha Inicio:',
+                enableKeyEvents: true,
+                maxLength : 13,
+                maxLengthText : 'Ha exedido el numero de caracteres permitidos',
+                gwidth: 150,
+                msgTarget : 'under',
+                hidden : false
+            });
+
+            this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
+
             this.etiqueta_ini = new Ext.form.Label({
                 name: 'etiqueta_ini',
                 grupo: [0,1],
@@ -106,6 +140,16 @@ header("content-type: text/javascript; charset=UTF-8");
             this.tbar.addField(this.fecha_ini);
             this.tbar.addField(this.etiqueta_fin);
             this.tbar.addField(this.fecha_fin);
+            this.tbar.addField(this.etiqueta_vuelo);
+            this.tbar.addField(this.txtSearch);
+
+            this.addButton('btnBuscar', {
+                text : 'Buscar',
+                grupo: [0,1],
+                iconCls : 'bzoom',
+                disabled : false,
+                handler : this.onBtnBuscar
+            });
             this.iniciarEventos();
             this.bandera_alta = 0;
             this.bandera_baja = 0;
@@ -114,6 +158,35 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.init();
 
+        },
+
+        onTxtSearchSpecialkey : function(field, e) {
+
+            if (e.getKey() == e.ENTER) {
+                this.onBtnBuscar();
+            }
+        },
+
+        onBtnBuscar : function() {
+            this.store.baseParams.nro_vuelo = (this.txtSearch.getValue()).trim();
+
+            fecha_desde = this.fecha_ini.getValue();
+            dia =  fecha_desde.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_desde.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_desde.getFullYear();
+            this.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+            fecha_hasta = this.fecha_fin.getValue();
+            dia =  fecha_hasta.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_hasta.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_hasta.getFullYear();
+            this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
+
+            this.load({params: {start: 0, limit: 50}});
         },
 
         mostrarDetalleVuelo : function(grid, rowIndex, columnIndex, e) {
@@ -302,6 +375,29 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
+                    fieldLabel: "Status Vuelo",
+                    gwidth: 100,
+                    name: 'status',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'NroVuelo',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            {
+                config:{
                     fieldLabel: "Ruta BoA",
                     gwidth: 100,
                     name: 'ruta_vl',
@@ -316,7 +412,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //filters:{pfiltro:'RutaVl',type:'string'},
                 //bottom_filter : true,
                 id_grupo:1,
                 grid:true,
@@ -655,7 +751,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {name:'matricula_boa', type: 'string'},
             {name:'matricula_sabsa', type: 'string'},
-            {name:'ruta_sabsa', type: 'string'}
+            {name:'ruta_sabsa', type: 'string'},
+            {name:'status', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',

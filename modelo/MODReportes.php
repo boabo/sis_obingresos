@@ -106,9 +106,9 @@ class MODReportes extends MODbase{
         }else {
 
             //$query = @mssql_query("exec DBStage.dbo.spa_GetCruceTarjetas '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
-            $query = @mssql_query("exec DBStage.dbo.spa_GetAtcLinkserInformation '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
-            //$query = @mssql_query(utf8_decode('select * from AuxBSPVersion'), $conn);
 
+            //$query = @mssql_query(utf8_decode('select * from AuxBSPVersion'), $conn);
+            //var_dump('$record', 'exec DBStage.dbo.spa_GetAtcLinkserInformation '.$fecha_desde.','.$fecha_hasta.','.$office_id.','.$fuente.';');exit;
             $data = array();
 
             $cone = new conexion();
@@ -128,8 +128,9 @@ class MODReportes extends MODbase{
             /** Office ID Lugar **/
 
             /** Establecimiento Punto Venta**/
-            $sql = "SELECT 	tep.codigo_estable, tep.nombre_estable, tep.tipo_estable
+            $sql = "SELECT 	tep.codigo_estable, (case when tpv.nombre is null then tep.nombre_estable else tpv.nombre end) nombre_estable, tep.tipo_estable
                     FROM obingresos.testablecimiento_punto_venta tep
+                    left join vef.tpunto_venta tpv on tpv.id_punto_venta = tep.id_punto_venta
                     ";
 
             $consulta = $link->query($sql);
@@ -138,9 +139,12 @@ class MODReportes extends MODbase{
 
             /*var_dump('$office_ids', $office_ids);
             var_dump('$list', $list);exit;*/
+
+            $query = @mssql_query("exec DBStage.dbo.spa_GetAtcLinkserInformation '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
+
             /** Establecimiento Punto Venta**/
             while ($row = mssql_fetch_array($query, MSSQL_ASSOC)){
-
+                //var_dump('$record', $row);exit;
                 $record = json_decode(json_encode($row));
 
                 if($row['Iatacode']!=null) {
@@ -279,6 +283,7 @@ class MODReportes extends MODbase{
         $tipo_rep = $this->objParam->getParametro('tipo_rep');
         $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
         $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
+        $nro_vuelo = $this->objParam->getParametro('nro_vuelo');
         //var_dump('A', $tipo_rep, $fecha_desde,$fecha_hasta );exit;
         //variables para la conexion sql server.
         $bandera_conex = '';
@@ -302,9 +307,9 @@ class MODReportes extends MODbase{
             throw new Exception("select_db: La seleccion de la bd SQL Server " . $param_conex[1] . " ha fallado.");
         } else {
             if($tipo_rep == 'normal'){
-                $query = @mssql_query("exec Sabsa.Get_Datos_A7 '$fecha_desde','$fecha_hasta';", $conn);
+                $query = @mssql_query("exec Sabsa.Get_Datos_A7 '$fecha_desde','$fecha_hasta','$nro_vuelo';", $conn);
             }else {
-                $query = @mssql_query("exec Sabsa.Get_Datos_A7_Noexiste '$fecha_desde','$fecha_hasta';", $conn);
+                $query = @mssql_query("exec Sabsa.Get_Datos_A7_Noexiste '$fecha_desde','$fecha_hasta','$nro_vuelo';", $conn);
             }
 
             $data = array();
@@ -343,6 +348,7 @@ class MODReportes extends MODbase{
         $this->captura('matricula_boa','varchar');
         $this->captura('matricula_sabsa','varchar');
         $this->captura('ruta_sabsa','varchar');
+        $this->captura('status','varchar');
 
 
         //Ejecuta la instruccion
