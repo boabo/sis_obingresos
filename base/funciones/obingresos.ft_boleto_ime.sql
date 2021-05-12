@@ -2976,6 +2976,11 @@ BEGIN
                   set comision = 0,
                   tipo_comision= 'ninguno'
                   where id_boleto_amadeus = v_id_boleto_a;
+                  -- breydi vasquez 12/01/2021 quitar relacion con recibo de la forma de pago
+                  update obingresos.tboleto_amadeus_forma_pago
+                  set
+                  id_venta = null
+                  where id_boleto_amadeus = v_id_boleto_a;
 
 
             delete from obingresos.tmod_forma_pago m
