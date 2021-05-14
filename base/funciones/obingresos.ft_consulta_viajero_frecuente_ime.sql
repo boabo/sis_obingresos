@@ -39,6 +39,9 @@ DECLARE
     v_expirado				varchar;
 	v_consumido				varchar;
 
+  v_estado_reg			varchar;
+  v_id_cvf				integer;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_consulta_viajero_frecuente_ime';
@@ -60,19 +63,34 @@ BEGIN
                     from obingresos.tconsulta_viajero_frecuente v
                     where v.voucher_code = 'OB.FF.VO'||v_parametros.voucher_code and v.ffid = v_parametros.ffid;
                     raise exception 'El numero % %',v_existe,v_parametros.ffidw;*/
-            CASE
+          /*  CASE
 
                 WHEN (select 1
                 	from obingresos.tconsulta_viajero_frecuente v
                     where v.voucher_code = 'OB.FF.VO'||v_parametros.voucher_code and v.ffid = v_parametros.ffid)
                     THEN v_existe = '1';
                 ELSE v_existe = '0';
-            END CASE;
+            END CASE;*/
 
-            IF(v_existe = 1)
+            select v.id_consulta_viajero_frecuente, v.estado_reg into v_id_cvf,v_estado_reg
+            from obingresos.tconsulta_viajero_frecuente v
+            where v.voucher_code = 'OB.FF.VO'||v_parametros.voucher_code and v.ffid = v_parametros.ffid
+           	order by v.fecha_reg desc
+            limit 1;
+
+            IF v_estado_reg = 'activo' THEN
+            	UPDATE obingresos.tconsulta_viajero_frecuente
+                SET
+				        estado_reg = 'inactivo',
+                id_usuario_mod = p_id_usuario,
+                fecha_mod = now()
+                where id_consulta_viajero_frecuente = v_id_cvf;
+            END IF;
+
+            /*IF(v_existe = 1)
              THEN
             	raise exception 'El numero de voucher que intenta registrar ya existe.';
-            ELSE
+            ELSE*/
             --THEN
         	--Sentencia de la insercion
         	insert into obingresos.tconsulta_viajero_frecuente(
@@ -104,7 +122,7 @@ BEGIN
             'Verificado'
 
 			)RETURNING id_consulta_viajero_frecuente into v_id_consulta_viajero_frecuente;
-            END IF;
+            --END IF;
 
 
 			--Definicion de la respuesta

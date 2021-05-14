@@ -15,12 +15,14 @@ header("content-type: text/javascript; charset=UTF-8");
         viewConfig: {
             stripeRows: false,
             getRowClass: function(record) {
-                if(record.data.estado == 'Verificado'){
+                if(record.data.estado == 'Verificado' && record.data.estado_reg == 'activo'){
                     return 'Verificado';
-                } else if (record.data.estado == 'Canjeado') {
+                } else if (record.data.estado == 'Canjeado' && record.data.estado_reg == 'activo') {
                     return 'Canjeado';
-                } else if (record.data.estado == 'No Canjeado') {
+                } else if (record.data.estado == 'No Canjeado' && record.data.estado_reg == 'activo') {
                     return 'No_Canjeado';
+                }else if(record.data.estado_reg == 'inactivo'){
+                    return 'Inactivos';
                 }
             }
         },
@@ -238,7 +240,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     gwidth: 200,
                     maxLength: 20,
                     renderer: function (value, p, record) {
-                        console.log("recor data irbva",record.data);
+                        // console.log("recor data irbva",record.data);
                         if (record.data['status_canjeado'] == 'NOK' && record.data['status_canjeado'] != '' ) {
                             return String.format('<div title="Anulado"><b><font color="red"><i class="fa fa-times-circle" aria-hidden="true" style="font-size:12px;"></i> {0}</font></b></div>', value);
 
@@ -360,12 +362,20 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: true,
                     anchor: '80%',
                     gwidth: 100,
-                    maxLength: 10
+                    maxLength: 10,
+                    renderer: function (value, p, record) {
+                        if (record.data['estado_reg'] == 'activo') {
+                            return String.format('<div title="Activo"><b><font>{0}</font></b></div>', value);
+
+                        } else {
+                            return String.format('<div title="Anulado"><b><font color="red">{0}</font></b></div>', value);
+                        }
+                    }
                 },
                 type: 'TextField',
                 filters: {pfiltro: 'vif.estado_reg', type: 'string'},
                 id_grupo: 1,
-                grid: false,
+                grid: true,
                 form: false
             },
             {
@@ -516,10 +526,13 @@ header("content-type: text/javascript; charset=UTF-8");
             }
 
             /*********************************************************/
-            if (rec.data.status == 'OK') {
+            if (rec.data.status == 'OK' && rec.data.estado_reg == 'activo') {
                 this.getBoton('btnBoleto').enable();
-                Phx.vista.ConsultaViajeroFrecuente.superclass.preparaMenu.call(this);
             }
+            else if (rec.data.estado_reg == 'inactivo'){
+                this.getBoton('btnBoleto').disable();
+            }
+            Phx.vista.ConsultaViajeroFrecuente.superclass.preparaMenu.call(this);
         },
         liberaMenu : function(){
             this.getBoton('btnBoleto').disable();
@@ -702,7 +715,7 @@ header("content-type: text/javascript; charset=UTF-8");
           /**********************************************************************/
         },
 
-        successRegistro : function (win) {        
+        successRegistro : function (win) {
           this.reload();
           win.hide();
         },
