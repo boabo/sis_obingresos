@@ -10,6 +10,18 @@ header("content-type: text/css; charset=UTF-8");
 ?>
 
 <style type="text/css" rel="stylesheet">
+  .Inactivos{
+      background-color: #EAA8A8;
+      color: #900;
+  }
+  .Inactivos td {
+      color: #000000;
+      font-weight: bold;
+      font-size: 12px;
+  }
+  .Inactivos:hover{
+    background-color : #FFC57F;
+  }
     /*************Verificado****************/
     .Verificado {
       background-color: #CFECF5;
@@ -22,7 +34,7 @@ header("content-type: text/css; charset=UTF-8");
     }
 
     .Verificado:hover {
-      background-color: #FCBFBF;
+      background-color: #b4f2a0;
     }
 
     /**************************************/
