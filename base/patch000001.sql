@@ -3955,3 +3955,23 @@ RENAME COLUMN nro_documento TO id_venta;
 COMMENT ON COLUMN obingresos.tboleto_amadeus_forma_pago.id_venta
 IS 'se registra el id_venta relacionado a la tabla vef.tventa.';
 /********************************************F-SCP-BVP-OBINGRESOS-0-22/04/2021********************************************/
+
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-24/05/2021****************************************/
+
+ALTER TABLE obingresos.tboleto_forma_pago_stage
+  ADD COLUMN id_medio_pago INTEGER;
+
+COMMENT ON COLUMN obingresos.tboleto_forma_pago_stage.id_medio_pago
+IS 'Campo donde se almacenara el id_medio_pago porque el id_forma_pago era para lo del sistema de ingresos';
+
+ALTER TABLE obingresos.tboleto_forma_pago_stage
+  ADD COLUMN id_moneda INTEGER;
+
+COMMENT ON COLUMN obingresos.tboleto_forma_pago_stage.id_moneda
+IS 'Campo donde se almacena la moneda del medio de pago puede ser en dolar o moneda local';
+
+ALTER TABLE obingresos.tboleto_forma_pago_stage
+  ALTER COLUMN id_forma_pago DROP NOT NULL;
+
+/***********************************F-SCP-IRVA-OBINGRESOS-0-24/05/2021****************************************/
