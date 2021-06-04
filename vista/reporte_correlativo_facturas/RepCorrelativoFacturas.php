@@ -137,7 +137,9 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: false,
                     emptyText: 'Elija una Sucursal...',
                     store: new Ext.data.JsonStore({
-                        url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursalXestacion',
+                        //(may) 19-05-2021 modificacion funcion correcto es listarSucursal ...no listaba sucursales
+                        //url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursalXestacion',
+                        url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursal',
                         id: 'id_sucursal',
                         root: 'datos',
                         sortInfo: {
