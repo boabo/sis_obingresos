@@ -3758,7 +3758,33 @@ BEGIN
             return v_resp;
 
 		end;
+    /*********************************
+   	#TRANSACCION:  'OBING_CNS_PVG'
+   	#DESCRIPCION:	captura porcentaje parametrizado de variables globales
+   	#AUTOR:		breydi.vasquez
+   	#FECHA:		18-05-2021
+  	***********************************/
 
+  	elsif(p_transaccion='OBING_CNS_PVG')then
+
+  		begin
+  			select valor into v_importe
+              from pxp.variable_global
+  			where variable = 'porcentaje_pnr_recibo';
+              
+        select id_moneda into v_id_moneda
+        from param.tmoneda
+        where codigo_internacional = v_parametros.moneda;
+
+        --Definicion de la respuesta
+        v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
+        v_resp = pxp.f_agrega_clave(v_resp,'porcentaje',v_importe::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'id_moneda',v_id_moneda::varchar);
+
+        --Devuelve la respuesta
+        return v_resp;
+
+  		end;
 	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;

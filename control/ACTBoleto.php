@@ -2603,6 +2603,78 @@ class ACTBoleto extends ACTbase{
      $this->res->imprimirRespuesta($this->res->generarJson());
  }
 
+ function consultaReservaBoletoExch(){
+     $respuesta = '';
+     if (!isset($_SESSION['_CREDENCIALES_RESIBER']) || $_SESSION['_CREDENCIALES_RESIBER'] == ''){
+         throw new Exception('No se definieron las credenciales para conectarse al servicio de Resiber.');
+     }
+
+     $pnr = $this->objParam->getParametro('pnr');
+     $porc_pnr = $this->objParam->getParametro('porcentaje_pnr');
+
+     if ($porc_pnr < 30){
+       throw new Exception("El porcentaje del no puede ser menor al 30%");
+     }
+     $data = array("credenciales"=>"{B6575E91-D2B3-48A3-B737-B66EDBD60AFA}{C0573161-B781-4B06-B4B7-C8D85DE86239}",
+         "idioma"=>"ES",
+         "pnr"=>strtoupper($pnr),
+         "apellido"=>"PRUEBAS",
+         "ip"=>"127.0.0.1",
+         "xmlJson"=>false);
+
+     $json_data = json_encode($data);
+     $s = curl_init();
+     curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');
+     curl_setopt($s, CURLOPT_POST, true);
+     curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+     curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+     curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+     curl_setopt($s, CURLOPT_HTTPHEADER, array(
+             'Content-Type: application/json',
+             'Content-Length: ' . strlen($json_data))
+     );
+     $_out = curl_exec($s);
+     $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+     if (!$status) {
+         throw new Exception("No se pudo conectar con Resiber");
+     }
+     curl_close($s);
+
+     $_out = str_replace('\\','',$_out);
+     $_out = substr($_out,27);//23
+     $_out = substr($_out,0,-2);
+
+     $res = json_decode($_out);
+
+     if ($res!=null){
+       $pasajeros = $res->reserva_V2->pasajeros->pasajeroDR;
+       $monto_total = 0;
+
+       if (gettype($pasajeros) == "object"){
+         $monto_total =  $pasajeros->pago->importe;
+         $moneda = $pasajeros->pago->moneda;
+       }elseif (gettype($pasajeros) == "array") {
+         $moneda = $pasajeros[0]->pago->moneda;
+         foreach ($pasajeros as $value) {
+           $monto_total = $monto_total + $value->pago->importe;
+         }
+       }else{
+          $respons = array('exito' => false, 'importe_total' => 0);
+       }
+
+       $this->objParam->addParametro('moneda',$moneda);
+       $this->objFunc=$this->create('MODBoleto');
+       $this->res=$this->objFunc->consultPorcentaje($this->objParam);
+       $datos = $this->res->getDatos();
+       // $menos_descuento = (($monto_total * (int)$datos['porcentaje']) / 100);
+       $menos_descuento = (($monto_total * (int)$porc_pnr) / 100);
+       $respons = array('exito' => true, 'importe_total' => $menos_descuento, 'id_moneda' => $datos['id_moneda'], 'moneda' => $moneda);
+     }else{
+       $respons = array('exito' => false, 'importe_total' => 0);
+     }
+     echo json_encode($respons);
+   }
+
 }
 
 ?>
