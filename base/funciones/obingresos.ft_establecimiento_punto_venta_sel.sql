@@ -62,8 +62,8 @@ BEGIN
                         estpven.comercio,
                         tl.nombre nombre_lugar,
                         spv.name_pv nombre_iata,
-                        spv.iata_code
-
+                        spv.iata_code,
+                        estpven.direccion_estable
 						from obingresos.testablecimiento_punto_venta estpven
                         left join vef.tstage_punto_venta spv on spv.id_stage_pv = estpven.id_stage_pv
                         left join param.tlugar tl on tl.id_lugar = estpven.id_lugar

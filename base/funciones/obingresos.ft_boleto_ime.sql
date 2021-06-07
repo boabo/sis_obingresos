@@ -168,6 +168,9 @@ DECLARE
    	v_moneda_erp			varchar;
     v_mon_recibo			varchar;
     v_mon_recibo_2			varchar;
+
+    --franklin.espinoza variable para puntos tipo Gobierno que no necesitan apertura de Caja
+    v_tipo_punto			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -2540,7 +2543,14 @@ BEGIN
                                       acc.fecha_apertura_cierre = v_parametros.fecha_emision::date and
                                       acc.estado_reg = 'activo' and acc.estado = 'abierto' and
                                       acc.id_punto_venta = v_parametros.id_punto_venta)) then
-                        raise exception 'Antes de traer boletos debe realizar una apertura de caja';
+                        select tpv.tipo
+                        into v_tipo_punto
+                        from vef.tpunto_venta tpv
+                        where tpv.id_punto_venta = v_parametros.id_punto_venta;
+
+                        if v_tipo_punto not in ('Gobierno') then
+                        	raise exception 'Antes de traer boletos debe realizar una apertura de caja';
+                        end if;
                     end if;
                 END IF;
             end if;

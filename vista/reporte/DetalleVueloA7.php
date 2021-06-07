@@ -158,7 +158,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 type:'TextField',
                 //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
+                bottom_filter : true,
                 id_grupo:1,
                 grid:true,
                 form:false

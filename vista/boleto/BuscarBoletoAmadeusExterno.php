@@ -381,10 +381,16 @@ header("content-type:text/javascript; charset=UTF-8");
                         VentanaInicio.body.dom.childNodes[0].firstChild.firstChild.style.background='#8BB9B2';
                         //VentanaInicio.body.dom.childNodes.style.background='black';
                         VentanaInicio.on('beforeclose', function (){
-                            /*if (!validado) {
-                                alert('Debe seleccionar el punto de venta o sucursal de trabajo');
+                            if (!validado) {
+                                Ext.Msg.show({
+                                    title: 'Información',
+                                    msg: '<b><span style="color: #2B5496">Debe seleccionar el punto de venta o sucursal de trabajo.</span></b>',
+                                    buttons: Ext.Msg.OK,
+                                    width: 512,
+                                    icon: Ext.Msg.ERROR
+                                });
                                 return false;
-                            }*/
+                            }
                         },this)
                     }
 
