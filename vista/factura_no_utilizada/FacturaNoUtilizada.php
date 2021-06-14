@@ -206,7 +206,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_punto_venta', 'id_sucursal','nombre', 'codigo','habilitar_comisiones','formato_comprobante'],
                         remoteSort: true,
-                        baseParams: {tipo_usuario: this.tipo_usuario,par_filtro: 'nombre#codigo', tipo_factura: this.tipo_factura, tipo : this.tipo}
+                        baseParams: {tipo_usuario: this.tipo_usuario,par_filtro: 'puve.nombre#puve.codigo', tipo_factura: this.tipo_factura, tipo : this.tipo}
                     });
                 } else {
                     title = 'Seleccione la sucursal con la que trabajara';
