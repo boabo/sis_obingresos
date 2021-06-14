@@ -195,8 +195,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     title = 'Seleccione el punto de venta con el que trabajara';
                     value = 'id_punto_venta';
                     var storeCombo = new Ext.data.JsonStore({
-                        //rl: '../../sis_ventas_facturacion/control/PuntoVenta/listarPuntoVenta',
-                        url: '../../sis_obingresos/control/Boleto/obtenerPuntosVentasCounter',
+                        url: '../../sis_ventas_facturacion/control/PuntoVenta/listarPuntoVenta',
+                        //url: '../../sis_obingresos/control/Boleto/obtenerPuntosVentasCounter',
                         id: 'id_punto_venta',
                         root: 'datos',
                         sortInfo: {
