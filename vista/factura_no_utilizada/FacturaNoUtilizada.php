@@ -669,7 +669,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
                     },
                     type:'DateField',
-                    filters:{pfiltro:'dos.fecha',type:'date'},
+                    filters:{pfiltro:'fam.fecha',type:'date'},
                     id_grupo:0,
                     grid:true,
                     form:true
@@ -1107,7 +1107,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'id_sucursal', type: 'numeric'},
                 {name:'nom_sucursal', type: 'string'},
                 {name:'nombre_sucursal', type: 'string'},
-                {name: 'fecha', type: 'date'},
+                {name: 'fecha', type: 'date',dateFormat:'Y-m-d'},
                 {name:'fecha_dosificacion', type: 'date',dateFormat:'Y-m-d'},
                 {name:'nroaut', type: 'string'},
                 {name:'inicial', type: 'numeric'},
