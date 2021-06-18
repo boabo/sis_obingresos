@@ -88,7 +88,7 @@ BEGIN
                     left join param.tmoneda mon on mon.id_moneda = fam.id_moneda
                     left join vef.tpunto_venta pv on pv.id_punto_venta = fam.id_punto_venta
 
-                    where ';
+                    where fam.estado_reg = ''activo'' and ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -121,7 +121,7 @@ BEGIN
                         left join param.tmoneda mon on mon.id_moneda = fam.id_moneda
                         left join vef.tpunto_venta pv on pv.id_punto_venta = fam.id_punto_venta
 
-                        where ';
+                        where fam.estado_reg = ''activo'' and  ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;

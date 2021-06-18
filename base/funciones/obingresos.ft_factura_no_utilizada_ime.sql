@@ -64,6 +64,9 @@ DECLARE
     v_inicial_dosificacion	integer;
     v_id_dosificacion		integer;
 
+    v_id_venta_origen		integer;
+    v_usuario_mod			varchar;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_factura_no_utilizada_ime';
@@ -574,24 +577,69 @@ BEGIN
             WHILE (v_nro_factura <= v_nro_final)
               LOOP
 
-                    delete
-                    from vef.tventa v
-           			where v.nro_factura =v_nro_factura
-                    and v.id_dosificacion = v_id_dosificacion;
+                    update vef.tventa  set
+                     estado_reg = 'inactivo',
+                     id_usuario_mod = p_id_usuario,
+                     fecha_mod = now()
+                    where nro_factura =v_nro_factura
+                    and id_dosificacion = v_id_dosificacion;
+
+                    SELECT ven.id_venta
+                    INTO v_id_venta_origen
+                    FROM vef.tventa ven
+                    WHERE  ven.nro_factura =v_nro_factura
+                    AND ven.id_dosificacion = v_id_dosificacion
+                    AND ven.estado_reg = 'inactivo';
+
+                    SELECT per.nombre_completo2
+                    into v_usuario_mod
+                    from segu.tusuario usu
+                    inner join segu.vpersona2 per on per.id_persona = usu.id_persona
+                    where usu.id_usuario = p_id_usuario;
 
 
-                     --nro factura
-                     v_nro_factura := v_nro_factura + 1;
+                    IF(pxp.f_get_variable_global('migrar_facturas') ='true')THEN
+                        /*Establecemos la conexion con la base de datos*/
+                        v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                        v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+                        /*************************************************/
+                        select * FROM dblink(v_cadena_cnx,'select nextval(''sfe.tfactura_id_factura_seq'')',TRUE)AS t1(resp integer)
+                      	into v_id_factura;
 
+                        v_consulta = '      update sfe.tfactura  set
+                                               estado_reg = ''inactivo'',
+                                               usuario_mod = '''||v_usuario_mod::varchar||''',
+                                               fecha_mod = now()::date
+                                            where id_origen = '||v_id_venta_origen||'
+                                            AND sistema_origen = ''ERP''
+                                            AND estado_reg = ''activo''
+                                            ;
+                        ';
+
+                        IF(v_conexion!='OK') THEN
+                        	raise exception 'ERROR DE CONEXION A LA BASE DE DATOS CON DBLINK';
+                        ELSE
+                          perform dblink_exec(v_cadena_cnx,v_consulta,TRUE);
+
+                          v_res_cone=(select dblink_disconnect());
+                        END IF;
+
+                    END IF;
+
+                    --nro factura
+                    v_nro_factura := v_nro_factura + 1;
 
 
             END LOOP;
 
 
 
-			--Sentencia de la eliminacion
-			delete from obingresos.tfactura_no_utilizada
-            where id_factura_no_utilizada=v_parametros.id_factura_no_utilizada;
+			--Sentencia de la eliminacion tfactura_no_utilizada
+            update obingresos.tfactura_no_utilizada  set
+             estado_reg = 'inactivo',
+             id_usuario_mod = p_id_usuario,
+             fecha_mod = now()
+            where id_factura_no_utilizada = v_parametros.id_factura_no_utilizada;
 
 
 
