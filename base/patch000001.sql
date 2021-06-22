@@ -3975,3 +3975,24 @@ ALTER TABLE obingresos.tboleto_forma_pago_stage
   ALTER COLUMN id_forma_pago DROP NOT NULL;
 
 /***********************************F-SCP-IRVA-OBINGRESOS-0-24/05/2021****************************************/
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-22/06/2021****************************************/
+CREATE TABLE obingresos.tlog_modificaciones_medios_pago (
+  id_log_mp SERIAL,
+  nro_boleto VARCHAR(100),
+  numero_tarjeta_antiguo VARCHAR(50),
+  cod_autorizacion_tarjeta_antiguo VARCHAR(20),
+  numero_tarjeta_modificado VARCHAR(50),
+  cod_autorizacion_tarjeta_modificado VARCHAR(20),
+  observaciones TEXT,
+  numero_tarjeta_antiguo_2 VARCHAR(50),
+  cod_autorizacion_tarjeta_antiguo_2 VARCHAR(20),
+  numero_tarjeta_modificado_2 VARCHAR(50),
+  cod_autorizacion_tarjeta_modificado_2 VARCHAR(20),
+  CONSTRAINT tlog_modificaciones_medios_pago_pkey PRIMARY KEY(id_log_mp)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago
+  OWNER TO postgres;
+/***********************************F-SCP-IRVA-OBINGRESOS-0-22/06/2021****************************************/
