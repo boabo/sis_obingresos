@@ -2613,7 +2613,7 @@ class ACTBoleto extends ACTbase{
      $porc_pnr = $this->objParam->getParametro('porcentaje_pnr');
 
      if ($porc_pnr < 30){
-       throw new Exception("El porcentaje del no puede ser menor al 30%");
+       throw new Exception("El porcentaje no puede ser menor al 30%");
      }
      $data = array("credenciales"=>"{B6575E91-D2B3-48A3-B737-B66EDBD60AFA}{C0573161-B781-4B06-B4B7-C8D85DE86239}",
          "idioma"=>"ES",
@@ -2668,9 +2668,9 @@ class ACTBoleto extends ACTbase{
        $datos = $this->res->getDatos();
        // $menos_descuento = (($monto_total * (int)$datos['porcentaje']) / 100);
        $menos_descuento = (($monto_total * (int)$porc_pnr) / 100);
-       $respons = array('exito' => true, 'importe_total' => $menos_descuento, 'id_moneda' => $datos['id_moneda'], 'moneda' => $moneda);
+       $respons = array('exito' => true, 'importe_total' => $monto_total, 'importe_desc'=> $menos_descuento, 'id_moneda' => $datos['id_moneda'], 'moneda' => $moneda);
      }else{
-       $respons = array('exito' => false, 'importe_total' => 0);
+       $respons = array('exito' => false, 'importe_total' => 0, 'importe_desc' => 0);
      }
      echo json_encode($respons);
    }
