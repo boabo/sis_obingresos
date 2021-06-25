@@ -1486,8 +1486,8 @@ BEGIN
                                                                         id_usuario_fp_corregido,
                                                                         id_auxiliar,
                                                                         registro_mod,
-                                                                        mco--,
-                                                                        --modificado
+                                                                        mco,
+                                                                        modificado
                                                                         ,id_venta
                                                                       )
                                                                       VALUES (
@@ -1502,8 +1502,8 @@ BEGIN
                                                                         p_id_usuario,
                                                                         v_parametros.id_auxiliar,
                                                                         null,
-                                                                        v_parametros.mco--,
-                                                                        --'si'
+                                                                        v_parametros.mco,
+                                                                        'si'
                                                                         ,v_parametros.id_venta
                                                                       );
                     end if;
@@ -3768,33 +3768,33 @@ BEGIN
             return v_resp;
 
 		end;
-    /*********************************
-   	#TRANSACCION:  'OBING_CNS_PVG'
-   	#DESCRIPCION:	captura porcentaje parametrizado de variables globales
-   	#AUTOR:		breydi.vasquez
-   	#FECHA:		18-05-2021
-  	***********************************/
+	/*********************************
+ 	#TRANSACCION:  'OBING_CNS_PVG'
+ 	#DESCRIPCION:	captura porcentaje parametrizado de variables globales
+ 	#AUTOR:		breydi.vasquez
+ 	#FECHA:		18-05-2021
+	***********************************/
 
-  	elsif(p_transaccion='OBING_CNS_PVG')then
+	elsif(p_transaccion='OBING_CNS_PVG')then
 
-  		begin
-  			select valor into v_importe
-              from pxp.variable_global
-  			where variable = 'porcentaje_pnr_recibo';
-              
-        select id_moneda into v_id_moneda
-        from param.tmoneda
-        where codigo_internacional = v_parametros.moneda;
+		begin
+			select valor into v_importe
+            from pxp.variable_global
+			where variable = 'porcentaje_pnr_recibo';
 
-        --Definicion de la respuesta
-        v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
-        v_resp = pxp.f_agrega_clave(v_resp,'porcentaje',v_importe::varchar);
-        v_resp = pxp.f_agrega_clave(v_resp,'id_moneda',v_id_moneda::varchar);
+            select id_moneda into v_id_moneda
+            from param.tmoneda
+            where codigo_internacional = v_parametros.moneda;
 
-        --Devuelve la respuesta
-        return v_resp;
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
+            v_resp = pxp.f_agrega_clave(v_resp,'porcentaje',v_importe::varchar);
+            v_resp = pxp.f_agrega_clave(v_resp,'id_moneda',v_id_moneda::varchar);
 
-  		end;
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
 	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;

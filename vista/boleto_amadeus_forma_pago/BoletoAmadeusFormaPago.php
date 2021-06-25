@@ -189,7 +189,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '60%',
                         gwidth: 150,
-                        minLength:16,
+                        minLength:15,
                         maxLength:20
                     },
                     type:'TextField',
@@ -503,7 +503,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.importe.setValue(this.round((this.monto_fp/this.maestro.tc),2));
 
                     }else {
-                        this.Cmp.importe.setValue(0);
+                        //this.Cmp.importe.setValue(0);
 
                     }
 
@@ -561,8 +561,13 @@ header("content-type: text/javascript; charset=UTF-8");
 
             onReloadPage:function(m){
                 this.Cmp.id_forma_pago.store.baseParams.id_punto_venta = Phx.CP.getPagina(this.idContenedorPadre).id_punto_venta;
+                this.Cmp.id_forma_pago.store.baseParams.regionales = Phx.CP.getPagina(this.idContenedorPadre).variables_globales.ESTACION_inicio;
                 this.maestro=m;
                 this.store.baseParams.id_boleto_amadeus = this.maestro.id_boleto_amadeus;
+
+                console.log("aqui llega el dato para maestro",Phx.CP.getPagina(this.idContenedorPadre));
+
+
                 this.load({params:{start:0, limit:50}});
 
             },
