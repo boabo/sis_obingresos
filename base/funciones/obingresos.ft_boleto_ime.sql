@@ -677,6 +677,10 @@ BEGIN
 
 
             /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+            IF v_parametros.monto_forma_pago <= 0 THEN
+                  raise 'El importe de la primera forma de pago, no puede ser menor o igual a cero';
+            END IF;
+
             IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                 INSERT INTO
                   obingresos.tboleto_amadeus_forma_pago
@@ -860,6 +864,10 @@ BEGIN
                         v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
                     end if;
 				 /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                    IF v_parametros.monto_forma_pago2 <= 0 THEN
+                        raise 'El importe de la segunda forma de pago, no puede ser menor o igual a cero';
+                    END IF;
+
                     IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                            INSERT INTO
                         obingresos.tboleto_amadeus_forma_pago
@@ -1443,6 +1451,10 @@ BEGIN
 
 
 					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                  IF v_valor <= 0 THEN
+                    raise 'El importe de la primera forma de pago, no puede ser menor o igual a cero';
+                  END IF;
+
                 	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 
 					INSERT INTO obingresos.tboleto_amadeus_forma_pago( 	id_usuario_reg,
@@ -1629,6 +1641,10 @@ BEGIN
                     END IF;
 
 					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                  IF v_valor <= 0 THEN
+                    raise 'El importe de la segunda forma de pago, no puede ser menor o igual a cero';
+                  END IF;
+
                 	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
 
                     INSERT INTO obingresos.tboleto_amadeus_forma_pago ( id_usuario_reg,
