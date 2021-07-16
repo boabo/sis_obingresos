@@ -707,6 +707,7 @@ BEGIN
                 nro_deposito = v_parametros.nro_deposito,
                 nro_deposito_aux = v_aux,
                 monto_deposito = v_parametros.monto_deposito,
+                monto_total = v_parametros.monto_deposito,
                 id_moneda_deposito = v_id_moneda,
                 fecha = v_parametros.fecha,
                 id_usuario_mod = p_id_usuario,
@@ -1307,3 +1308,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_deposito_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

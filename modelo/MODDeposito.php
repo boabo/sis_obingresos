@@ -217,7 +217,7 @@ class MODDeposito extends MODbase{
 
         if ($this->monedaBase() == 'BOB') {
             if($this->aParam->getParametro('tipo') == 'venta_propia'){
-             $this->modificarDepositoInformix();
+             //$this->modificarDepositoInformix();
             }
         }
 
@@ -670,7 +670,7 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
         $this->monedaBase();
 
         if ($this->monedaBase() == 'BOB') {
-          $this->eliminarDepositoInformix();
+          //$this->eliminarDepositoInformix();
         }
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -706,7 +706,7 @@ where d.tipo = 'venta_propia' and d.id_deposito ='".$this->aParam->getParametro(
       $this->captura('fecha','date');
       $this->captura('estado_reg','varchar');
       $this->captura('id_moneda_deposito','int4');
-      $this->captura('tipo','varchar');      
+      $this->captura('tipo','varchar');
       $this->captura('desc_moneda','varchar');
       $this->captura('fecha_reg','timestamp');
       $this->captura('fecha_mod','timestamp');
