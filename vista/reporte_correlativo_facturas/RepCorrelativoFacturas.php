@@ -30,7 +30,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo: 0,
                 form: true
             },
-            {
+            /*{
                 config: {
                     name: 'id_lugar',
                     fieldLabel: 'Estación',
@@ -48,7 +48,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         fields: ['id_lugar', 'codigo','nombre'],
                         remoteSort: true,
                         //baseParams: {tipo_usuario: 'todos', par_filtro: 'codigo', lugar_estacion: 'Bol', _adicionar: true}
-                        baseParams: {par_filtro: 'codigo', lugar_estacion: 'Bol', _adicionar: true}
+                        baseParams: {par_filtro: 'nombre#codigo', lugar_estacion: 'Bol', _adicionar: true}
                     }),
                     valueField: 'id_lugar',
                     displayField: 'codigo',
@@ -76,6 +76,51 @@ header("content-type: text/javascript; charset=UTF-8");
                 type: 'ComboBox',
                 id_grupo: 0,
                 filters: {pfiltro: 'codigo', type: 'string'},
+                grid: true,
+                form: true
+            },*/
+            {
+                config: {
+                    name: 'city_code',
+                    fieldLabel: 'Estación',
+                    allowBlank: false,
+                    emptyText: 'Elija un Punto...',
+                    store: new Ext.data.JsonStore(
+                        {
+                            url: '../../sis_ventas_facturacion/control/ReporteVentas/puntoVentaCiudadStage',
+                            id: 'city_name',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'city_name',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['city_name', 'city_code'],
+                            remoteSort: true,
+                            baseParams: {par_filtro: 'city_name#city_code',_adicionar:'si',pais_ini:'BO'}
+                        }),
+                    valueField: 'city_code',
+                    displayField: 'city_name',
+                    gdisplayField: 'city_code',
+                    hiddenName: 'city_code',
+                    tpl:'<tpl for="."><div class="x-combo-list-item"><p><b>{city_name} -- <span style="color:green;">{city_code}</span></b></p></div></tpl>',
+                    forceSelection: true,
+                    typeAhead: false,
+                    triggerAction: 'all',
+                    lazyRender: true,
+                    mode: 'remote',
+                    pageSize: 16,
+                    queryDelay: 1000,
+                    gwidth: 150,
+                    width: 250,
+                    listWidth: 250,
+                    resizable: true,
+                    minChars: 2,
+                    hidden: false,
+                    style:'margin-bottom: 10px;'
+                },
+                type: 'ComboBox',
+                id_grupo: 0,
                 grid: true,
                 form: true
             },
@@ -119,7 +164,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     listWidth: 400,
                     mode: 'remote',
                     pageSize: 15,
-                    width: 200,
+                    width: 200,f
                     queryDelay: 1000,
                     minChars: 2,
                     resizable: true,
@@ -129,7 +174,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo: 0,
                 form: true
             },*/
-
             {
                 config: {
                     name: 'id_sucursal',
@@ -137,9 +181,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: false,
                     emptyText: 'Elija una Sucursal...',
                     store: new Ext.data.JsonStore({
-                        //(may) 19-05-2021 modificacion funcion correcto es listarSucursal ...no listaba sucursales
-                        //url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursalXestacion',
-                        url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursal',
+                        url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursalXestacion',
                         id: 'id_sucursal',
                         root: 'datos',
                         sortInfo: {
@@ -168,7 +210,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     listWidth: 320,
                     mode: 'remote',
                     pageSize: 15,
-                    width: 200,
+                    width: 250,
                     queryDelay: 1000,
                     minChars: 2,
                     resizable: true,
@@ -179,6 +221,55 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo: 0,
                 form: true
             },
+            /*{
+                config: {
+                    name: 'id_sucursal',
+                    fieldLabel: 'Sucursal',
+                    allowBlank: false,
+                    emptyText: 'Elija una Sucursal...',
+                    store: new Ext.data.JsonStore({
+                        //(may) 19-05-2021 modificacion funcion correcto es listarSucursal ...no listaba sucursales
+                        //url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursalXestacion',
+                        url: '../../sis_ventas_facturacion/control/Sucursal/listarSucursal',
+                        id: 'id_sucursal',
+                        root: 'datos',
+                        sortInfo: {
+                            field: 'nombre',
+                            direction: 'ASC'
+                        },
+                        totalProperty: 'total',
+                        fields: ['id_sucursal', 'nombre', 'codigo', 'id_lugar'],
+                        remoteSort: true,
+                        baseParams: {par_filtro: 'suc.nombre#suc.codigo', x_estacion: 'x_estacion',_adicionar:'si'}
+                    }),
+                    valueField: 'id_sucursal',
+                    gdisplayField: 'nombre_sucursal',
+                    displayField: 'nombre',
+                    hiddenName: 'id_sucursal',
+                    tpl: new Ext.XTemplate([
+                        '<tpl for=".">',
+                        '<div class="x-combo-list-item">',
+                        '<p><b>{nombre}<span style="color: green;">( {codigo} )</span> </b></p></div>',
+                        '</div></tpl>'
+                    ]),
+                    forceSelection: true,
+                    typeAhead: false,
+                    triggerAction: 'all',
+                    lazyRender: true,
+                    listWidth: 320,
+                    mode: 'remote',
+                    pageSize: 15,
+                    width: 200,
+                    queryDelay: 1000,
+                    minChars: 2,
+                    resizable: true,
+                    hidden: false,
+                    style:'margin-bottom: 10px;'
+                },
+                type: 'ComboBox',
+                id_grupo: 0,
+                form: true
+            },*/
 
             {
                 config: {
@@ -276,7 +367,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         fields: ['ID', 'valor'],
                         data: [['manual', 'Facturación Manual'],
                             ['computarizada', 'Facturación Computarizada'],
-                            ['recibo', 'Recibo Oficial']//,
+                            ['recibo', 'Recibo Oficial'],
+                            ['nota', 'Nota de Credito/Debito']
                             //['mcos', 'MCOs']
                         ]
                     }),
@@ -355,19 +447,34 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Cmp.id_sucursal.reset();
             this.Cmp.id_punto_venta.reset();
 
-            this.getComponente('id_lugar').on('select', function (cmp, rec, indice) {
+            this.getComponente('city_code').on('select', function (cmp, rec, indice) {
                 console.log('llegaid_sucursalcmp', cmp)
                 console.log('llegaid_sucursalrrec', rec)
-                this.Cmp.id_sucursal.reset();
-                this.Cmp.id_punto_venta.reset();
-                this.Cmp.id_sucursal.store.baseParams.id_lugar = rec.data.id_lugar;
-                this.Cmp.id_sucursal.modificado = true;
+
+                if(rec.data.codigo == 'Todos'){
+                    this.Cmp.id_sucursal.reset();
+                    this.Cmp.id_punto_venta.reset();
+                    this.Cmp.id_sucursal.modificado = true;
+                }else{
+                    this.Cmp.id_sucursal.reset();
+                    this.Cmp.id_punto_venta.reset();
+                    //this.Cmp.id_sucursal.store.baseParams.id_lugar = rec.data.id_lugar;
+                    this.Cmp.id_sucursal.store.baseParams.cod_lugar = rec.data.city_code;
+                    this.Cmp.id_sucursal.modificado = true;
+                }
+
             }, this);
 
             this.getComponente('id_sucursal').on('select', function (cmp, rec, indice) {
-                this.Cmp.id_punto_venta.reset();
-                this.Cmp.id_punto_venta.store.baseParams.id_sucursal = rec.data.id_sucursal;
-                this.Cmp.id_punto_venta.modificado = true;
+                if(rec.data.codigo == 'Todos'){
+                    this.Cmp.id_punto_venta.reset();
+                    this.Cmp.id_punto_venta.modificado = true;
+                }else{
+                    this.Cmp.id_punto_venta.reset();
+                    this.Cmp.id_punto_venta.store.baseParams.id_sucursal = rec.data.id_sucursal;
+                    this.Cmp.id_punto_venta.modificado = true;
+                }
+
             }, this);
 
             this.getComponente('tipo_reporte').on('select', function (cmp, rec, indice) {
@@ -381,6 +488,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
 
             }, this);
+
+
 
 
             /*       this.Cmp.nivel.setValue('punto_venta');
@@ -409,6 +518,53 @@ header("content-type: text/javascript; charset=UTF-8");
                        this.Cmp.fecha_desde.setMaxValue(this.Cmp.fecha_hasta.getValue());
                    },this);
        */
+
+        },
+
+        iniciarEventos: function(){
+
+            //this.Cmp.id_sucursal.reset();
+            //this.Cmp.id_punto_venta.reset();
+
+            this.Cmp.city_code.on('select', function (cmp, rec, indice) {
+                // console.log("data",rec);
+                console.log('llegaid_sucursalcmp', cmp)
+                console.log('llegaid_sucursalrrec', rec)
+                console.log('llegaid_sucursalrrec222', this.Cmp.id_sucursal.store.baseParams.cod_lugar)
+                if(rec.data.codigo == 'Todos'){
+                    this.Cmp.id_sucursal.reset();
+                    this.Cmp.id_punto_venta.reset();
+                    this.Cmp.id_sucursal.modificado = true;
+                }else{
+                    this.Cmp.id_sucursal.reset();
+                    this.Cmp.id_punto_venta.reset();
+                    //this.Cmp.id_sucursal.store.baseParams.id_lugar = rec.data.id_lugar;
+                    this.Cmp.id_sucursal.store.baseParams.cod_lugar = rec.data.city_code;
+                    this.Cmp.id_sucursal.modificado = true;
+                }
+            }, this);
+
+            this.Cmp.id_sucursal.on('select', function (cmp, rec, indice) {
+                if(rec.data.codigo == 'Todos'){
+                    this.Cmp.id_punto_venta.reset();
+                    this.Cmp.id_punto_venta.modificado = true;
+                }else{
+                    this.Cmp.id_punto_venta.reset();
+                    this.Cmp.id_punto_venta.store.baseParams.id_sucursal = rec.data.id_sucursal;
+                    this.Cmp.id_punto_venta.modificado = true;
+                }
+
+            }, this);
+
+            this.Cmp.tipo_reporte.on('select', function (cmp, rec, indice) {
+                if(rec.data.valor=='Consolidado'){
+                    this.ocultarComponente(this.Cmp.id_punto_venta);
+                    this.Cmp.id_punto_venta.reset();
+                }else{
+                    this.mostrarComponente(this.Cmp.id_punto_venta);
+                }
+
+            }, this);
 
         },
 
