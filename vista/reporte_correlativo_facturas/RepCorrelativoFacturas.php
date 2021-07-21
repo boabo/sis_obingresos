@@ -112,7 +112,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     pageSize: 16,
                     queryDelay: 1000,
                     gwidth: 150,
-                    width: 250,
+                    width: 200,
                     listWidth: 250,
                     resizable: true,
                     minChars: 2,
@@ -191,7 +191,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_sucursal', 'nombre', 'codigo', 'id_lugar'],
                         remoteSort: true,
-                        baseParams: {par_filtro: 'nombre#codigo', x_estacion: 'x_estacion',_adicionar:'si'}
+                        baseParams: {par_filtro: 'suc.nombre#suc.codigo', x_estacion: 'x_estacion',_adicionar:'si'}
                     }),
                     valueField: 'id_sucursal',
                     gdisplayField: 'nombre_sucursal',
@@ -210,7 +210,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     listWidth: 320,
                     mode: 'remote',
                     pageSize: 15,
-                    width: 250,
+                    width: 200,
                     queryDelay: 1000,
                     minChars: 2,
                     resizable: true,
@@ -523,14 +523,14 @@ header("content-type: text/javascript; charset=UTF-8");
 
         iniciarEventos: function(){
 
-            //this.Cmp.id_sucursal.reset();
-            //this.Cmp.id_punto_venta.reset();
+            this.Cmp.id_sucursal.reset();
+            this.Cmp.id_punto_venta.reset();
 
             this.Cmp.city_code.on('select', function (cmp, rec, indice) {
                 // console.log("data",rec);
                 console.log('llegaid_sucursalcmp', cmp)
                 console.log('llegaid_sucursalrrec', rec)
-                console.log('llegaid_sucursalrrec222', this.Cmp.id_sucursal.store.baseParams.cod_lugar)
+                console.log('llegaid_sucursalrrec222', this.Cmp.id_punto_venta.store.baseParams.lugar )
                 if(rec.data.codigo == 'Todos'){
                     this.Cmp.id_sucursal.reset();
                     this.Cmp.id_punto_venta.reset();

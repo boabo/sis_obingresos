@@ -969,7 +969,7 @@ $body$
                                                  SELECT vsuc.id_sucursal
                                                  INTO v_id_sucursal_variable
                                                  FROM decr.tsucursal dsuc
-                                                 left join dvef.tsucursal vsuc on vsuc.id_sucursal = dsuc.id_sucursal_vef
+                                                 left join vef.tsucursal vsuc on vsuc.id_sucursal = dsuc.id_sucursal_vef
                                                  WHERE dsuc.id_sucursal = v_datos_nota.id_sucursal;
 
                                         ELSE
@@ -1227,6 +1227,11 @@ $body$
             begin
        		--Sentencia de la consulta
 
+         select lu.id_lugar
+         into param_id_lugar
+         from param.tlugar lu
+         where lu.codigo = v_parametros.id_lugar;
+
          --si es opcion TODOS en punto de venta
          IF (v_parametros.id_punto_venta = 0) THEN
               v_id_punto_venta:= '';
@@ -1242,10 +1247,10 @@ $body$
          END IF;
 
          --si es opcion TODOS en punto de venta
-         IF (v_parametros.id_lugar = 0) THEN
+         IF (v_parametros.id_lugar = 'TODOS') THEN
               v_id_lugar = ' ';
          ELSE
-              v_id_lugar = ' and lu.id_lugar = '||v_parametros.id_lugar||'  ' ;
+              v_id_lugar = ' and lu.id_lugar = '||param_id_lugar||'  ' ;
          END IF;
 
 
@@ -1326,14 +1331,14 @@ $body$
 
 
                --si es opcion TODOS en punto de venta estacion
-               IF (v_parametros.id_lugar = 0) THEN
+               IF (v_parametros.id_lugar = 'TODOS') THEN
                     v_id_lugar_fac = ' ';
                ELSE
 
                     select codigo
                     into v_nom_esta
                     from param.tlugar
-                    where id_lugar = v_parametros.id_lugar;
+                    where id_lugar = param_id_lugar;
 
                     v_id_lugar_fac = v_nom_esta ;
 
@@ -1453,71 +1458,139 @@ $body$
 
                     ELSE -- si la sucursal es null o marcado 0 es todos
 
-                    			FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
-                                                       from vef.tpunto_venta pv
-                                                       left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
-                                                       where pv.tipo = 'carga'
-                                                       and su.id_lugar in ( select id_lugar
-                                                       						from param.tlugar
-                                                                            where id_lugar_fk = v_parametros.id_lugar or id_lugar = v_parametros.id_lugar)
-                                                       ) LOOP
+								IF (upper(v_parametros.id_lugar) = 'TODOS' or v_parametros.id_lugar is null) THEN
+                                      FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
+                                                             from vef.tpunto_venta pv
+                                                             left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
+                                                             where pv.tipo = 'carga'
+                                                             ) LOOP
 
-                                        IF v_cod_punto_for.codigo is not null THEN
+                                              IF v_cod_punto_for.codigo is not null THEN
 
-                                            v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
-                                            v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+                                                  v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                                                  v_conexion = (SELECT dblink_connect(v_cadena_cnx));
 
-                                            v_consulta = '
+                                                  v_consulta = '
 
 
-                                                        (SELECT
-                                                               estacion,
-                                                               sucursal,
-                                                               (select nombre
-                                                                  from vef.tpunto_venta
-                                                                  where codigo = codigo_punto_venta
-                                                                  and tipo = ''carga''
-                                                                  limit 1) as punto_venta,
-                                                               nro_autorizacion,
-                                                               nro_desde,
-                                                               nro_hasta,
-                                                               cantidad
-                                                                        FROM dblink('''||v_cadena_cnx||''',
-                                                                                    ''select
-                                                                                      '''''||v_id_lugar_fac||'''''::varchar as estacion,
-                                                                                      '''''||v_cod_punto_for.nombre_sucursal||'''''::varchar as sucursal,
-                                                                                      codigo_punto_venta,
-                                                                                      nro_autorizacion,
-                                                                                      min(nro_factura)::integer as nro_desde,
-                                                                                      max(nro_factura)::integer as nro_hasta,
-                                                                                      count(id_factura)::integer as cantidad
+                                                              (SELECT
+                                                                     estacion,
+                                                                     sucursal,
+                                                                     (select nombre
+                                                                        from vef.tpunto_venta
+                                                                        where codigo = codigo_punto_venta
+                                                                        and tipo = ''carga''
+                                                                        limit 1) as punto_venta,
+                                                                     nro_autorizacion,
+                                                                     nro_desde,
+                                                                     nro_hasta,
+                                                                     cantidad
+                                                                              FROM dblink('''||v_cadena_cnx||''',
+                                                                                          ''select
+                                                                                            '''''||v_id_lugar_fac||'''''::varchar as estacion,
+                                                                                            '''''||v_cod_punto_for.nombre_sucursal||'''''::varchar as sucursal,
+                                                                                            codigo_punto_venta,
+                                                                                            nro_autorizacion,
+                                                                                            min(nro_factura)::integer as nro_desde,
+                                                                                            max(nro_factura)::integer as nro_hasta,
+                                                                                            count(id_factura)::integer as cantidad
 
-                                                                                  from sfe.tfactura
-                                                                                  where
-                                                                                  estado_reg = ''''activo''''
-                                                                                  and fecha_factura BETWEEN '''''||v_parametros.fecha_desde||''''' and '''''||v_parametros.fecha_hasta||'''''
-                                                                                  and sistema_origen = ''''CARGA''''
-                                                                                  and lower(tipo_factura) = '''''||v_parametros.tipo_generacion||'''''
-                                                                                  and  codigo_punto_venta = '''''||v_cod_punto_for.codigo||'''''
-                                                                                  group by nro_autorizacion, codigo_punto_venta
-                                                                                  order by estacion ASC, sucursal ASC
-                                                                                     '')
-                                                                        AS t1(
-                                                                              estacion varchar,
-                                                                              sucursal varchar,
-                                                                              codigo_punto_venta varchar,
-                                                                              nro_autorizacion varchar,
-                                                                              nro_desde integer,
-                                                                              nro_hasta integer,
-                                                                              cantidad integer
-                                                                              ) )
-                                                                              order by  estacion ASC, sucursal ASC, punto_venta ASC, nro_desde ASC';
+                                                                                        from sfe.tfactura
+                                                                                        where
+                                                                                        estado_reg = ''''activo''''
+                                                                                        and fecha_factura BETWEEN '''''||v_parametros.fecha_desde||''''' and '''''||v_parametros.fecha_hasta||'''''
+                                                                                        and sistema_origen = ''''CARGA''''
+                                                                                        and lower(tipo_factura) = '''''||v_parametros.tipo_generacion||'''''
+                                                                                        and  codigo_punto_venta = '''''||v_cod_punto_for.codigo||'''''
+                                                                                        group by nro_autorizacion, codigo_punto_venta
+                                                                                        order by estacion ASC, sucursal ASC
+                                                                                           '')
+                                                                              AS t1(
+                                                                                    estacion varchar,
+                                                                                    sucursal varchar,
+                                                                                    codigo_punto_venta varchar,
+                                                                                    nro_autorizacion varchar,
+                                                                                    nro_desde integer,
+                                                                                    nro_hasta integer,
+                                                                                    cantidad integer
+                                                                                    ) )
+                                                                                    order by  estacion ASC, sucursal ASC, punto_venta ASC, nro_desde ASC';
 
-                                        ELSE
-                                          raise exception 'No tiene el codigo Punta de Venta %',v_cod_punto_for.codigo;
-                                        END IF;
+                                              ELSE
+                                                raise exception 'No tiene el codigo Punta de Venta %',v_cod_punto_for.codigo;
+                                              END IF;
 
-                                END LOOP;
+                                      END LOOP;
+
+                                ELSE
+
+                                      FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
+                                                             from vef.tpunto_venta pv
+                                                             left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
+                                                             where pv.tipo = 'carga'
+                                                             and su.id_lugar in ( select id_lugar
+                                                                                  from param.tlugar
+                                                                                  where id_lugar_fk = param_id_lugar or id_lugar = param_id_lugar)
+                                                             ) LOOP
+
+                                              IF v_cod_punto_for.codigo is not null THEN
+
+                                                  v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                                                  v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+
+                                                  v_consulta = '
+
+
+                                                              (SELECT
+                                                                     estacion,
+                                                                     sucursal,
+                                                                     (select nombre
+                                                                        from vef.tpunto_venta
+                                                                        where codigo = codigo_punto_venta
+                                                                        and tipo = ''carga''
+                                                                        limit 1) as punto_venta,
+                                                                     nro_autorizacion,
+                                                                     nro_desde,
+                                                                     nro_hasta,
+                                                                     cantidad
+                                                                              FROM dblink('''||v_cadena_cnx||''',
+                                                                                          ''select
+                                                                                            '''''||v_id_lugar_fac||'''''::varchar as estacion,
+                                                                                            '''''||v_cod_punto_for.nombre_sucursal||'''''::varchar as sucursal,
+                                                                                            codigo_punto_venta,
+                                                                                            nro_autorizacion,
+                                                                                            min(nro_factura)::integer as nro_desde,
+                                                                                            max(nro_factura)::integer as nro_hasta,
+                                                                                            count(id_factura)::integer as cantidad
+
+                                                                                        from sfe.tfactura
+                                                                                        where
+                                                                                        estado_reg = ''''activo''''
+                                                                                        and fecha_factura BETWEEN '''''||v_parametros.fecha_desde||''''' and '''''||v_parametros.fecha_hasta||'''''
+                                                                                        and sistema_origen = ''''CARGA''''
+                                                                                        and lower(tipo_factura) = '''''||v_parametros.tipo_generacion||'''''
+                                                                                        and  codigo_punto_venta = '''''||v_cod_punto_for.codigo||'''''
+                                                                                        group by nro_autorizacion, codigo_punto_venta
+                                                                                        order by estacion ASC, sucursal ASC
+                                                                                           '')
+                                                                              AS t1(
+                                                                                    estacion varchar,
+                                                                                    sucursal varchar,
+                                                                                    codigo_punto_venta varchar,
+                                                                                    nro_autorizacion varchar,
+                                                                                    nro_desde integer,
+                                                                                    nro_hasta integer,
+                                                                                    cantidad integer
+                                                                                    ) )
+                                                                                    order by  estacion ASC, sucursal ASC, punto_venta ASC, nro_desde ASC';
+
+                                              ELSE
+                                                raise exception 'No tiene el codigo Punta de Venta %',v_cod_punto_for.codigo;
+                                              END IF;
+
+                                      END LOOP;
+
+                                END IF;
 
                     END IF;
 
@@ -1633,8 +1706,8 @@ $body$
                                         and (case when v_parametros.id_punto_venta = 0 then ven.estado!='borrador'
                                                   else ven.id_punto_venta = v_parametros.id_punto_venta end)
 
-                                        and (case when v_parametros.id_lugar = 0 then ven.estado!='borrador'
-                                                  else lu.id_lugar = v_parametros.id_lugar end)
+                                       and (case when v_parametros.id_lugar = 'TODOS' then ven.estado!='borrador'
+                                                  else lu.id_lugar = param_id_lugar end)
 
                                         --and lu.id_lugar = v_parametros.id_lugar
                                         and ven.fecha BETWEEN v_parametros.fecha_desde and v_parametros.fecha_hasta
@@ -1778,14 +1851,14 @@ $body$
 
 
                --si es opcion TODOS en punto de venta estacion
-               IF (v_parametros.id_lugar = 0) THEN
+               IF (v_parametros.id_lugar = 'TODOS') THEN
                     v_id_lugar_fac = ' ';
                ELSE
 
                     select codigo
                     into v_nom_esta
                     from param.tlugar
-                    where id_lugar = v_parametros.id_lugar;
+                    where id_lugar = param_id_lugar;
 
                     v_id_lugar_fac = v_nom_esta ;
 
@@ -1910,7 +1983,7 @@ $body$
                                                        where pv.tipo = 'carga'
                                                        and su.id_lugar in ( select id_lugar
                                                        						from param.tlugar
-                                                                            where id_lugar_fk = v_parametros.id_lugar or id_lugar = v_parametros.id_lugar)
+                                                                            where id_lugar_fk = param_id_lugar or id_lugar = param_id_lugar)
                                                        ) LOOP
 
                                         IF v_cod_punto_for.codigo is not null THEN
