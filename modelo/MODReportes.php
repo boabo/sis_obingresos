@@ -696,5 +696,28 @@ class MODReportes extends MODbase{
         return $this->respuesta;
     }
 
+    function getFechasGeneradasOverComison(){
+        $this->procedimiento='obingresos.ft_reportes_sel';
+        $this->transaccion='OBING_GETDATEOC_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setCount(true);
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_calculo_over_comison','integer');
+        $this->captura('tipo','varchar');
+        $this->captura('intervalo','varchar');
+        $this->captura('calculo_generado','varchar');
+        $this->captura('fecha_ini_calculo','date');
+        $this->captura('fecha_fin_calculo','date');
+        $this->captura('documento','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();//var_dump($this->consulta);exit;
+        $this->ejecutarConsulta();
+
+        return $this->respuesta;
+    }
+
 }
 ?>

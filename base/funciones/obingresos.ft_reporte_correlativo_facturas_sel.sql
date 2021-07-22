@@ -1977,7 +1977,73 @@ $body$
 
                     ELSE -- si la sucursal es null o marcado 0 es todos
 
-                    			FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
+                    			IF (upper(v_parametros.id_lugar) = 'TODOS' or v_parametros.id_lugar is null) THEN
+
+                            	FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
+                                                       from vef.tpunto_venta pv
+                                                       left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
+                                                       where pv.tipo = 'carga'
+                                                       ) LOOP
+
+                                        IF v_cod_punto_for.codigo is not null THEN
+
+                                            v_cadena_cnx = vef.f_obtener_cadena_conexion_facturacion();
+                                            v_conexion = (SELECT dblink_connect(v_cadena_cnx));
+
+                                            v_consulta = '
+
+
+                                                        (SELECT
+                                                               estacion,
+                                                               sucursal,
+                                                               (select nombre
+                                                                  from vef.tpunto_venta
+                                                                  where codigo = codigo_punto_venta
+                                                                  and tipo = ''carga''
+                                                                  limit 1) as punto_venta,
+                                                               nro_autorizacion,
+                                                               nro_desde,
+                                                               nro_hasta,
+                                                               cantidad
+                                                                        FROM dblink('''||v_cadena_cnx||''',
+                                                                                    ''select
+                                                                                      '''''||v_id_lugar_fac||'''''::varchar as estacion,
+                                                                                      '''''||v_cod_punto_for.nombre_sucursal||'''''::varchar as sucursal,
+                                                                                      codigo_punto_venta,
+                                                                                      nro_autorizacion,
+                                                                                      min(nro_factura)::integer as nro_desde,
+                                                                                      max(nro_factura)::integer as nro_hasta,
+                                                                                      count(id_factura)::integer as cantidad
+
+                                                                                  from sfe.tfactura
+                                                                                  where
+                                                                                  estado_reg = ''''activo''''
+                                                                                  and fecha_factura BETWEEN '''''||v_parametros.fecha_desde||''''' and '''''||v_parametros.fecha_hasta||'''''
+                                                                                  and sistema_origen = ''''CARGA''''
+                                                                                  and  codigo_punto_venta = '''''||v_cod_punto_for.codigo||'''''
+                                                                                  group by nro_autorizacion, codigo_punto_venta
+                                                                                  order by estacion ASC, sucursal ASC
+                                                                                     '')
+                                                                        AS t1(
+                                                                              estacion varchar,
+                                                                              sucursal varchar,
+                                                                              codigo_punto_venta varchar,
+                                                                              nro_autorizacion varchar,
+                                                                              nro_desde integer,
+                                                                              nro_hasta integer,
+                                                                              cantidad integer
+                                                                              ) )
+                                                                              order by  estacion ASC, sucursal ASC, punto_venta ASC, nro_desde ASC';
+
+                                        ELSE
+                                          raise exception 'No tiene el codigo Punta de Venta %',v_cod_punto_for.codigo;
+                                        END IF;
+
+                                END LOOP;
+
+                            ELSE
+
+                            	FOR v_cod_punto_for in (select pv.codigo, (su.codigo||' - '|| su.nombre) as nombre_sucursal
                                                        from vef.tpunto_venta pv
                                                        left join vef.tsucursal su on su.id_sucursal = pv.id_sucursal
                                                        where pv.tipo = 'carga'
@@ -2041,6 +2107,8 @@ $body$
                                         END IF;
 
                                 END LOOP;
+
+                            END IF;
 
                     END IF;
 

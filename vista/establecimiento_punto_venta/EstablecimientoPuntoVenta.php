@@ -111,7 +111,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     config:{
                         name: 'direccion_estable',
                         fieldLabel: 'Dirección Establecimiento',
-                        allowBlank: false,
+                        allowBlank: true,
                         anchor: '60%',
                         gwidth: 200,
                         maxLength:256,
@@ -128,7 +128,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     config:{
                         name: 'id_lugar',
                         fieldLabel: 'Lugar Establecimiento',
-                        allowBlank: false,
+                        allowBlank: true,
                         emptyText:'Lugar...',
                         resizable:true,
                         msgTarget: 'side',

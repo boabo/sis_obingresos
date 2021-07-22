@@ -308,5 +308,42 @@ class ACTReportes extends ACTbase{
         $this->res=$this->objFunc->getDetalleConciliacionAdministradora($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+
+    function reporteResumenCalculoA7() {
+
+        //obtener titulo de reporte
+        $titulo ='Resumen Calculo A7';
+
+        //Genera el nombre del archivo (aleatorio + titulo)
+        $nombreArchivo=uniqid(md5(session_id()).$titulo);
+        $nombreArchivo.='.xls';
+
+        $datos = json_decode($this->objParam->getParametro('records'), true);
+        $fecha_ini = $this->objParam->getParametro('fecha_ini');
+        $fecha_fin = $this->objParam->getParametro('fecha_fin');
+
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        $this->objParam->addParametro('datos',$datos);
+        $this->objParam->addParametro('fecha_ini',$fecha_ini);
+        $this->objParam->addParametro('fecha_fin',$fecha_fin);
+
+        //Instancia la clase de excel
+        $this->objReporteFormato = new RReporteCalculoA7XLS($this->objParam);
+
+        $this->objReporteFormato->imprimeDatos();
+        $this->objReporteFormato->generarReporte();
+
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado', 'Se generó con éxito el reporte: '.$nombreArchivo, 'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+    }
+
+    function getFechasGeneradasOverComison() {
+        $this->objFunc=$this->create('MODReportes');
+        $this->res=$this->objFunc->getFechasGeneradasOverComison($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
 }
 ?>

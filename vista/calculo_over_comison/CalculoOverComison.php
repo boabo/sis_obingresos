@@ -1,10 +1,10 @@
 <?php
 /**
  *@package pXP
- *@file ReporteCalculoA7.php
+ *@file CalculoOverComison.php
  *@author franklin.espinoza
- *@date 20-12-2020
- *@description  Vista para registrar los datos de un funcionario
+ *@date 10-05-2021
+ *@description  Vista para generar Calculo Over Comison
  */
 
 header("content-type: text/javascript; charset=UTF-8");
@@ -36,17 +36,18 @@ header("content-type: text/javascript; charset=UTF-8");
 </style>
 
 <script>
-    Phx.vista.ReporteCalculoA7=Ext.extend(Phx.gridInterfaz,{
+    Phx.vista.CalculoOverComison=Ext.extend(Phx.gridInterfaz,{
         viewConfig: {
             stripeRows: false,
             getRowClass: function(record) {
                 return "x-selectable";
             }
         },
+        btest:false,
         constructor: function(config) {
             this.maestro = config;
 
-            Phx.vista.ReporteCalculoA7.superclass.constructor.call(this,config);
+            Phx.vista.CalculoOverComison.superclass.constructor.call(this,config);
 
             this.current_date = new Date();
             this.diasMes = [31, new Date(this.current_date.getFullYear(), 2, 0).getDate(), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -57,11 +58,11 @@ header("content-type: text/javascript; charset=UTF-8");
             this.txtSearch.maxLengthText = 'Ha exedido el numero de caracteres permitidos';
             this.txtSearch.msgTarget = 'under';*/
 
-            this.etiqueta_vuelo = new Ext.form.Label({
-                name: 'label_vuelo',
+            this.etiqueta_tipo = new Ext.form.Label({
+                name: 'label_tipo',
                 grupo: [0,1],
-                fieldLabel: 'Nro. Vuelo:',
-                text: 'Nro. Vuelo:',
+                fieldLabel: 'Tipo:',
+                text: 'Tipo:',
                 //style: {color: 'green', font_size: '12pt'},
                 readOnly:true,
                 anchor: '150%',
@@ -71,19 +72,88 @@ header("content-type: text/javascript; charset=UTF-8");
                 style: 'font-size: 170%; font-weight: bold; background-image: none;color: #00B167;'
             });
 
-            this.txtSearch = new Ext.form.TextField({
-                name: 'campo_search',
-                grupo: [0,1],
-                fieldLabel: 'Fecha Inicio:',
-                enableKeyEvents: true,
-                maxLength : 13,
-                maxLengthText : 'Ha exedido el numero de caracteres permitidos',
-                gwidth: 150,
-                msgTarget : 'under',
-                hidden : false
+            this.cmbTipo = new Ext.form.ComboBox({
+                name : 'campo_tipo',
+                grupo : [0,1],
+                fieldLabel : 'Tipo',
+                msgTarget : 'side',
+                hidden : false,
+                allowBlank : false,
+                emptyText :'Tipo...',
+                typeAhead : true,
+                triggerAction : 'all',
+                lazyRender : true,
+                mode : 'local',
+                anchor : '70%',
+                width : 90,
+                gwidth : 200,
+                editable : false,
+                store : new Ext.data.ArrayStore({
+                    fields : ['tipo', 'valor'],
+                    data : [
+                        ['IATA', 'Detalle IATA'],
+                        ['NO-IATA', 'Detalle No IATA']
+                    ]
+                }),
+                valueField : 'tipo',
+                displayField : 'valor'
             });
 
-            this.txtSearch.on('specialkey', this.onTxtSearchSpecialkey, this);
+            this.etiqueta_fechas = new Ext.form.Label({
+                name: 'label_fechas',
+                grupo: [0,1],
+                fieldLabel: 'Generado:',
+                text: 'Generado:',
+                //style: {color: 'green', font_size: '12pt'},
+                readOnly:true,
+                anchor: '150%',
+                gwidth: 150,
+                format: 'd/m/Y',
+                hidden : false,
+                style: 'font-size: 170%; font-weight: bold; background-image: none;color: #00B167;'
+            });
+            this.cmbFechas = new Ext.form.ComboBox({
+
+                name: 'id_proveedor',
+                hiddenName: 'id_proveedor',
+                fieldLabel: 'Proveedor',
+
+                forceSelection: true,
+                allowBlank: true,
+                msgTarget : 'side',
+                emptyText: 'Rango Generado...',
+                editable : false,
+                store: new Ext.data.JsonStore({
+                    url:'../../sis_obingresos/control/Reportes/getFechasGeneradasOverComison',
+                    id: 'id_calculo_over_comison',
+                    root: 'datos',
+                    sortInfo:{
+                        field: 'tipo',
+                        direction: 'ASC'
+                    },
+                    totalProperty: 'total',
+                    fields: ['id_calculo_over_comison','tipo','intervalo','calculo_generado','documento','fecha_ini_calculo','fecha_fin_calculo'],
+                    // turn on remote sorting
+                    remoteSort: true,
+                    //baseParams:Ext.apply({par_filtro:'desc_proveedor#codigo#nit#rotulo_comercial'})
+                }),
+                valueField: 'id_calculo_over_comison',
+                displayField: 'intervalo',
+                gdisplayField: 'intervalo',
+                triggerAction: 'all',
+                lazyRender: true,
+                resizable: true,
+                mode: 'remote',
+                pageSize: 10,
+                queryDelay: 1000,
+                listWidth: 230,
+                minChars: 2,
+                gwidth: 100,
+                width: 230,
+                anchor: '80%',
+                tpl: '<tpl for="."><div class="x-combo-list-item"><p><b >Rango: {intervalo}</b></p><p><b style="text-align: center; color: #00B167;">Tipo: [ {tipo} ]</b></p></div></tpl>',
+                id_grupo: 0
+            });
 
             this.etiqueta_ini = new Ext.form.Label({
                 name: 'etiqueta_ini',
@@ -101,6 +171,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.fecha_ini = new Ext.form.DateField({
                 name: 'fecha_ini',
                 grupo: [0,1],
+                msgTarget : 'side',
                 fieldLabel: 'Fecha',
                 allowBlank: false,
                 anchor: '60%',
@@ -126,6 +197,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.fecha_fin = new Ext.form.DateField({
                 name: 'fecha_fin',
                 grupo: [0,1],
+                msgTarget : 'side',
                 fieldLabel: 'Fecha',
                 allowBlank: false,
                 anchor: '60%',
@@ -140,86 +212,177 @@ header("content-type: text/javascript; charset=UTF-8");
             this.tbar.addField(this.fecha_ini);
             this.tbar.addField(this.etiqueta_fin);
             this.tbar.addField(this.fecha_fin);
-            this.tbar.addField(this.etiqueta_vuelo);
-            this.tbar.addField(this.txtSearch);
 
+            this.tbar.addField(this.etiqueta_tipo);
+            this.tbar.addField(this.cmbTipo);
 
-            this.addButton('btnBuscar', {
-                text : 'Buscar',
+            this.tbar.addField(this.etiqueta_fechas);
+            this.tbar.addField(this.cmbFechas);
+
+            this.addButton('btnGenerar', {
+                text : 'Generar',
                 grupo: [0,1],
-                iconCls : 'bzoom',
+                iconCls : 'bengine',
                 disabled : false,
+                hidden : true,
                 handler : this.onBtnBuscar
             });
-            this.addButton('btn_excel_a7',
-                {
-                    text: 'Resumen A7',
-                    iconCls: 'bpagar',
-                    style: 'color : #00B167; ',
-                    grupo: [0,1,2,3,4,5,6],
-                    disabled: false,
-                    handler: this.onBtnRepResumenCalculoA7,
-                    tooltip: 'Reporte Resumen A7'
-                }
-            );
+
+            this.addButton('btnFileBSP', {
+                text : 'Generar File BSP',
+                grupo: [0,1],
+                iconCls : 'bexcel',
+                disabled : false,
+                hidden : true,
+                handler : this.onGenerarFileBSP
+            });
+
+            this.addButton('btnCreditoPortal', {
+                text : 'Generar Credito P. NO IATA',
+                grupo: [0,1],
+                iconCls : 'bexcel',
+                disabled : false,
+                hidden : true,
+                handler : this.onGenerarCreditoPortal
+            });
+
+
+            //this.store.baseParams.momento = 0;
             this.iniciarEventos();
             this.bandera_alta = 0;
             this.bandera_baja = 0;
 
-            this.grid.addListener('cellclick', this.mostrarDetalleVuelo,this);
+            this.grid.addListener('cellclick', this.mostrarDetalleACM,this);
+            this.fecha_ini.on('select', function (rec, date) {
+                let fecha_max = new Date(date.getFullYear() ,date.getMonth(), this.diasMes[date.getMonth()])
+                this.fecha_fin.setMaxValue(fecha_max);
+            },this);
 
             this.init();
 
         },
 
-        onBtnRepResumenCalculoA7 : function (){
-            let items = [];
-            this.store.data.items.forEach(item => {
-                if(item.json.ruta_vl != 'TOTAL')
-                    items.push(item.json);
-            });
+        onGenerarFileBSP : function (){
 
-            let fecha_desde = this.fecha_ini.getValue();
-            dia =  fecha_desde.getDate();
-            dia = dia < 10 ? "0"+dia : dia;
-            mes = fecha_desde.getMonth() + 1;
-            mes = mes < 10 ? "0"+mes : mes;
-            anio = fecha_desde.getFullYear();
-            fecha_desde = dia + "/" + mes + "/" + anio;
-
-            let fecha_hasta = this.fecha_fin.getValue();
-            dia =  fecha_hasta.getDate();
-            dia = dia < 10 ? "0"+dia : dia;
-            mes = fecha_hasta.getMonth() + 1;
-            mes = mes < 10 ? "0"+mes : mes;
-            anio = fecha_hasta.getFullYear();
-            fecha_hasta = dia + "/" + mes + "/" + anio;
-
+            var fechas = this.cmbFechas.getRawValue();
             Phx.CP.loadingShow();
-            Ext.Ajax.request({
-                url: '../../sis_obingresos/control/Reportes/reporteResumenCalculoA7',
-                params: {
-                    records: JSON.stringify(items),
-                    fecha_ini : fecha_desde,
-                    fecha_fin : fecha_hasta
+            if (fechas == '') {
 
-                },
-                success: this.successExport,
-                failure: this.conexionFailure,
-                timeout: this.timeout,
-                scope: this
-            });
+                fecha_desde = this.fecha_ini.getValue();
+                dia =  fecha_desde.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_desde.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_desde.getFullYear();
+                let fecha_ini = dia + "/" + mes + "/" + anio;
 
+                fecha_hasta = this.fecha_fin.getValue();
+                dia =  fecha_hasta.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_hasta.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_hasta.getFullYear();
+                let fecha_fin = dia + "/" + mes + "/" + anio;
+
+                let tipo = this.cmbTipo.getValue();
+
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/CalculoOverComison/reporteFileBSP',
+                    params: {fecha_ini: fecha_ini, fecha_fin: fecha_fin},
+                    success: function (resp) {
+                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                        console.log('envio over',reg);
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b>Estimado Funcionario: ' + '\n' + ' El Reporte se esta Generando, una vez concluido se le enviara a su correo.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.INFO
+                        });
+                        Phx.CP.loadingHide();
+                    },
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
+
+            }else{
+
+                var fechas = fechas.split('-');
+
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/CalculoOverComison/reporteFileBSP',
+                    params: {fecha_ini: fechas[0].trim(), fecha_fin: fechas[1].trim()},
+                    success: function (resp) {
+                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                        console.log('envio over',reg);
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b>Estimado Funcionario: ' + '<br>' + ' El reporte se esta generando, una vez concluido el proceso se le enviara a su correo la información correspondiente.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.INFO
+                        });
+                        Phx.CP.loadingHide();
+                    },
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
+
+            }
         },
-        onTxtSearchSpecialkey : function(field, e) {
 
-            if (e.getKey() == e.ENTER) {
-                this.onBtnBuscar();
+        onGenerarCreditoPortal : function () {
+            //var data = this.getSelectedData();
+            var fechas = this.cmbFechas.getRawValue();
+            Phx.CP.loadingShow();
+            if (fechas == '') {
+
+                fecha_desde = this.fecha_ini.getValue();
+                dia =  fecha_desde.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_desde.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_desde.getFullYear();
+                let fecha_ini = dia + "/" + mes + "/" + anio;
+
+                fecha_hasta = this.fecha_fin.getValue();
+                dia =  fecha_hasta.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_hasta.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_hasta.getFullYear();
+                let fecha_fin = dia + "/" + mes + "/" + anio;
+
+                let tipo = this.cmbTipo.getValue();
+
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/CalculoOverComison/reporteCalculoOverComison',
+                    params: {fecha_ini: fecha_ini, fecha_fin: fecha_fin, tipo: tipo, momento: 0},
+                    success: this.successExport,
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
+
+            }else{
+
+                var fechas = fechas.split('-');
+
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/CalculoOverComison/reporteCalculoOverComison',
+                    params: {fecha_ini: fechas[0].trim(), fecha_fin: fechas[1].trim(), tipo: 'NO-IATA', momento: 0},
+                    success: this.successExport,
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
+
             }
         },
 
         onBtnBuscar : function() {
-            this.store.baseParams.nro_vuelo = (this.txtSearch.getValue()).trim();
 
             fecha_desde = this.fecha_ini.getValue();
             dia =  fecha_desde.getDate();
@@ -237,29 +400,33 @@ header("content-type: text/javascript; charset=UTF-8");
             anio = fecha_hasta.getFullYear();
             this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
 
+            this.store.baseParams.tipo = this.cmbTipo.getValue();
+            //this.store.baseParams.momento = momento ? momento : 0;
+
             this.load({params: {start: 0, limit: 50}});
         },
 
-        mostrarDetalleVuelo : function(grid, rowIndex, columnIndex, e) {
+        mostrarDetalleACM : function(grid, rowIndex, columnIndex, e) {
 
             var record = this.store.getAt(rowIndex);
             var fieldName = grid.getColumnModel().getDataIndex(columnIndex); // Get field name
 
 
 
-            if (fieldName == 'vuelo_id') {
+            if (fieldName == 'DocumentNumber') {
 
-                var rec = {maestro: this.getSelectedData()};
-
-                Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte/DetalleVueloA7.php',
-                    'Detalle Vuelo A7',
+                var rec = this.getSelectedData();
+                rec.fecha_desde = this.store.baseParams.fecha_desde;
+                rec.fecha_hasta = this.store.baseParams.fecha_hasta;
+                Phx.CP.loadWindows('../../../sis_obingresos/vista/calculo_over_comison/DetalleCalculoACM.php',
+                    'Detalle Calculo ACM',
                     {
                         width: 1200,
                         height:600
                     },
                     rec,
                     this.idContenedor,
-                    'DetalleVueloA7'
+                    'DetalleCalculoACM'
                 );
             }
 
@@ -267,13 +434,24 @@ header("content-type: text/javascript; charset=UTF-8");
 
         bactGroups:[0,1],
         bexcelGroups:[0,1],
-        gruposBarraTareas: [
+        /*gruposBarraTareas: [
             {name:  'normal', title: '<h1 style="text-align: center; color: #00B167;"><i class="fa fa-file-o fa-2x" aria-hidden="true"></i>C. LIQUIDACIÓN</h1>',grupo: 0, height: 0} ,
             {name: 'existencia', title: '<h1 style="text-align: center; color: #FF8F85;"><i class="fa fa-file-o fa-2x" aria-hidden="true"></i>CONTROL VUELOS</h1>', grupo: 1, height: 1}
-        ],
+        ],*/
         iniciarEventos: function(){
 
+
+            this.fecha_ini.on('select', function (combo,rec,index) {
+                this.fecha_fin.allowBlank = false;
+                this.cmbTipo.allowBlank = false;
+            },this);
+
             this.fecha_fin.on('select', function (combo,rec,index) {
+
+                this.fecha_ini.allowBlank = false;
+                this.cmbTipo.allowBlank = false;
+                this.cmbTipo.setValue('');
+                this.modificado = true;
 
                 fecha_desde = this.fecha_ini.getValue();
                 dia =  fecha_desde.getDate();
@@ -291,17 +469,101 @@ header("content-type: text/javascript; charset=UTF-8");
                 anio = fecha_hasta.getFullYear();
                 this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
 
-                /*if(this.tabtbar.getActiveTab().name == 'bajas'){
-                    this.store.baseParams.estado_func = 'bajas';
-                    var fecha = this.fecha_fin.getValue();
-                    this.current_date = new Date(fecha.getFullYear(),fecha.getMonth()+1,1);
+            },this);
+
+            this.cmbTipo.on('select', function (combo, record, index) {
+
+                this.fecha_ini.allowBlank = false;
+                this.fecha_fin.allowBlank = false;
+
+
+                this.cmbFechas.setValue('');
+                this.modificado = true;
+                if(record.data.tipo == "IATA"){
+                    this.getBoton('btnFileBSP').setVisible(true);
+                    this.getBoton('btnCreditoPortal').setVisible(false);
+                    this.getBoton('btnGenerar').setVisible(true);
                 }else{
-                    this.store.baseParams.estado_func = 'altas';
-                    this.current_date = this.store.baseParams.fecha_fin;
-                }*/
+                    this.getBoton('btnFileBSP').setVisible(false);
+                    this.getBoton('btnCreditoPortal').setVisible(true);
+                    this.getBoton('btnGenerar').setVisible(true);
+                }
+                this.store.baseParams.tipo = record.data.tipo;
+                this.store.baseParams.momento = 0;
+
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                    params:{
+                        fecha_ini : this.store.baseParams.fecha_desde,
+                        fecha_fin : this.store.baseParams.fecha_hasta,
+                        tipo      : this.store.baseParams.tipo
+                    },
+                    success:function(resp){
+                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                        if (reg.ROOT.datos.estado_generado == 'generado'){
+                            this.onBtnBuscar();
+                            this.store.baseParams.momento = 0;
+                        }else{
+                            //this.load({params: {start: 0, limit: 50}});
+                            this.store.baseParams.momento = 1;
+                        }
+                    },
+                    failure: this.conexionFailure,
+                    timeout:this.timeout,
+                    scope:this
+                });
+
+
+            }, this);
+
+            this.cmbFechas.on('select', function (combo, record, index) {
+
+                this.fecha_ini.allowBlank = true;
+                this.fecha_ini.setValue('');
+                this.modificado = true;
+
+                this.fecha_fin.allowBlank = true;
+                this.fecha_fin.setValue('');
+                this.modificado = true;
+
+                this.cmbTipo.allowBlank = true;
+                this.cmbTipo.setValue('');
+                this.modificado = true;
+
+
+                if(record.data.tipo == "IATA"){
+                    this.getBoton('btnFileBSP').setVisible(true);
+                    this.getBoton('btnCreditoPortal').setVisible(false);
+                    //this.getBoton('btnGenerar').setVisible(true);
+                }else{
+                    this.getBoton('btnFileBSP').setVisible(false);
+                    this.getBoton('btnCreditoPortal').setVisible(true);
+                    //this.getBoton('btnGenerar').setVisible(true);
+                }
+                this.getBoton('btnGenerar').setVisible(false);
+                this.store.baseParams.tipo = record.data.tipo;
+
+                fecha_desde = new Date(record.data.fecha_ini_calculo);
+                fecha_desde = new Date(fecha_desde.setDate( fecha_desde.getDate() + 1));
+                dia =  fecha_desde.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_desde.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_desde.getFullYear();
+                this.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+                fecha_hasta = new Date(record.data.fecha_fin_calculo);
+                fecha_hasta = new Date(fecha_hasta.setDate( fecha_hasta.getDate() + 1));
+                dia =  fecha_hasta.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_hasta.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_hasta.getFullYear();
+                this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
 
                 this.load({params: {start: 0, limit: 50}});
-            },this);
+
+            }, this);
         },
         actualizarSegunTab: function(name, indice){
 
@@ -346,7 +608,18 @@ header("content-type: text/javascript; charset=UTF-8");
                 config:{
                     labelSeparator:'',
                     inputType:'hidden',
-                    name: 'id_vuelo'
+                    name: 'AcmKey'
+                },
+                type:'Field',
+                form:true
+
+            },
+            {
+                // configuracion del componente
+                config:{
+                    labelSeparator:'',
+                    inputType:'hidden',
+                    name: 'DocumentType'
                 },
                 type:'Field',
                 form:true
@@ -354,9 +627,9 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             {
                 config:{
-                    fieldLabel: "Vuelo ID",
-                    gwidth: 100,
-                    name: 'vuelo_id',
+                    fieldLabel: "Numero ACM",
+                    gwidth: 150,
+                    name: 'DocumentNumber',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -380,20 +653,19 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Fecha Vuelo",
-                    gwidth: 90,
-                    name: 'fecha_vuelo',
+                    fieldLabel: "Agencia",
+                    gwidth: 250,
+                    name: 'PointOfSale',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
                     anchor:'100%',
-                    format:'d/m/Y',
                     style: 'color: blue; background-color: orange;',
                     renderer: function (value, p, record){
-                        return value ? value.dateFormat('d/m/Y') : ''
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
                     }
                 },
-                type:'DateField',
+                type:'TextField',
                 //filters:{pfiltro:'tca.nombre',type:'string'},
                 //bottom_filter : true,
                 id_grupo:1,
@@ -403,9 +675,31 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Nro. Vuelo",
+                    fieldLabel: "Estación",
                     gwidth: 100,
-                    name: 'nro_vuelo',
+                    name: 'IataCode',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'NroVuelo',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    fieldLabel: "Office Id",
+                    gwidth: 100,
+                    name: 'OfficeId',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -426,9 +720,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Status Vuelo",
-                    gwidth: 100,
-                    name: 'status',
+                    fieldLabel: "Tipo",
+                    gwidth: 70,
+                    name: 'TypePOS',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -446,12 +740,55 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid:true,
                 form:true
             },
-
             {
                 config:{
-                    fieldLabel: "Ruta BoA",
+                    fieldLabel: "Desde",
                     gwidth: 100,
-                    name: 'ruta_vl',
+                    name: 'From',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    format:'d/m/Y',
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #00B167; font-weight: bold;">{0}</div>', value.dateFormat('d/m/Y'));
+                    }
+                },
+                type:'DateField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    fieldLabel: "Hasta",
+                    gwidth: 100,
+                    name: 'To',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    format:'d/m/Y',
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #00B167; font-weight: bold;">{0}</div>', value.dateFormat('d/m/Y'));
+                    }
+                },
+                type:'DateField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    fieldLabel: "Cantidad Doc.",
+                    gwidth: 100,
+                    name: 'CommissionPercent',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -472,9 +809,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Ruta PAX",
+                    fieldLabel: "Moneda",
                     gwidth: 100,
-                    name: 'ruta_sabsa',
+                    name: 'Currency',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -495,255 +832,31 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Matricula BoA",
+                    fieldLabel: "Descripción",
+                    gwidth: 250,
+                    name: 'CommissionDescription',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
+                    fieldLabel: "Comisión",
                     gwidth: 100,
-                    name: 'matricula_boa',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
-
-            {
-                config:{
-                    fieldLabel: "Matricula SABSA",
-                    gwidth: 100,
-                    name: 'matricula_sabsa',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
-
-            {
-                config:{
-                    fieldLabel: "A7 Nacional",
-                    gwidth: 100,
-                    name: 'total_nac',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "A7 Internacional",
-                    gwidth: 90,
-                    name: 'total_inter',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Sin A7",
-                    gwidth: 90,
-                    name: 'total_cero',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Total Pax BoA",
-                    gwidth: 110,
-                    name: 'nro_pax_boa',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
-
-            {
-                config:{
-                    fieldLabel: "Importe BoA (Bs.)",
-                    gwidth: 107,
-                    name: 'importe_boa',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        }
-                        else{
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-
-            {
-                config:{
-                    fieldLabel: "Total Pax Sabsa",
-                    gwidth: 110,
-                    name: 'nro_pax_sabsa',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
-
-            {
-                config:{
-                    fieldLabel: "Importe Sabsa (Bs.)",
-                    gwidth: 120,
-                    name: 'importe_sabsa',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        }
-                        else{
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "(Imp. BoA - Imp. Sabsa) (Bs.)",
-                    gwidth: 200,
-                    name: 'diferencia',
+                    name: 'CommssionAmount',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -780,30 +893,25 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid:true,
                 form:false
             }
-
         ],
-        title:'Calculo A7',
-        ActList:'../../sis_obingresos/control/Reportes/generarReporteCalculoA7',
-        id_store:'id_vuelo',
+        title:'Calculo Over Comison',
+        ActList:'../../sis_obingresos/control/CalculoOverComison/generarCalculoOverComison',
+        id_store:'id_iata',
         fields: [
-            {name:'id_vuelo'},
-            {name:'vuelo_id'},
-            {name:'fecha_vuelo', type: 'date', dateFormat:'Y-m-d'},
-            {name:'nro_vuelo', type: 'string'},
-            {name:'ruta_vl', type: 'string'},
-            {name:'nro_pax_boa', type: 'string'},
-            {name:'nro_pax_sabsa', type: 'string'},
-            {name:'importe_boa', type: 'numeric'},
-            {name:'importe_sabsa', type: 'numeric'},
-            {name:'diferencia', type: 'numeric'},
-            {name:'total_nac', type: 'numeric'},
-            {name:'total_inter', type: 'numeric'},
-            {name:'total_cero', type: 'numeric'},
+            {name:'AcmKey'},
+            {name:'DocumentNumber', type: 'string'},
+            {name:'PointOfSale', type: 'string'},
+            {name:'IataCode', type: 'string'},
+            {name:'TypePOS', type: 'string'},
+            {name:'From', type: 'date'},
+            {name:'To', type: 'date'},
 
-            {name:'matricula_boa', type: 'string'},
-            {name:'matricula_sabsa', type: 'string'},
-            {name:'ruta_sabsa', type: 'string'},
-            {name:'status', type: 'string'}
+            {name:'CommissionPercent', type: 'string'},
+            {name:'Currency', type: 'string'},
+            {name:'CommissionDescription', type: 'string'},
+            {name:'CommssionAmount', type: 'numeric'},
+            {name:'DocumentType', type: 'string'},
+            {name:'OfficeId', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',
