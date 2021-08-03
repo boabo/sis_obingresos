@@ -532,6 +532,64 @@ $body$
         return v_consulta;
 
       end;
+    /*********************************
+     #TRANSACCION:  'OBING_GETDATEOC_SEL'
+     #DESCRIPCION:	Data para el listado Detalle de los periodos Generados
+     #AUTOR:		franklin.espinoza
+     #FECHA:		31-06-2021
+    ***********************************/
+    elsif(p_transaccion='OBING_GETDATEOC_SEL')then
+
+      begin
+
+
+        --Sentencia de la consulta de conteo de registros
+        v_consulta = 'select
+                          toc.id_calculo_over_comison,
+                          toc.tipo,
+                          (''''||to_char(toc.fecha_ini_calculo,''dd/mm/yyyy'')::varchar || '' - '' || to_char(toc.fecha_fin_calculo,''dd/mm/yyyy'')::varchar||'''') ::varchar intervalo,
+                          toc.calculo_generado,
+                          toc.fecha_ini_calculo,
+                          toc.fecha_fin_calculo,
+                          toc.documento
+
+                      from obingresos.tcalculo_over_comison toc
+                      ';
+
+
+      --Definicion de la respuesta
+      --v_consulta:=v_consulta||v_parametros.filtro;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
+
+    /*********************************
+     #TRANSACCION:  'OBING_GETDATEOC_CONT'
+     #DESCRIPCION:	Data para el listado Detalle de los periodos Generados
+     #AUTOR:		franklin.espinoza
+     #FECHA:		31-06-2021
+    ***********************************/
+    elsif(p_transaccion='OBING_GETDATEOC_CONT')then
+
+      begin
+
+
+        --Sentencia de la consulta de conteo de registros
+        v_consulta = 'select
+                          count(id_calculo_over_comison)
+                      from obingresos.tcalculo_over_comison toc
+                      ';
+
+
+      --Definicion de la respuesta
+      --v_consulta:=v_consulta||v_parametros.filtro;
+
+        --Devuelve la respuesta
+        return v_consulta;
+
+      end;
 
 	else
 

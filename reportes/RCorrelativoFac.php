@@ -80,7 +80,13 @@ class CustomReportLibroBancos extends MYPDF {
             //PARA TIPO DE REPORTE CONSOLIDADO (SIN EL PUNTO DE VENTA)
             if($tipo_reporte == 'CONSOLIDADO'){
 
-                $this->Cell(265, $height2, 'Tipo: FACTURACION '.$tipo_generacion, 0, 0, 'C', false, '', 1, false, 'T', 'C');
+                if($tipo_generacion == 'NOTA'){
+                    $this->Cell(265, $height2, 'Tipo: '.$tipo_generacion, 0, 0, 'C', false, '', 1, false, 'T', 'C');
+
+                }else{
+                    $this->Cell(265, $height2, 'Tipo: FACTURACION '.$tipo_generacion, 0, 0, 'C', false, '', 1, false, 'T', 'C');
+
+                }
 
                 $this->Ln();
                 $this->Ln();

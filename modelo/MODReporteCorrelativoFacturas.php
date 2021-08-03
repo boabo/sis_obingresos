@@ -21,7 +21,7 @@ class MODReporteCorrelativoFacturas extends MODbase{
         $this->setCount(false);
        // $this->setTipoRetorno('record');
 
-        $this->setParametro('id_lugar','id_lugar','int4');
+        $this->setParametro('id_lugar','city_code','varchar');
         $this->setParametro('id_sucursal','id_sucursal','int4');
         $this->setParametro('id_punto_venta','id_punto_venta','int4');
         $this->setParametro('tipo_generacion','tipo_generacion','varchar');
@@ -56,7 +56,7 @@ class MODReporteCorrelativoFacturas extends MODbase{
         $this->setCount(false);
         // $this->setTipoRetorno('record');
 
-        $this->setParametro('id_lugar','id_lugar','int4');
+        $this->setParametro('id_lugar','city_code','varchar');
         $this->setParametro('id_sucursal','id_sucursal','int4');
         $this->setParametro('id_punto_venta','id_punto_venta','int4');
         $this->setParametro('tipo_generacion','tipo_generacion','varchar');

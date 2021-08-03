@@ -3996,3 +3996,35 @@ WITH (oids = false);
 ALTER TABLE obingresos.tlog_modificaciones_medios_pago
   OWNER TO postgres;
 /***********************************F-SCP-IRVA-OBINGRESOS-0-22/06/2021****************************************/
+
+/***********************************I-SCP-FEA-OBINGRESOS-0-21/07/2021****************************************/
+CREATE TABLE obingresos.tcalculo_over_comison (
+  id_calculo_over_comison SERIAL,
+  tipo VARCHAR(16),
+  calculo_generado VARCHAR(16),
+  fecha_ini_calculo DATE,
+  fecha_fin_calculo DATE,
+  id_calculo_over_comison_fk INTEGER,
+  documento VARCHAR(8),
+  lista_acm TEXT,
+  CONSTRAINT tcalculo_over_comison_pkey PRIMARY KEY(id_calculo_over_comison)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+ALTER TABLE obingresos.tcalculo_over_comison
+  ALTER COLUMN id_calculo_over_comison SET STATISTICS 0;
+
+ALTER TABLE obingresos.tcalculo_over_comison
+  ALTER COLUMN tipo SET STATISTICS 0;
+
+ALTER TABLE obingresos.tcalculo_over_comison
+  ALTER COLUMN calculo_generado SET STATISTICS 0;
+
+ALTER TABLE obingresos.tcalculo_over_comison
+  ALTER COLUMN fecha_ini_calculo SET STATISTICS 0;
+
+ALTER TABLE obingresos.tcalculo_over_comison
+  ALTER COLUMN fecha_fin_calculo SET STATISTICS 0;
+
+ALTER TABLE obingresos.tcalculo_over_comison OWNER TO postgres;
+/***********************************F-SCP-FEA-OBINGRESOS-0-21/07/2021****************************************/

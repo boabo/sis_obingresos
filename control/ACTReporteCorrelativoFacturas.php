@@ -25,7 +25,7 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
         $dataSource = new DataSource();
 
 
-        $id_lugar = $this->objParam->getParametro('id_lugar');
+        $id_lugar = $this->objParam->getParametro('city_code');
         $id_sucursal = $this->objParam->getParametro('id_sucursal');
         $id_punto_venta = $this->objParam->getParametro('id_punto_venta');
         $tipo_generacion = $this->objParam->getParametro('tipo_generacion');
@@ -38,7 +38,7 @@ class ACTReporteCorrelativoFacturas extends ACTbase{
         $this->objParam->addParametroConsulta('cantidad',1000);
         $this->objParam->addParametroConsulta('puntero',0);
 
-        $dataSource->putParameter('id_lugar', $id_lugar);
+        $dataSource->putParameter('city_code', $id_lugar);
         $dataSource->putParameter('id_sucursal', $id_sucursal);
         $dataSource->putParameter('id_punto_venta', $id_punto_venta);
         $dataSource->putParameter('tipo_generacion', $tipo_generacion);
