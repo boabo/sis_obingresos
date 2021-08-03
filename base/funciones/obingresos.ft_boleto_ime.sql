@@ -1640,6 +1640,8 @@ BEGIN
                                                                 /*************/
                     END IF;
 
+					/*Aumentando la condicion para que sea a la inversa igual*/
+                    if (v_saldo_fp1 = 0) then
 					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                   IF v_valor <= 0 THEN
                     raise 'El importe de la segunda forma de pago, no puede ser menor o igual a cero';
@@ -1713,6 +1715,7 @@ BEGIN
                                                                         v_parametros.id_venta_2
                                                                       );
                     end if;
+			      end if;
 
             	end if;
 
