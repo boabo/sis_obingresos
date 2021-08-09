@@ -139,7 +139,7 @@ class MODReportes extends MODbase{
 
             /*var_dump('$office_ids', $office_ids);
             var_dump('$list', $list);exit;*/
-
+            //var_dump($fecha_desde,$fecha_hasta,$office_id,$fuente);exit;
             $query = @mssql_query("exec DBStage.dbo.spa_GetAtcLinkserInformation '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
 
             /** Establecimiento Punto Venta**/
@@ -157,7 +157,11 @@ class MODReportes extends MODbase{
                 }
 
                 if($row['EstablishmentCode']!=null) {
-                    $estable_index = array_search(ltrim($row['EstablishmentCode'], '0'), $this->array_column($list, 'codigo_estable'));
+                    if ( $fuente == 'pago_atc' ) {
+                        $estable_index = array_search(ltrim($row['EstablishmentCode'], '0'), $this->array_column($list, 'codigo_estable'));
+                    }else{
+                        $estable_index = array_search(ltrim($row['TerminalNumber'], '0'), $this->array_column($list, 'codigo_estable'));
+                    }
                     $record->NameEstable = $list[$estable_index]["nombre_estable"];
                     $record->TypeEstable = $list[$estable_index]["tipo_estable"];
                 }

@@ -59,7 +59,8 @@ BEGIN
 			fecha_mod,
             tipo_estable,
             id_stage_pv,
-            id_lugar
+            id_lugar,
+            direccion_estable
           	) values(
 			'activo',
 			v_parametros.codigo_estable,
@@ -73,8 +74,8 @@ BEGIN
 			null,
 			v_parametros.tipo_estable,
             v_parametros.id_stage_pv,
-            v_parametros.id_lugar
-
+            v_parametros.id_lugar,
+            v_parametros.direccion_estable
 			)RETURNING id_establecimiento_punto_venta into v_id_establecimiento_punto_venta;
 
 			--Definicion de la respuesta
@@ -107,7 +108,8 @@ BEGIN
 			usuario_ai = v_parametros._nombre_usuario_ai,
             tipo_estable = v_parametros.tipo_estable,
             id_stage_pv = v_parametros.id_stage_pv,
-            id_lugar = v_parametros.id_lugar
+            id_lugar = v_parametros.id_lugar,
+            direccion_estable = v_parametros.direccion_estable
 			where id_establecimiento_punto_venta=v_parametros.id_establecimiento_punto_venta;
 
 			--Definicion de la respuesta
@@ -130,8 +132,12 @@ BEGIN
 
 		begin
 			--Sentencia de la eliminacion
-			delete from obingresos.testablecimiento_punto_venta
-            where id_establecimiento_punto_venta=v_parametros.id_establecimiento_punto_venta;
+			/*delete from obingresos.testablecimiento_punto_venta
+            where id_establecimiento_punto_venta=v_parametros.id_establecimiento_punto_venta;*/
+
+            update obingresos.testablecimiento_punto_venta set
+              estado_reg = 'inactivo'
+			where id_establecimiento_punto_venta=v_parametros.id_establecimiento_punto_venta;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Establecimiento Punto Venta eliminado(a)');

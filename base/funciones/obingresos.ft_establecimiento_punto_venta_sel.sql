@@ -63,7 +63,9 @@ BEGIN
                         tl.nombre nombre_lugar,
                         spv.name_pv nombre_iata,
                         spv.iata_code,
-                        estpven.direccion_estable
+                        estpven.direccion_estable,
+                        estpven.id_lugar,
+                        spv.id_stage_pv
 						from obingresos.testablecimiento_punto_venta estpven
                         left join vef.tstage_punto_venta spv on spv.id_stage_pv = estpven.id_stage_pv
                         left join param.tlugar tl on tl.id_lugar = estpven.id_lugar
@@ -94,8 +96,10 @@ BEGIN
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select count(id_establecimiento_punto_venta)
 					    from obingresos.testablecimiento_punto_venta estpven
+                        left join vef.tstage_punto_venta spv on spv.id_stage_pv = estpven.id_stage_pv
+                        left join param.tlugar tl on tl.id_lugar = estpven.id_lugar
                         left join vef.tpunto_venta tpv on tpv.id_punto_venta = estpven.id_punto_venta
-					    inner join segu.tusuario usu1 on usu1.id_usuario = estpven.id_usuario_reg
+						inner join segu.tusuario usu1 on usu1.id_usuario = estpven.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = estpven.id_usuario_mod
 					    where ';
 

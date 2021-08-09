@@ -220,12 +220,21 @@ header("content-type: text/javascript; charset=UTF-8");
             this.tbar.addField(this.cmbFechas);
 
             this.addButton('btnGenerar', {
-                text : 'Generar',
+                text : 'Abonar',//Generar
                 grupo: [0,1],
                 iconCls : 'bengine',
                 disabled : false,
                 hidden : true,
-                handler : this.onBtnBuscar
+                handler : this.onGenerarMovimientoEntidad//this.onBtnBuscar
+            });
+
+            this.addButton('btnRevertir', {
+                text : 'Revertir',
+                grupo: [0,1],
+                iconCls : 'breload',
+                disabled : true,
+                hidden : true,
+                handler : this.onRevertirMovimientoEntidad
             });
 
             this.addButton('btnFileBSP', {
@@ -262,6 +271,146 @@ header("content-type: text/javascript; charset=UTF-8");
 
         },
 
+        preparaMenu: function(n) {
+
+            var rec = this.getSelectedData();
+            var tb =this.tbar;
+            Phx.vista.CalculoOverComison.superclass.preparaMenu.call(this,n);
+            if (rec.status == 'abonado'){
+                this.getBoton('btnRevertir').enable();
+            }
+
+        },
+
+        liberaMenu:function(){
+            var tb = Phx.vista.CalculoOverComison.superclass.liberaMenu.call(this);
+            if(tb){
+                this.getBoton('btnRevertir').disable();
+            }
+            return tb
+        },
+
+        onRevertirMovimientoEntidad : function (){
+
+            let record = this.getSelectedData();
+            console.log('record', record);
+            Phx.CP.loadingShow();
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/CalculoOverComison/revertirMovimientoEntidad',
+                params:{
+                    AcmKey : record.AcmKey,
+                    DocumentNumber : record.DocumentNumber
+                },
+                success:function(resp){
+                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                    console.log('reg Revertir',reg);
+                    Phx.CP.loadingHide();
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Se Revirtio exitosamente el abono para el Nro. ACM <span style="color: green">'+record.DocumentNumber+'</span>.</b>',
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.INFO
+                    });
+                },
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        },
+
+        onGenerarMovimientoEntidad : function(){
+
+            var thas = this;
+            fecha_desde = this.fecha_ini.getValue();
+            dia =  fecha_desde.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_desde.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_desde.getFullYear();
+            thas.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+            fecha_hasta = this.fecha_fin.getValue();
+            dia =  fecha_hasta.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_hasta.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_hasta.getFullYear();
+            thas.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
+
+            thas.store.baseParams.tipo = this.cmbTipo.getValue();
+
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                params:{
+                    fecha_ini : thas.store.baseParams.fecha_desde,
+                    fecha_fin : thas.store.baseParams.fecha_hasta,
+                    tipo      : thas.store.baseParams.tipo
+                },
+                success:function(resp){
+                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                    console.log('reg Verificacion',reg);
+
+                    if (reg.ROOT.datos.estado_generado == 'generado'){
+                        /*this.store.baseParams.momento = 0;
+                        this.load({params: {start: 0, limit: 50}});*/
+
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Ya se tiene el Abono correspondiente para el periodo que se esta intentando Abonar.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.INFO
+                        });
+
+                    }else{
+                        this.store.baseParams.momento = 1;
+                        //this.load({params: {start: 0, limit: 50}});
+                        Phx.CP.loadingShow();
+                        Ext.Ajax.request({
+                            url:'../../sis_obingresos/control/CalculoOverComison/generarMovimientoEntidad',
+                            params:{
+                                fecha_desde : thas.store.baseParams.fecha_desde,
+                                fecha_hasta : thas.store.baseParams.fecha_hasta,
+                                tipo      : thas.store.baseParams.tipo,
+                                momento   : thas.store.baseParams.momento
+                            },
+                            success:function(resp){
+                                var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                                console.log('reg Abonar',reg.ROOT.datos);
+                                Phx.CP.loadingHide();
+
+                                if (reg.ROOT.datos.validacion_inicio == 'activo'){
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Se Abono exitosamente para el periodo seleccionado.</b>',
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        icon: Ext.Msg.INFO
+                                    });
+                                }else{
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> No se pudo realizar el Abono correspondiente para el periodo seleccionado.</b>',
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        icon: Ext.Msg.INFO
+                                    });
+                                }
+
+                            },
+                            failure: this.conexionFailure,
+                            timeout:this.timeout,
+                            scope:this
+                        });
+                    }
+                },
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        },
+
         onGenerarFileBSP : function (){
 
             var fechas = this.cmbFechas.getRawValue();
@@ -294,7 +443,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         console.log('envio over',reg);
                         Ext.Msg.show({
                             title: 'Información',
-                            msg: '<b>Estimado Funcionario: ' + '\n' + ' El Reporte se esta Generando, una vez concluido se le enviara a su correo.</b>',
+                            msg: '<b style="text-align: justify;">Estimado Usuario: <br><br> El Reporte se esta Generando, una vez concluido el proceso se le enviara a su correo la información correspondiente.</b>',
                             buttons: Ext.Msg.OK,
                             width: 512,
                             icon: Ext.Msg.INFO
@@ -318,7 +467,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         console.log('envio over',reg);
                         Ext.Msg.show({
                             title: 'Información',
-                            msg: '<b>Estimado Funcionario: ' + '<br>' + ' El reporte se esta generando, una vez concluido el proceso se le enviara a su correo la información correspondiente.</b>',
+                            msg: '<b style="text-align: justify;">Estimado Usuario: ' + '<br><br>' + ' El reporte se esta generando, una vez concluido el proceso se le enviara a su correo la información correspondiente.</b>',
                             buttons: Ext.Msg.OK,
                             width: 512,
                             icon: Ext.Msg.INFO
@@ -403,7 +552,33 @@ header("content-type: text/javascript; charset=UTF-8");
             this.store.baseParams.tipo = this.cmbTipo.getValue();
             //this.store.baseParams.momento = momento ? momento : 0;
 
-            this.load({params: {start: 0, limit: 50}});
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                params:{
+                    fecha_ini : this.store.baseParams.fecha_desde,
+                    fecha_fin : this.store.baseParams.fecha_hasta,
+                    tipo      : this.store.baseParams.tipo
+                },
+                success:function(resp){
+                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                    console.log('reg FEA',reg);
+                    if (reg.ROOT.datos.estado_generado == 'generado'){
+                        this.store.baseParams.momento = 0;
+                        //this.onBtnBuscar();
+                        this.load({params: {start: 0, limit: 50}});
+                    }else{
+                        //this.load({params: {start: 0, limit: 50}});
+                        this.store.baseParams.momento = 1;
+                        //this.onBtnBuscar();
+                        this.load({params: {start: 0, limit: 50}});
+                    }
+                },
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+
+            //this.load({params: {start: 0, limit: 50}});
         },
 
         mostrarDetalleACM : function(grid, rowIndex, columnIndex, e) {
@@ -479,40 +654,57 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.cmbFechas.setValue('');
                 this.modificado = true;
-                if(record.data.tipo == "IATA"){
-                    this.getBoton('btnFileBSP').setVisible(true);
-                    this.getBoton('btnCreditoPortal').setVisible(false);
-                    this.getBoton('btnGenerar').setVisible(true);
+                if ( this.fecha_ini.getValue() != '' &&  this.fecha_fin.getValue() != '' ) {
+
+                    if (record.data.tipo == "IATA") {
+                        this.getBoton('btnFileBSP').setVisible(true);
+                        this.getBoton('btnCreditoPortal').setVisible(false);
+                        this.getBoton('btnGenerar').setVisible(false);
+                        this.getBoton('btnRevertir').setVisible(false);
+                    } else {
+                        this.getBoton('btnFileBSP').setVisible(false);
+                        this.getBoton('btnCreditoPortal').setVisible(true);
+                        this.getBoton('btnGenerar').setVisible(true);
+                        this.getBoton('btnRevertir').setVisible(true);
+                    }
+                    this.store.baseParams.tipo = record.data.tipo;
+                    this.store.baseParams.momento = 0;
+                    Ext.Ajax.request({
+                        url: '../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                        params: {
+                            fecha_ini: this.store.baseParams.fecha_desde,
+                            fecha_fin: this.store.baseParams.fecha_hasta,
+                            tipo: this.store.baseParams.tipo
+                        },
+                        success: function (resp) {
+                            var reg = Ext.decode(Ext.util.Format.trim(resp.responseText));
+                            console.log('reg select Cmb Tipo', reg);
+                            if (reg.ROOT.datos.estado_generado == 'generado') {
+                                console.log('generado');
+                                this.store.baseParams.momento = 0;
+                                //this.onBtnBuscar();
+                                this.load({params: {start: 0, limit: 50}});
+                            } else {
+                                console.log('elaborado');
+                                //this.load({params: {start: 0, limit: 50}});
+                                this.store.baseParams.momento = 1;
+                                //this.onBtnBuscar();
+                                this.load({params: {start: 0, limit: 50}});
+                            }
+                        },
+                        failure: this.conexionFailure,
+                        timeout: this.timeout,
+                        scope: this
+                    });
                 }else{
-                    this.getBoton('btnFileBSP').setVisible(false);
-                    this.getBoton('btnCreditoPortal').setVisible(true);
-                    this.getBoton('btnGenerar').setVisible(true);
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b style="text-align: justify;">Estimado Usuario: ' + '<br><br>' + ' Debe seleccionar los campos <span style="color: #00B167; ">Fecha Inicio</span> y <span style="color: #FF8F85; ">Fecha Fin</span> para poder listar los registros correspondientes al periodo que desea.</b>',
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.INFO
+                    });
                 }
-                this.store.baseParams.tipo = record.data.tipo;
-                this.store.baseParams.momento = 0;
-
-                Ext.Ajax.request({
-                    url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
-                    params:{
-                        fecha_ini : this.store.baseParams.fecha_desde,
-                        fecha_fin : this.store.baseParams.fecha_hasta,
-                        tipo      : this.store.baseParams.tipo
-                    },
-                    success:function(resp){
-                        var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-                        if (reg.ROOT.datos.estado_generado == 'generado'){
-                            this.onBtnBuscar();
-                            this.store.baseParams.momento = 0;
-                        }else{
-                            //this.load({params: {start: 0, limit: 50}});
-                            this.store.baseParams.momento = 1;
-                        }
-                    },
-                    failure: this.conexionFailure,
-                    timeout:this.timeout,
-                    scope:this
-                });
-
 
             }, this);
 
@@ -540,6 +732,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.getBoton('btnCreditoPortal').setVisible(true);
                     //this.getBoton('btnGenerar').setVisible(true);
                 }
+                this.getBoton('btnRevertir').setVisible(true);
                 this.getBoton('btnGenerar').setVisible(false);
                 this.store.baseParams.tipo = record.data.tipo;
 
@@ -561,6 +754,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 anio = fecha_hasta.getFullYear();
                 this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
 
+                this.store.baseParams.momento = 0;
                 this.load({params: {start: 0, limit: 50}});
 
             }, this);
@@ -892,6 +1086,28 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo:1,
                 grid:true,
                 form:false
+            },
+            {
+                config:{
+                    fieldLabel: "Estado",
+                    gwidth: 100,
+                    name: 'status',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
             }
         ],
         title:'Calculo Over Comison',
@@ -911,7 +1127,8 @@ header("content-type: text/javascript; charset=UTF-8");
             {name:'CommissionDescription', type: 'string'},
             {name:'CommssionAmount', type: 'numeric'},
             {name:'DocumentType', type: 'string'},
-            {name:'OfficeId', type: 'string'}
+            {name:'OfficeId', type: 'string'},
+            {name:'status', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',
