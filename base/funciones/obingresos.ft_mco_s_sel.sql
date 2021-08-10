@@ -26,6 +26,7 @@ DECLARE
 	v_parametros  		record;
 	v_nombre_funcion   	text;
 	v_resp				varchar;
+  v_fil				varchar;
 
 BEGIN
 
@@ -42,6 +43,21 @@ BEGIN
 	if(p_transaccion='OBING_IMCOS_SEL')then
 
     	begin
+      if p_administrador !=1 then
+               if exists ( select 1
+                from segu.tusuario usu
+                inner join orga.tfuncionario f on f.id_persona = usu.id_persona
+                inner join orga.vfuncionario_ultimo_cargo fun on fun.id_funcionario = f.id_funcionario
+                inner join vef.tpermiso_sucursales ps on ps.id_funcionario = fun.id_funcionario
+                where usu.id_usuario = p_id_usuario) then
+                  v_fil = ' 0 = 0 and ';
+               else
+                 v_fil = 'imcos.id_usuario_reg = '||p_id_usuario||' and ';
+               end if;
+        else
+          v_fil = ' 0 = 0 and ';
+        end if;
+
     		--Sentencia de la consulta
 			v_consulta:=' select
             			  imcos.id_mco,
@@ -103,7 +119,7 @@ BEGIN
                           inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
                           inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
                           and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
-				        where  ';
+				        where   '||v_fil||' ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;
@@ -124,6 +140,21 @@ BEGIN
 	elsif(p_transaccion='OBING_IMCOS_CONT')then
 
 		begin
+    if p_administrador !=1 then
+             if exists ( select 1
+              from segu.tusuario usu
+              inner join orga.tfuncionario f on f.id_persona = usu.id_persona
+              inner join orga.vfuncionario_ultimo_cargo fun on fun.id_funcionario = f.id_funcionario
+              inner join vef.tpermiso_sucursales ps on ps.id_funcionario = fun.id_funcionario
+              where usu.id_usuario = p_id_usuario) then
+
+                v_fil = ' 0 = 0 and ';
+             else
+               v_fil = 'imcos.id_usuario_reg = '||p_id_usuario||' and ';
+             end if;
+      else
+        v_fil = ' 0 = 0 and ';
+      end if;
 			--Sentencia de la consulta de conteo de registros
 			v_consulta:='select count(id_mco)
 					    from obingresos.tmco_s imcos
@@ -138,7 +169,7 @@ BEGIN
                         inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
                         inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
                         and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
-					    where ';
+					    where '||v_fil||' ';
 
 			--Definicion de la respuesta
 			v_consulta:=v_consulta||v_parametros.filtro;

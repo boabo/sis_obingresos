@@ -52,5 +52,24 @@ class MODCalculoOverComison extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+    function revertirMovimientoEntidad(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_reporte_ime';
+        $this->transaccion='OBING_REVERTIR_ABONO';
+        $this->tipo_procedimiento='IME';//tipo de transaccion
+        //Define los parametros para la funcion
+
+
+        $this->setParametro('AcmKey','AcmKey','integer');
+        $this->setParametro('DocumentNumber','DocumentNumber','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        //echo($this->consulta);exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 }
 ?>

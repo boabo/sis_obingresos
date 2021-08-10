@@ -264,7 +264,7 @@ BEGIN
 
 	/*********************************
  	#TRANSACCION:  'OBING_GPTFIN_IME'
- 	#DESCRIPCION:	Captura de datos iniciales para registro MCO's
+ 	#DESCRIPCION:	Captura de datos iniciales para registro MCOs
  	#AUTOR:		breydi.vasquez
  	#FECHA:		04-05-2020
 	***********************************/

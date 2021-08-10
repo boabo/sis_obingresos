@@ -315,7 +315,8 @@ class RReporteCruceAtcXLS
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $rec->PaymentHour);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->Currency);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->AuthorizationCode);
-                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->CreditCardNumber);
+                    //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->CreditCardNumber);
+                    $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(8, $fila, trim($rec->CreditCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->PaymentAmmount);
 
 
@@ -334,7 +335,8 @@ class RReporteCruceAtcXLS
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $rec->PaymentHour);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->Currency);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->AuthorizationCode);
-                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->CreditCardNumber);
+                    //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->CreditCardNumber);
+                    $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(8, $fila, trim($rec->CreditCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->PaymentAmmount);
 
                 }
@@ -458,7 +460,7 @@ class RReporteCruceAtcXLS
         $row_end = -1;
 
         $sales_place = $record_tickets[0]->NamePlace;
-        $currency = $record_tickets[0]->PaymentCurrency;
+        $currency = $record_tickets[0]->CurrencyTicket;
 
         $this->docexcel->getActiveSheet()->mergeCells('K'.$fila.':R'.$fila);
         $this->docexcel->getActiveSheet()->setCellValue('K' . $fila, 'Estación: ' . $sales_place.' Moneda: ' . $currency);
@@ -495,7 +497,7 @@ class RReporteCruceAtcXLS
 
                 $fila++;
                 $this->docexcel->getActiveSheet()->mergeCells('K'.$fila.':R'.$fila);
-                $this->docexcel->getActiveSheet()->setCellValue('K' . $fila, 'Estación: ' . $ticket->NamePlace.' Moneda: ' . $ticket->PaymentCurrency);
+                $this->docexcel->getActiveSheet()->setCellValue('K' . $fila, 'Estación: ' . $ticket->NamePlace.' Moneda: ' . $ticket->CurrencyTicket);
                 $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                 $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
                 $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFont()->setBold(true);
@@ -504,7 +506,7 @@ class RReporteCruceAtcXLS
                 $index_total = $fila;
             }
 
-            if($ticket->PaymentCurrency != $currency) {
+            if($ticket->CurrencyTicket != $currency) {
 
                 if($currency_payment > 0){
 
@@ -519,7 +521,7 @@ class RReporteCruceAtcXLS
                     $fila++;
 
                     $this->docexcel->getActiveSheet()->mergeCells('K'.$fila.':R'.$fila);
-                    $this->docexcel->getActiveSheet()->setCellValue('K' . $fila, 'Estación: ' . $sales_place.' Moneda: ' . $ticket->PaymentCurrency);
+                    $this->docexcel->getActiveSheet()->setCellValue('K' . $fila, 'Estación: ' . $sales_place.' Moneda: ' . $ticket->CurrencyTicket);
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
                     $this->docexcel->getActiveSheet()->getStyle('K'.$fila.':R'.$fila)->getFont()->setBold(true);
@@ -540,9 +542,10 @@ class RReporteCruceAtcXLS
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $ticket->NameOffice);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $ticket->IssueDate != null || $ticket->IssueDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $ticket->IssueDate)->format('d/m/Y') : '');
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $ticket->TicketNumber.' ['.$ticket->DocummentType.']');
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $ticket->AccountCardNumber);
+            //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, trim($ticket->AccountCardNumber));
+            $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila, trim($ticket->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila, $ticket->AuthorizationCodeFP);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila, $ticket->PaymentCurrency);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila, $ticket->CurrencyTicket);
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila, $ticket->PaymentAmount);
 
             if( $ticket->AuthorizationCodeFP != $record_tickets[$key+1]->AuthorizationCodeFP) {
@@ -554,7 +557,7 @@ class RReporteCruceAtcXLS
 
             $fila++;
             $currency_payment += (float)$ticket->PaymentAmount;
-            $currency = $ticket->PaymentCurrency;
+            $currency = $ticket->CurrencyTicket;
             $sales_place = $ticket->NamePlace;
 
         }
@@ -568,11 +571,11 @@ class RReporteCruceAtcXLS
         //FIN PAGOS RET
 
         /*TARJETAS PAGADAS*/
-        
+
         $index++;
         /*PAGOS QUE ESTAN EN ATC Y RET*/
 
-        $this->addHoja('CONCILIACIÓN (ADM <-> BOA)',$index);
+        $this->addHoja('CONCILIACIÓN SIN OBSERVACIONES',$index);
 
         $color_pestana = array('ff0000','1100ff','55ff00','3ba3ff','ff4747','697dff','78edff','ba8cff',
             'ff80bb','ff792b','ffff5e','52ff97','bae3ff','ffaf9c','bfffc6','b370ff','ffa8b4','7583ff','9aff17','ff30c8');
@@ -595,7 +598,7 @@ class RReporteCruceAtcXLS
         $this->docexcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
         $this->docexcel->getActiveSheet()->getColumnDimension('M')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('N')->setWidth(25);
-        $this->docexcel->getActiveSheet()->getColumnDimension('O')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('O')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('P')->setWidth(15);
         $this->docexcel->getActiveSheet()->getColumnDimension('Q')->setWidth(15);
         $this->docexcel->getActiveSheet()->getColumnDimension('R')->setWidth(15);
@@ -619,7 +622,7 @@ class RReporteCruceAtcXLS
 
         $this->docexcel->getActiveSheet()->getStyle('A1:T2')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->mergeCells('A1:T2');
-        $this->docexcel->getActiveSheet()->setCellValue('A1','CRUCE DE TARJETAS LINKSER Y ARCHIVO RET (TICKETS)');
+        $this->docexcel->getActiveSheet()->setCellValue('A1','CRUCE DE TARJETAS ATC Y ARCHIVO RET (TICKETS)');
 
         $this->docexcel->getActiveSheet()->getStyle('A3:T4')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->mergeCells('A3:S3');
@@ -688,10 +691,13 @@ class RReporteCruceAtcXLS
             )
         );
 
+        $tickets_observed = array();
+        $group_tickets_observed = array();
         foreach ($record_tickets as $key => $rec){
 
+            $group_tickets_observed [] = $rec;
             $moneda_adm = $rec->Currency;
-            $moneda_boa = $rec->PaymentCurrency;
+            $moneda_boa = $rec->CurrencyTicket;
 
             if($rec->ResultType == 'pago_both'){
                 $styleGroup = array(
@@ -732,15 +738,20 @@ class RReporteCruceAtcXLS
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila_total, '');
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila_total, $monto_pagado);
 
-                        if(number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0){
+                        if( number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0 || $moneda_adm != $moneda_boa ){
                             if ($moneda_adm != $moneda_boa){
                                 //$this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . $fila_total)->getFill()->getStartColor()->setRGB($styleGroupBOB_USD);
                                 $this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . ($fila+1))->applyFromArray($styleGroupBOB_USD);
-                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila_total, 'Administradora '.$moneda_adm.' contra Ticket o Factura ('.$moneda_boa.')');
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila_total, 'Administradora [ '.$moneda_adm.' ] contra Ticket o Factura [ '.$moneda_boa.' ]');
                             }else {
-                                $this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . $fila_total)->getFill()->getStartColor()->setRGB($color_cell[2]);
+                                $this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . ($fila+1))->getFill()->getStartColor()->setRGB($color_cell[2]);
                                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila_total, '=H' . $fila_total . '-R' . $fila_total);
                             }
+                            //$fila = $fila_total - 2;
+                            foreach ($group_tickets_observed as $ticket){
+                                $tickets_observed [] = $ticket;
+                            }
+                            $group_tickets_observed = array();
                         }else{
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila_total, '=H'.$fila_total.'-R'.$fila_total);
                         }
@@ -748,19 +759,24 @@ class RReporteCruceAtcXLS
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila + 1, $rec->Iatacode);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila + 1, $rec->NameOffice);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila + 1, $rec->IssueDate != null || $rec->IssueDate != '' ?  DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y') : '');
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila + 1, $rec->TicketNumber.' ['.$rec->DocummentType.']');
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila + 1, $rec->AccountCardNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila + 1, $rec->TicketNumber.' ['.$rec->DocummentType.']->');
+                        //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila + 1, trim($rec->AccountCardNumber));
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila + 1, trim($rec->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila + 1, $rec->AuthorizationCodeFP);
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila + 1, $rec->PaymentCurrency);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila + 1, $rec->CurrencyTicket);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila + 1, $rec->PaymentAmount);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila + 1, '');
 
+                        if( number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0 || $moneda_adm != $moneda_boa ){
+                            $fila = $fila_total - 2;
+                        }
+                        
                         $fila += 2;
                     }else{
 
                         if ($moneda_adm != $moneda_boa){
                             $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroupBOB_USD);
-                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Administradora '.$moneda_adm.' contra Ticket o Factura ('.$moneda_boa.')');
+                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Administradora [ '.$moneda_adm.' ] contra Ticket o Factura [ '.$moneda_boa.' ]');
                         }else {
                             $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroup);
                         }
@@ -773,25 +789,32 @@ class RReporteCruceAtcXLS
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->Currency);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->PaymentAmmount);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->AuthorizationCode);
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->CreditCardNumber);
+                        //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->CreditCardNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(9, $fila, trim($rec->CreditCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
 
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $rec->Iatacode);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $rec->NameOffice);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $rec->IssueDate != null || $rec->IssueDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y') : '');
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $rec->TicketNumber.' ['.$rec->DocummentType.']');
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $rec->AccountCardNumber);
+                        //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, trim($rec->AccountCardNumber));
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila, trim($rec->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila, $rec->AuthorizationCodeFP);
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila, $rec->PaymentCurrency);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila, $rec->CurrencyTicket);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila, $rec->PaymentAmount);
 
-                        if(number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0){
+                        if( number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0 || $moneda_adm != $moneda_boa ){
                             if ($moneda_adm != $moneda_boa){
                                 $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroupBOB_USD);
-                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Administradora '.$moneda_adm.' contra Ticket o Factura ('.$moneda_boa.')');
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Administradora [ '.$moneda_adm.' ] contra Ticket o Factura [ '.$moneda_boa.' ]');
                             }else {
                                 $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->getFill()->getStartColor()->setRGB($color_cell[2]);
                                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila, '=H' . $fila . '-R' . $fila);
                             }
+                            $fila = $fila-1;
+                            foreach ($group_tickets_observed as $ticket){
+                                $tickets_observed [] = $ticket;
+                            }
+                            $group_tickets_observed = array();
                         }else{
                             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila, '=H'.$fila.'-R'.$fila);
                         }
@@ -804,6 +827,7 @@ class RReporteCruceAtcXLS
                     }
                     $flag_left = true;
                     $monto_pagado = 0;
+                    $group_tickets_observed = array();
 
                 }else{
 
@@ -818,7 +842,8 @@ class RReporteCruceAtcXLS
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->Currency);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->PaymentAmmount);
                         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->AuthorizationCode);
-                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->CreditCardNumber);
+                        //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->CreditCardNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(9, $fila, trim($rec->CreditCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
 
 
                         $flag_left = false;
@@ -840,9 +865,10 @@ class RReporteCruceAtcXLS
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila + 1, $rec->NameOffice);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila + 1, $rec->IssueDate != null || $rec->IssueDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y') : '');
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila + 1, $rec->TicketNumber.' ['.$rec->DocummentType.']');
-                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila + 1, $rec->AccountCardNumber);
+                    //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila + 1, trim($rec->AccountCardNumber));
+                    $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila + 1, trim($rec->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila + 1, $rec->AuthorizationCodeFP);
-                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila + 1, $rec->PaymentCurrency);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila + 1, $rec->CurrencyTicket);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila + 1, $rec->PaymentAmount);
                     $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila + 1, '');
 
@@ -852,6 +878,295 @@ class RReporteCruceAtcXLS
                 $point_sale = $rec->Iatacode;
             }
         }
+
+        /*************************************************************** OBSERVADAS ***************************************************************/
+        /*TARJETAS OBSERVADAS*/
+
+        $index++;
+        /*PAGOS QUE ESTAN EN ATC Y RET OBSERVADAS*/
+
+        $this->addHoja('CONCILIACIÓN CON OBSERVACIONES',$index);
+
+        $color_pestana = array('ff0000','1100ff','55ff00','3ba3ff','ff4747','697dff','78edff','ba8cff',
+            'ff80bb','ff792b','ffff5e','52ff97','bae3ff','ffaf9c','bfffc6','b370ff','ffa8b4','7583ff','9aff17','ff30c8');
+
+        $this->docexcel->getActiveSheet()->freezePaneByColumnAndRow(0,7);
+        $this->docexcel->getActiveSheet()->getTabColor()->setRGB($color_pestana[$index]);
+
+        $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
+        $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
+        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+
+        $this->docexcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+        $this->docexcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('M')->setWidth(20);
+        $this->docexcel->getActiveSheet()->getColumnDimension('N')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('O')->setWidth(25);
+        $this->docexcel->getActiveSheet()->getColumnDimension('P')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('Q')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('R')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('S')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('T')->setWidth(45);
+
+        /*logo*/
+        $objDrawing = new PHPExcel_Worksheet_Drawing();
+        $objDrawing->setName('BoA ERP');
+        $objDrawing->setDescription('BoA ERP');
+        $objDrawing->setPath('../../lib/imagenes/logos/logo.jpg');
+        $objDrawing->setCoordinates('A1');
+        $objDrawing->setOffsetX(0);
+        $objDrawing->setOffsetY(0);
+        $objDrawing->setWidth(105);
+        $objDrawing->setHeight(75);
+        $objDrawing->setWorksheet($this->docexcel->getActiveSheet());
+        /*logo*/
+
+        $this->docexcel->getActiveSheet()->getStyle('A1:T4')->applyFromArray($styleTitulos);
+
+        $this->docexcel->getActiveSheet()->getStyle('A1:T2')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->mergeCells('A1:T2');
+        $this->docexcel->getActiveSheet()->setCellValue('A1','CRUCE DE TARJETAS ATC Y ARCHIVO RET (TICKETS)');
+
+        $this->docexcel->getActiveSheet()->getStyle('A3:T4')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->mergeCells('A3:S3');
+        $this->docexcel->getActiveSheet()->setCellValue('A3','Del: '.$fecha_desde.' Al: '.$fecha_hasta);
+        $this->docexcel->getActiveSheet()->mergeCells('A4:S4');
+        //$this->docexcel->getActiveSheet()->setCellValue('A4','Ingresos');
+
+        $this->docexcel->getActiveSheet()->setCellValue('T1', 'Fecha');
+        $this->docexcel->getActiveSheet()->setCellValue('T2', $fecha);
+
+        $this->docexcel->getActiveSheet()->getStyle('A5:T6')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->mergeCells('A5:J5');
+        $this->docexcel->getActiveSheet()->setCellValue('A5','PAGOS ATC');
+
+
+        $this->docexcel->getActiveSheet()->setCellValue('A6','Establecimiento');
+        $this->docexcel->getActiveSheet()->setCellValue('B6','Nro. Terminal');
+        $this->docexcel->getActiveSheet()->setCellValue('C6','Nro. Lote');
+        $this->docexcel->getActiveSheet()->setCellValue('D6','Ticket');
+        $this->docexcel->getActiveSheet()->setCellValue('E6','Fecha');
+        $this->docexcel->getActiveSheet()->setCellValue('F6','Hora');
+        $this->docexcel->getActiveSheet()->setCellValue('G6','Moneda');
+        $this->docexcel->getActiveSheet()->setCellValue('H6','Monto Pagado');
+        $this->docexcel->getActiveSheet()->setCellValue('I6','Nro. Authorización');
+        $this->docexcel->getActiveSheet()->setCellValue('J6','Nro. Tarjeta');
+
+        $this->docexcel->getActiveSheet()->mergeCells('K5:T5');
+        $this->docexcel->getActiveSheet()->setCellValue('K5','PAGOS RET (TICKETS)');
+
+        $this->docexcel->getActiveSheet()->setCellValue('K6','Agencia');
+        $this->docexcel->getActiveSheet()->setCellValue('L6','Descripción');
+        $this->docexcel->getActiveSheet()->setCellValue('M6','Fecha');
+        $this->docexcel->getActiveSheet()->setCellValue('N6','Boleto/Factura/RO');
+        $this->docexcel->getActiveSheet()->setCellValue('O6','Nro. Tarjeta');
+        $this->docexcel->getActiveSheet()->setCellValue('P6','Nro. Autorización');
+        $this->docexcel->getActiveSheet()->setCellValue('Q6','Moneda');
+        $this->docexcel->getActiveSheet()->setCellValue('R6','Importe');
+        $this->docexcel->getActiveSheet()->setCellValue('S6','Diferencia');
+        $this->docexcel->getActiveSheet()->setCellValue('T6','Observaciones');
+
+
+        $fila = 7;
+
+        $color_cell = array('b4c6e7','d9e1f2','ffc7ce','9bbb59', 'b066bb');
+
+        $color_obs = array('ffc7ce', 'b066bb');
+
+        $monto_pagado = 0;
+        $fila_total = $fila;
+        $flag_left = true;
+        $index_color = 0;
+
+        $point_sale = '';
+
+        $styleGroupBOB_USD = array(
+            'fill' => array(
+                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                'color' => array(
+                    'rgb' => 'b066bb'
+                )
+            )
+        );
+
+        foreach ($tickets_observed as $key => $rec){
+
+            $moneda_adm = $rec->Currency;
+            $moneda_boa = $rec->CurrencyTicket;
+
+            if($rec->ResultType == 'pago_both'){
+                $styleGroup = array(
+                    'fill' => array(
+                        'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                        'color' => array(
+                            'rgb' => $color_obs[$index_color]
+                        )
+                    )
+                );
+
+                /*if($rec->Iatacode != $point_sale) {
+                    $this->docexcel->getActiveSheet()->setCellValue('A' . $fila, 'Estación: ' . $rec->NameOffice);
+                    $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':F'.$fila);
+                    $this->docexcel->getActiveSheet()->setCellValue('G' . $fila, ' AGT/Punto Venta: ' . $rec->Iatacode );
+                    $this->docexcel->getActiveSheet()->mergeCells('G'.$fila.':L'.$fila);
+                    $this->docexcel->getActiveSheet()->setCellValue('M' . $fila, ' Moneda: ' . $rec->Currency);
+                    $this->docexcel->getActiveSheet()->mergeCells('M'.$fila.':T'.$fila);
+                    $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':T'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                    $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':T'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
+                    $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':T'.$fila)->getFont()->setBold(true);
+
+                    $fila++;
+                }*/
+
+                $monto_pagado = $monto_pagado + $rec->PaymentAmount;
+
+                if( $rec->AuthorizationCode != $tickets_observed[$key+1]->AuthorizationCode) {
+
+                    if (!$flag_left){
+                        $this->docexcel->getActiveSheet()->getStyle('A'.$fila_total.':T'.($fila + 1))->applyFromArray($styleGroup);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila_total, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila_total, $monto_pagado);
+
+                        if( $moneda_adm != $moneda_boa || number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0){
+                            if ($moneda_adm != $moneda_boa){
+                                $this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . ($fila+1))->applyFromArray($styleGroup);
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila_total, 'Administradora [ '.$moneda_adm.' ] contra Ticket o Factura [ '.$moneda_boa.' ]');
+                            }else {
+                                //$this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . ($fila+1))->getFill()->getStartColor()->setRGB($color_cell[2]);
+                                $this->docexcel->getActiveSheet()->getStyle('A' . $fila_total . ':T' . ($fila+1))->applyFromArray($styleGroup);
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila_total, '=H' . $fila_total . '-R' . $fila_total);
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila_total, 'Diferencia en los Montos');
+                            }
+                        }else{
+                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila_total, '=H'.$fila_total.'-R'.$fila_total);
+                        }
+
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila + 1, $rec->Iatacode);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila + 1, $rec->NameOffice);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila + 1, $rec->IssueDate != null || $rec->IssueDate != '' ?  DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y') : '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila + 1, $rec->TicketNumber.' ['.$rec->DocummentType.']->');
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila + 1, trim($rec->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila + 1, $rec->AuthorizationCodeFP);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila + 1, $rec->CurrencyTicket);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila + 1, $rec->PaymentAmount);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila + 1, '');
+
+                        $fila += 2;
+                    }else{
+
+                        if ($moneda_adm != $moneda_boa){
+                            //$this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroupBOB_USD);
+                            $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroup);
+                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Administradora [ '.$moneda_adm.' ] contra Ticket o Factura [ '.$moneda_boa.' ]');
+                        }else {
+                            $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroup);
+                        }
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, ltrim($rec->EstablishmentCode, '0').' / '.$rec->NameEstable.' ('.$rec->TypeEstable.')');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $rec->TerminalNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $rec->LotNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->PaymentTicket);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $rec->PaymentDate != null || $rec->PaymentDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->PaymentDate)->format('d/m/Y') : '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $rec->computed);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->Currency);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->PaymentAmmount);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->AuthorizationCode);
+                        //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->CreditCardNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(9, $fila, trim($rec->CreditCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
+
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $rec->Iatacode);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $rec->NameOffice);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $rec->IssueDate != null || $rec->IssueDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y') : '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $rec->TicketNumber.' ['.$rec->DocummentType.']');
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila, trim($rec->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila, $rec->AuthorizationCodeFP);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila, $rec->CurrencyTicket);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila, $rec->PaymentAmount);
+
+                        if( $moneda_adm != $moneda_boa || number_format($rec->PaymentAmmount, 2, ',', '')-number_format($monto_pagado, 2, ',', '') != 0){
+                            if ($moneda_adm != $moneda_boa){
+                                $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroup);
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Administradora [ '.$moneda_adm.' ] contra Ticket o Factura [ '.$moneda_boa.' ]');
+                            }else {
+                                //$this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->getFill()->getStartColor()->setRGB($color_cell[2]);
+                                $this->docexcel->getActiveSheet()->getStyle('A' . $fila . ':T' . $fila)->applyFromArray($styleGroup);
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila, '=H' . $fila . '-R' . $fila);
+                                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(19, $fila, 'Diferencia en los Montos');
+                            }
+
+                        }else{
+                            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila, '=H'.$fila.'-R'.$fila);
+                        }
+                        $fila++;
+                    }
+
+                    $index_color+=1;
+                    if($index_color == 2){
+                        $index_color = 0;
+                    }
+                    $flag_left = true;
+                    $monto_pagado = 0;
+                }else{
+
+                    if($flag_left) {
+
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, ltrim($rec->EstablishmentCode,'0').' / '.$rec->NameEstable.' ('.$rec->TypeEstable.')');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $rec->TerminalNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $rec->LotNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->PaymentTicket);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $rec->PaymentDate != null || $rec->PaymentDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->PaymentDate)->format('d/m/Y') : '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $rec->computed);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->Currency);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->PaymentAmmount);
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $rec->AuthorizationCode);
+                        //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $rec->CreditCardNumber);
+                        $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(9, $fila, trim($rec->CreditCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
+
+
+                        $flag_left = false;
+                        $fila_total = $fila;
+                    }else{
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, '');
+                        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, '');
+                    }
+
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila + 1, $rec->Iatacode);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila + 1, $rec->NameOffice);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila + 1, $rec->IssueDate != null || $rec->IssueDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->IssueDate)->format('d/m/Y') : '');
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila + 1, $rec->TicketNumber.' ['.$rec->DocummentType.']');
+                    $this->docexcel->getActiveSheet()->setCellValueExplicitByColumnAndRow(14, $fila + 1, trim($rec->AccountCardNumber), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila + 1, $rec->AuthorizationCodeFP);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(16, $fila + 1, $rec->CurrencyTicket);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(17, $fila + 1, $rec->PaymentAmount);
+                    $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(18, $fila + 1, '');
+
+                    $fila++;
+                }
+
+                $point_sale = $rec->Iatacode;
+            }
+        }
+        /*************************************************************** OBSERVADAS ***************************************************************/
     }
 
     function obtenerFechaEnLetra($fecha){

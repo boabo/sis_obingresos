@@ -149,7 +149,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             }),
                         valueField: 'id_lugar',
                         displayField: 'nombre',
-                        gdisplayField:'id_lugar',
+                        gdisplayField:'nombre_lugar',
                         hiddenName: 'id_lugar',
                         triggerAction: 'all',
                         lazyRender:true,
@@ -159,6 +159,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         anchor:"60% ",
                         gwidth:170,
                         forceSelection:true,
+                        typeAhead: false,
                         minChars:2,
                         renderer:function (value, p, record){return String.format('{0}', record.data['nombre_lugar']);}
                     },
@@ -228,7 +229,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         maxLength:10
                     },
                     type:'TextField',
-                    filters:{pfiltro:'estpven.estado_reg',type:'string'},
+                    filters:{pfiltro:'spv.iata_code',type:'string'},
                     id_grupo:1,
                     grid:true,
                     form:false
@@ -254,7 +255,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         }),
                         valueField: 'id_stage_pv',
                         displayField: 'name_pv',
-                        gdisplayField: 'name_pv',
+                        gdisplayField: 'nombre_iata',
                         hiddenName: 'id_stage_pv',
                         forceSelection: true,
                         typeAhead: false,
@@ -417,6 +418,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 {name:'nombre_iata', type: 'string'},
                 {name:'nombre_lugar', type: 'string'},
                 {name:'id_stage_pv', type: 'numeric'},
+                {name:'id_lugar', type: 'numeric'},
                 {name:'iata_code', type: 'string'},
                 {name:'direccion_estable', type: 'string'}
 

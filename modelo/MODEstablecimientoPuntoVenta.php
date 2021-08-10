@@ -40,6 +40,8 @@ class MODEstablecimientoPuntoVenta extends MODbase{
         $this->captura('nombre_iata','varchar');
         $this->captura('iata_code','varchar');
         $this->captura('direccion_estable','text');
+        $this->captura('id_lugar','int4');
+        $this->captura('id_stage_pv','int4');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
