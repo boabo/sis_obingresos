@@ -206,17 +206,20 @@ $body$
             from param.tmoneda m
             where m.codigo_internacional = v_parametros.moneda;
 
+            if (trim(v_parametros.numero_autorizacion) = '' or trim(v_parametros.numero_autorizacion) = 'null' or trim(v_parametros.numero_autorizacion) = 'Null' or trim(v_parametros.numero_autorizacion) = 'NULL') then
+            	raise exception 'El nro de Autorización es vacio, Favor verifique';
+            else
+              /*Control para verificar si el codigo de control que envian es el correcto Ismael Valdivia 09/08/2021*/
+              select count (mv.id_movimiento_entidad) into v_existe_autorizacion
+              from obingresos.tmovimiento_entidad mv
+              where mv.autorizacion__nro_deposito = trim(v_parametros.numero_autorizacion);
 
-            /*Control para verificar si el codigo de control que envian es el correcto Ismael Valdivia 09/08/2021*/
-            select count (mv.id_movimiento_entidad) into v_existe_autorizacion
-            from obingresos.tmovimiento_entidad mv
-            where mv.autorizacion__nro_deposito = trim(v_parametros.numero_autorizacion);
+              if (v_existe_autorizacion = 0) then
+                  raise exception 'El número de autorización enviado: % no existe en los movimientos de la entidad, favor verifique',v_parametros.numero_autorizacion;
+              end if;
+              /**************************************************************************/
 
-            if (v_existe_autorizacion = 0) then
-            	raise exception 'El número de autorización enviado: % no existe en los movimientos de la entidad, favor verifique',v_parametros.numero_autorizacion;
             end if;
-            /**************************************************************************/
-
 
             INSERT INTO
               obingresos.tdetalle_boletos_web
