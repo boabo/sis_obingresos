@@ -41,6 +41,7 @@ $body$
     v_id_detalle_boletos_web	integer;
     v_procesado					varchar;
     v_id_moneda				integer;
+    v_existe_autorizacion		integer;
 
 
   BEGIN
@@ -192,6 +193,7 @@ $body$
     elsif(p_transaccion='OBING_DETBOPOR_INS')then
 
       begin
+
           select d.id_detalle_boletos_web,d.procesado into  v_id_detalle_boletos_web,v_procesado
           from obingresos.tdetalle_boletos_web d
           where d.billete = v_parametros.billete;
@@ -203,6 +205,18 @@ $body$
             select m.id_moneda into v_id_moneda
             from param.tmoneda m
             where m.codigo_internacional = v_parametros.moneda;
+
+
+            /*Control para verificar si el codigo de control que envian es el correcto Ismael Valdivia 09/08/2021*/
+            select count (mv.id_movimiento_entidad) into v_existe_autorizacion
+            from obingresos.tmovimiento_entidad mv
+            where mv.autorizacion__nro_deposito = trim(v_parametros.numero_autorizacion);
+
+            if (v_existe_autorizacion = 0) then
+            	raise exception 'El número de autorización enviado: % no existe en los movimientos de la entidad, favor verifique',v_parametros.numero_autorizacion;
+            end if;
+            /**************************************************************************/
+
 
             INSERT INTO
               obingresos.tdetalle_boletos_web
