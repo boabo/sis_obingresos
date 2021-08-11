@@ -100,6 +100,7 @@ BEGIN
 
           /*Auemntando condicion para omitir control de saldo (Ismael Valdivia 11/08/2021)*/
           if (v_tipo_agencia = 'corporativa' and v_tipo_pago = 'postpago' and v_validar_boleta = 'no') THEN
+          	po_autorizacion = uuid_generate_v4()::varchar;
 
           	if (p_insertar = 'si')then
 
