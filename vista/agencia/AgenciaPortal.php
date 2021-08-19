@@ -26,6 +26,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.addButton('btnMovimientos',
                 {
+                    grupo:[1,2],
                     text: 'Movimientos Per. Vigente',
                     iconCls: 'blist',
                     disabled: true,
@@ -36,6 +37,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.addButton('btnMovimientosSP',
                 {
+                    grupo:[1,2],
                     text: 'Rep Movimientos',
                     iconCls: 'blist',
                     disabled: true,
@@ -46,6 +48,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.addButton('btnTkt',
                 {
+                    grupo:[1,2],
                     text: 'Tkts',
                     iconCls: 'blist',
                     disabled: true,
@@ -55,6 +58,7 @@ header("content-type: text/javascript; charset=UTF-8");
             );
             this.addButton('Estado',
                 {
+                    grupo:[1,2],
                     text: 'Estado de Cuenta',
                     iconCls: 'bprint',
                     disabled: true,
@@ -64,6 +68,7 @@ header("content-type: text/javascript; charset=UTF-8");
             );
             this.addButton('Acm',
                 {
+                    grupo:[1,2],
                     text: 'Acm',
                     iconCls: 'bfolder',
                     disabled: true,

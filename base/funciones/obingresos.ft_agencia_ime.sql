@@ -657,7 +657,8 @@ BEGIN
 			usuario_ai = v_parametros._nombre_usuario_ai,
             bloquear_emision = v_parametros.bloquear_emision,
             validar_boleta = v_parametros.validar_boleta,
-            controlar_periodos_pago = v_parametros.controlar_periodos_pago
+            controlar_periodos_pago = v_parametros.controlar_periodos_pago,
+            estado_reg = v_parametros.estado_reg
 			where id_agencia=v_parametros.id_agencia;
 
 			--Definicion de la respuesta

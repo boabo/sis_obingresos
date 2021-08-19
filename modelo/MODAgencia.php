@@ -38,6 +38,7 @@ class MODAgencia extends MODbase{
         $this->captura('bloquear_emision','varchar');
         $this->captura('validar_boleta','varchar');
         $this->captura('controlar_periodos_pago','varchar');
+        $this->captura('estado_reg','varchar');
 
 
         //Ejecuta la instruccion
@@ -339,6 +340,7 @@ class MODAgencia extends MODbase{
         $this->setParametro('bloquear_emision','bloquear_emision','varchar');
         $this->setParametro('validar_boleta','validar_boleta','varchar');
         $this->setParametro('controlar_periodos_pago','controlar_periodos_pago','varchar');
+        $this->setParametro('estado_reg','estado_reg','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

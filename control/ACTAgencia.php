@@ -14,6 +14,12 @@ class ACTAgencia extends ACTbase{
 
         $this->objParam->defecto('dir_ordenacion','asc');
 
+        if($this->objParam->getParametro('pes_estado') != ''){
+            $this->objParam->addFiltro(" age.estado_reg = ''".$this->objParam->getParametro('pes_estado')."''");          
+        }
+
+
+
         if($this->objParam->getParametro('tipo_agencia') != ''){
             $this->objParam->addFiltro(" age.tipo_agencia = ''".$this->objParam->getParametro('tipo_agencia')."''");
             //$this->objParam->addFiltro(" age.id_lugar in (select id_lugar from param.tlugar where codigo=''".$this->objParam->getParametro('lugar')."'')");

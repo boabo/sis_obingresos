@@ -24,6 +24,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		this.load({params:{start:0, limit:this.tam_pag}});
 		this.addButton('btnMovimientos',
             {
+								grupo:[1,2],
                 text: 'Movimientos',
                 iconCls: 'bchecklist',
                 disabled: true,
@@ -31,7 +32,9 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
                 tooltip: '<b>Movimientos</b><br/>Lista de movimientos por agencia.'
             }
         );
-        
+
+		this.store.baseParams.pes_estado = 'activos';
+
         /*this.addButton('btnDepositos',
             {
                 text: 'Depositos',
@@ -42,7 +45,25 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
             }
         );*/
 	},
-			
+
+	gruposBarraTareas:[
+										  {name:'activo',title:'<H1 style="font-size:12px;" align="center">Activos</h1>',grupo:1,height:0},
+											{name:'inactivo',title:'<H1 style="font-size:12px;" align="center">Inactivos</h1>',grupo:2,height:0},
+										],
+
+ actualizarSegunTab: function(name, indice){
+
+					 this.store.baseParams.pes_estado = name;
+					 this.load({params:{start:0, limit:this.tam_pag}});
+
+	},
+
+	beditGroups: [1,2],
+	bdelGroups:  [1,2],
+	bactGroups:  [1,2],
+	btestGroups: [1,2],
+	bexcelGroups: [1,2],
+
 	Atributos:[
 		{
 			//configuracion del componente
@@ -52,7 +73,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 					name: 'id_agencia'
 			},
 			type:'Field',
-			form:true 
+			form:true
 		},
 		{
 			config:{
@@ -70,7 +91,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				form:true,
 				bottom_filter : true
 		},
-		
+
 		{
 			config:{
 				name: 'codigo_int',
@@ -87,7 +108,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				form:true,
 				bottom_filter : true
 		},
-		
+
 		{
 			config:{
 				name: 'nombre',
@@ -104,8 +125,8 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				form:true,
 				bottom_filter : true
 		},
-		
-		
+
+
 		{
 			config:{
 				name: 'tipo_agencia',
@@ -120,15 +141,15 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['noiata']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['noiata'],	
+	       				 options: ['noiata'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
 				form:true
 		},
-		
+
 		{
 			config:{
 				name: 'tipo_pago',
@@ -143,15 +164,15 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['prepago','postpago']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['prepago','postpago'],	
+	       				 options: ['prepago','postpago'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
 				form:true
 		},
-		
+
 		{
 			config:{
 				name: 'monto_maximo_deuda',
@@ -181,14 +202,14 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['si','no']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['si','no'],	
+	       				 options: ['si','no'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
 				form:true
-		},	
+		},
 		{
 			config:{
 				name: 'tipo_cambio',
@@ -203,15 +224,15 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['venta','deposito']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['venta','deposito'],	
+	       				 options: ['venta','deposito'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
 				form:true
-		},				
-		
+		},
+
 		{
             config:{
                 name:'id_moneda_control',
@@ -224,14 +245,14 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
              },
             type:'ComboRec',
             id_grupo:1,
-            filters:{   
+            filters:{
                 pfiltro:'mon.codigo',
                 type:'string'
             },
             grid:true,
             form:true
          },
-         
+
          {
 			config:{
 				name: 'bloquear_emision',
@@ -246,9 +267,9 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['si','no']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['si','no'],	
+	       				 options: ['si','no'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
@@ -268,9 +289,9 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['si','no']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['si','no'],	
+	       				 options: ['si','no'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
@@ -290,19 +311,38 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				store:['si','no']
 			},
 				type:'ComboBox',
-				filters:{	
+				filters:{
 	       		         type: 'list',
-	       				 options: ['si','no'],	
+	       				 options: ['si','no'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
 				form:true
-		}
-		
-		
-		
+		},
+
+		/*Auemtnando para inactivar Agencias*/
+		{
+		    config:{
+		        name: 'estado_reg',
+		        fieldLabel: 'Estado Agencia',
+		        allowBlank:true,
+		        emptyText:'Estado...',
+		        typeAhead: true,
+		        triggerAction: 'all',
+		        lazyRender:true,
+		        mode: 'local',
+		        gwidth: 150,
+		        store:['activo','inactivo']
+		    },
+		    type:'ComboBox',
+		    id_grupo:1,
+		    form:true
+		},
+
+
+
 	],
-	tam_pag:50,	
+	tam_pag:50,
 	title:'Agencias',
 	ActSave:'../../sis_obingresos/control/Agencia/insertarAgencia',
 	ActDel:'../../sis_obingresos/control/Agencia/eliminarAgencia',
@@ -322,11 +362,12 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		{name:'tipo_agencia', type: 'string'},
 		{name:'usr_reg', type: 'string'},
 		{name:'usr_mod', type: 'string'},
-		
+
 		{name:'bloquear_emision', type: 'string'},
 		{name:'validar_boleta', type: 'string'},
 		{name:'controlar_periodos_pago', type: 'string'},
-		
+		{name:'estado_reg', type: 'string'},
+
 	],
 	sortInfo:{
 		field: 'id_agencia',
@@ -340,21 +381,21 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		},this)
 	},
 	preparaMenu:function()
-    {	   
+    {
         this.getBoton('btnMovimientos').enable();
         //this.getBoton('btnDepositos').enable();
         Phx.vista.Agencia.superclass.preparaMenu.call(this);
     },
     liberaMenu:function()
-    {	
+    {
         this.getBoton('btnMovimientos').disable();
         //this.getBoton('btnDepositos').disable();
-        
+
         Phx.vista.Agencia.superclass.liberaMenu.call(this);
     },
         openMovimientos : function () {
     	var rec = {maestro: this.sm.getSelected().data};
-            
+
             Phx.CP.loadWindows('../../../sis_obingresos/vista/movimiento_entidad/MovimientoEntidad.php',
                     'Boletos',
                     {
@@ -366,10 +407,10 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
                     'MovimientoEntidad'
         )
     },
-    
+
     openDepositos : function () {
     	var rec = {maestro: this.sm.getSelected().data};
-            
+
             Phx.CP.loadWindows('../../../sis_obingresos/vista/deposito/Deposito.php',
                     'Depositos',
                     {
@@ -386,5 +427,3 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 	}
 )
 </script>
-		
-		
