@@ -50,7 +50,14 @@ DECLARE
     v_id_tipo_estado_registro	integer;
     v_id_funcionario_responsable	integer;
     v_res_bool				BOOLEAN;
-
+    /*Variables para el update de agencia Ismael Valdivia*/
+    v_tipo_institucion		varchar;
+    v_existe_agencia		integer;
+    v_nombre_agencia		varchar;
+    v_existencia_auxiliar	integer;
+    v_codigo_int			varchar;
+    v_tipo_agencia			varchar;
+	v_tipo_auxiliar			varchar;
 
 BEGIN
 
@@ -283,7 +290,7 @@ BEGIN
 
         --11/12-2019 (Alan.felipez) revision si el numero de contrato ya se encuentra registrado
         perform leg.f_verificar_numero_contrato( 'contrato',v_parametros.numero_contrato, null,'insertar');
-        
+
 
         select coalesce(max (id_contrato),0) into v_id_contrato
         from leg.tcontrato;
@@ -678,6 +685,117 @@ BEGIN
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Agencias eliminado(a)');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_agencia',v_parametros.id_agencia::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_AGE_UPD'
+ 	#DESCRIPCION:	Actualizacion de Registros
+ 	#AUTOR:		Ismael Valdivia
+ 	#FECHA:		09-08-2021 08:30:33
+	***********************************/
+
+	elsif(p_transaccion='OBING_AGE_UPD')then
+
+		begin
+
+        	/*Aumentando Control para no duplicar officeId*/
+        	select count(ag.id_agencia)
+            		into
+                    v_existe_agencia
+            from obingresos.tagencia ag
+            where (trim(ag.codigo_int) = trim(v_parametros.codigo_noiata) or trim(ag.codigo_noiata) = trim(v_parametros.codigo_noiata))
+            and ag.id_agencia != v_parametros.id_agencia
+            limit 1;
+        	/**********************************************/
+
+            if (v_existe_agencia > 0) then
+
+            	select ag.nombre
+                       into
+                        v_nombre_agencia
+                from obingresos.tagencia ag
+                where (trim(ag.codigo_int) = trim(v_parametros.codigo_noiata) or trim(ag.codigo_noiata) = trim(v_parametros.codigo_noiata))
+                and ag.id_agencia != v_parametros.id_agencia
+                limit 1;
+
+
+            	raise exception 'No se pudo actualizar la informacion porque el office_id ya esta relacionada a la Agencia % favor verifique la información',v_nombre_agencia;
+            else
+            	--Sentencia de la eliminacion
+                update obingresos.tagencia set
+                      codigo=v_parametros.codigo,
+                      codigo_noiata=v_parametros.codigo_noiata,
+                      codigo_int=v_parametros.codigo_noiata
+                where id_agencia=v_parametros.id_agencia;
+
+
+                select ag.nombre,
+                	   ag.codigo_int,
+                       ag.tipo_agencia
+                       into
+                        v_nombre_agencia,
+                        v_codigo_int,
+                        v_tipo_agencia
+                from obingresos.tagencia ag
+                where ag.id_agencia = v_parametros.id_agencia;
+
+                if (v_tipo_agencia = 'noiata') then
+                	v_tipo_auxiliar = 'Agencia No IATA';
+                elsif (v_tipo_agencia = 'corporativa') then
+                	v_tipo_auxiliar = 'Corporativo';
+                end if;
+
+                select count(*) into v_existencia_auxiliar
+                from conta.tauxiliar auxi
+                where auxi.codigo_auxiliar = v_codigo_int or
+                      auxi.nombre_auxiliar = v_nombre_agencia;
+
+                if v_existencia_auxiliar = 0 then
+                 --Sentencia de la insercion
+                  insert into conta.tauxiliar(
+                  --id_empresa,
+                  estado_reg,
+                  codigo_auxiliar,
+                  nombre_auxiliar,
+                  fecha_reg,
+                  id_usuario_reg,
+                  id_usuario_mod,
+                  fecha_mod,
+                  corriente,
+                  tipo,
+                  cod_antiguo
+                  ) values(
+                  --v_parametros.id_empresa,
+                  'activo',
+                  v_codigo_int,
+                  v_nombre_agencia,
+                  now(),
+                  p_id_usuario,
+                  null,
+                  null,
+                  --24-03-2021 (may) modificacion que se quite el campo y se registre todos como NO
+                  --v_parametros.corriente
+                  'si',
+                  v_tipo_auxiliar,
+                  null
+                  );
+                end if;
+
+
+
+
+
+
+            end if;
+
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Datos Actualizados Correctamente');
             v_resp = pxp.f_agrega_clave(v_resp,'id_agencia',v_parametros.id_agencia::varchar);
 
             --Devuelve la respuesta

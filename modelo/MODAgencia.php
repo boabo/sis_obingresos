@@ -157,6 +157,8 @@ class MODAgencia extends MODbase{
         $this->setParametro('ciudad','ciudad','varchar');
         $this->setParametro('tipo_agencia','tipo_agencia','varchar');
         $this->setParametro('tipo_persona','tipo_persona','varchar');
+        /*Aumentnado este parametro para diferenciar corporativo publica o privada (Ismael Valdivia 04/08/2021)*/
+        //$this->setParametro('tipo_institucion','tipo_institucion','varchar');
 
 
         //Ejecuta la instruccion
@@ -372,6 +374,26 @@ class MODAgencia extends MODbase{
 
         //Define los parametros para la funcion
         $this->setParametro('id_agencia','id_agencia','int4');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function updateAgencia(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_agencia_ime';
+        $this->transaccion='OBING_AGE_UPD';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('codigo','codigo','varchar');
+        $this->setParametro('codigo_noiata','codigo_noiata','varchar');
+        //$this->setParametro('codigo_int','codigo_int','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

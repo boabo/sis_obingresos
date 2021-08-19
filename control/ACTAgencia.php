@@ -189,6 +189,15 @@ class ACTAgencia extends ACTbase{
 
 
     }
+
+    /*Aumentando Servicio para Modificar la Agencia (Ismael Valdivia 09/08/2021)*/
+    function updateAgencia(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->updateAgencia($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /****************************************************************************/
+
 }
 
 ?>
