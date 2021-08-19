@@ -62,7 +62,8 @@ BEGIN
 						mon.codigo_internacional as desc_moneda,
                         age.bloquear_emision,
                         age.validar_boleta,
-                        age.controlar_periodos_pago
+                        age.controlar_periodos_pago,
+                        age.estado_reg
 						from obingresos.tagencia age
 						inner join segu.tusuario usu1 on usu1.id_usuario = age.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = age.id_usuario_mod
@@ -171,3 +172,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_agencia_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
