@@ -64,7 +64,7 @@ DECLARE
 
     v_periodos			record;
     v_periodo_siguiente	integer;
-
+    v_existe_creditos	integer;
 
 BEGIN
 
@@ -493,6 +493,11 @@ BEGIN
 
         /*************************************************/
 
+        select count (cr.id_agencia) into v_existe_creditos
+        from creditos_saldos_vigentes cr;
+
+        if (v_existe_creditos > 0) then
+
 
 			v_consulta:='(select 	cr.id_agencia  ,
             						pe.id_periodo_venta ,
@@ -525,6 +530,40 @@ BEGIN
                                     left join saldo_arrastrado_vigente arr on arr.id_periodo_venta = cr.id_periodo_venta
                                     )
                             ORDER BY id_periodo_venta ASC';
+        else
+
+              v_consulta:='(select 	cr.id_agencia  ,
+                              pe.id_periodo_venta ,
+                              cr.tipo,
+                              COALESCE(cr.depositos_con_saldos,0) as depositos_con_saldos ,
+                              COALESCE(de.depositos,0) as depositos,
+                              COALESCE(deb.debitos,0) as debitos,
+                              COALESCE(arr.saldo_arrastrado,0) as saldo_arrastrado,
+                              COALESCE(cr.periodo,deb.periodo) as periodo
+                              from periodos pe
+                              left join creditos_saldos cr on cr.id_periodo_venta = pe.id_periodo_venta
+                              left join depositos de on de.id_periodo_venta = pe.id_periodo_venta
+                              left join debitos deb on deb.id_periodo_venta = pe.id_periodo_venta
+                              left join saldo_arrastrado arr on arr.id_periodo_venta = pe.id_periodo_venta
+                              ORDER BY cr.id_periodo_venta ASC)
+
+                      UNION
+
+                      (select deb.id_agencia  ,
+                              Null::integer as id_periodo_venta ,
+                              deb.tipo,
+                              0::numeric as depositos_con_saldos ,
+                              COALESCE(de.depositos,0) as depositos,
+                              COALESCE(deb.debitos,0) as debitos,
+                              COALESCE(arr.saldo_arrastrado,0) as saldo_arrastrado,
+                              ''Periodo Vigente''::varchar as periodo
+                              from debitos_vigente deb
+                              left join depositos_vigente de on de.id_periodo_venta = deb.id_periodo_venta
+                              left join saldo_arrastrado_vigente arr on arr.id_periodo_venta = deb.id_periodo_venta
+                              left join creditos_saldos_vigentes cr on cr.id_periodo_venta = deb.id_periodo_venta
+                              )
+                      ORDER BY id_periodo_venta ASC';
+        end if;
 
 			--Devuelve la respuesta
 			return v_consulta;
