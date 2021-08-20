@@ -33,7 +33,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
             }
         );
 
-		this.store.baseParams.pes_estado = 'activos';
+		this.store.baseParams.pes_estado = 'activo';
 
         /*this.addButton('btnDepositos',
             {
