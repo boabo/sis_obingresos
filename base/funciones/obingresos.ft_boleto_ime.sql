@@ -863,7 +863,7 @@ BEGIN
 
                     if (v_codigo_tarjeta is not null and v_codigo_fp = 'CC') then
                         if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
-                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2::varchar,v_codigo_tarjeta);
                         end if;
                     end if;
 				 /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
@@ -1596,7 +1596,7 @@ BEGIN
 
                     if (v_codigo_tarjeta is not null and v_codigo_fp = 'CC') then
                         if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
-                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2::varchar,v_codigo_tarjeta);
                         end if;
                     end if;
 
