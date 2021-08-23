@@ -753,8 +753,7 @@ BEGIN
 
                 select count(*) into v_existencia_auxiliar
                 from conta.tauxiliar auxi
-                where auxi.codigo_auxiliar = v_codigo_int or
-                      auxi.nombre_auxiliar = v_nombre_agencia;
+                where auxi.codigo_auxiliar = v_codigo_int;
 
                 if v_existencia_auxiliar = 0 then
                  --Sentencia de la insercion
@@ -785,6 +784,8 @@ BEGIN
                   v_tipo_auxiliar,
                   null
                   );
+                else
+                	raise exception 'Ya existe una cuenta corriente registrada con el OfficeID: %, Favor verificar la información.',v_codigo_int;
                 end if;
 
 
