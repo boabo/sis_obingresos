@@ -4028,3 +4028,27 @@ ALTER TABLE obingresos.tcalculo_over_comison
 
 ALTER TABLE obingresos.tcalculo_over_comison OWNER TO postgres;
 /***********************************F-SCP-FEA-OBINGRESOS-0-21/07/2021****************************************/
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-23/08/2021****************************************/
+CREATE TABLE obingresos.tlog_modificaciones_medios_pago_completo (
+  importe NUMERIC(18,2),
+  id_medio_pago INTEGER,
+  id_moneda INTEGER,
+  numero_tarjeta VARCHAR(50),
+  codigo_tarjeta VARCHAR(6),
+  tarjeta VARCHAR(20),
+  id_auxiliar INTEGER,
+  mco VARCHAR(50),
+  id_venta INTEGER,
+  nro_boleto VARCHAR(13),
+  fecha_emision DATE,
+  observaciones TEXT
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+COMMENT ON TABLE obingresos.tlog_modificaciones_medios_pago_completo
+IS 'Tabla donde se almacenara log de datos originales de los medios de pago ya que se modificara completamente los medios de pago';
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  OWNER TO postgres;
+/***********************************F-SCP-IRVA-OBINGRESOS-0-23/08/2021****************************************/
