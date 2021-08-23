@@ -634,20 +634,20 @@ BEGIN
                       from obingresos.tforma_pago fp
                       where fp.id_forma_pago = v_parametros.id_forma_pago;
                     else
-                      select mp.mop_code into v_codigo_tarjeta
+                      select mp.mop_code, fp.fop_code into v_codigo_tarjeta,v_codigo_fp
                       from obingresos.tmedio_pago_pw mp
                       inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
                       where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
                     end if;
                     /*********************************************************************************/
 
-                v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
-                                        substring(v_codigo_tarjeta from 3 for 2)
+                v_codigo_tarjeta = (case when v_codigo_tarjeta is not null then
+                                        v_codigo_tarjeta
                                 else
-                                      NULL
+                                      null
                               end);
 
-                if (v_codigo_tarjeta is not null) then
+                if (v_codigo_tarjeta is not null and v_codigo_fp = 'CC') then
                     if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
                 		v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
                 	end if;
@@ -849,19 +849,22 @@ BEGIN
                       from obingresos.tforma_pago fp
                       where fp.id_forma_pago = v_parametros.id_forma_pago2;
                     else
-                      select mp.mop_code into v_codigo_tarjeta
+                      select mp.mop_code, fp.fop_code into v_codigo_tarjeta,v_codigo_fp
                       from obingresos.tmedio_pago_pw mp
                       inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
                       where mp.id_medio_pago_pw = v_parametros.id_forma_pago2;
                     end if;
 					/************************************************************************************/
-                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
-                                            substring(v_codigo_tarjeta from 3 for 2)
+                   v_codigo_tarjeta = (case when v_codigo_tarjeta is not null then
+                                        v_codigo_tarjeta
                                     else
-                                          NULL
+                                          null
                                   end);
-                    if (v_codigo_tarjeta is not null) then
-                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
+
+                    if (v_codigo_tarjeta is not null and v_codigo_fp = 'CC') then
+                        if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
+                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                        end if;
                     end if;
 				 /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                     IF v_parametros.monto_forma_pago2 <= 0 THEN
@@ -1073,7 +1076,7 @@ BEGIN
                     from obingresos.tforma_pago fp
                     where fp.id_forma_pago = v_parametros.id_forma_pago;
 
-                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
+                   v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
                                             substring(v_codigo_tarjeta from 3 for 2)
                                     else
                                           NULL
@@ -1321,20 +1324,23 @@ BEGIN
                       from obingresos.tforma_pago fp
                       where fp.id_forma_pago = v_parametros.id_forma_pago;
                     else
-                      select mp.mop_code into v_codigo_tarjeta
+                      select mp.mop_code, fp.fop_code into v_codigo_tarjeta,v_codigo_fp
                       from obingresos.tmedio_pago_pw mp
                       inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
                       where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
                     end if;
                     /*********************************************************************************/
 
-                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
-                                            substring(v_codigo_tarjeta from 3 for 2)
-                                    else
-                                          NULL
-                                  end);
-                    if (v_codigo_tarjeta is not null) then
-                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta,v_codigo_tarjeta);
+                    v_codigo_tarjeta = (case when v_codigo_tarjeta is not null then
+                                        v_codigo_tarjeta
+                                else
+                                      null
+                              end);
+
+                    if (v_codigo_tarjeta is not null and v_codigo_fp = 'CC') then
+                        if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
+                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                        end if;
                     end if;
 
 
@@ -1575,20 +1581,23 @@ BEGIN
                       from obingresos.tforma_pago fp
                       where fp.id_forma_pago = v_parametros.id_forma_pago2;
                     else
-                      select mp.mop_code into v_codigo_tarjeta
+                      select mp.mop_code, fp.fop_code into v_codigo_tarjeta,v_codigo_fp
                       from obingresos.tmedio_pago_pw mp
                       inner join obingresos.tforma_pago_pw fp on fp.id_forma_pago_pw = mp.forma_pago_id
                       where mp.id_medio_pago_pw = v_parametros.id_forma_pago2;
                     end if;
 					/************************************************************************************/
 
-                    v_codigo_tarjeta = (case when v_codigo_tarjeta like 'CC%' or v_codigo_tarjeta like 'SF%' then
-                                            substring(v_codigo_tarjeta from 3 for 2)
-                                    else
-                                          NULL
-                                  end);
-                    if (v_codigo_tarjeta is not null) then
-                        v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta2,v_codigo_tarjeta);
+                    v_codigo_tarjeta = (case when v_codigo_tarjeta is not null then
+                                        v_codigo_tarjeta
+                                else
+                                      null
+                              end);
+
+                    if (v_codigo_tarjeta is not null and v_codigo_fp = 'CC') then
+                        if (substring(v_parametros.numero_tarjeta::varchar from 1 for 1) != 'X') then
+                            v_res = pxp.f_valida_numero_tarjeta_credito(v_parametros.numero_tarjeta::varchar,v_codigo_tarjeta);
+                        end if;
                     end if;
 
                     if (left (v_parametros.mco2::varchar,3)<> '930' and v_parametros.mco2 <> '' )then
