@@ -3304,6 +3304,15 @@ BEGIN
               id_usuario_cajero=NULL
               where id_boleto_amadeus=v_parametros.id_boleto_amadeus;
 
+              /*Quitar la relacion de los recibos en caso que tenga*/
+              UPDATE
+              obingresos.tboleto_amadeus_forma_pago
+              SET
+              id_venta=null,
+              id_auxiliar=null
+              WHERE id_boleto_amadeus = v_parametros.id_boleto_amadeus
+              and id_venta is not null;
+              /****************************************************/
 
               /*Aqui pondremos la condicion para ver si los medios de pago son distintos*/
                 select ama.forma_pago,
