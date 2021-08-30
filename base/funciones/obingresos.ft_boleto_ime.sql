@@ -3309,7 +3309,8 @@ BEGIN
               obingresos.tboleto_amadeus_forma_pago
               SET
               id_venta=null,
-              id_auxiliar=null
+              id_auxiliar=null,
+              importe = 0
               WHERE id_boleto_amadeus = v_parametros.id_boleto_amadeus
               and id_venta is not null;
               /****************************************************/
