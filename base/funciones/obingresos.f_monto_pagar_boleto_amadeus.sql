@@ -133,7 +133,7 @@ $body$
 LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT
-SECURITY INVOKER
+SECURITY INVOKER 
 COST 100;
 
 ALTER FUNCTION obingresos.f_monto_pagar_boleto_amadeus (p_id_boleto integer, p_monto numeric, p_id_forma_pago integer, p_id_moneda integer)
