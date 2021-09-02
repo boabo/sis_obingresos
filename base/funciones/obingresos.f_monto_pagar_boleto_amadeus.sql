@@ -54,12 +54,12 @@ BEGIN
         inner join param.tmoneda mon on mon.id_moneda = fp.id_moneda
         where bfp.id_boleto_amadeus = p_id_boleto;
     ELSE
-    	SELECT coalesce(sum(case when p_id_moneda = v_boleto.id_moneda_boleto then
+    	SELECT coalesce(sum(case when bfp.id_moneda = v_boleto.id_moneda_boleto then
                         bfp.importe
-                    when p_id_moneda != v_boleto.id_moneda_boleto and v_boleto.moneda = 'USD' then
-                        obingresos.f_round_menor(bfp.importe/v_boleto.tc)
+                    when bfp.id_moneda != v_boleto.id_moneda_boleto and v_boleto.moneda = 'USD' then
+                        round((bfp.importe/v_boleto.tc),6)
                     else
-                        obingresos.f_round_menor(bfp.importe*v_boleto.tc)
+                        round((bfp.importe*v_boleto.tc),6)
                     end ),0.00) into v_monto_pagado_mb
         from obingresos.tboleto_amadeus_forma_pago bfp
         where bfp.id_boleto_amadeus = p_id_boleto;
@@ -97,23 +97,23 @@ BEGIN
       end if;
     else
       if (v_boleto.id_moneda_boleto = p_id_moneda) then
-            if (p_monto >= (v_boleto.total - v_boleto.comision -v_monto_pagado_mb)) then
-                return v_boleto.total - v_boleto.comision - v_monto_pagado_mb;
+            if (p_monto >= round((v_boleto.total - v_boleto.comision -v_monto_pagado_mb),6)) then
+                return round((v_boleto.total - v_boleto.comision - v_monto_pagado_mb),6);
             else
-                return p_monto;
+                return round(p_monto,6);
             end if;
         else
             if (v_boleto.moneda = 'USD') then
-                if (p_monto >= obingresos.f_round_mayor((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) * v_boleto.tc)) then
-                    return obingresos.f_round_mayor((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) * v_boleto.tc);
+                if (p_monto >= round(((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) * v_boleto.tc),6)) then
+                    return round(((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) * v_boleto.tc),6);
                 else
-                    return p_monto;
+                    return round(p_monto,6);
                 end if;
             ELSE
-                if (p_monto >= obingresos.f_round_mayor((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) / v_boleto.tc)) then
-                    return obingresos.f_round_mayor((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) / v_boleto.tc);
+                if (p_monto >= round(((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) / v_boleto.tc),6)) then
+                    return round(((v_boleto.total - v_boleto.comision - v_monto_pagado_mb) / v_boleto.tc),6);
                 else
-                    return p_monto;
+                    return round(p_monto,6);
                 end if;
 
             end if;
@@ -133,7 +133,7 @@ $body$
 LANGUAGE 'plpgsql'
 VOLATILE
 CALLED ON NULL INPUT
-SECURITY INVOKER 
+SECURITY INVOKER
 COST 100;
 
 ALTER FUNCTION obingresos.f_monto_pagar_boleto_amadeus (p_id_boleto integer, p_monto numeric, p_id_forma_pago integer, p_id_moneda integer)

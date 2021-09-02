@@ -3045,15 +3045,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 } else {
                     if (this.moneda_grupo_fp2 == 'USD') {
                         console.log('monedas distintas grupo 2 usd');
-                        this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago.setValue((this.total_grupo['total_boletos_'+record.data.desc_moneda] - (this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
                         /*Aumentando para calcular el monto recibido*/
-                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        this.Cmp.monto_recibido_forma_pago.setValue((this.total_grupo['total_boletos_'+record.data.desc_moneda] - (this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
                         /***********************************************/
                     } else {
                         console.log('monedas distintas grupo 2 bob');
-                        this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago.setValue((this.total_grupo['total_boletos_'+record.data.desc_moneda] - (this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
                         /*Aumentando para calcular el monto recibido*/
-                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        this.Cmp.monto_recibido_forma_pago.setValue((this.total_grupo['total_boletos_'+record.data.desc_moneda] - (this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
                         /***********************************************/
                     }
                 }
@@ -3074,15 +3074,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 } else {
                     if (this.moneda_grupo_fp2 == 'USD') {
                         console.log('monedas distintas grupo 2 usd');
-                        this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago.setValue((this.total_grupo['total_boletos_'+record] - (this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
                         /*Aumentando para calcular el monto recibido*/
-                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
+                        this.Cmp.monto_recibido_forma_pago.setValue((this.total_grupo['total_boletos_'+record] - (this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() * this.tc_grupo , 2));
                         /***********************************************/
                     } else {
                         console.log('monedas distintas grupo 2 bob');
-                        this.Cmp.monto_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago.setValue((this.total_grupo['total_boletos_'+record] - (this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
                         /*Aumentando para calcular el monto recibido*/
-                        this.Cmp.monto_recibido_forma_pago.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
+                        this.Cmp.monto_recibido_forma_pago.setValue((this.total_grupo['total_boletos_'+record] - (this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago2.getValue() / this.tc_grupo , 2));
                         /***********************************************/
                     }
                 }
@@ -3104,9 +3104,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 } else {
                     console.log('moneda grupos diferentes');
                     if (this.moneda_grupo_fp1 == 'USD') {
-                        this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago2.setValue((this.total_grupo['total_boletos_'+record.data.desc_moneda] - (this.Cmp.monto_forma_pago.getValue() * this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo , 2));
                     } else {
-                        this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record.data.desc_moneda] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago2.setValue((this.total_grupo['total_boletos_'+record.data.desc_moneda] - (this.Cmp.monto_forma_pago.getValue() / this.tc_grupo)).toFixed(2));//this.roundMenor(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo , 2));
                     }
                 }
               } else {
@@ -3120,9 +3120,9 @@ header("content-type: text/javascript; charset=UTF-8");
                 } else {
                     console.log('moneda grupos diferentes');
                     if (this.moneda_grupo_fp1 == 'USD') {
-                        this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago2.setValue((this.total_grupo['total_boletos_'+record]-(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo)).toFixed(2));// this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() * this.tc_grupo , 2));
                     } else {
-                        this.Cmp.monto_forma_pago2.setValue(this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo , 2));
+                        this.Cmp.monto_forma_pago2.setValue((this.total_grupo['total_boletos_'+record]-(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo)).toFixed(2));//this.total_grupo['total_boletos_'+record] - this.roundMenor(this.Cmp.monto_forma_pago.getValue() / this.tc_grupo , 2));
                     }
                 }
               }
@@ -3713,12 +3713,12 @@ header("content-type: text/javascript; charset=UTF-8");
                 // seleccion de id_venta para controles con monto de recibo
                 this.Cmp.id_venta.on('select', function(d, r, i){
 
-                    var saldo = r.data.saldo;
-                    var imp1 = this.Cmp.monto_forma_pago.getValue();
+                    var saldo = parseFloat(r.data.saldo).toFixed(2);
+                    var imp1 = parseFloat(this.Cmp.monto_forma_pago.getValue()).toFixed(2);
                     var mon_sel = r.data.moneda;
                     var dif = imp1 - saldo;
                     this.Cmp.saldo_recibo.setValue(saldo);
-                    if (imp1.toFixed(2) > saldo.toFixed(2)){
+                    if (imp1 > saldo){
                         Ext.Msg.show({
                          title:'<h1 style="color:red"><center>AVISO</center></h1>',
                          msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',
@@ -4101,15 +4101,16 @@ header("content-type: text/javascript; charset=UTF-8");
               }
               // seleccion de id_venta_2 para controles con monto de recibo
               this.Cmp.id_venta_2.on('select', function(d, r, i){
-                  var saldo = r.data.saldo;
-                  var imp2 = this.Cmp.monto_forma_pago2.getValue();
+                  var saldo = parseFloat(r.data.saldo).toFixed(2);
+                  var imp2 = parseFloat(this.Cmp.monto_forma_pago2.getValue()).toFixed(2);
                   var mon_sel = r.data.moneda;
-                  var dif = imp2 - saldo;
+                  var dif = parseFloat(imp2 - saldo).toFixed(2);
+                  console.log("aqui data",saldo);
                   this.Cmp.saldo_recibo_2.setValue(saldo);
-                  if (imp2.toFixed(2) > saldo.toFixed(2)){
+                  if (imp2 > saldo){
                       Ext.Msg.show({
                        title:'<h1 style="color:red"><center>AVISO</center></h1>',
-                       msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo.toFixed(2)+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',
+                       msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',
                        maxWidth : 400,
                        width: 380,
                        buttons: Ext.Msg.OK,
