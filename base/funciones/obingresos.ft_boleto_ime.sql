@@ -1763,7 +1763,7 @@ BEGIN
 
             END LOOP;
 
-            if (v_saldo_fp1 - v_comision_total > 0 or v_saldo_fp2 - v_comision_total > 0) then
+            if ( (round(v_saldo_fp1,2) - v_comision_total) > 0 or (round(v_saldo_fp2,2) - v_comision_total) > 0) then
             	raise exception 'El monto total de las formas de pago es superior al monto de los boletos seleccionados:%,%',v_saldo_fp1,v_saldo_fp2;
             end if;
 
