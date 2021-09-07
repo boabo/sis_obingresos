@@ -4052,3 +4052,112 @@ IS 'Tabla donde se almacenara log de datos originales de los medios de pago ya q
 ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
   OWNER TO postgres;
 /***********************************F-SCP-IRVA-OBINGRESOS-0-23/08/2021****************************************/
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-24/08/2021****************************************/
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN tipo_institucion VARCHAR(200);
+
+ALTER TABLE obingresos.tagencia
+  ALTER COLUMN tipo_institucion SET DEFAULT 'privada';
+
+COMMENT ON COLUMN obingresos.tagencia.tipo_institucion
+IS 'Campo el que diferenciara cuando una agencia corporativa es publica o privada';
+
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN iata_status VARCHAR(5);
+
+COMMENT ON COLUMN obingresos.tagencia.iata_status
+IS 'almacena el estado de la agencia Iata';
+
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN osd VARCHAR(15);
+/***********************************F-SCP-IRVA-OBINGRESOS-0-24/08/2021****************************************/
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-07/09/2021****************************************/
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_code" VARCHAR(8);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_code"
+IS 'campo para almacenar cuando solo es stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_description" VARCHAR(100);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_description"
+IS 'campo para cuando es solo stage';
+
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_method_code" VARCHAR(8);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_method_code"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_method_description" VARCHAR(200);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_method_description"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_instance_code" VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_instance_code"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_instance_description" VARCHAR(200);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_instance_description"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_amount" NUMERIC(18,2);
+
+  COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_amount"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "pay_currency" VARCHAR(10);
+
+  COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."pay_currency"
+IS 'campo para cuando es solo stage';
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN reference TEXT;
+
+
+  COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."reference"
+IS 'campo para cuando es solo stage';
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "issue_date" DATE;
+
+    COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."issue_date"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "credit_card_number" VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."credit_card_number"
+IS 'campo para cuando es solo stage';
+
+
+ALTER TABLE obingresos.tlog_modificaciones_medios_pago_completo
+  ADD COLUMN "authorization_code" VARCHAR(6);
+
+COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."authorization_code"
+IS 'campo para cuando es solo stage';
+
+/***********************************F-SCP-IRVA-OBINGRESOS-0-07/09/2021****************************************/
