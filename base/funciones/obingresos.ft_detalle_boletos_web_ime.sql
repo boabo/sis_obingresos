@@ -196,7 +196,7 @@ $body$
 
           select d.id_detalle_boletos_web,d.procesado into  v_id_detalle_boletos_web,v_procesado
           from obingresos.tdetalle_boletos_web d
-          where d.billete = v_parametros.billete;
+          where d.billete = v_parametros.billete and d.estado_reg = 'activo';
 
           if (v_id_detalle_boletos_web is not null) then
           		raise exception 'El billete % ya esta registrado en el ERP', v_parametros.billete;
