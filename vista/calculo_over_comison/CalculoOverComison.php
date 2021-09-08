@@ -41,14 +41,19 @@ header("content-type: text/javascript; charset=UTF-8");
             stripeRows: false,
             getRowClass: function(record) {
                 return "x-selectable";
-            }
+            }/*,
+            listeners:{
+                itemkeydown:function(view, record, item, index, e){
+                    alert('The press key is' + e.getKey());
+                }
+            }*/
         },
         btest:false,
         constructor: function(config) {
             this.maestro = config;
 
             Phx.vista.CalculoOverComison.superclass.constructor.call(this,config);
-
+            //console.log('nombreVista',this.nombreVista);
             this.current_date = new Date();
             this.diasMes = [31, new Date(this.current_date.getFullYear(), 2, 0).getDate(), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -167,6 +172,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 format: 'd/m/Y',
                 hidden : false,
                 style: 'font-size: 170%; font-weight: bold; background-image: none;color: #00B167;'
+
             });
             this.fecha_ini = new Ext.form.DateField({
                 name: 'fecha_ini',
@@ -178,7 +184,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 gwidth: 100,
                 format: 'd/m/Y',
                 hidden : false,
-                disabled:false
+                disabled:false,
+                editable : false
             });
 
             this.etiqueta_fin = new Ext.form.Label({
@@ -204,7 +211,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 gwidth: 100,
                 format: 'd/m/Y',
                 hidden : false,
-                disabled:false
+                disabled:false,
+                editable : false
             });
 
 
@@ -219,17 +227,44 @@ header("content-type: text/javascript; charset=UTF-8");
             this.tbar.addField(this.etiqueta_fechas);
             this.tbar.addField(this.cmbFechas);
 
-            this.addButton('btnGenerar', {
-                text : 'Abonar',//Generar
+            this.addButton('btnExcluir', {
+                text : 'Excluir Agencia',//Generar
                 grupo: [0,1],
-                iconCls : 'bengine',
+                iconCls : 'block',
+                disabled : false,
+                hidden : false,
+                handler : this.onExcluirAgencia
+            });
+
+            this.addButton('btnValidar', {
+                text : 'Validar Calculo',//Generar
+                grupo: [0,1],
+                iconCls : 'bassign',
                 disabled : false,
                 hidden : true,
-                handler : this.onGenerarMovimientoEntidad//this.onBtnBuscar
+                handler : this.onValidarMovimientoEntidad
+            });
+
+            this.addButton('btnGenerar', {
+                text : 'Generar ACMs',//Generar
+                grupo: [0,1],
+                iconCls : 'bassign',
+                disabled : false,
+                hidden : true,
+                handler : this.onGenerarMovimientoEntidad
+            });
+
+            this.addButton('btnAbonar', {
+                text : 'Abonar',//Generar
+                grupo: [0,1],
+                iconCls : 'bpagar',
+                disabled : false,
+                hidden : true,
+                handler : this.onAbonarMovimientoEntidad//this.onBtnBuscar
             });
 
             this.addButton('btnRevertir', {
-                text : 'Revertir',
+                text : 'Revertir Abono',
                 grupo: [0,1],
                 iconCls : 'breload',
                 disabled : true,
@@ -247,7 +282,7 @@ header("content-type: text/javascript; charset=UTF-8");
             });
 
             this.addButton('btnCreditoPortal', {
-                text : 'Generar Credito P. NO IATA',
+                text : 'Rep. Credito P. NO IATA',
                 grupo: [0,1],
                 iconCls : 'bexcel',
                 disabled : false,
@@ -262,13 +297,426 @@ header("content-type: text/javascript; charset=UTF-8");
             this.bandera_baja = 0;
 
             this.grid.addListener('cellclick', this.mostrarDetalleACM,this);
+            //this.grid.addListener('keydown', this.controlarEscape,this);
+
             this.fecha_ini.on('select', function (rec, date) {
                 let fecha_max = new Date(date.getFullYear() ,date.getMonth(), this.diasMes[date.getMonth()])
                 this.fecha_fin.setMaxValue(fecha_max);
+                this.fecha_fin.setMinValue(fecha_max);
             },this);
 
             this.init();
 
+        },
+
+        /*controlarEscape: function(e){ console.log('evento',e);
+            //if(e.escKey && e.getKey()==27) {
+                this.reload();
+            //}
+        },*/
+
+        onExcluirAgencia: function (){
+
+            if ( this.fecha_ini.getValue() != '' && this.fecha_fin.getValue() != '' ) {
+                let rec = {};
+                if (this.getSelectedData()) {
+                    rec = this.getSelectedData();
+                    rec.fecha = this.fecha_ini.getValue();
+                } else {
+                    rec = {selector: 'generico', fecha: this.fecha_ini.getValue()};
+                }
+                console.log('selector', rec);
+                if (this.store.data.items[0].data.status == 'generado' || this.store.data.items[0].data.status == 'abonado' || this.store.data.items[0].data.status == 'enviado') {
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b>Estimado Usuario:<br>Ya no puede excluir agencias para este periodo, por que ya se genero sus correspondientes ACMs. para el periodo '+this.cmbFechas.getRawValue()+'.</b>',
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.WARNING
+                    });
+                }else {
+                    Phx.CP.loadWindows('../../../sis_obingresos/vista/calculo_over_comison/ExcluirAgencia.php',
+                        'Agencias Excluidas',
+                        {
+                            width: 900,
+                            height: 600
+                        },
+                        rec,
+                        this.idContenedor,
+                        'ExcluirAgencia'
+                    );
+                }
+            }else{
+                if ( this.fecha_ini.getValue() == '' && this.fecha_fin.getValue() == '' && this.cmbFechas.getRawValue() == '') {
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b>Estimado Usuario:<br>Debe definir una fecha inicio y fecha fin, para excluir agencias.</b>',
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.WARNING
+                    });
+                }else if ( this.cmbFechas.getRawValue() != '' ){
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b>Estimado Usuario:<br>Ya no puede excluir agencias para este periodo, por que ya se genero sus correspondientes ACMs. para el periodo '+this.cmbFechas.getRawValue()+'.</b>',
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.WARNING
+                    });
+                }
+            }
+        },
+
+        onValidarMovimientoEntidad : function(){
+
+
+            fecha_desde = this.fecha_ini.getValue();
+            dia =  fecha_desde.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_desde.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_desde.getFullYear();
+            this.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+            fecha_hasta = this.fecha_fin.getValue();
+            dia =  fecha_hasta.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_hasta.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_hasta.getFullYear();
+            this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
+
+            this.store.baseParams.tipo = this.cmbTipo.getValue();
+
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                params:{
+                    fecha_ini : this.store.baseParams.fecha_desde,
+                    fecha_fin : this.store.baseParams.fecha_hasta,
+                    tipo      : this.store.baseParams.tipo
+                },
+                success:function(resp){
+                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                    //console.log('reg Validacion',reg);
+
+                    if (reg.ROOT.datos.estado_generado == 'validado'){
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Ya se hizo la validación correspondiente para el periodo que se esta intentando Validar.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.INFO
+                        });
+                    }else{
+
+                        this.store.baseParams.momento = 1;
+                        Phx.CP.loadingShow();
+                        Ext.Ajax.request({
+                            url: '../../sis_obingresos/control/CalculoOverComison/generarMovimientoEntidad',
+                            params: {
+                                fecha_desde: this.store.baseParams.fecha_desde,
+                                fecha_hasta: this.store.baseParams.fecha_hasta,
+                                tipo: this.store.baseParams.tipo,
+                                momento: this.store.baseParams.momento,
+                                accion: 'validar'
+                            },
+                            success: function (resp) {
+                                //var reg = Ext.decode(Ext.util.Format.trim(resp.responseText));
+                                //console.log('reg Validar generarMovimientoEntidad', reg.ROOT.datos);
+                                Phx.CP.loadingHide();
+
+                                var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText)).ROOT.datos;
+                                console.log('onValidarMovimientoEntidad objRes', objRes);
+
+                                /*if ( objRes[0].Result ) {
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b>'+objRes[0].Message+'</b>',
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        icon: Ext.Msg.INFO
+                                    });
+                                }else {*/
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Se Valido exitosamente el periodo seleccionado.</b>',
+                                        fn: function (btn) {
+                                            if (btn == 'ok') {
+                                                this.getBoton('btnValidar').setVisible(false);
+                                                if (this.cmbTipo.getValue() == 'NO-IATA') {
+                                                    if ( this.nombreVista == 'calculoComercial' ) {
+                                                        this.getBoton('btnGenerar').setVisible(false);
+                                                    }else {
+                                                        this.getBoton('btnGenerar').setVisible(true);
+                                                    }
+                                                }else{
+                                                    if ( this.nombreVista == 'calculoComercial' ) {
+                                                        this.getBoton('btnGenerar').setVisible(false);
+                                                    }else{
+                                                        this.getBoton('btnGenerar').setVisible(true);
+                                                    }
+                                                    this.getBoton('btnCreditoPortal').setVisible(false);
+                                                }
+                                                this.store.baseParams.momento = 1;
+                                                this.load({params: {start: 0, limit: 50}});
+                                            }
+                                        },
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        maxWidth: 1024,
+                                        icon: Ext.Msg.INFO,
+                                        scope: this
+                                    });
+                                //}
+                            },
+                            failure: this.conexionFailure,
+                            timeout: this.timeout,
+                            scope: this
+                        });
+                    }
+                },
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        },
+
+        onGenerarMovimientoEntidad : function(){
+
+            var thas = this;
+            fecha_desde = this.fecha_ini.getValue();
+            dia =  fecha_desde.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_desde.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_desde.getFullYear();
+            thas.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+            fecha_hasta = this.fecha_fin.getValue();
+            dia =  fecha_hasta.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_hasta.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_hasta.getFullYear();
+            thas.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
+
+            thas.store.baseParams.tipo = this.cmbTipo.getValue();
+
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                params:{
+                    fecha_ini : thas.store.baseParams.fecha_desde,
+                    fecha_fin : thas.store.baseParams.fecha_hasta,
+                    tipo      : thas.store.baseParams.tipo
+                },
+                success:function(resp){
+                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                    console.log('reg Verificacion',reg);
+
+                    if (reg.ROOT.datos.estado_generado == 'generado'){
+                        /*this.store.baseParams.momento = 0;
+                        this.load({params: {start: 0, limit: 50}});*/
+
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Ya se tiene generado los ACMs correspondiente para el periodo que se esta intentando Generar.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.INFO
+                        });
+
+                    }else{
+                        this.store.baseParams.momento = 1;
+                        //this.load({params: {start: 0, limit: 50}});
+                        Phx.CP.loadingShow();
+                        Ext.Ajax.request({
+                            url:'../../sis_obingresos/control/CalculoOverComison/generarMovimientoEntidad',
+                            params:{
+                                fecha_desde : thas.store.baseParams.fecha_desde,
+                                fecha_hasta : thas.store.baseParams.fecha_hasta,
+                                tipo        : thas.store.baseParams.tipo,
+                                momento     : thas.store.baseParams.momento,
+                                accion      : 'generar'
+                            },
+                            success:function(resp){
+                                //var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                                //console.log('reg Abonar',reg.ROOT.datos);
+                                Phx.CP.loadingHide();
+
+                                var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText)).ROOT.datos;
+                                console.log('onGenerarMovimientoEntidad objRes', objRes);
+
+                                /*if ( objRes[0].Result ) {
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b>'+objRes[0].Message+'</b>',
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        icon: Ext.Msg.INFO
+                                    });
+                                }else {*/
+                                    if (objRes.validacion_inicio == 'activo') {
+                                        Ext.Msg.show({
+                                            title: 'Información',
+                                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Se Genero los ACMs exitosamente para el periodo seleccionado.</b>',
+                                            fn: function (btn) {
+                                                if (btn == 'ok') {
+
+                                                    this.getBoton('btnValidar').setVisible(false);
+                                                    this.getBoton('btnGenerar').setVisible(false);
+
+                                                    if ( thas.store.baseParams.tipo == 'IATA'){
+                                                        this.getBoton('btnAbonar').setVisible(false);
+                                                        if ( this.nombreVista == 'calculoComercial' ) {
+                                                            this.getBoton('btnFileBSP').setVisible(false);
+                                                        }else{
+                                                            this.getBoton('btnFileBSP').setVisible(true);
+                                                        }
+                                                    }else{
+                                                        if ( this.nombreVista == 'calculoComercial' ) {
+                                                            this.getBoton('btnAbonar').setVisible(false);
+                                                        }else{
+                                                            this.getBoton('btnAbonar').setVisible(true);
+                                                        }
+                                                    }
+
+                                                    this.store.baseParams.momento = 2;
+                                                    this.load({params: {start: 0, limit: 50}});
+                                                }
+                                            },
+                                            buttons: Ext.Msg.OK,
+                                            width: 512,
+                                            icon: Ext.Msg.INFO,
+                                            scope: this
+                                        });
+                                    } else {
+                                        Ext.Msg.show({
+                                            title: 'Información',
+                                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> No se pudo realizar el Abono correspondiente para el periodo seleccionado.</b>',
+                                            buttons: Ext.Msg.OK,
+                                            width: 512,
+                                            icon: Ext.Msg.INFO
+                                        });
+                                    }
+                                //}
+
+                            },
+                            failure: this.conexionFailure,
+                            timeout:this.timeout,
+                            scope:this
+                        });
+                    }
+                },
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
+        },
+
+        onAbonarMovimientoEntidad : function(){
+
+            var thas = this;
+            fecha_desde = this.fecha_ini.getValue();
+            dia =  fecha_desde.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_desde.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_desde.getFullYear();
+            thas.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
+
+            fecha_hasta = this.fecha_fin.getValue();
+            dia =  fecha_hasta.getDate();
+            dia = dia < 10 ? "0"+dia : dia;
+            mes = fecha_hasta.getMonth() + 1;
+            mes = mes < 10 ? "0"+mes : mes;
+            anio = fecha_hasta.getFullYear();
+            thas.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
+
+            thas.store.baseParams.tipo = this.cmbTipo.getValue();
+
+            Ext.Ajax.request({
+                url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
+                params:{
+                    fecha_ini : thas.store.baseParams.fecha_desde,
+                    fecha_fin : thas.store.baseParams.fecha_hasta,
+                    tipo      : thas.store.baseParams.tipo
+                },
+                success:function(resp){
+                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                    console.log('reg Verificacion',reg);
+
+                    if (reg.ROOT.datos.estado_generado == 'abonado'){
+                        /*this.store.baseParams.momento = 0;
+                        this.load({params: {start: 0, limit: 50}});*/
+
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Ya se tiene el Abono correspondiente para el periodo que se esta intentando Abonar.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.INFO
+                        });
+
+                    }else{
+                        this.store.baseParams.momento = 1;
+                        //this.load({params: {start: 0, limit: 50}});
+                        Phx.CP.loadingShow();
+                        Ext.Ajax.request({
+                            url:'../../sis_obingresos/control/CalculoOverComison/generarMovimientoEntidad',
+                            params:{
+                                fecha_desde : thas.store.baseParams.fecha_desde,
+                                fecha_hasta : thas.store.baseParams.fecha_hasta,
+                                tipo        : thas.store.baseParams.tipo,
+                                momento     : thas.store.baseParams.momento,
+                                accion      : 'abonar'
+                            },
+                            success:function(resp){
+                                //var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                                //console.log('reg Abonar',reg.ROOT.datos);
+                                Phx.CP.loadingHide();
+
+                                var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText)).ROOT.datos;
+                                //console.log('onGenerarMovimientoEntidad objRes', objRes);
+
+                                if (objRes.validacion_inicio == 'activo'){
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Se Abono exitosamente para el periodo seleccionado.</b>',
+                                        fn: function (btn){
+                                            if(btn == 'ok'){
+                                                this.getBoton('btnValidar').setVisible(false);
+                                                this.getBoton('btnGenerar').setVisible(false);
+                                                this.getBoton('btnAbonar').setVisible(false);
+                                                this.store.baseParams.momento = 3;
+                                                this.load({params: {start: 0, limit: 50}});
+                                            }
+                                        },
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        icon: Ext.Msg.INFO,
+                                        scope:this
+                                    });
+                                }else{
+                                    Ext.Msg.show({
+                                        title: 'Información',
+                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> No se pudo realizar el Abono correspondiente para el periodo seleccionado.</b>',
+                                        buttons: Ext.Msg.OK,
+                                        width: 512,
+                                        icon: Ext.Msg.INFO
+                                    });
+                                }
+
+                            },
+                            failure: this.conexionFailure,
+                            timeout:this.timeout,
+                            scope:this
+                        });
+                    }
+                },
+                failure: this.conexionFailure,
+                timeout:this.timeout,
+                scope:this
+            });
         },
 
         preparaMenu: function(n) {
@@ -319,98 +767,6 @@ header("content-type: text/javascript; charset=UTF-8");
             });
         },
 
-        onGenerarMovimientoEntidad : function(){
-
-            var thas = this;
-            fecha_desde = this.fecha_ini.getValue();
-            dia =  fecha_desde.getDate();
-            dia = dia < 10 ? "0"+dia : dia;
-            mes = fecha_desde.getMonth() + 1;
-            mes = mes < 10 ? "0"+mes : mes;
-            anio = fecha_desde.getFullYear();
-            thas.store.baseParams.fecha_desde = dia + "/" + mes + "/" + anio;
-
-            fecha_hasta = this.fecha_fin.getValue();
-            dia =  fecha_hasta.getDate();
-            dia = dia < 10 ? "0"+dia : dia;
-            mes = fecha_hasta.getMonth() + 1;
-            mes = mes < 10 ? "0"+mes : mes;
-            anio = fecha_hasta.getFullYear();
-            thas.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
-
-            thas.store.baseParams.tipo = this.cmbTipo.getValue();
-
-            Ext.Ajax.request({
-                url:'../../sis_obingresos/control/CalculoOverComison/verificarPeriodoGenerado',
-                params:{
-                    fecha_ini : thas.store.baseParams.fecha_desde,
-                    fecha_fin : thas.store.baseParams.fecha_hasta,
-                    tipo      : thas.store.baseParams.tipo
-                },
-                success:function(resp){
-                    var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-                    console.log('reg Verificacion',reg);
-
-                    if (reg.ROOT.datos.estado_generado == 'generado'){
-                        /*this.store.baseParams.momento = 0;
-                        this.load({params: {start: 0, limit: 50}});*/
-
-                        Ext.Msg.show({
-                            title: 'Información',
-                            msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Ya se tiene el Abono correspondiente para el periodo que se esta intentando Abonar.</b>',
-                            buttons: Ext.Msg.OK,
-                            width: 512,
-                            icon: Ext.Msg.INFO
-                        });
-
-                    }else{
-                        this.store.baseParams.momento = 1;
-                        //this.load({params: {start: 0, limit: 50}});
-                        Phx.CP.loadingShow();
-                        Ext.Ajax.request({
-                            url:'../../sis_obingresos/control/CalculoOverComison/generarMovimientoEntidad',
-                            params:{
-                                fecha_desde : thas.store.baseParams.fecha_desde,
-                                fecha_hasta : thas.store.baseParams.fecha_hasta,
-                                tipo      : thas.store.baseParams.tipo,
-                                momento   : thas.store.baseParams.momento
-                            },
-                            success:function(resp){
-                                var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
-                                console.log('reg Abonar',reg.ROOT.datos);
-                                Phx.CP.loadingHide();
-
-                                if (reg.ROOT.datos.validacion_inicio == 'activo'){
-                                    Ext.Msg.show({
-                                        title: 'Información',
-                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> Se Abono exitosamente para el periodo seleccionado.</b>',
-                                        buttons: Ext.Msg.OK,
-                                        width: 512,
-                                        icon: Ext.Msg.INFO
-                                    });
-                                }else{
-                                    Ext.Msg.show({
-                                        title: 'Información',
-                                        msg: '<b style="text-align: justify;"> Estimado Usuario: <br><br> No se pudo realizar el Abono correspondiente para el periodo seleccionado.</b>',
-                                        buttons: Ext.Msg.OK,
-                                        width: 512,
-                                        icon: Ext.Msg.INFO
-                                    });
-                                }
-
-                            },
-                            failure: this.conexionFailure,
-                            timeout:this.timeout,
-                            scope:this
-                        });
-                    }
-                },
-                failure: this.conexionFailure,
-                timeout:this.timeout,
-                scope:this
-            });
-        },
-
         onGenerarFileBSP : function (){
 
             var fechas = this.cmbFechas.getRawValue();
@@ -437,16 +793,30 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 Ext.Ajax.request({
                     url: '../../sis_obingresos/control/CalculoOverComison/reporteFileBSP',
-                    params: {fecha_ini: fecha_ini, fecha_fin: fecha_fin},
+                    params: {
+                        fecha_desde   : fecha_ini,
+                        fecha_hasta   : fecha_fin,
+                        tipo        : tipo,
+                        momento     : 1,
+                        accion      : 'enviar'
+                    },
                     success: function (resp) {
                         var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
                         console.log('envio over',reg);
                         Ext.Msg.show({
                             title: 'Información',
                             msg: '<b style="text-align: justify;">Estimado Usuario: <br><br> El Reporte se esta Generando, una vez concluido el proceso se le enviara a su correo la información correspondiente.</b>',
+                            fn: function (btn){
+                                if(btn == 'ok'){
+                                    this.getBoton('btnFileBSP').setVisible(false);
+                                    this.store.baseParams.momento = 3;
+                                    this.load({params: {start: 0, limit: 50}});
+                                }
+                            },
                             buttons: Ext.Msg.OK,
                             width: 512,
-                            icon: Ext.Msg.INFO
+                            icon: Ext.Msg.INFO,
+                            scope:this
                         });
                         Phx.CP.loadingHide();
                     },
@@ -532,7 +902,7 @@ header("content-type: text/javascript; charset=UTF-8");
         },
 
         onBtnBuscar : function() {
-
+            console.log('onBtnBuscar FEA');
             fecha_desde = this.fecha_ini.getValue();
             dia =  fecha_desde.getDate();
             dia = dia < 10 ? "0"+dia : dia;
@@ -603,8 +973,294 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.idContenedor,
                     'DetalleCalculoACM'
                 );
+            }else if(fieldName == 'habilitado'){
+                /*let rec = {usuario : 'generico'};
+                Phx.CP.loadWindows('../../../sis_obingresos/vista/calculo_over_comison/ExcluirAgencia.php',
+                    'Agencias Excluidas',
+                    {
+                        width:900,
+                        height:600
+                    },
+                    rec,
+                    this.idContenedor,
+                    'ExcluirAgencia'
+                );*/
+                let row = this.getSelectedData();
+                if( row.status == 'generado' || row.status == 'abonado'){
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b>Estimado Usuario:<br>Ya no puede excluir agencias para este periodo, por que ya se genero sus correspondientes ACMs. para el periodo '+this.cmbFechas.getRawValue()+'.</b>',
+                        fn: function (btn) {
+                            if (btn == 'ok') {
+                                this.reload();
+                            }
+                        },
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.WARNING,
+                        scope: this
+                    });
+
+                }else {
+                    this.onFormExcluirAgencia();
+                }
             }
 
+        },
+
+        onFormExcluirAgencia:  function (){
+            var record = this.getSelectedData();
+            this.formExcluirAgencia();
+            this.formExcluir.getForm().findField('iata_code').setValue(record.IataCode);
+            this.formExcluir.getForm().findField('office_id').setValue(record.OfficeId);
+            this.formExcluir.getForm().findField('f_ini').setValue(this.fecha_ini.getValue());
+            this.formExcluir.getForm().findField('f_fin').setValue(this.fecha_fin.getValue());
+            this.formExcluir.getForm().findField('obs').setValue('Id. '+record.AcmKey+' [ '+record.TypePOS+' ( '+record.CommissionDescription+' ) ]');
+            this.formExcluir.getForm().findField('estado').setValue('A');
+            this.windowExcluir.show();
+        },
+        formExcluirAgencia: function () {
+
+            this.formExcluir = new Ext.form.FormPanel({
+                id: this.idContenedor + '_EXCAGE',
+                items: [
+                    new Ext.form.ComboBox({
+                        name: 'iata_code',
+                        fieldLabel: 'Codigo Iata',
+                        allowBlank: false,
+                        disabled: false,
+                        emptyText: '',
+                        msgTarget:'side',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_ventas_facturacion/control/ReporteVentas/listarCodigoIataStage',
+                            id: 'iata_code',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'iata_code',
+                                direction: 'DESC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['iata_code'],
+                            remoteSort: true,
+                            baseParams: {_adicionar : 'si', par_filtro: 'iata_code'}
+                        }),
+                        valueField: 'iata_code',
+                        displayField: 'iata_code',
+                        gdisplayField: 'iata_code',
+                        hiddenName: 'iata_code',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b><span style="color: #B066BB;">{iata_code}</span></b></p></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 25,
+                        queryDelay: 1000,
+                        gwidth: 250,
+                        resizable:true,
+                        minChars: 2,
+                        anchor: '95%',
+                        hidden : false,
+                        style:'margin-bottom: 10px;',
+                        style : {fontWeight : 'bolder', color : '#00B167'},
+                        editable: false,
+                        disabled: true
+                    }),
+                    new Ext.form.ComboBox({
+                        name: 'office_id',
+                        msgTarget:'side',
+                        fieldLabel: 'Office ID',
+                        allowBlank: false,
+                        disabled: false,
+                        emptyText: '',
+                        store: new Ext.data.JsonStore({
+                            url: '../../sis_ventas_facturacion/control/ReporteVentas/listarPuntoVentaOfficeIdStage',
+                            id: 'office_id',
+                            root: 'datos',
+                            sortInfo: {
+                                field: 'office_id',
+                                direction: 'ASC'
+                            },
+                            totalProperty: 'total',
+                            fields: ['office_id','name_pv'],
+                            remoteSort: true,
+                            baseParams: {_adicionar : 'si', par_filtro:'office_id#name_pv'}
+                        }),
+                        valueField: 'office_id',
+                        displayField: 'office_id',
+                        gdisplayField: 'office_id',
+                        hiddenName: 'office_id',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><p><b><span style="color: #B066BB;">{office_id}</span> <span style="color: #00B167;"> ({name_pv})</span> </b></p></div></tpl>',
+                        forceSelection: true,
+                        typeAhead: false,
+                        triggerAction: 'all',
+                        lazyRender: true,
+                        mode: 'remote',
+                        pageSize: 25,
+                        anchor: '95%',
+                        queryDelay: 1000,
+                        gwidth: 250,
+                        resizable:true,
+                        minChars: 2,
+                        hidden : false,
+                        style : {fontWeight : 'bolder', color : '#00B167'},
+                        editable: false,
+                        disabled: true
+                    }),
+                    new Ext.form.DateField({
+                        msgTarget:'side',
+                        name : 'f_ini',
+                        fieldLabel : 'Habilitado Desde',
+                        allowBlank : false,
+                        width : 177,
+                        gwidth : 125,
+                        format : 'd/m/Y',
+                        editable: false,
+                        disabled: true,
+                        style : {fontWeight : 'bolder', color : 'red'},
+                        renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+                    }),
+                    new Ext.form.DateField({
+                        msgTarget:'side',
+                        name: 'f_fin',
+                        fieldLabel: 'Habilitado Hasta',
+                        allowBlank: false,
+                        width : 177,
+                        gwidth: 125,
+                        format: 'd/m/Y',
+                        editable: false,
+                        disabled: true,
+                        style : {fontWeight : 'bolder', color : 'red'},
+                        renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+                    }),
+                    new Ext.form.TextArea({
+                        msgTarget:'side',
+                        name: 'obs',
+                        fieldLabel: 'Observaciones',
+                        allowBlank: false,
+                        anchor: '95%',
+                        gwidth: 300,
+                        maxLength:2046,
+                        style : {fontWeight : 'bolder', color : '#B066BB'}
+                    }),
+                    new Ext.form.TextField({
+                        msgTarget:'side',
+                        name: 'estado',
+                        fieldLabel: 'Estado',
+                        allowBlank: true,
+                        width : 177,
+                        gwidth: 100,
+                        maxLength:20,
+                        style : {fontWeight : 'bolder', color : '#B066BB'}
+                    })
+                ],
+                autoScroll: false,
+                autoDestroy: true,
+                autoScroll: true
+            });
+
+
+            // Definicion de la ventana que contiene al formulario
+            this.windowExcluir = new Ext.Window({
+                // id:this.idContenedor+'_W',
+                title: 'Formulario Exclusión Agencia',
+                modal: true,
+                width: 500,
+                height: 300,
+                bodyStyle: 'padding:5px;',
+                layout: 'fit',
+                hidden: true,
+                autoScroll: false,
+                maximizable: true,
+                buttons: [
+                    {
+                        text: 'Guardar',
+                        arrowAlign: 'bottom',
+                        handler: this.onSubmitExcluir,
+                        argument: {
+                            'news': false
+                        },
+                        scope: this
+                    },
+                    {
+                        text: 'Declinar',
+                        handler: this.onDeclinarExcluir,
+                        scope: this
+                    }
+                ],
+                items: this.formExcluir,
+                // autoShow:true,
+                autoDestroy: true,
+                closeAction: 'hide'
+            });
+
+            this.windowExcluir.on('hide', function (p) {
+               this.reload();
+            },this);
+        },
+
+        onSubmitExcluir: function () {
+            Phx.CP.loadingShow();
+            Ext.Ajax.request({
+                url: '../../sis_obingresos/control/ExcluirAgencia/insertarExcluirAgencia',
+                success: this.successExcluir,
+                failure: this.failureExcluir,
+                params: {
+                    'iataCode'  : this.formExcluir.getForm().findField('iata_code').getValue(),
+                    'officeId'  : this.formExcluir.getForm().findField('office_id').getValue(),
+                    'f_ini'     : this.formExcluir.getForm().findField('f_ini').getValue(),
+                    'f_fin'     : this.formExcluir.getForm().findField('f_fin').getValue(),
+                    'obs'       : this.formExcluir.getForm().findField('obs').getValue()
+                },
+                timeout: this.timeout,
+                scope: this
+            });
+
+        },
+
+        successExcluir: function (resp) {
+
+            this.windowExcluir.hide();
+            Phx.vista.CalculoOverComison.superclass.successSave.call(this, resp);
+
+            var objRes = Ext.util.JSON.decode(Ext.util.Format.trim(resp.responseText)).ROOT.datos;
+            Ext.Msg.show({
+                title: 'Información',
+                msg: '<b>'+objRes[0].Message+'</b>',
+                buttons: Ext.Msg.OK,
+                width: 512,
+                icon: Ext.Msg.INFO
+            });
+
+            var rec = this.getSelectedData();
+
+            if ( objRes[0].Result == 1 ) {
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/ExcluirAgencia/registrarExcluirAgencia',
+                    success: this.successExcluir,
+                    failure: this.failureExcluir,
+                    params: {
+                        'id_acm_key'    : rec.AcmKey,
+                        'iata_code'     : this.formExcluir.getForm().findField('iata_code').getValue(),
+                        'office_id'     : this.formExcluir.getForm().findField('office_id').getValue(),
+                        'fecha_desde'   : this.formExcluir.getForm().findField('f_ini').getValue(),
+                        'fecha_hasta'   : this.formExcluir.getForm().findField('f_fin').getValue(),
+                        'observacion'   : this.formExcluir.getForm().findField('obs').getValue()
+                    },
+                    timeout: this.timeout,
+                    scope: this
+                });
+            }
+        },
+
+        failureExcluir: function (resp) {
+            Phx.CP.loadingHide();
+            Phx.vista.CalculoOverComison.superclass.conexionFailure.call(this, resp);
+        },
+
+        onDeclinarExcluir: function () {
+            this.reload();
+            this.windowExcluir.hide();
         },
 
         bactGroups:[0,1],
@@ -646,6 +1302,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             },this);
 
+            var self = this;
             this.cmbTipo.on('select', function (combo, record, index) {
 
                 this.fecha_ini.allowBlank = false;
@@ -659,14 +1316,19 @@ header("content-type: text/javascript; charset=UTF-8");
                     if (record.data.tipo == "IATA") {
                         this.getBoton('btnFileBSP').setVisible(true);
                         this.getBoton('btnCreditoPortal').setVisible(false);
-                        this.getBoton('btnGenerar').setVisible(false);
+                        this.getBoton('btnAbonar').setVisible(false);
                         this.getBoton('btnRevertir').setVisible(false);
                     } else {
                         this.getBoton('btnFileBSP').setVisible(false);
                         this.getBoton('btnCreditoPortal').setVisible(true);
-                        this.getBoton('btnGenerar').setVisible(true);
-                        this.getBoton('btnRevertir').setVisible(true);
+                        this.getBoton('btnAbonar').setVisible(true);
+                        if ( this.nombreVista == 'calculoComercial' ) {
+                            this.getBoton('btnRevertir').setVisible(false);
+                        }else{
+                            this.getBoton('btnRevertir').setVisible(true);
+                        }
                     }
+                    this.getBoton('btnAbonar').setVisible(false);
                     this.store.baseParams.tipo = record.data.tipo;
                     this.store.baseParams.momento = 0;
                     Ext.Ajax.request({
@@ -679,16 +1341,75 @@ header("content-type: text/javascript; charset=UTF-8");
                         success: function (resp) {
                             var reg = Ext.decode(Ext.util.Format.trim(resp.responseText));
                             console.log('reg select Cmb Tipo', reg);
-                            if (reg.ROOT.datos.estado_generado == 'generado') {
-                                console.log('generado');
+                            if (reg.ROOT.datos.estado_generado == 'elaborado') {
+                                if ( this.nombreVista == 'calculoComercial' ) {
+                                    this.getBoton('btnValidar').setVisible(true);
+                                }else{
+                                    this.getBoton('btnValidar').setVisible(false);
+                                }
+                                this.getBoton('btnGenerar').setVisible(false);
+                                this.getBoton('btnAbonar').setVisible(false);
+
+                                if (record.data.tipo == "IATA") {
+                                    this.getBoton('btnFileBSP').setVisible(false);
+                                }
                                 this.store.baseParams.momento = 0;
-                                //this.onBtnBuscar();
                                 this.load({params: {start: 0, limit: 50}});
-                            } else {
-                                console.log('elaborado');
-                                //this.load({params: {start: 0, limit: 50}});
+                            } else if (reg.ROOT.datos.estado_generado == 'validado'){
+                                this.getBoton('btnValidar').setVisible(false);
+                                if ( this.nombreVista == 'calculoComercial' ) {
+                                    this.getBoton('btnGenerar').setVisible(false);
+                                }else{
+                                    this.getBoton('btnGenerar').setVisible(true);
+                                }
+                                this.getBoton('btnAbonar').setVisible(false);
+                                if (record.data.tipo == "IATA") {
+                                    this.getBoton('btnFileBSP').setVisible(false);
+                                }
+                                /*if ( this.cmbTipo.getValue() == 'NO-IATA' ){
+                                    this.getBoton('btnAbonar').setVisible(true);
+                                }*/
                                 this.store.baseParams.momento = 1;
-                                //this.onBtnBuscar();
+                                this.load({params: {start: 0, limit: 50}});
+                            } else if (reg.ROOT.datos.estado_generado == 'generado'){
+                                this.getBoton('btnValidar').setVisible(false);
+                                this.getBoton('btnGenerar').setVisible(false);
+
+                                if (record.data.tipo == "IATA") {
+                                    if ( this.nombreVista == 'calculoComercial' ) {
+                                        this.getBoton('btnFileBSP').setVisible(false);
+                                    }else{
+                                        this.getBoton('btnFileBSP').setVisible(true);
+                                    }
+                                }
+                                if ( this.cmbTipo.getValue() == 'NO-IATA' ){
+                                    if ( this.nombreVista == 'calculoComercial' ) {
+                                        this.getBoton('btnAbonar').setVisible(false);
+                                    }else{
+                                        this.getBoton('btnAbonar').setVisible(true);
+                                    }
+                                }
+                                this.store.baseParams.momento = 2;
+                                this.load({params: {start: 0, limit: 50}});
+                            } else if (reg.ROOT.datos.estado_generado == 'abonado'){
+                                this.getBoton('btnValidar').setVisible(false);
+                                this.getBoton('btnGenerar').setVisible(false);
+                                this.getBoton('btnAbonar').setVisible(false);
+
+                                if (record.data.tipo == "IATA") {
+                                    this.getBoton('btnFileBSP').setVisible(false);
+                                }
+                                this.store.baseParams.momento = 3;
+                                this.load({params: {start: 0, limit: 50}});
+                            } else if (reg.ROOT.datos.estado_generado == 'enviado'){
+                                this.getBoton('btnValidar').setVisible(false);
+                                this.getBoton('btnGenerar').setVisible(false);
+                                this.getBoton('btnAbonar').setVisible(false);
+
+                                if (record.data.tipo == "IATA") {
+                                    this.getBoton('btnFileBSP').setVisible(false);
+                                }
+                                this.store.baseParams.momento = 4;
                                 this.load({params: {start: 0, limit: 50}});
                             }
                         },
@@ -705,6 +1426,12 @@ header("content-type: text/javascript; charset=UTF-8");
                         icon: Ext.Msg.INFO
                     });
                 }
+                /*console.log('boliviar', self.store.data.items);
+                if ( self.store.data.items[0].data.status == 'generado' || self.store.data.items[0].data.status == 'abonado' ){
+                    this.getBoton('btnFileBSP').setVisible(true);
+                }else{
+                    this.getBoton('btnFileBSP').setVisible(false);
+                }*/
 
             }, this);
 
@@ -712,28 +1439,30 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.fecha_ini.allowBlank = true;
                 this.fecha_ini.setValue('');
-                this.modificado = true;
+                this.fecha_ini.modificado = true;
 
                 this.fecha_fin.allowBlank = true;
                 this.fecha_fin.setValue('');
-                this.modificado = true;
+                this.fecha_fin.modificado = true;
 
                 this.cmbTipo.allowBlank = true;
                 this.cmbTipo.setValue('');
-                this.modificado = true;
+                this.cmbTipo.modificado = true;
 
 
                 if(record.data.tipo == "IATA"){
-                    this.getBoton('btnFileBSP').setVisible(true);
+                    this.getBoton('btnFileBSP').setVisible(false);
                     this.getBoton('btnCreditoPortal').setVisible(false);
-                    //this.getBoton('btnGenerar').setVisible(true);
+                    //this.getBoton('btnAbonar').setVisible(true);
+                    this.getBoton('btnRevertir').setVisible(false);
                 }else{
                     this.getBoton('btnFileBSP').setVisible(false);
                     this.getBoton('btnCreditoPortal').setVisible(true);
-                    //this.getBoton('btnGenerar').setVisible(true);
+                    //this.getBoton('btnAbonar').setVisible(true);
+                    this.getBoton('btnRevertir').setVisible(true);
                 }
-                this.getBoton('btnRevertir').setVisible(true);
-                this.getBoton('btnGenerar').setVisible(false);
+
+                this.getBoton('btnAbonar').setVisible(false);
                 this.store.baseParams.tipo = record.data.tipo;
 
                 fecha_desde = new Date(record.data.fecha_ini_calculo);
@@ -754,7 +1483,13 @@ header("content-type: text/javascript; charset=UTF-8");
                 anio = fecha_hasta.getFullYear();
                 this.store.baseParams.fecha_hasta = dia + "/" + mes + "/" + anio;
 
-                this.store.baseParams.momento = 0;
+                this.getBoton('btnValidar').setVisible(false);
+                this.getBoton('btnAbonar').setVisible(false);
+                if(record.data.tipo == "IATA") {
+                    this.store.baseParams.momento = 4;
+                }else{
+                    this.store.baseParams.momento = 3;
+                }
                 this.load({params: {start: 0, limit: 50}});
 
             }, this);
@@ -820,6 +1555,27 @@ header("content-type: text/javascript; charset=UTF-8");
 
             },
             {
+                config: {
+                    name: 'habilitado',
+                    fieldLabel: 'Habilitado',
+                    allowBlank: true,
+                    anchor: '70%',
+                    gwidth: 85,
+
+                    renderer: function (value, p, record, rowIndex, colIndex) {
+                        //console.log('value', value == 'true', value === 'true');
+                        if (value === 'true') {
+                            var checked = 'checked';
+                        }
+                        return String.format('<div style="vertical-align:middle;text-align:center;"><input style="height:30px;width:30px;"  type="checkbox"  {0}></div>', checked);
+                    }
+                },
+                type: 'Checkbox',
+                id_grupo: 1,
+                grid: true,
+                form: true
+            },
+            {
                 config:{
                     fieldLabel: "Numero ACM",
                     gwidth: 150,
@@ -843,6 +1599,22 @@ header("content-type: text/javascript; charset=UTF-8");
                 id_grupo:1,
                 grid:true,
                 form:false
+            },
+
+            {
+                config:{
+                    name: 'fecha_acm',
+                    fieldLabel: 'Fecha ACM',
+                    allowBlank: true,
+                    anchor: '80%',
+                    gwidth: 100,
+                    format: 'd/m/Y',
+                    renderer:function (value,p,record){return value?value.dateFormat('d/m/Y'):''}
+                },
+                type:'DateField',
+                id_grupo:1,
+                grid:true,
+                form:true
             },
 
             {
@@ -978,28 +1750,6 @@ header("content-type: text/javascript; charset=UTF-8");
                 grid:true,
                 form:true
             },
-            {
-                config:{
-                    fieldLabel: "Cantidad Doc.",
-                    gwidth: 100,
-                    name: 'CommissionPercent',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'RutaVl',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
 
             {
                 config:{
@@ -1089,6 +1839,28 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             {
                 config:{
+                    fieldLabel: "% Comición",
+                    gwidth: 100,
+                    name: 'CommissionPercent',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'RutaVl',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+            {
+                config:{
                     fieldLabel: "Estado",
                     gwidth: 100,
                     name: 'status',
@@ -1128,7 +1900,8 @@ header("content-type: text/javascript; charset=UTF-8");
             {name:'CommssionAmount', type: 'numeric'},
             {name:'DocumentType', type: 'string'},
             {name:'OfficeId', type: 'string'},
-            {name:'status', type: 'string'}
+            {name:'status', type: 'string'},
+            {name:'habilitado', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',

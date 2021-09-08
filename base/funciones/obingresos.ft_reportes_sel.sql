@@ -554,6 +554,7 @@ $body$
                           toc.documento
 
                       from obingresos.tcalculo_over_comison toc
+                      where toc.calculo_generado = ''abonado'' or ( toc.tipo = ''IATA'' and toc.calculo_generado in (''enviado'') )
                       ';
 
 
@@ -580,6 +581,7 @@ $body$
         v_consulta = 'select
                           count(id_calculo_over_comison)
                       from obingresos.tcalculo_over_comison toc
+                      where toc.calculo_generado = ''abonado'' or ( toc.tipo = ''IATA'' and toc.calculo_generado in (''enviado'') )
                       ';
 
 

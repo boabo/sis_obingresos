@@ -2227,9 +2227,10 @@ class ACTBoleto extends ACTbase{
             "ip"=>"127.0.0.1",
             "xmlJson"=>false);
 
-        $json_data = json_encode($data);
+        $json_data = json_encode($data); //var_dump($data);Exit;
         $s = curl_init();
-        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
+        //curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINT/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
+        curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINTTest/ServicioInterno.svc/TraerReservaExch');//skbproduccion, skbpruebas
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -2241,7 +2242,7 @@ class ACTBoleto extends ACTbase{
         $_out = curl_exec($s);//var_dump(json_decode($_out)->TraerReservaExchResult);exit;
         $status = curl_getinfo($s, CURLINFO_HTTP_CODE);//var_dump('$status', curl_getinfo($s));exit;
         if (!$status) {
-            throw new Exception("No se pudo conectar con Resiber");
+            throw new Exception("No se pudo conectar con AMADEUS");
         }
         curl_close($s);
 

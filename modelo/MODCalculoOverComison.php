@@ -23,6 +23,7 @@ class MODCalculoOverComison extends MODbase{
         $this->setParametro('fecha_hasta','fecha_hasta','date');
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('dataJson','dataJson','jsonb');
+        $this->setParametro('accion','accion','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -69,6 +70,31 @@ class MODCalculoOverComison extends MODbase{
         //echo($this->consulta);exit;
         $this->ejecutarConsulta();
         //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function listarAgenciaExcluida(){
+        $this->procedimiento='obingresos.ft_calculo_over_comison_sel';
+        $this->transaccion='OBING_AGE_EXC_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setCount(false);
+
+        $this->setParametro('fecha_desde','fecha_desde','date');
+        $this->setParametro('fecha_hasta','fecha_hasta','date');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_acm_key','integer');
+        $this->captura('iata_code','varchar');
+        $this->captura('office_id','varchar');
+        $this->captura('fecha_desde','date');
+        $this->captura('fecha_hasta','date');
+        $this->captura('observacion','text');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
         return $this->respuesta;
     }
 }
