@@ -80,6 +80,9 @@ DECLARE
     v_agente_venta		varchar;
     v_puntos_venta		INTEGER[];
     v_puntos_venta_counter	record;
+
+    v_indice_tkt		integer=1;
+    v_segment_reference	varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -739,6 +742,7 @@ BEGIN
       begin
           if v_parametros.tipo = 'exchange' then
 
+
             select tag.nombre, tag.codigo, ts.telefono, ts.direccion
             into v_oficina
             from obingresos.tagencia tag
@@ -759,6 +763,8 @@ BEGIN
             from obingresos.tboleto_amadeus tba
             where tba.id_boleto_amadeus = any(v_exch_sel);
 
+            --raise 'v_record_exch: %', v_record_exch.fecha_emision;
+
             create temp table ttpasajero(
                   id_pasajero		integer,
                   nombre			varchar,
@@ -770,27 +776,28 @@ BEGIN
             )on commit drop;
 --RAISE 'PASAJEROS: %', v_parametros.pasajeros->'pasajeroDR';
             --mas de un pasajero
-			      if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+			if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
            		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
+                  --raise notice 'v_record_json: %',v_record_json;
+                  insert into ttpasajero(
+                    id_pasajero,
+                    nombre,
+                    importe,
+                    moneda,
+                    posicion,
+                    numero_tkt,
+                    tipo_19
+                  )values (
+                      v_contador_id,
+                      v_record_json->>'apdos_nombre',
+                      (v_record_json->'pago'->>'importe')::numeric,
+                      v_record_json->'pago'->>'moneda',
+                      (v_record_json->'posicion'->>'numLinea')::integer,
+                      (v_record_json->'Tkts'->>'string')::varchar,
+                      (v_record_json->>'tipo_19')::varchar
+                  );
+                  v_contador_id = v_contador_id + 1;
 
-                insert into ttpasajero(
-                  id_pasajero,
-                  nombre,
-                  importe,
-                  moneda,
-                  posicion,
-                  numero_tkt,
-                  tipo_19
-                )values (
-                    v_contador_id,
-                    v_record_json->>'apdos_nombre',
-                    (v_record_json->'pago'->>'importe')::numeric,
-                    v_record_json->'pago'->>'moneda',
-                    (v_record_json->'posicion'->>'numLinea')::integer,
-                    (v_record_json->'Tkts'->>'string')::varchar,
-                    (v_record_json->>'tipo_19')::varchar
-                );
-                v_contador_id = v_contador_id + 1;
             	end loop;
             else
               insert into ttpasajero(
@@ -817,7 +824,36 @@ BEGIN
             into v_pasajero_aux
             from obingresos.tboleto_amadeus tba
             where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
---RAISE 'DATOS: %', v_pasajero_aux;
+
+
+            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
+                	if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
+                      SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                      into v_segment_reference
+                      FROM jsonb_array_elements(v_record_json->'TktsSegment'->'string') rec
+                      where value::text ilike '"'||v_record_exch.nro_boleto||'%';
+              	  	else
+              			v_segment_reference = ((string_to_array(trim((v_record_json->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+              		end if;
+                    if v_segment_reference is not null then
+                    	exit;
+                    end if;
+              		raise notice 'v_segment_reference: %, %, %',v_record_json->'TktsSegment'->'string', v_segment_reference, v_record_exch.nro_boleto;
+            	end loop;
+            else
+
+
+              	if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                    SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                    into v_segment_reference
+                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                    where value::text ilike '"'||v_record_exch.nro_boleto||'%';
+              	else
+              		v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+              	end if;
+            end if;
+            raise notice 'v_segment_reference: %',v_segment_reference;
 
             if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
 
@@ -833,7 +869,37 @@ BEGIN
                 where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
               end if;
 
-            else --raise 'B';
+            else --raise 'B : %', v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string';
+
+              /*select value
+              into v_record_exch
+              from json_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') ;
+              raise 'valor :%',v_record_exch;*/
+
+				/*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                  SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                  into v_segment_reference
+                  FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                  where value::text ilike '"'||v_record_exch.nro_boleto||'%';
+                else
+                	v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                end if;*/
+                --raise notice 'v_segment_reference %',v_segment_reference;
+              /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+              	raise notice 'boletos: %',v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string';
+              	for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')  loop
+                	raise notice 'v_record_json adentro: %, %, ',trim(v_record_json::varchar,'"'), (v_record_exch.nro_boleto||'%')::varchar, (v_record_exch.nro_boleto||'%')::varchar like trim(v_record_json::varchar,'"')::varchar;
+               		if (v_record_exch.nro_boleto||'%')::varchar like trim(v_record_json::varchar,'"')::varchar then
+                  		raise notice 'v_record_json adentro: %',trim(v_record_json::varchar,'"');
+                        exit;
+               		end if;
+                    v_indice_tkt = v_indice_tkt + 1;
+                end loop;
+                raise notice 'v_indice_tkt: %',v_indice_tkt;
+              else
+
+              end if;*/
+
               select tp.posicion, tp.nombre, tp.tipo_19
               into v_posicion, v_pasajero, v_tipo_19
               from ttpasajero tp
@@ -942,7 +1008,9 @@ BEGIN
             else
 
                 for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
-                  if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
+
+                  --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
+                  if (v_record_json->>'ReferenciaSegmento')::varchar=v_segment_reference and v_record_json->>'tipo_emision' = 'R' then
 
                       if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
                     	  continue;
@@ -1110,7 +1178,8 @@ BEGIN
                   from param.tlugar tl
                   where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
 
-                  if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
+                  if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' )::date >= v_record_exch.fecha_emision/*v_fecha_emision::date != current_date*/) then
+                    --raise notice 'v_record_exch.fecha_emision: %, %', to_char(v_record_exch.fecha_emision, 'dd/mm/YYYY' ), to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' );
                     --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
                       insert into tvuelos(
                         id_vuelo,
