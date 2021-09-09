@@ -4161,3 +4161,12 @@ COMMENT ON COLUMN obingresos.tlog_modificaciones_medios_pago_completo."authoriza
 IS 'campo para cuando es solo stage';
 
 /***********************************F-SCP-IRVA-OBINGRESOS-0-07/09/2021****************************************/
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-08/09/2021****************************************/
+ALTER TABLE obingresos.tdetalle_boletos_web
+DROP CONSTRAINT tdetalle_boletos_web_billete_key RESTRICT;
+
+ALTER TABLE obingresos.tdetalle_boletos_web
+ADD CONSTRAINT tdetalle_boletos_web_billete_key
+UNIQUE (billete, estado_reg, numero_autorizacion) NOT DEFERRABLE;
+/***********************************F-SCP-IRVA-OBINGRESOS-0-08/09/2021****************************************/
