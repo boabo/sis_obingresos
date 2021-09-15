@@ -447,7 +447,7 @@ BEGIN
                              --( COALESCE(cr.garantia,0)+ COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0) )+(COALESCE(cr.ajuste_credito,0)- COALESCE(de.ajuste_debito,0)) as saldo_con_boleto,
                              ( COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0)) + (COALESCE(cr.ajuste_credito,0) - COALESCE(de.ajuste_debito,0)) as saldo_sin_boleto_ant
                       from obingresos.tagencia ag
-                      inner join credito cr on cr.id_agencia = ag.id_agencia
+                      left join credito cr on cr.id_agencia = ag.id_agencia
                       left join  debitos de on de.id_agencia = ag.id_agencia
                       where ag.id_agencia = '||v_parametros.id_agencia||'
                       order by nombre';
@@ -1015,7 +1015,7 @@ contrato as( select max(id_contrato) as ultimo_contrato,
                (COALESCE( cr.garantia,0) + COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0) )+( COALESCE(cr.ajuste_credito,0)- COALESCE(de.ajuste_debito,0)) as saldo_con_boleto,
                (COALESCE( cr.monto_credito,0) - COALESCE(de.monto_debito,0)) + (COALESCE(cr.ajuste_credito,0) - COALESCE(de.ajuste_debito,0)) as saldo_sin_boleto
         from obingresos.tagencia ag
-        inner join credito cr on cr.id_agencia = ag.id_agencia
+        left join credito cr on cr.id_agencia = ag.id_agencia
         left join  debitos de on de.id_agencia = ag.id_agencia
         inner join contrato c on c.id_agencia = ag.id_agencia
 		inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
@@ -1124,7 +1124,7 @@ contrato as( select max(id_contrato) as ultimo_contrato,
                (COALESCE( cr.garantia,0) + COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0) )+( COALESCE(cr.ajuste_credito,0)- COALESCE(de.ajuste_debito,0)) as saldo_con_boleto,
                (COALESCE( cr.monto_credito,0) - COALESCE(de.monto_debito,0)) + (COALESCE(cr.ajuste_credito,0) - COALESCE(de.ajuste_debito,0)) as saldo_sin_boleto
         from obingresos.tagencia ag
-        inner join credito cr on cr.id_agencia = ag.id_agencia
+        left join credito cr on cr.id_agencia = ag.id_agencia
         left join  debitos de on de.id_agencia = ag.id_agencia
         inner join contrato c on c.id_agencia = ag.id_agencia
 		inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
@@ -1982,7 +1982,7 @@ from detalle';
                              --( COALESCE(cr.garantia,0)+ COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0) )+(COALESCE(cr.ajuste_credito,0)- COALESCE(de.ajuste_debito,0)) as saldo_con_boleto,
                              ( COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0)) + (COALESCE(cr.ajuste_credito,0) - COALESCE(de.ajuste_debito,0)) as saldo_sin_boleto_ant
                       from obingresos.tagencia ag
-                      inner join credito cr on cr.id_agencia = ag.id_agencia
+                      left join credito cr on cr.id_agencia = ag.id_agencia
                       left join  debitos de on de.id_agencia = ag.id_agencia
                       where ag.id_agencia = '||v_parametros.id_agencia||'
                       order by nombre';
@@ -2169,7 +2169,7 @@ contrato as( select max(id_contrato) as ultimo_contrato,
                ( COALESCE(cr.garantia,0)+ COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0) )+(COALESCE(cr.ajuste_credito,0)- COALESCE(de.ajuste_debito,0)) as saldo_con_boleto,
                ( COALESCE(cr.monto_credito,0) - COALESCE(de.monto_debito,0)) + (COALESCE(cr.ajuste_credito,0) - COALESCE(de.ajuste_debito,0)) as saldo_sin_boleto
         from obingresos.tagencia ag
-        inner join credito cr on cr.id_agencia = ag.id_agencia
+        left join credito cr on cr.id_agencia = ag.id_agencia
         left join  debitos de on de.id_agencia = ag.id_agencia
         inner join contrato c on c.id_agencia = ag.id_agencia
 		inner join leg.tcontrato con on con.id_contrato = c.ultimo_contrato
