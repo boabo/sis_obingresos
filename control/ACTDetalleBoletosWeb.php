@@ -20,7 +20,7 @@ class ACTDetalleBoletosWeb extends ACTbase{
         }
 
         if ($this->objParam->getParametro('fecha_inicio') != '' && $this->objParam->getParametro('fecha_fin') != '') {
-            $this->objParam->addFiltro("detbol.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and 
+            $this->objParam->addFiltro("detbol.fecha >= ''" . $this->objParam->getParametro('fecha_inicio') ."'' and
             							detbol.fecha <= ''" . $this->objParam->getParametro('fecha_fin') . "''");
 
         }
@@ -229,5 +229,13 @@ class ACTDetalleBoletosWeb extends ACTbase{
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
 
     }
+
+    function anularBilletePortal(){
+        $this->objFunc=$this->create('MODDetalleBoletosWeb');
+        $this->res=$this->objFunc->anularBilletePortal($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+
+
 }
 ?>

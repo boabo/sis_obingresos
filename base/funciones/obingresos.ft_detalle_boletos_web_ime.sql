@@ -43,6 +43,9 @@ $body$
     v_id_moneda				integer;
     v_existe_autorizacion		integer;
 
+	v_existe_billete		integer;
+    v_existe_billete_anulado	integer;
+
 
   BEGIN
 
@@ -377,6 +380,54 @@ $body$
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Cambios procesados');
 
+
+        --Devuelve la respuesta
+        return v_resp;
+
+      end;
+
+      /*********************************
+     #TRANSACCION:  'OBING_ANUBILLETE_INS'
+     #DESCRIPCION:	Anular Billetes desde el portal
+     #AUTOR:		Ismael.Valdivia
+     #FECHA:		10-09-2021 08:17:00
+    ***********************************/
+
+    elsif(p_transaccion='OBING_ANUBILLETE_INS')then
+
+      begin
+
+        select count(bolweb.billete) into v_existe_billete_anulado
+        from obingresos.tdetalle_boletos_web bolweb
+        where trim(bolweb.billete) = trim(v_parametros.billete)
+        and trim(bolweb.numero_autorizacion) = trim(v_parametros.numero_autorizacion)
+        and bolweb.estado_reg = 'inactivo';
+
+        if (v_existe_billete_anulado > 0) then
+        	raise exception 'El Boleto: %, con número de autorización: %, ya se encuentra Anulado.',trim(v_parametros.billete),trim(v_parametros.numero_autorizacion);
+        end if;
+
+
+        select count(bolweb.billete) into v_existe_billete
+        from obingresos.tdetalle_boletos_web bolweb
+        where trim(bolweb.billete) = trim(v_parametros.billete)
+        and trim(bolweb.numero_autorizacion) = trim(v_parametros.numero_autorizacion)
+        and bolweb.estado_reg = 'activo';
+
+		if (v_existe_billete = 0) then
+        	raise exception 'No existe el Boleto: %, con número de autorización: %, favor verifique.',trim(v_parametros.billete),trim(v_parametros.numero_autorizacion);
+        end if;
+
+      	update obingresos.tdetalle_boletos_web set
+      	estado_reg = 'inactivo',
+        fecha_mod = now(),
+        id_usuario_mod = p_id_usuario
+        where trim(billete) = trim(v_parametros.billete)
+        and trim(numero_autorizacion) = trim(v_parametros.numero_autorizacion);
+
+        --Definicion de la respuesta
+        v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Anulación Exitosa');
+        v_resp = pxp.f_agrega_clave(v_resp,'Respuesta','Se anuló el Boleto: '||trim(v_parametros.billete)::varchar||', con número de autorización: '||trim(v_parametros.numero_autorizacion)||' correctamente.');
 
         --Devuelve la respuesta
         return v_resp;

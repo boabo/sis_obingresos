@@ -321,5 +321,25 @@ class  MODDetalleBoletosWeb extends MODbase{
         return $this->respuesta;
     }
 
+    /*Servicio para anular el billete de detalleBoletosWeb*/
+    function anularBilletePortal(){
+
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_detalle_boletos_web_ime';
+        $this->transaccion='OBING_ANUBILLETE_INS';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('billete','billete','varchar');
+        $this->setParametro('numero_autorizacion','numero_autorizacion','varchar');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+        //var_dump("aqui llega data",$this->respuesta);exit;
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 }
 ?>
