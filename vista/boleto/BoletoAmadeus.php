@@ -3464,6 +3464,45 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.mostrarComponente(this.Cmp.numero_tarjeta);
                           this.mostrarComponente(this.Cmp.codigo_tarjeta);
 
+                          /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
+                          la primera forma de pago (Ismael Valdivia 16/09/2021)*/
+                          this.Cmp.numero_tarjeta.on('change',function(field,newValue,oldValue){
+                            if (this.Cmp.numero_tarjeta2.getValue() == this.Cmp.numero_tarjeta.getValue()) {
+
+                               if (this.Cmp.codigo_tarjeta2.getValue() != '' && this.Cmp.codigo_tarjeta.getValue() != '') {
+                                  if (this.Cmp.codigo_tarjeta2.getValue() == this.Cmp.codigo_tarjeta.getValue()) {
+                                    Ext.Msg.show({
+                                     title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                     msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                     maxWidth : 400,
+                                     width: 380,
+                                     buttons: Ext.Msg.OK,
+                                     scope:this
+                                    });
+                                  }
+                               }
+                            }
+                          },this);
+
+                          this.Cmp.codigo_tarjeta.on('change',function(field,newValue,oldValue){
+                            if (this.Cmp.codigo_tarjeta2.getValue() == this.Cmp.codigo_tarjeta.getValue()) {
+                               if (this.Cmp.numero_tarjeta2.getValue() != '' && this.Cmp.numero_tarjeta.getValue() != '') {
+                                  if (this.Cmp.numero_tarjeta2.getValue() == this.Cmp.numero_tarjeta.getValue()) {
+                                    Ext.Msg.show({
+                                     title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                     msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                     maxWidth : 400,
+                                     width: 380,
+                                     buttons: Ext.Msg.OK,
+                                     scope:this
+                                    });
+                                  }
+                               }
+                            }
+                          },this);
+                          /*************************************************************************************************/
+
+
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                           this.mostrarComponente(this.Cmp.nro_cupon);
                           this.mostrarComponente(this.Cmp.nro_cuota);
@@ -3616,6 +3655,44 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.Cmp.id_auxiliar.reset();
                           this.mostrarComponente(this.Cmp.numero_tarjeta);
                           this.mostrarComponente(this.Cmp.codigo_tarjeta);
+
+                          /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
+                          la primera forma de pago (Ismael Valdivia 16/09/2021)*/
+                          this.Cmp.numero_tarjeta.on('change',function(field,newValue,oldValue){
+                            if (this.Cmp.numero_tarjeta2.getValue() == this.Cmp.numero_tarjeta.getValue()) {
+
+                               if (this.Cmp.codigo_tarjeta2.getValue() != '' && this.Cmp.codigo_tarjeta.getValue() != '') {
+                                  if (this.Cmp.codigo_tarjeta2.getValue() == this.Cmp.codigo_tarjeta.getValue()) {
+                                    Ext.Msg.show({
+                                     title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                     msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                     maxWidth : 400,
+                                     width: 380,
+                                     buttons: Ext.Msg.OK,
+                                     scope:this
+                                    });
+                                  }
+                               }
+                            }
+                          },this);
+
+                          this.Cmp.codigo_tarjeta.on('change',function(field,newValue,oldValue){
+                            if (this.Cmp.codigo_tarjeta2.getValue() == this.Cmp.codigo_tarjeta.getValue()) {
+                               if (this.Cmp.numero_tarjeta2.getValue() != '' && this.Cmp.numero_tarjeta.getValue() != '') {
+                                  if (this.Cmp.numero_tarjeta2.getValue() == this.Cmp.numero_tarjeta.getValue()) {
+                                    Ext.Msg.show({
+                                     title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                     msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                     maxWidth : 400,
+                                     width: 380,
+                                     buttons: Ext.Msg.OK,
+                                     scope:this
+                                    });
+                                  }
+                               }
+                            }
+                          },this);
+                          /*************************************************************************************************/
 
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                           this.ocultarComponente(this.Cmp.nro_cupon);
@@ -3789,6 +3866,48 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
+
+                            /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
+                            la primera forma de pago (Ismael Valdivia 16/09/2021)*/
+                            this.Cmp.numero_tarjeta2.on('change',function(field,newValue,oldValue){
+                              if (this.Cmp.numero_tarjeta.getValue() == this.Cmp.numero_tarjeta2.getValue()) {
+
+                                 if (this.Cmp.codigo_tarjeta.getValue() != '' && this.Cmp.codigo_tarjeta2.getValue() != '') {
+                                    if (this.Cmp.codigo_tarjeta.getValue() == this.Cmp.codigo_tarjeta2.getValue()) {
+                                      Ext.Msg.show({
+                                       title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                       msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                       maxWidth : 400,
+                                       width: 380,
+                                       buttons: Ext.Msg.OK,
+                                       scope:this
+                                      });
+                                    }
+                                 }
+                              }
+                            },this);
+
+                            this.Cmp.codigo_tarjeta2.on('change',function(field,newValue,oldValue){
+                              if (this.Cmp.codigo_tarjeta.getValue() == this.Cmp.codigo_tarjeta2.getValue()) {
+                                 if (this.Cmp.numero_tarjeta.getValue() != '' && this.Cmp.numero_tarjeta2.getValue() != '') {
+                                    if (this.Cmp.numero_tarjeta.getValue() == this.Cmp.numero_tarjeta2.getValue()) {
+                                      Ext.Msg.show({
+                                       title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                       msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                       maxWidth : 400,
+                                       width: 380,
+                                       buttons: Ext.Msg.OK,
+                                       scope:this
+                                      });
+                                    }
+                                 }
+                              }
+                            },this);
+                            /*************************************************************************************************/
+
+
+
+
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
@@ -3970,6 +4089,45 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
+
+                            /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
+                            la primera forma de pago (Ismael Valdivia 16/09/2021)*/
+                            this.Cmp.numero_tarjeta2.on('change',function(field,newValue,oldValue){
+                              if (this.Cmp.numero_tarjeta.getValue() == this.Cmp.numero_tarjeta2.getValue()) {
+
+                                 if (this.Cmp.codigo_tarjeta.getValue() != '' && this.Cmp.codigo_tarjeta2.getValue() != '') {
+                                    if (this.Cmp.codigo_tarjeta.getValue() == this.Cmp.codigo_tarjeta2.getValue()) {
+                                      Ext.Msg.show({
+                                       title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                       msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                       maxWidth : 400,
+                                       width: 380,
+                                       buttons: Ext.Msg.OK,
+                                       scope:this
+                                      });
+                                    }
+                                 }
+                              }
+                            },this);
+
+                            this.Cmp.codigo_tarjeta2.on('change',function(field,newValue,oldValue){
+                              if (this.Cmp.codigo_tarjeta.getValue() == this.Cmp.codigo_tarjeta2.getValue()) {
+                                 if (this.Cmp.numero_tarjeta.getValue() != '' && this.Cmp.numero_tarjeta2.getValue() != '') {
+                                    if (this.Cmp.numero_tarjeta.getValue() == this.Cmp.numero_tarjeta2.getValue()) {
+                                      Ext.Msg.show({
+                                       title:'<h1 style="color:red"><center>AVISO</center></h1>',
+                                       msg: '<b>El número de tarjeta y el codigo de tarjeta no pueden ser iguales en las formas de pago</b>',
+                                       maxWidth : 400,
+                                       width: 380,
+                                       buttons: Ext.Msg.OK,
+                                       scope:this
+                                      });
+                                    }
+                                 }
+                              }
+                            },this);
+                            /*************************************************************************************************/
+
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.id_venta_2);

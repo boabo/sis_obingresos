@@ -733,8 +733,8 @@ BEGIN
                   id_usuario_fp_corregido,
                   id_auxiliar,
                   registro_mod,
-                  mco--,
-                  --modificado
+                  mco,
+                  modificado
                   ,id_venta
                 )
                 VALUES (
@@ -750,8 +750,8 @@ BEGIN
                   p_id_usuario,
                   v_parametros.id_auxiliar,
                   null,
-                  v_parametros.mco--,
-                  --'si'
+                  v_parametros.mco,
+                  'si'
                   ,v_parametros.id_venta
                 );
             end if;
@@ -800,6 +800,18 @@ BEGIN
                     raise exception 'Segunda forma de pago el numero del MCO debe tener 15 digitos obligatorios, 930000000012345';
                     end if;
 				 if (v_parametros.id_forma_pago2 is not null and v_parametros.id_forma_pago2 != 0) then
+
+                 	/*Aumentando control para no duplicar el nro de tarjeta y codigo de autorizacion*/
+                    if (trim(v_parametros.numero_tarjeta2) != '' and trim(v_parametros.codigo_tarjeta2) != '') then
+                    	if (trim(v_parametros.numero_tarjeta2) = trim(v_parametros.numero_tarjeta)) then
+                        	if (trim(v_parametros.codigo_tarjeta2) = trim(v_parametros.codigo_tarjeta)) then
+                        		raise exception 'El Nro de tarjeta: <b>%</b> y el codigo de autorización <b>%</b> no puede ser igual en ambas formas de pago',trim(v_parametros.numero_tarjeta2),trim(v_parametros.numero_tarjeta);
+                        	end if;
+                        end if;
+                    end if;
+                    /********************************************************************************/
+
+
            			IF(v_boleto.estado_informix = 'no_migra')THEN
 					--Aumentar para mandar la moneda
 
@@ -1565,6 +1577,18 @@ BEGIN
 
 
                 if (v_saldo_fp2 > 0) then
+
+                /*Aumentando control para no duplicar el nro de tarjeta y codigo de autorizacion*/
+                if (trim(v_parametros.numero_tarjeta2) != '' and trim(v_parametros.codigo_tarjeta2) != '') then
+                    if (trim(v_parametros.numero_tarjeta2) = trim(v_parametros.numero_tarjeta)) then
+                        if (trim(v_parametros.codigo_tarjeta2) = trim(v_parametros.codigo_tarjeta)) then
+                            raise exception 'El Nro de tarjeta: <b>%</b> y el codigo de autorización <b>%</b> no puede ser igual en ambas formas de pago',trim(v_parametros.numero_tarjeta2),trim(v_parametros.numero_tarjeta);
+                        end if;
+                    end if;
+                end if;
+                /********************************************************************************/
+
+
 
                 /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                 	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
