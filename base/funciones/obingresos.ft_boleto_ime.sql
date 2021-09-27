@@ -171,6 +171,10 @@ DECLARE
 
     --franklin.espinoza variable para puntos tipo Gobierno que no necesitan apertura de Caja
     v_tipo_punto			varchar;
+    --Ismael Valdivia Variables para control de caja
+    v_amadeus_recuperado	record;
+    v_cajero_desc			varchar;
+    v_cuenta_cajero			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -413,6 +417,45 @@ BEGIN
 	elsif(p_transaccion='OBING_BOLAMAVEN_UPD')then
 
         begin
+        	 /*Control del estado de caja Ismael Valdivia (27/09/2021)*/
+
+				select amade.* into v_amadeus_recuperado
+                from obingresos.tboleto_amadeus amade
+                where amade.id_boleto_amadeus = v_parametros.id_boleto_amadeus;
+
+
+
+
+                  if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_amadeus_recuperado.fecha_emision::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                                    acc.id_punto_venta = v_amadeus_recuperado.id_punto_venta)) then
+
+                	  select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+                      from segu.vusuario usu
+                      where usu.id_usuario = p_id_usuario;
+                      raise exception 'La caja del Cajero: <b>%</b>, con Cuenta Cajero: <b>%</b> ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto',v_cajero_desc, v_cuenta_cajero;
+                  end if;
+
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_amadeus_recuperado.fecha_emision::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                                    acc.id_punto_venta = v_amadeus_recuperado.id_punto_venta)) then
+
+                  	  select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+                      from segu.vusuario usu
+                      where usu.id_usuario = p_id_usuario;
+
+                      raise exception 'Antes de revisar un boleto debe realizar una apertura de caja. Cajero(a): %, Cuenta Usuario: %',v_cajero_desc, v_cuenta_cajero;
+                  end if;
+             /*********************************************************/
+
+
+
 
              /** control de saldo para medio de pago recibo anticipo si saldos son menores o iguales a 0 no permite el pago***/
 
@@ -1212,6 +1255,7 @@ BEGIN
 	elsif(p_transaccion='OBING_MODAMAFPGR_UPD')then
 
         begin
+
         /** control de saldo para medio de pago recibo anticipo si saldos son menores o iguales a 0 no permite el pago***/
 
               select codigo into v_mon_recibo from param.tmoneda where id_moneda = v_parametros.id_moneda;
@@ -1237,6 +1281,48 @@ BEGIN
             v_ids = string_to_array(v_parametros.ids_seleccionados,',');
             FOREACH v_id_boleto IN ARRAY v_ids
             LOOP
+
+            	/*Control del estado de caja Ismael Valdivia (27/09/2021)*/
+
+				select amade.* into v_amadeus_recuperado
+                from obingresos.tboleto_amadeus amade
+                where amade.id_boleto_amadeus = v_id_boleto;
+
+
+
+
+                  if (exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_amadeus_recuperado.fecha_emision::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                                    acc.id_punto_venta = v_amadeus_recuperado.id_punto_venta)) then
+
+                	  select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+                      from segu.vusuario usu
+                      where usu.id_usuario = p_id_usuario;
+                      raise exception 'La caja del Cajero: <b>%</b>, con Cuenta Cajero: <b>%</b> ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto',v_cajero_desc, v_cuenta_cajero;
+                  end if;
+
+                  if (not exists(	select 1
+                                  from vef.tapertura_cierre_caja acc
+                                  where acc.id_usuario_cajero = p_id_usuario and
+                                  	acc.fecha_apertura_cierre = v_amadeus_recuperado.fecha_emision::date and
+                                    acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                                    acc.id_punto_venta = v_amadeus_recuperado.id_punto_venta)) then
+
+                  	  select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+                      from segu.vusuario usu
+                      where usu.id_usuario = p_id_usuario;
+
+                      raise exception 'Antes de revisar un boleto debe realizar una apertura de caja. Cajero(a): <b>%</b>, Cuenta Usuario: <b>%</b>',v_cajero_desc, v_cuenta_cajero;
+                  end if;
+             /*********************************************************/
+
+
+
+
+
                if (pxp.f_existe_parametro(p_tabla,'tipo_comision') = TRUE) then
                	IF(v_parametros.tipo_comision = 'nacional')THEN
                 	UPDATE obingresos.tboleto_amadeus
@@ -3257,7 +3343,11 @@ BEGIN
                                   	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
                                     acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
                                     acc.id_punto_venta = v_boleto.id_punto_venta)) then
-                      raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
+
+                      select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+                      from segu.vusuario usu
+                      where usu.id_usuario = p_id_usuario;
+                      raise exception 'La caja del Cajero: <b>%</b>, con Cuenta: <b>%</b>, ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto',v_cajero_desc, v_cuenta_cajero;
                   end if;
 
                   if (not exists(	select 1
@@ -3266,7 +3356,11 @@ BEGIN
                                   	acc.fecha_apertura_cierre = v_boleto.fecha_emision::date and
                                     acc.estado_reg = 'activo' and acc.estado = 'abierto' and
                                     acc.id_punto_venta = v_boleto.id_punto_venta)) then
-                      raise exception 'Antes de revisar un boleto debe realizar una apertura de caja';
+                  	  select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+                      from segu.vusuario usu
+                      where usu.id_usuario = p_id_usuario;
+
+                      raise exception 'Antes de revisar un boleto debe realizar una apertura de caja para el Cajero: <b>%</b>, con Cuenta: <b>%</b>',v_cajero_desc, v_cuenta_cajero;
                   end if;
             end if;
 
