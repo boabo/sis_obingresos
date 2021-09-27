@@ -206,6 +206,10 @@ class ACTBoleto extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 
+    function modificarBoletoAmadeusVentaAdmin(){
+        throw new Exception('Esta Interfaz es de Consulta por tanto no se puede realizar modificaciones ni el cobro de Boleto.');
+    }
+
     function getBoletoServicio(){
         $this->objParam->defecto('ordenacion','id_boleto');
         $this->objParam->defecto('dir_ordenacion','desc');

@@ -39,6 +39,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.vista.BoletoAmadeusAdmin.superclass.constructor.call(this,request.arguments);
                 this.store.baseParams.pes_estado = 'no_revisados';
                 this.store.baseParams.todos = 'no';
+                this.store.baseParams.vista_admin = 'VistaAdmin';
                 this.init();
                 this.recuperarBase();
                 this.addButton('btnAnularBoleto',
@@ -1497,7 +1498,8 @@ header("content-type: text/javascript; charset=UTF-8");
             tam_pag:50,
             fwidth: '70%',
             title:'Boleto',
-            ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVenta',
+            //ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVenta',
+            ActSave:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVentaAdmin',
             //ActDel:'../../sis_obingresos/control/Boleto/eliminarBoleto',
             ActList:'../../sis_obingresos/control/Boleto/traerBoletosJson',
 
@@ -2615,7 +2617,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.loadingShow();
                 var d = record.data
                 Ext.Ajax.request({
-                    url:'../../sis_obingresos/control/Boleto/cambiarRevisionBoleto',
+                    url:'../../sis_obingresos/control/Boleto/modificarBoletoAmadeusVentaAdmin',
                     params:{ id_boleto_amadeus: d.id_boleto_amadeus},
                     success: this.successRevision,
                     failure: this.conexionFailure,
