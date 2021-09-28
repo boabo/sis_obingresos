@@ -4170,3 +4170,32 @@ ALTER TABLE obingresos.tdetalle_boletos_web
 ADD CONSTRAINT tdetalle_boletos_web_billete_key
 UNIQUE (billete, estado_reg, numero_autorizacion) NOT DEFERRABLE;
 /***********************************F-SCP-IRVA-OBINGRESOS-0-08/09/2021****************************************/
+
+/***********************************I-SCP-IRVA-OBINGRESOS-0-28/09/2021****************************************/
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN business_name VARCHAR(300);
+
+COMMENT ON COLUMN obingresos.tagencia.business_name
+IS 'Nuevo campo donde alamcenara la Razón Social desde el portal';
+
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN representante_legal VARCHAR(300);
+
+COMMENT ON COLUMN obingresos.tagencia.representante_legal
+IS 'Nuevo Campo donde Almacenara el representante legal desde el portal';
+
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN pasaporte_ci VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.tagencia.pasaporte_ci
+IS 'Nuevo campo donde se almacenara el carnet de identidad o algun documento de identificacion';
+
+
+ALTER TABLE obingresos.tagencia
+  ADD COLUMN expedido VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.tagencia.expedido
+IS 'Nuevo Campo donde se almacenara donde fue expedido el documento de identificacion dato nos llega desde el portal';
+/***********************************F-SCP-IRVA-OBINGRESOS-0-28/09/2021****************************************/

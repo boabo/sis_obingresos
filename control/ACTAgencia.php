@@ -6,7 +6,6 @@
  *@date 06-01-2016 21:30:12
  *@description Clase que recibe los parametros enviados por la vista para mandar a la capa de Modelo
  */
-
 class ACTAgencia extends ACTbase{
 
     function listarAgencia(){
@@ -15,7 +14,7 @@ class ACTAgencia extends ACTbase{
         $this->objParam->defecto('dir_ordenacion','asc');
 
         if($this->objParam->getParametro('pes_estado') != ''){
-            $this->objParam->addFiltro(" age.estado_reg = ''".$this->objParam->getParametro('pes_estado')."''");          
+            $this->objParam->addFiltro(" age.estado_reg = ''".$this->objParam->getParametro('pes_estado')."''");
         }
 
 
@@ -203,6 +202,45 @@ class ACTAgencia extends ACTbase{
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
     /****************************************************************************/
+
+    /*Servicio para Insertar Agencia Completamente del Portal Ismael Valdivia (19/08/2021)*/
+    function insertarAgenciaCompletaPortal(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->insertarAgenciaCompletaPortal($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /**************************************************************************************/
+
+    /*Servicios para update de las Agencias (Ismael Valdivia 22/09/2021)*/
+
+    /*Servicio para actualiza la entidad*/
+    function updateEntidadPortal(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->updateEntidadPortal($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /************************************/
+    /*Servicio para actualizar el contrato*/
+    function updateContratoPortal(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->updateContratoPortal($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /************************************/
+
+
+    /*Servicio para actualizar el contrato*/
+    function updateOficinaPortal(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->updateOficinaPortal($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /************************************/
+
+    /**************************************************************************************/
+
+
+
 
 }
 

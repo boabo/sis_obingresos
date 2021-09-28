@@ -405,5 +405,164 @@ class MODAgencia extends MODbase{
         return $this->respuesta;
     }
 
+    function insertarAgenciaCompletaPortal(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_agencia_ime';
+        $this->transaccion='OBING_INS_AGEYCONT';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+
+        /*Parametros de la Agencia para su registro*/
+          $this->setParametro('nombre','nombre','varchar');
+          $this->setParametro('ciudad','ciudad','varchar');
+          $this->setParametro('tipo_agencia','tipo_agencia','varchar');
+          $this->setParametro('tipo_persona','tipo_persona','varchar');
+          $this->setParametro('codigo','codigo','varchar');
+          $this->setParametro('codigo_noiata','codigo_noiata','varchar');
+          /*Incluir el Campo OfficeID*/
+          $this->setParametro('office_id','office_id','varchar');
+          /**************************/
+          /*Aumentnado este parametro para diferenciar corporativo publica o privada (Ismael Valdivia 04/08/2021)*/
+          $this->setParametro('tipo_institucion','tipo_institucion','varchar');
+          /**********************************************/
+          /*Parametro para validar si se controlara la boleta de Garantia y el monnto maximo de deuda*/
+          $this->setParametro('validar_boleta','validar_boleta','varchar');
+          $this->setParametro('monto_maximo_deuda','monto_maximo_deuda','numeric');
+          /***********************************************************************************************************/
+          /*Nuevos Campos que registra el Portal de Agencias*/
+          $this->setParametro('iata_status','iata_status','varchar');
+          $this->setParametro('osd','osd','varchar');
+          $this->setParametro('terciariza','terciariza','varchar');
+        /*********************************************************************************************************************/
+         /*Nuevos Campos para registrar datos de la Agencia Ismael Valdivia 28/09/2021*/
+         $this->setParametro('business_name','business_name','varchar');
+         $this->setParametro('representante_legal','representante_legal','varchar');
+         $this->setParametro('ci','ci','varchar');
+         $this->setParametro('expedido','expedido','varchar');
+         /****************************************************************************/
+
+        /*Parametros para Registrar el Contrato*/
+          $this->setParametro('id_funcionario','id_funcionario','integer');
+          $this->setParametro('numero_contrato','numero_contrato','varchar');
+          $this->setParametro('objeto','objeto','varchar');
+          $this->setParametro('fecha_firma','fecha_firma','date');
+          $this->setParametro('fecha_inicio','fecha_inicio','date');
+          $this->setParametro('fecha_fin','fecha_fin','date');
+          //$this->setParametro('tipo_agencia','tipo_agencia','varchar');
+          $this->setParametro('formas_pago','formas_pago','varchar');
+          $this->setParametro('moneda_restrictiva','moneda_restrictiva','varchar');
+
+          // $this->setParametro('cuenta_bancaria1','cuenta_bancaria1','varchar');
+          // $this->setParametro('entidad_bancaria1','entidad_bancaria1','varchar');
+          // $this->setParametro('nombre_cuenta_bancaria1','nombre_cuenta_bancaria1','varchar');
+          //
+          // $this->setParametro('cuenta_bancaria2','cuenta_bancaria2','varchar');
+          // $this->setParametro('entidad_bancaria2','entidad_bancaria2','varchar');
+          // $this->setParametro('nombre_cuenta_bancaria2','nombre_cuenta_bancaria2','varchar');
+        /***************************************/
+
+        /*Parametros para insertar en la tabla leg.tanexo y obingresos.tmovimiento_entidad*/
+          $this->setParametro('fecha_inicio_boleta','fecha_inicio_boleta','date');
+          $this->setParametro('fecha_fin_boleta','fecha_fin_boleta','date');
+          $this->setParametro('moneda_boleta','moneda_boleta','varchar');
+          $this->setParametro('monto_boleta_garantia','monto_boleta_garantia','varchar');
+          $this->setParametro('banco_boleta','banco_boleta','varchar');
+          $this->setParametro('nro_documento','nro_documento','varchar');
+          $this->setParametro('fecha_fin_uso','fecha_fin_uso','date');
+        /**********************************************************************************/
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    /*Servicios para update de las Agencias (Ismael Valdivia 22/09/2021)*/
+    /*Servicio para actualiza la entidad*/
+    function updateEntidadPortal(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_agencia_ime';
+        $this->transaccion='OBING_ENTIDAD_UPD';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('nombre','nombre','varchar');
+        $this->setParametro('ciudad','ciudad','varchar');
+        $this->setParametro('terciariza','terciariza','varchar');
+        $this->setParametro('tipo_agencia','tipo_agencia','varchar');
+        $this->setParametro('tipo_institucion','tipo_institucion','varchar');
+        //$this->setParametro('codigo_int','codigo_int','varchar');
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /***********************************/
+
+    /*Servicio para actualizar el contrato*/
+    function updateContratoPortal(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_agencia_ime';
+        $this->transaccion='OBING_CONTRA_UPD';
+        $this->tipo_procedimiento='IME';
+
+        //Data para el contrato
+        $this->setParametro('id_contrato','id_contrato','int4');
+        $this->setParametro('numero','numero','varchar');
+        $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('fecha_inicio','fecha_inicio','varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('fecha_firma','fecha_firma','varchar');
+        //Data para la agencia
+        $this->setParametro('business_name','business_name','varchar');
+        $this->setParametro('nit','nit','varchar');
+        $this->setParametro('representante_legal','representante_legal','varchar');
+        $this->setParametro('ci','ci','varchar');
+        $this->setParametro('expedido','expedido','varchar');
+        $this->setParametro('tipo_persona','tipo_persona','varchar');
+
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /*********************************/
+
+    /*Servicio para actualizar el contrato*/
+    function updateOficinaPortal(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_agencia_ime';
+        $this->transaccion='OBING_OFICINA_UPD';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_agencia','id_agencia','int4');
+        $this->setParametro('codigo_int','codigo_int','varchar');
+        $this->setParametro('codigo','codigo','varchar');
+        $this->setParametro('codigo_noiata','codigo_noiata','varchar');
+        $this->setParametro('iata_status','iata_status','varchar');
+        $this->setParametro('osd','osd','varchar');
+        $this->setParametro('credencial','credencial','varchar');
+        $this->setParametro('key_credencial','key_credencial','varchar');
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /*********************************/
+
 }
 ?>
