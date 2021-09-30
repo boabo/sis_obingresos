@@ -1168,6 +1168,64 @@ otrafora:function(data,config){
                 this.Cmp.t_c_doc_or.setValue(rec.data.tipo_cambio);
             }, this);
 
+        this.Cmp.estado.on('change', function(cmb, rec, i) {
+            if(rec==9){               
+              this.Cmp.pax.fieldLabel = 'PAX';
+              this.Cmp.pax.allowBlank = true;
+              this.Cmp.motivo.allowBlank = true;
+              this.Cmp.id_funcionario_emisor.allowBlank = true;
+              this.Cmp.valor_total.allowBlank = true;
+              this.Cmp.valor_total.setValue(0);
+              this.Cmp.id_boleto.allowBlank = true;
+              this.Cmp.id_boleto.setValue('');
+              this.Cmp.pais_doc_or.allowBlank = true;
+              this.Cmp.estacion_doc_or.allowBlank = true;
+              this.Cmp.fecha_doc_or.allowBlank = true;
+              this.Cmp.t_c_doc_or.allowBlank = true;
+              this.Cmp.moneda_doc_or.allowBlank = true;
+              this.Cmp.val_total_doc_or.allowBlank = true;
+              this.Cmp.val_conv_doc_or.allowBlank = true;
+              this.Cmp.pax.setDisabled(true);
+              this.Cmp.motivo.setDisabled(true);
+              this.Cmp.id_funcionario_emisor.setDisabled(true);
+              this.Cmp.valor_total.setDisabled(true);
+              this.Cmp.id_boleto.setDisabled(true);
+              this.Cmp.pais_doc_or.setDisabled(true);
+              this.Cmp.estacion_doc_or.setDisabled(true);
+              this.Cmp.fecha_doc_or.setDisabled(true);
+              this.Cmp.t_c_doc_or.setDisabled(true);
+              this.Cmp.moneda_doc_or.setDisabled(true);
+              this.Cmp.val_total_doc_or.setDisabled(true);
+              this.Cmp.val_conv_doc_or.setDisabled(true);              
+            }else{                
+              this.Cmp.pax.allowBlank = false;
+              this.Cmp.motivo.allowBlank = false;
+              this.Cmp.id_funcionario_emisor.allowBlank = false;
+              this.Cmp.valor_total.allowBlank = false;
+              this.Cmp.valor_total.setValue(null);
+              this.Cmp.id_boleto.allowBlank = false;
+              this.Cmp.id_boleto.setValue('930');
+              this.Cmp.pais_doc_or.allowBlank = false;
+              this.Cmp.estacion_doc_or.allowBlank = false;
+              this.Cmp.fecha_doc_or.allowBlank = false;
+              this.Cmp.t_c_doc_or.allowBlank = false;
+              this.Cmp.moneda_doc_or.allowBlank = false;
+              this.Cmp.val_total_doc_or.allowBlank = false;
+              this.Cmp.val_conv_doc_or.allowBlank = false;
+              this.Cmp.pax.setDisabled(false);
+              this.Cmp.motivo.setDisabled(false);
+              this.Cmp.id_funcionario_emisor.setDisabled(false);
+              this.Cmp.valor_total.setDisabled(false);
+              this.Cmp.id_boleto.setDisabled(false);
+              this.Cmp.pais_doc_or.setDisabled(false);
+              this.Cmp.estacion_doc_or.setDisabled(false);
+              this.Cmp.fecha_doc_or.setDisabled(false);
+              this.Cmp.t_c_doc_or.setDisabled(false);
+              this.Cmp.moneda_doc_or.setDisabled(false);
+              this.Cmp.val_total_doc_or.setDisabled(false);
+              this.Cmp.val_conv_doc_or.setDisabled(false);              
+            }
+        }, this)
     },
     carac:function(me){
         console.log('meeeee',me);

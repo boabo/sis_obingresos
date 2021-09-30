@@ -14,10 +14,9 @@ class ACTMcoS extends ACTbase{
         $this->objParam->defecto('dir_ordenacion','asc');
         //adicion a filtros
 
-
         $this->objParam->getParametro('id_punto_venta') != '' && $this->objParam->addFiltro(" imcos.id_punto_venta= ". $this->objParam->getParametro('id_punto_venta'));
 				// $this->objParam->getParametro('campo_fecha') != '' && $this->objParam->addFiltro(" imcos.fecha_reg = ''".$this->objParam->getParametro('campo_fecha')."''::date");
-				$this->objParam->getParametro('id_mco') != '' && $this->objParam->addFiltro(" imcos.id_mco = ".$this->objParam->getParametro('id_mco'));
+				$this->objParam->getParametro('nroMco') != '' && $this->objParam->addFiltro(" imcos.nro_mco = ''".$this->objParam->getParametro('nroMco')."''");
 				// $this->objParam->getParametro('usuario_filtro') != '' && $this->objParam->addFiltro(" imcos.id_usuario_reg = ".$_SESSION["_ID_USUARIO_OFUS"]);
 				$this->objParam->getParametro('fecha') != '' && $this->objParam->addFiltro(" imcos.fecha_emision = ''".$this->objParam->getParametro('fecha')."''::date");
 
