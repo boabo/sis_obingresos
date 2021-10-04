@@ -1136,7 +1136,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         anchor: '80%',
                         gwidth: 150,
                         minLength:15,
-                        maxLength:20
+                        maxLength:20,
+                        maskRe: /[0-9\s]+/i,
                     },
                     type:'TextField',
                     id_grupo:1,
@@ -1431,7 +1432,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
-                        maxLength:50
+                        maxLength:50,
+                        maskRe: /[0-9\s]+/i,
                     },
                     type:'TextField',
                     id_grupo:4,
