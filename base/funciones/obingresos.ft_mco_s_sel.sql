@@ -117,7 +117,7 @@ BEGIN
                           inner join vef.tsucursal vsu on vsu.id_sucursal = vpv.id_sucursal
                           inner join param.tlugar pl on pl.id_lugar = vsu.id_lugar
                           inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
-                          inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
+                          left join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
                           and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
 				        where   '||v_fil||' ';
 
@@ -167,7 +167,7 @@ BEGIN
                         inner join vef.tsucursal vsu on vsu.id_sucursal = vpv.id_sucursal
                         inner join param.tlugar pl on pl.id_lugar = vsu.id_lugar
                         inner join param.tlugar plf on plf.id_lugar = pl.id_lugar_fk
-                        inner join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
+                        left join orga.vfuncionario_cargo  fun on fun.id_funcionario = imcos.id_funcionario_emisor
                         and imcos.fecha_emision between fun.fecha_asignacion and coalesce(fun.fecha_finalizacion, now())
 					    where '||v_fil||' ';
 

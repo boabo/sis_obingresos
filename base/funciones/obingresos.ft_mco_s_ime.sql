@@ -75,11 +75,17 @@ BEGIN
              v_rec_periodo = param.f_get_periodo_gestion(v_parametros.fecha_emision);
              v_tmp_resp = conta.f_revisa_periodo_compra_venta(p_id_usuario, v_depto.id_depto_destino, v_rec_periodo.po_id_periodo);
 
-			if ((char_length(regexp_replace(v_parametros.motivo, '[^a-zA-Z0-9]+', '','g'))) = 0) then
-					raise 'El campo motivo no debe estar vacio';
-            elsif ((char_length(regexp_replace(v_parametros.pax, '[^a-zA-Z0-9]+', '','g'))) = 0)then
-					raise 'El campo pax no debe estar vacio';
-			end if;
+            if v_parametros.estado != 9 then
+                if ((char_length(regexp_replace(v_parametros.motivo, '[^a-zA-Z0-9]+', '','g'))) = 0) then
+                        raise 'El campo motivo no debe estar vacio';
+                elsif ((char_length(regexp_replace(v_parametros.pax, '[^a-zA-Z0-9]+', '','g'))) = 0)then
+                        raise 'El campo pax no debe estar vacio';
+                end if;
+            end if; 
+
+            if exists (select 1 from obingresos.tmco_s where trim(nro_mco) = trim(v_parametros.nro_mco))then
+           	    raise 'El Nro % de Mco ya se encuentra registrado', v_parametros.nro_mco;
+            end if;
 
           if v_parametros.fecha_emision::date <= now()::date then
                   --Sentencia de la insercion
