@@ -548,12 +548,9 @@ class MODAgencia extends MODbase{
 
         $this->setParametro('id_agencia','id_agencia','int4');
         $this->setParametro('codigo_int','codigo_int','varchar');
-        $this->setParametro('codigo','codigo','varchar');
-        $this->setParametro('codigo_noiata','codigo_noiata','varchar');
+        $this->setParametro('codigo','codigo','varchar');        
         $this->setParametro('iata_status','iata_status','varchar');
         $this->setParametro('osd','osd','varchar');
-        $this->setParametro('credencial','credencial','varchar');
-        $this->setParametro('key_credencial','key_credencial','varchar');
 
         //Ejecuta la instrucciona
         $this->armarConsulta();
