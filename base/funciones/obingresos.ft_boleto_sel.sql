@@ -1010,7 +1010,7 @@ BEGIN
                 for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
 
                   --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
-                  if (v_record_json->>'ReferenciaSegmento')::varchar=v_segment_reference and v_record_json->>'tipo_emision' = 'R' then
+                  if (v_record_json->>'num_pax')::integer=v_posicion and (v_record_json->>'ReferenciaSegmento')::varchar=v_segment_reference and v_record_json->>'tipo_emision' = 'R' then
 
                       if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
                     	  continue;

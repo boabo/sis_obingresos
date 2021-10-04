@@ -593,6 +593,71 @@ $body$
 
       end;
 
+    /*********************************
+ 	#TRANSACCION:  'OBING_DOC_GEN_SEL'
+ 	#DESCRIPCION:	listado de documentos generados
+ 	#AUTOR:			franklin.espinoza
+ 	#FECHA:			30-09-2021 15:57:09
+	***********************************/
+
+	ELSEIF(p_transaccion='OBING_DOC_GEN_SEL')then
+
+    	begin
+
+           	--Sentencia de la consulta
+		  	v_consulta = 'select tcd.id_documento_generado,
+                                tcd.url url_documento,
+                                tcd.file_name nombre_documento,
+                                tcd.size,
+                                tcd.estado_reg,
+                                tcd.fecha_reg,
+                                tcd.fecha_generacion,
+                                vf.desc_funcionario2::varchar as usr_reg,
+                                tcd.fecha_ini,
+                                tcd.fecha_fin,
+                                tcd.format formato
+
+                        from obingresos.tdocumento_generado tcd
+
+                        inner join segu.tusuario usu1 on usu1.id_usuario = tcd.id_usuario_reg
+                        inner join orga.vfuncionario vf on vf.id_persona = usu1.id_persona
+
+                        where tcd.id_usuario_reg = '||p_id_usuario||' and tcd.estado_reg != ''inactivo'' and tcd.fecha_generacion::date = current_date and '||v_parametros.filtro;
+
+
+			v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+			raise notice 'v_consulta: %',v_consulta;
+            --Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
+    /*********************************
+ 	#TRANSACCION:  'OBING_DOC_GEN_CONT'
+ 	#DESCRIPCION:	Conteo de registros
+ 	#AUTOR:			franklin.espinoza
+ 	#FECHA:			30-09-2021 15:57:09
+	***********************************/
+
+	elsif(p_transaccion='OBING_DOC_GEN_CONT')then
+
+		begin
+			--Sentencia de la consulta de conteo de registros
+			v_consulta = 'select count(id_documento_generado)
+
+                        from obingresos.tdocumento_generado tcd
+
+                        inner join segu.tusuario usu1 on usu1.id_usuario = tcd.id_usuario_reg
+                        inner join orga.vfuncionario vf on vf.id_persona = usu1.id_persona
+
+                        where tcd.id_usuario_reg = '||p_id_usuario||' and tcd.estado_reg != ''inactivo'' and tcd.fecha_generacion::date = current_date and '||v_parametros.filtro;
+
+
+			--Devuelve la respuesta
+			return v_consulta;
+
+		end;
+
 	else
 
 		raise exception 'Transaccion inexistente';

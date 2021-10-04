@@ -124,6 +124,11 @@ header("content-type: text/javascript; charset=UTF-8");
             {name: 'TIGO', title: '<h1 style="text-align: center; color: #4682B4;"><i class="fa fa-file-o fa-2x" aria-hidden="true"></i>TIGO</h1>', grupo: 2, height: 1, width: 1}
         ],
 
+        onButtonAct:function(){
+            Phx.vista.DetallePagosAdministradora.superclass.onButtonAct.call(this);
+
+        },
+
         iniciarEventos: function(){
 
             this.fecha_fin.on('select', function (combo,rec,index) {
@@ -184,7 +189,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 config:{
                     labelSeparator:'',
                     inputType:'hidden',
-                    name: 'id_factura'
+                    name: 'PaymentKey'
                 },
                 type:'Field',
                 form:true
@@ -193,33 +198,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Fecha Factura",
-                    gwidth: 90,
-                    name: 'fecha_factura',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    format:'d/m/Y',
-                    disabled: true,
-                    style: 'color: blue; background-color: #00B167;',
-                    renderer: function (value, p, record){
-                        return value ? value.dateFormat('d/m/Y') : ''
-                    }
-                },
-                type:'DateField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
-            },
-
-            {
-                config:{
-                    fieldLabel: "Nro. Factura",
+                    fieldLabel: "Nombre Archivo",
                     gwidth: 130,
-                    name: 'nro_factura',
+                    name: 'NombreArchivo',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -231,7 +212,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },
                 type:'TextField',
-                filters:{pfiltro:'tfa.nro_factura',type:'string'},
+                //filters:{pfiltro:'tfa.nro_factura',type:'string'},
                 bottom_filter : true,
                 id_grupo:1,
                 grid:true,
@@ -240,9 +221,9 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Nro. Autorizacion",
-                    gwidth: 100,
-                    name: 'nro_autorizacion',
+                    fieldLabel: "Fecha/Hora Carga Archivo",
+                    gwidth: 180,
+                    name: 'FechaHoraCargaArchivo',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -261,34 +242,35 @@ header("content-type: text/javascript; charset=UTF-8");
                 form:false
             },
 
-            {
+            /*{
                 config:{
-                    fieldLabel: "Estado",
-                    gwidth: 100,
-                    name: 'estado',
+                    fieldLabel: "Fecha/Hora Carga Archivo",
+                    gwidth: 180,
+                    name: 'FechaHoraCargaArchivo',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
                     anchor:'100%',
+                    format: 'd/m/Y H:i',
                     disabled: true,
-                    style: 'color: blue; background-color: orange;',
+                    style: 'color: blue; background-color: #00B167;',
                     renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                        return String.format('<div style="color: #00B167; font-weight: bold;">{0}</div>', dateFormat('d/m/Y H:i A'));
                     }
                 },
-                type:'TextField',
+                type:'DateField',
                 //filters:{pfiltro:'tca.nombre',type:'string'},
                 //bottom_filter : true,
                 id_grupo:1,
                 grid:true,
-                form:false
-            },
+                form:true
+            },*/
 
             {
                 config:{
-                    fieldLabel: "NIT/CI",
-                    gwidth: 100,
-                    name: 'nit_ci_cli',
+                    fieldLabel: "Archivo Id",
+                    gwidth: 70,
+                    name: 'ArchivoId',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -307,11 +289,128 @@ header("content-type: text/javascript; charset=UTF-8");
                 form:true
             },
 
+
             {
                 config:{
-                    fieldLabel: "Razon Social",
-                    gwidth: 250,
-                    name: 'razon_social_cli',
+                    fieldLabel: "Codigo Establecimiento",
+                    gwidth: 130,
+                    name: 'EstablishmentCode',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Numero Terminal",
+                    gwidth: 100,
+                    name: 'TerminalNumber',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Numero Lote",
+                    gwidth: 100,
+                    name: 'LotNumber',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Numero Ticket",
+                    gwidth: 100,
+                    name: 'TicketNumber',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Fecha Pago",
+                    gwidth: 90,
+                    name: 'PaymentDate',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    format:'d/m/Y',
+                    disabled: true,
+                    style: 'color: blue; background-color: #00B167;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #00B167; font-weight: bold;">{0}</div>', value.dateFormat('d/m/Y'));
+                    }
+                },
+                type:'DateField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            /*{
+                config:{
+                    fieldLabel: "Fecha Pago",
+                    gwidth: 150,
+                    name: 'PaymentDate',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -319,11 +418,32 @@ header("content-type: text/javascript; charset=UTF-8");
                     disabled: false,
                     style: 'color: blue; background-color: #FF8F85;',
                     renderer: function (value, p, record){
-                        if(record.data.tipo_reg != 'summary') {
-                            return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
-                        }else{
-                            return String.format('<hr><div style="color: #FF8F85; font-weight: bold; font-size:15px; float:right;">{0}</div>', value);
-                        }
+                        //return String.format('<div style="color: #FF8F85; font-weight: bold; font-size:15px; float:right;">{0}</div>', value);
+                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },*/
+
+            {
+                config:{
+                    fieldLabel: "Hora Pago",
+                    gwidth: 70,
+                    name: 'PaymentHour',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: false,
+                    style: 'color: blue; background-color: #FF8F85;',
+                    renderer: function (value, p, record){
+                        //return String.format('<hr><div style="color: #FF8F85; font-weight: bold; font-size:15px; float:right;">{0}</div>', value);
+                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
                     }
                 },
                 type:'TextField',
@@ -336,9 +456,33 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Importe Total",
+                    fieldLabel: "Numero Tarjeta",
+                    gwidth: 120,
+                    name: 'CreditCardNumber',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: false,
+                    style: 'color: blue; background-color: #FF8F85;',
+                    renderer: function (value, p, record){
+                        //return String.format('<hr><div style="color: #FF8F85; font-weight: bold; font-size:15px; float:right;">{0}</div>', value);
+                        return String.format('<div style="color: #FF8F85; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            {
+                config:{
+                    fieldLabel: "Importe Pago",
                     gwidth: 90,
-                    name: 'importe_total_venta',
+                    name: 'PaymentAmmount',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -377,256 +521,32 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Import No Sujeto IVA",
+                    fieldLabel: "Moneda",
+                    gwidth: 70,
+                    name: 'Currency',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'tca.nombre',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:false
+            },
+
+            {
+                config:{
+                    fieldLabel: "Codigo Autorización",
                     gwidth: 120,
-                    name: 'importe_otros_no_suj_iva',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        } else{
-
-                            return  String.format('<hr><div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Exp. Excentos",
-                    gwidth: 110,
-                    name: 'exportacion_excentas',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        } else{
-
-                            return  String.format('<hr><div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Venta Tasa 0",
-                    gwidth: 107,
-                    name: 'ventas_tasa_cero',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        } else{
-
-                            return  String.format('<hr><div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-
-            {
-                config:{
-                    fieldLabel: "Descuento Suj. IVA",
-                    gwidth: 120,
-                    name: 'descuento_rebaja_suj_iva',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        } else{
-
-                            return  String.format('<hr><div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Importe Debito Fiscal",
-                    gwidth: 120,
-                    name: 'importe_debito_fiscal',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        } else{
-
-                            return  String.format('<hr><div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Excento",
-                    gwidth: 120,
-                    name: 'importe_exento',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record) {
-
-                        Number.prototype.formatDinero = function (c, d, t) {
-                            var n = this,
-                                c = isNaN(c = Math.abs(c)) ? 2 : c,
-                                d = d == undefined ? "." : d,
-                                t = t == undefined ? "," : t,
-                                s = n < 0 ? "-" : "",
-                                i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "",
-                                j = (j = i.length) > 3 ? j % 3 : 0;
-                            return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-                        };
-                        if(record.data.tipo_reg != 'summary'){
-
-                            return  String.format('<div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span >{0}</span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-                        } else{
-
-                            return  String.format('<hr><div style="color: #00B167; font-weight: bold; vertical-align:middle;text-align:right;"><span ><b>{0}</b></span></div>',(parseFloat(value)).formatDinero(2, ',', '.'));
-
-                        }
-                    }
-                },
-                type:'NumberField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Codigo Control",
-                    gwidth: 100,
-                    name: 'codigo_control',
+                    name: 'AuthorizationCode',
                     allowBlank:true,
                     maxLength:100,
                     minLength:1,
@@ -639,156 +559,33 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 type:'TextField',
                 //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
+                bottom_filter : true,
                 id_grupo:1,
                 grid:true,
                 form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Tipo Factura",
-                    gwidth: 100,
-                    name: 'tipo_factura',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Sistema Origen",
-                    gwidth: 100,
-                    name: 'sistema_origen',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Desc. Ruta",
-                    gwidth: 100,
-                    name: 'desc_ruta',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "Revision NIT",
-                    gwidth: 100,
-                    name: 'revision_nit',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: orange;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:false
-            },
-
-            {
-                config:{
-                    fieldLabel: "OTR",
-                    gwidth: 100,
-                    name: 'otr',
-                    allowBlank:true,
-                    maxLength:100,
-                    minLength:1,
-                    anchor:'100%',
-                    disabled: true,
-                    style: 'color: blue; background-color: #00B167;',
-                    renderer: function (value, p, record){
-                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
-                    }
-                },
-                type:'TextField',
-                //filters:{pfiltro:'tca.nombre',type:'string'},
-                //bottom_filter : true,
-                id_grupo:1,
-                grid:true,
-                form:true
             }
 
         ],
         title:'Listado Por Tipo Documento',
         ActList:'../../sis_obingresos/control/Reportes/getDetallePagosAdministradora',
-        id_store:'id_factura',
+        id_store:'PaymentKey',
         fields: [
-            {name:'id_factura'},
-            {name:'fecha_factura', type: 'date', dateFormat:'Y-m-d'},
-            {name:'nro_factura', type: 'string'},
-            {name:'nro_autorizacion', type: 'string'},
-            {name:'estado', type: 'string'},
-            {name:'nit_ci_cli', type: 'string'},
-            {name:'razon_social_cli', type: 'string'},
+            {name:'PaymentKey', type: 'numeric'},
 
-            {name:'importe_total_venta', type: 'numeric'},
-            {name:'importe_otros_no_suj_iva', type: 'numeric'},
-            {name:'exportacion_excentas', type: 'numeric'},
-            {name:'ventas_tasa_cero', type: 'numeric'},
-            {name:'descuento_rebaja_suj_iva', type: 'numeric'},
-            {name:'importe_debito_fiscal', type: 'numeric'},
-
-            {name:'codigo_control', type: 'string'},
-            {name:'tipo_factura', type: 'string'},
-            {name:'id_origen', type: 'numeric'},
-            {name:'sistema_origen', type: 'string'},
-            {name:'desc_ruta', type: 'string'},
-            {name:'revision_nit', type: 'string'},
-            {name:'importe_exento', type: 'numeric'},
-            {name:'otr', type: 'string'},
-            {name:'tipo_reg', type: 'string'}
+            {name:'Formato', type: 'string'},
+            {name:'NombreArchivo', type: 'string'},
+            {name:'FechaHoraCargaArchivo', type: 'string'/*, dateFormat: 'Y-m-d H:i:s.m'*/},
+            {name:'ArchivoId', type: 'string'},
+            {name:'EstablishmentCode', type: 'string'},
+            {name:'TerminalNumber', type: 'string'},
+            {name:'LotNumber', type: 'string'},
+            {name:'TicketNumber', type: 'string'},
+            {name:'PaymentDate', type: 'date'},
+            {name:'PaymentHour', type: 'string'},
+            {name:'CreditCardNumber', type: 'string'},
+            {name:'PaymentAmmount', type: 'numeric'},
+            {name:'Currency', type: 'string'},
+            {name:'AuthorizationCode', type: 'string'}
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',

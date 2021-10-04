@@ -214,7 +214,7 @@ BEGIN
                         'activo',
                         (v_record_json->>'CommssionAmount')::numeric,
                         'no',
-                        (v_record_json->>'From')::date,
+                        current_date,
                         NULL,
                         NULL,
                         p_id_usuario,

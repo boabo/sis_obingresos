@@ -136,11 +136,20 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.addButton('btnObs',{
                 grupo:[0,1,2],
-                text :'Cosulta Archivo Plano',
+                text :'Archivo Plano(ATC,LINKSER)',
                 iconCls : 'bchecklist',
                 disabled: false,
                 handler : this.consultaArchivoPlano,
                 tooltip : '<b>Archivo Plano</b><br/><b>Lista de pagos Administradora</b>'
+            });
+
+            this.addButton('btnReporte',{
+                grupo:[0,1,2],
+                text :'Archivo Generado',
+                iconCls : 'bexcel',
+                disabled: false,
+                handler : this.consultaArchivoGenerado,
+                tooltip : '<b>Archivo Generado</b><br/><b>Lista de Archivos Generados</b>'
             });
 
             this.init();
@@ -183,6 +192,25 @@ header("content-type: text/javascript; charset=UTF-8");
 
         },
 
+        consultaArchivoGenerado: function (){
+            console.log('consultaArchivoGenerado');
+            var record = {fecha_desde: this.Cmp.fecha_desde.getValue(), fecha_hasta: this.Cmp.fecha_hasta.getValue()};
+            if ( this.Cmp.fecha_desde.getValue() != '' && this.Cmp.fecha_hasta.getValue() ) {
+                var rec = {maestro: record};
+                Phx.CP.loadWindows('../../../sis_obingresos/vista/reporte/ListaDocumentoGenerado.php',
+                    'Documentos Generados (xls)',
+                    {
+                        width: 1200,
+                        height: 500
+                    },
+                    rec,
+                    this.idContenedor,
+                    'ListaDocumentoGenerado'
+                );
+            }
+
+        },
+
         tipo : 'reporte',
         clsSubmit : 'bprint',
         agregarArgsExtraSubmit: function() {
@@ -190,5 +218,17 @@ header("content-type: text/javascript; charset=UTF-8");
             this.argumentExtraSubmit.punto_venta = this.Cmp.id_punto_venta.getRawValue();
 
         },
+        successSave :function(resp){
+            Phx.CP.loadingHide();
+
+            Ext.Msg.show({
+                title: 'Información',
+                msg: '<b>Estimado Funcionario: ' + '\n' + ' El Reporte se esta Generando, despues de un momento consulte en la opción del menú <span style="color: red;">Archivo Generado</span>.......</b>',
+                buttons: Ext.Msg.OK,
+                width: 512,
+                icon: Ext.Msg.INFO
+            });
+
+        }
     })
 </script>

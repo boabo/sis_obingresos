@@ -35,7 +35,7 @@ class ACTReportes extends ACTbase{
             $this->res=$this->objFunc->generarCruceTarjetasBoletos($this->objParam);
 
             //obtener titulo de reporte
-            $titulo ='Cruce Tarjetas Boletos';
+            $titulo ='Cruce_Tarjetas_Boletos';
         }else{
             $this->objFunc=$this->create('MODReportes');
             $this->res=$this->objFunc->generarCruceTigoBoletos($this->objParam);
@@ -52,8 +52,37 @@ class ACTReportes extends ACTbase{
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $this->objParam->addParametro('datos',$this->datos);
         $this->objParam->addParametro('tipo',$tipo_rep);
-        $this->objParam->addParametro('fecha_desde',$this->objParam->getParametro('fecha_desde'));
-        $this->objParam->addParametro('fecha_hasta',$this->objParam->getParametro('fecha_hasta'));
+        $fecha_desde = $this->objParam->getParametro('fecha_desde');
+        $fecha_hasta = $this->objParam->getParametro('fecha_hasta');
+        $this->objParam->addParametro('fecha_desde', $fecha_desde);
+        $this->objParam->addParametro('fecha_hasta', $fecha_hasta);
+
+        //$date = explode('/',$fecha_desde);
+        /*set_time_limit(0);
+        ini_set('memory_limit','-1');*/
+
+        /********************************* BACKGROUND *********************************/
+        if(true) {
+            $NEW_LINE = "\r\n";
+
+            ignore_user_abort(true);
+
+            header('Connection: close' . $NEW_LINE);
+            header('Content-Encoding: none' . $NEW_LINE);
+            ob_start();
+
+            $this->mensajeExito = new Mensaje();
+            $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado ' . $nombreArchivo, 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+            $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+
+            $size = ob_get_length();
+            header('Content-Length: ' . $size, TRUE);
+            ob_end_flush();
+            ob_flush();
+            flush();
+            session_write_close();
+        }
+        /********************************* BACKGROUND *********************************/
 
         //Instancia la clase de excel
         if($tipo_rep == 'pago_atc'){
@@ -66,13 +95,68 @@ class ACTReportes extends ACTbase{
         }
 
         $this->objReporteFormato->imprimeDatos();
-        $this->objReporteFormato->generarReporte();
+        $url_file_xls = $this->objReporteFormato->generarReporte();
+
+        /********************************* BACKGROUND FILE *********************************/
+        if (true){
+            /** Convertir a megas **/
+            $file_size = filesize($url_file_xls);
+            $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+            $bytes = max($file_size, 0);
+            $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+            $pow = min($pow, count($units) - 1);
+
+
+            $file_size = round($bytes, 2) . ' ' . $units[$pow];
+            /** Convertir a megas **/
+
+            $url_absolute = $url_file_xls;
+
+            $cone = new conexion();
+            $link = $cone->conectarpdo();
+
+            /*$sql = "UPDATE  obingresos.tdocumento_generado SET
+                      estado_reg = 'OLD'
+                    WHERE format = 'xls' and estado_reg != 'inactivo'" ;
+
+            $stmt = $link->prepare($sql);
+            $stmt->execute();*/
+
+            $sql = "INSERT INTO obingresos.tdocumento_generado(id_usuario_reg, url, size, fecha_generacion, file_name, format, estado_reg, fecha_ini, fecha_fin) VALUES (".$_SESSION["ss_id_usuario"]."::integer, '".$url_absolute."', '".$file_size."', now(), '".$nombreArchivo."', 'xls', 'NEW', '".$fecha_desde."'::date, '".$fecha_hasta."'::date) ";
+            $stmt = $link->prepare($sql);
+            $stmt->execute();
+
+            /**enviar alert al usuario para indicar que el reporte ha sido generado**/
+            $evento = "enviarMensajeUsuario";
+
+            //mandamos datos al websocket
+            $data = array(
+                "mensaje" => 'Estimado Funcionario, su Reporte ya ha sido generado: '.$nombreArchivo,
+                "tipo_mensaje" => 'alert',
+                "titulo" => 'Alerta Reporte',
+                "id_usuario" => $_SESSION["ss_id_usuario"],
+                "destino" => 'Unico',
+                "evento" => $evento,
+                "url" => 'url_prueba'
+            );
+
+            $send = array(
+                "tipo" => "enviarMensajeUsuario",
+                "data" => $data
+            );
+
+            $usuarios_socket = $this->dispararEventoWS($send);
+
+            $usuarios_socket =json_decode($usuarios_socket, true);
+            /**enviar alert al usuario para indicar que el reporte ha sido generado**/
+
+        }
+        /********************************* BACKGROUND FILE *********************************/
 
         $this->mensajeExito=new Mensaje();
-        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado',
-            'Se generó con éxito el reporte: '.$nombreArchivo,'control');
+        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado','Se generó con éxito el reporte: '.$nombreArchivo,'control');
         $this->mensajeExito->setArchivoGenerado($nombreArchivo);
-
         $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
     }
 
@@ -239,17 +323,18 @@ class ACTReportes extends ACTbase{
 
 
     /**{developer:franklin.espinoza, date:12/03/2021, description: Detalle Pagos realizados por la Administradora}**/
-    function  getDetallePagosAdministradora(){
+    function  getDetallePagosAdministradora(){ //var_dump('campos', $this->objParam);exit;
 
         //$tipo_administrador = $this->objParam->getParametro('tipo_administrador'); //var_dump('$tipo_administrador', $tipo_administrador);exit;
 
-        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+        /*if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
             $this->objReporte = new Reporte($this->objParam,$this);
             $this->res = $this->objReporte->generarReporteListado('MODReportes','getDetallePagosAdministradora');
-        }else {
-            $this->objFunc=$this->create('MODReportes');
-            $this->res=$this->objFunc->getDetallePagosAdministradora($this->objParam);
-        }
+        }else {*/
+        $this->objFunc=$this->create('MODReportes');
+        $this->res=$this->objFunc->getDetallePagosAdministradora($this->objParam);
+        //}
+        //var_dump('$this->res', $this->res);exit;
 
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
@@ -345,5 +430,20 @@ class ACTReportes extends ACTbase{
         $this->res=$this->objFunc->getFechasGeneradasOverComison($this->objParam);
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
+
+    /**{developer:franklin.espinoza, date:05/02/2021, description: Listado de los archivos generados PDF}**/
+    function listaDocumentoGenerado(){
+        $this->objParam->defecto('ordenacion','fecha_reg');
+        $this->objParam->defecto('dir_ordenacion','desc');
+
+        if ($this->objParam->getParametro('formato') != '') {
+            $this->objParam->addFiltro("tcd.format = ''" . $this->objParam->getParametro('formato')."''");
+        }
+
+        $this->objFunc = $this->create('MODReportes');
+        $this->res = $this->objFunc->listaDocumentoGenerado($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /**{developer:franklin.espinoza, date:05/02/2021, description: Listado de los archivos generados PDF}**/
 }
 ?>

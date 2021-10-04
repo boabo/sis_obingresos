@@ -1192,6 +1192,7 @@ class RReporteCruceLinkserXLS
         $this->docexcel->setActiveSheetIndex(0);
         $this->objWriter = PHPExcel_IOFactory::createWriter($this->docexcel, 'Excel5');
         $this->objWriter->save($this->url_archivo);
+        return $this->url_archivo;
     }
 
 }

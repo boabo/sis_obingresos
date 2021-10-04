@@ -131,31 +131,29 @@ class ACTCalculoOverComison extends ACTbase{
             }
         }
 
-        /*if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
+        //var_dump('$this->res', $this->res);exit;
+
+
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){ //var_dump('A');exit;
             $this->objReporte = new Reporte($this->objParam,$this);
             $this->res = $this->objReporte->generarReporteListado('MODCalculoOverComison','generarCalculoOverComison');
-        } else{
-            $this->objFunc=$this->create('MODCalculoOverComison');
+        }else{
+            $this->res = new Mensaje();
+            $this->res->setMensaje(
+                'EXITO',
+                'driver.php',
+                'Get Data Documents ACM ',
+                'Service Get List Documents ACM',
+                'control',
+                'obingresos.ft_reportes_sel',
+                'VEF_OVER_COM_SEL',
+                'SEL'
+            );
 
-            $this->res=$this->objFunc->generarCalculoOverComison($this->objParam);
-        }*/
-
-        //var_dump('$this->res', $this->res);exit;
-        $this->res = new Mensaje();
-        $this->res->setMensaje(
-            'EXITO',
-            'driver.php',
-            'Get Data Documents ACM ',
-            'Service Get List Documents ACM',
-            'control',
-            'obingresos.ft_reportes_sel',
-            'VEF_OVER_COM_SEL',
-            'SEL'
-        );
-
-        $this->res->setTotal(count($res->Data));
-        //$this->res->setDatos($res->Data);
-        $this->res->datos = $res->Data;
+            $this->res->setTotal(count($res->Data));
+            //$this->res->setDatos($res->Data);
+            $this->res->datos = $res->Data;
+        }
 
         ///var_dump('$this->res',$this->res);exit;
         //$this->mensaje->setDatos(array("listado"=>$res->GetListDocumentsACMResult));

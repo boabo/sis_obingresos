@@ -316,25 +316,38 @@ header("content-type: text/javascript; charset=UTF-8");
         },*/
 
         onExcluirAgencia: function (){
-
+            //console.log('campos ', this.fecha_ini.getValue(), this.fecha_fin.getValue(), this.store.data.items[0].data.status);
             if ( this.fecha_ini.getValue() != '' && this.fecha_fin.getValue() != '' ) {
                 let rec = {};
                 if (this.getSelectedData()) {
                     rec = this.getSelectedData();
                     rec.fecha = this.fecha_ini.getValue();
                 } else {
-                    rec = {selector: 'generico', fecha: this.fecha_ini.getValue()};
+                    rec = {selector: 'generico', fecha: this.fecha_ini.getValue(), fecha_fin: this.fecha_fin.getValue()};
                 }
-                console.log('selector', rec);
-                if (this.store.data.items[0].data.status == 'generado' || this.store.data.items[0].data.status == 'abonado' || this.store.data.items[0].data.status == 'enviado') {
-                    Ext.Msg.show({
-                        title: 'Información',
-                        msg: '<b>Estimado Usuario:<br>Ya no puede excluir agencias para este periodo, por que ya se genero sus correspondientes ACMs. para el periodo '+this.cmbFechas.getRawValue()+'.</b>',
-                        buttons: Ext.Msg.OK,
-                        width: 512,
-                        icon: Ext.Msg.WARNING
-                    });
-                }else {
+
+                if ( this.store.data.items[0] != undefined ) {
+                    if (this.store.data.items[0].data.status == 'generado' || this.store.data.items[0].data.status == 'abonado' || this.store.data.items[0].data.status == 'enviado') {
+                        Ext.Msg.show({
+                            title: 'Información',
+                            msg: '<b>Estimado Usuario:<br>Ya no puede excluir agencias para este periodo, por que ya se genero sus correspondientes ACMs. para el periodo ' + this.cmbFechas.getRawValue() + '.</b>',
+                            buttons: Ext.Msg.OK,
+                            width: 512,
+                            icon: Ext.Msg.WARNING
+                        });
+                    } else {
+                        Phx.CP.loadWindows('../../../sis_obingresos/vista/calculo_over_comison/ExcluirAgencia.php',
+                            'Agencias Excluidas',
+                            {
+                                width: 900,
+                                height: 600
+                            },
+                            rec,
+                            this.idContenedor,
+                            'ExcluirAgencia'
+                        );
+                    }
+                }else{
                     Phx.CP.loadWindows('../../../sis_obingresos/vista/calculo_over_comison/ExcluirAgencia.php',
                         'Agencias Excluidas',
                         {

@@ -207,6 +207,7 @@ Phx.vista.ExcluirAgencia=Ext.extend(Phx.gridInterfaz,{
         {
             config: {
                 name: 'iataCode',
+                msgTarget:'side',
                 fieldLabel: 'Codigo Iata',
                 allowBlank: false,
                 disabled: false,
@@ -272,6 +273,7 @@ Phx.vista.ExcluirAgencia=Ext.extend(Phx.gridInterfaz,{
         {
             config: {
                 name: 'officeId',
+                msgTarget:'side',
                 fieldLabel: 'Office ID',
                 allowBlank: false,
                 disabled: false,
@@ -420,7 +422,7 @@ Phx.vista.ExcluirAgencia=Ext.extend(Phx.gridInterfaz,{
     bdel:true,
     bsave:false,
     bedit:true,
-    iniciarEventos : function() {
+    iniciarEventos : function() { console.log('this.maestro', this.maestro);
         //inicio de eventos
         this.gestion.on('select', function (combo,rec,index) {
             //this.periodo.store.baseParams.id_gestion = this.gestion.getValue();
@@ -453,7 +455,6 @@ Phx.vista.ExcluirAgencia=Ext.extend(Phx.gridInterfaz,{
             this.load({params:{start:0, limit:50}});
         },this);
 
-
     },
 
     preparaMenu:function()
@@ -464,20 +465,17 @@ Phx.vista.ExcluirAgencia=Ext.extend(Phx.gridInterfaz,{
 
     liberaMenu:function()
     {
-        //this.getBoton('btnCostos').disable();
         Phx.vista.ExcluirAgencia.superclass.liberaMenu.call(this);
     },
 
     onButtonEdit : function () {
-        //this.ocultarComponente(this.Cmp.id_escala_salarial);
-        //this.ocultarComponente(this.Cmp.id_tipo_contrato);
-
         Phx.vista.ExcluirAgencia.superclass.onButtonEdit.call(this);
     },
     onButtonNew : function () {
-        //this.mostrarComponente(this.Cmp.id_escala_salarial);
-        //this.mostrarComponente(this.Cmp.id_tipo_contrato);
         Phx.vista.ExcluirAgencia.superclass.onButtonNew.call(this);
+        this.Cmp.f_ini.setValue(this.maestro.fecha);
+        this.Cmp.f_fin.setValue(this.maestro.fecha_fin);
+        this.Cmp.estado.setValue('A');
     }
 });
 </script>

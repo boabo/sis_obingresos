@@ -114,10 +114,16 @@ class MODReportes extends MODbase{
             $cone = new conexion();
             $link = $cone->conectarpdo();
             /** Office ID Lugar **/
-            $sql = "select tpv.nombre, tpv.office_id, tpv.codigo, tlug.nombre as lugar
+            /*$sql = "select tpv.nombre, tpv.office_id, tpv.codigo, tlug.nombre as lugar
                     from vef.tpunto_venta tpv 
                     inner join vef.tsucursal tsu on tsu.id_sucursal = tpv.id_sucursal
                     inner join param.tlugar tlug on tlug.id_lugar = tsu.id_lugar
+                    where tpv.estado_reg = 'activo'
+                    order by lugar
+                    ";*/
+
+            $sql = "select tpv.name_pv nombre, tpv.office_id, tpv.iata_code codigo, tpv.city_name as lugar
+                    from vef.tstage_punto_venta tpv 
                     where tpv.estado_reg = 'activo' /*and tpv.office_id is not null*/
                     order by lugar
                     ";
@@ -125,12 +131,13 @@ class MODReportes extends MODbase{
             $consulta = $link->query($sql);
             $consulta->execute();
             $office_ids = $consulta->fetchAll(PDO::FETCH_ASSOC);
+            //var_dump('$office_ids',$office_ids);exit;
             /** Office ID Lugar **/
 
             /** Establecimiento Punto Venta**/
-            $sql = "SELECT 	tep.codigo_estable, (case when tpv.nombre is null then tep.nombre_estable else tpv.nombre end) nombre_estable, tep.tipo_estable
+            $sql = "SELECT 	tep.codigo_estable, /*(case when tpv.nombre is not null then tpv.nombre else */tep.nombre_estable /*end) nombre_estable*/, tep.tipo_estable
                     FROM obingresos.testablecimiento_punto_venta tep
-                    left join vef.tpunto_venta tpv on tpv.id_punto_venta = tep.id_punto_venta
+                    --left join vef.tpunto_venta tpv on tpv.id_punto_venta = tep.id_punto_venta
                     ";
 
             $consulta = $link->query($sql);
@@ -144,10 +151,17 @@ class MODReportes extends MODbase{
 
             /** Establecimiento Punto Venta**/
             while ($row = mssql_fetch_array($query, MSSQL_ASSOC)){
-                //var_dump('$record', $row);exit;
+                //var_dump('$row', $row);
                 $record = json_decode(json_encode($row));
-
-                if($row['Iatacode']!=null) {
+                //var_dump('$record', $record);exit;
+                if( $row['OIDIssue'] != null ) {
+                    /*$punto_index = array_search($row['Iatacode'], $this->array_column($datos->datos, 'codigo'));
+                    $record->NameOffice = $datos->datos[$punto_index]["nombre"];
+                    $record->NamePlace = $datos->datos[$punto_index]["lugar"];*/
+                    $punto_index = array_search($row['OIDIssue'], $this->array_column($office_ids, 'office_id'));
+                    $record->NameOffice = $office_ids[$punto_index]["nombre"];
+                    $record->NamePlace = $office_ids[$punto_index]["lugar"];
+                }else if ( $row['Iatacode'] != null ) {
                     /*$punto_index = array_search($row['Iatacode'], $this->array_column($datos->datos, 'codigo'));
                     $record->NameOffice = $datos->datos[$punto_index]["nombre"];
                     $record->NamePlace = $datos->datos[$punto_index]["lugar"];*/
@@ -156,7 +170,7 @@ class MODReportes extends MODbase{
                     $record->NamePlace = $office_ids[$punto_index]["lugar"];
                 }
 
-                if($row['EstablishmentCode']!=null) {
+                if( $row['EstablishmentCode'] != null ) {
                     if ( $fuente == 'pago_atc' ) {
                         $estable_index = array_search(ltrim($row['EstablishmentCode'], '0'), $this->array_column($list, 'codigo_estable'));
                     }else{
@@ -440,12 +454,24 @@ class MODReportes extends MODbase{
         $tipo_administrador = $this->objParam->getParametro('tipo_administrador');
         $fecha_desde = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));
         $fecha_hasta = implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_hasta'))));
+        $filter = $this->objParam->getParametro('bottom_filter_value');
 
         //variables para la conexion sql server.
         $conn = '';
         $param_conex = array();
         $conexion = '';
         $this->respuesta = new Mensaje();
+
+        $this->respuesta->setMensaje(
+            'EXITO',
+            'driver.php',
+            'Service Get Payment ATC, LINKSER',
+            'Service Get Payment ATC, LINKSER',
+            'modelo',
+            'obingresos.ft_reportes_sel',
+            'VEF_OVER_COM_SEL',
+            'SEL'
+        );
 
         if ($conn != '') {
             $conexion->closeSQL();
@@ -462,27 +488,21 @@ class MODReportes extends MODbase{
             $error = 'select_db';
             throw new Exception("select_db: La seleccion de la bd SQL Server ".$param_conex[1]." ha fallado.");
         }else {
-            var_dump('ANTES', $conn);exit;
-            //$query = @mssql_query("exec DBStage.dbo.spa_GetCruceTarjetas '$fecha_desde','$fecha_hasta','$office_id','$fuente';", $conn);
-            $query = @mssql_query("exec DBStage.dbo.spa_getAtcLinkserLoadedData '2560','$fecha_desde','$fecha_hasta','$tipo_administrador';", $conn);
 
-            var_dump('DESPUES');
-            //$query = @mssql_query(utf8_decode('select * from AuxBSPVersion'), $conn);
+            $filter = $filter  == null ? '' : $filter;
 
+            //var_dump('ANTES', $fecha_desde, $fecha_hasta, $tipo_administrador, $filter);exit;
+            $query = @mssql_query("exec DBStage.dbo.spa_getAtcLinkserLoadedData '','$fecha_desde','$fecha_hasta','$tipo_administrador';", $conn);
             $data = array();
-            //$row = mssql_fetch_array($query, MSSQL_ASSOC);
-            //var_dump('$row', $row);exit;
             while ( $row = mssql_fetch_array($query, MSSQL_ASSOC) ){
-                var_dump('entra fila', $row);exit;
                 $record = json_decode(json_encode($row));
                 $data[] = $record;
             }
-            var_dump('$data',$data);exit;
             $this->respuesta->datos = $data;
+            //var_dump('$data',$data);exit;
             mssql_free_result($query);
             $conexion->closeSQL();
-        } var_dump('sale',$this->respuesta);exit;
-
+        }
         //Devuelve la respuesta
         return $this->respuesta;
     }
@@ -722,6 +742,37 @@ class MODReportes extends MODbase{
 
         return $this->respuesta;
     }
+
+    /**{developer:franklin.espinoza, date:05/02/2021, description: Listado de los archivos generados PDF}**/
+    function listaDocumentoGenerado(){
+        $this->procedimiento='obingresos.ft_reportes_sel';
+        $this->transaccion='OBING_DOC_GEN_SEL';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+
+        $this->setCount(true);
+
+        $this->captura('id_documento_generado', 'integer');
+        $this->captura('url_documento', 'varchar');
+        $this->captura('nombre_documento', 'varchar');
+        $this->captura('size', 'varchar');
+
+        $this->captura('estado_reg', 'varchar');
+        $this->captura('fecha_reg', 'timestamp');
+        $this->captura('fecha_generacion', 'timestamp');
+        $this->captura('usr_reg', 'varchar');
+        $this->captura('fecha_ini', 'date');
+        $this->captura('fecha_fin', 'date');
+        $this->captura('formato', 'varchar');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo $this->consulta;exit;
+        $this->ejecutarConsulta();
+
+        return $this->respuesta;
+    }
+    /**{developer:franklin.espinoza, date:05/02/2021, description: Listado de los archivos generados PDF}**/
 
 }
 ?>
