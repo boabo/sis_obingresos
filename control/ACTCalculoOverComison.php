@@ -134,27 +134,37 @@ class ACTCalculoOverComison extends ACTbase{
         //var_dump('$this->res', $this->res);exit;
 
 
-        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){ //var_dump('A');exit;
-            $this->objReporte = new Reporte($this->objParam,$this);
-            $this->res = $this->objReporte->generarReporteListado('MODCalculoOverComison','generarCalculoOverComison');
-        }else{
-            $this->res = new Mensaje();
+        $this->res = new Mensaje();
+        $this->res->setMensaje(
+            'EXITO',
+            'driver.php',
+            'Get Data Documents ACM ',
+            'Service Get List Documents ACM',
+            'control',
+            'obingresos.ft_reportes_sel',
+            'VEF_OVER_COM_SEL',
+            'SEL'
+        );
+        $this->res->setTotal(count($res->Data));
+        $this->res->datos = $res->Data;
+
+        if ($this->objParam->getParametro('tipoReporte')=='pdf_grid'){
             $this->res->setMensaje(
-                'EXITO',
+                'ERROR',
                 'driver.php',
-                'Get Data Documents ACM ',
+                'El reporte PDF no esta habilitado.',
                 'Service Get List Documents ACM',
                 'control',
                 'obingresos.ft_reportes_sel',
                 'VEF_OVER_COM_SEL',
                 'SEL'
             );
-
-            $this->res->setTotal(count($res->Data));
-            //$this->res->setDatos($res->Data);
-            $this->res->datos = $res->Data;
         }
 
+        if($this->objParam->getParametro('tipoReporte')=='excel_grid'){
+            $this->objReporte = new Reporte($this->objParam,$this);
+            $this->res = $this->objReporte->generarReporteDatos($this->res->getDatos(),$this->res->getTotal());
+        }
         ///var_dump('$this->res',$this->res);exit;
         //$this->mensaje->setDatos(array("listado"=>$res->GetListDocumentsACMResult));
         $this->res->imprimirRespuesta($this->res->generarJson());

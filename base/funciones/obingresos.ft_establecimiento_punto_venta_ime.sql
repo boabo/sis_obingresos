@@ -60,7 +60,8 @@ BEGIN
             tipo_estable,
             id_stage_pv,
             id_lugar,
-            direccion_estable
+            direccion_estable,
+            comercio
           	) values(
 			'activo',
 			v_parametros.codigo_estable,
@@ -75,7 +76,8 @@ BEGIN
 			v_parametros.tipo_estable,
             v_parametros.id_stage_pv,
             v_parametros.id_lugar,
-            v_parametros.direccion_estable
+            v_parametros.direccion_estable,
+            v_parametros.comercio
 			)RETURNING id_establecimiento_punto_venta into v_id_establecimiento_punto_venta;
 
 			--Definicion de la respuesta
@@ -109,7 +111,8 @@ BEGIN
             tipo_estable = v_parametros.tipo_estable,
             id_stage_pv = v_parametros.id_stage_pv,
             id_lugar = v_parametros.id_lugar,
-            direccion_estable = v_parametros.direccion_estable
+            direccion_estable = v_parametros.direccion_estable,
+            comercio = v_parametros.comercio
 			where id_establecimiento_punto_venta=v_parametros.id_establecimiento_punto_venta;
 
 			--Definicion de la respuesta

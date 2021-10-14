@@ -281,6 +281,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 handler : this.onGenerarFileBSP
             });
 
+            this.addButton('btnReporteFileBSP', {
+                text : 'Rep. File BSP',
+                grupo: [0,1],
+                iconCls : 'bexcel',
+                disabled : false,
+                hidden : true,
+                handler : this.onReporteFileBSP
+            });
+
             this.addButton('btnCreditoPortal', {
                 text : 'Rep. Credito P. NO IATA',
                 grupo: [0,1],
@@ -307,6 +316,55 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.init();
 
+        },
+
+        onReporteFileBSP : function () {
+            //var data = this.getSelectedData();
+            var fechas = this.cmbFechas.getRawValue();
+            Phx.CP.loadingShow();
+            if (fechas == '') {
+
+                fecha_desde = this.fecha_ini.getValue();
+                dia =  fecha_desde.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_desde.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_desde.getFullYear();
+                let fecha_ini = dia + "/" + mes + "/" + anio;
+
+                fecha_hasta = this.fecha_fin.getValue();
+                dia =  fecha_hasta.getDate();
+                dia = dia < 10 ? "0"+dia : dia;
+                mes = fecha_hasta.getMonth() + 1;
+                mes = mes < 10 ? "0"+mes : mes;
+                anio = fecha_hasta.getFullYear();
+                let fecha_fin = dia + "/" + mes + "/" + anio;
+
+                let tipo = this.cmbTipo.getValue();
+
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/CalculoOverComison/reporteCalculoOverComison',
+                    params: {fecha_ini: fecha_ini, fecha_fin: fecha_fin, tipo: tipo, momento: 0},
+                    success: this.successExport,
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
+
+            }else{
+
+                var fechas = fechas.split('-');
+
+                Ext.Ajax.request({
+                    url: '../../sis_obingresos/control/CalculoOverComison/reporteCalculoOverComison',
+                    params: {fecha_ini: fechas[0].trim(), fecha_fin: fechas[1].trim(), tipo: 'IATA', momento: 0},
+                    success: this.successExport,
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
+
+            }
         },
 
         /*controlarEscape: function(e){ console.log('evento',e);
@@ -1331,6 +1389,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.getBoton('btnCreditoPortal').setVisible(false);
                         this.getBoton('btnAbonar').setVisible(false);
                         this.getBoton('btnRevertir').setVisible(false);
+                        this.getBoton('btnReporteFileBSP').setVisible(true);
                     } else {
                         this.getBoton('btnFileBSP').setVisible(false);
                         this.getBoton('btnCreditoPortal').setVisible(true);
@@ -1340,6 +1399,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         }else{
                             this.getBoton('btnRevertir').setVisible(true);
                         }
+                        this.getBoton('btnReporteFileBSP').setVisible(false);
                     }
                     this.getBoton('btnAbonar').setVisible(false);
                     this.store.baseParams.tipo = record.data.tipo;
