@@ -175,6 +175,7 @@ DECLARE
     v_amadeus_recuperado	record;
     v_cajero_desc			varchar;
     v_cuenta_cajero			varchar;
+    v_tolerancia_cobro		numeric;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -1415,7 +1416,6 @@ BEGIN
 				/************************************/
 
                     v_saldo_fp1 = v_saldo_fp1 - round(v_valor,3);
-
                      /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                     IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
                       select fp.codigo into v_codigo_tarjeta
@@ -1683,8 +1683,8 @@ BEGIN
                     	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,v_parametros.id_moneda2 );
                     end if;
 
-             		v_saldo_fp2 = v_saldo_fp2 - round (v_valor,3);
 
+             		v_saldo_fp2 = v_saldo_fp2 - round (v_valor,3);
 
                      /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                     IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
@@ -1873,8 +1873,10 @@ BEGIN
 
             END LOOP;
 
+            /*Aqui tolerancia de variable globlal (Ismael Valdivia 15/10/2021)*/
+			v_tolerancia_cobro = pxp.f_get_variable_global('tolerancia_cobro_amadeus');
             --if ( (round(v_saldo_fp1,2) - v_comision_total) > 0 or (round(v_saldo_fp2,2) - v_comision_total) > 0) then Auemntando tolerancia Ismael valdiva 12/10/2021
-            if ( (round(v_saldo_fp1,2) - v_comision_total) > 0.02 or (round(v_saldo_fp2,2) - v_comision_total) > 0.02) then
+			if ( (round(v_saldo_fp1,2) - v_comision_total) > v_tolerancia_cobro or (round(v_saldo_fp2,2) - v_comision_total) > v_tolerancia_cobro) then
             	raise exception 'El monto total de las formas de pago es superior al monto de los boletos seleccionados:%,%',v_saldo_fp1,v_saldo_fp2;
             end if;
 
