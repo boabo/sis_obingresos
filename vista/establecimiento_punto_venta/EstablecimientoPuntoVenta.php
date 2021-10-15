@@ -31,7 +31,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'Field',
                     form:true
                 },
-                {
+                /*{
                     config:{
                         name: 'comercio',
                         fieldLabel: 'Comercio',
@@ -42,8 +42,34 @@ header("content-type: text/javascript; charset=UTF-8");
                         msgTarget: 'side'
                     },
                     type:'TextField',
-                    filters:{pfiltro:'estpven.codigo_estable',type:'string'},
+                    filters:{pfiltro:'estpven.comercio',type:'string'},
                     bottom_filter:true,
+                    id_grupo:1,
+                    grid:true,
+                    form:true
+                },*/
+
+                {
+                    config:{
+                        name: 'comercio',
+                        fieldLabel: 'Comercio',
+                        editable: false,
+                        allowBlank: false,
+                        emptyText:'Comercio...',
+                        typeAhead: true,
+                        triggerAction: 'all',
+                        lazyRender:true,
+                        mode: 'local',
+                        anchor: '60%',
+                        gwidth: 150,
+                        store:['LINKSER','ATC'],
+                        msgTarget: 'side'
+                    },
+                    type:'ComboBox',
+                    filters:{
+                        type: 'list',
+                        options: ['LINKSER','ATC']
+                    },
                     id_grupo:1,
                     grid:true,
                     form:true
@@ -67,7 +93,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     type:'ComboBox',
                     filters:{
                         type: 'list',
-                        options: ['propia','externa'],
+                        options: ['propia','externa']
                     },
                     id_grupo:0,
                     grid:true,

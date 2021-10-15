@@ -262,17 +262,33 @@ class ACTReportes extends ACTbase{
         }
         curl_close($s);
         $res = json_decode($_out);
-        $this->objParam->addParametro('detalle_vuelo', $res->SabsaDetalleManifiestoResult);
+        //$res->SabsaDetalleManifiestoResult = null;
+        if (!empty($res->SabsaDetalleManifiestoResult)) {
+            $this->objParam->addParametro('detalle_vuelo', $res->SabsaDetalleManifiestoResult);
 
 
-        if($this->objParam->getParametro('tipoReporte')=='excel_grid' || $this->objParam->getParametro('tipoReporte')=='pdf_grid'){
-            $this->objReporte = new Reporte($this->objParam,$this);
-            $this->res = $this->objReporte->generarReporteListado('MODReportes','detalleVueloCalculoA7');
-        }else {
-            $this->objFunc=$this->create('MODReportes');
-            $this->res=$this->objFunc->detalleVueloCalculoA7($this->objParam);
+            if ($this->objParam->getParametro('tipoReporte') == 'excel_grid' || $this->objParam->getParametro('tipoReporte') == 'pdf_grid') {
+                $this->objReporte = new Reporte($this->objParam, $this);
+                $this->res = $this->objReporte->generarReporteListado('MODReportes', 'detalleVueloCalculoA7');
+            } else {
+                $this->objFunc = $this->create('MODReportes');
+                $this->res = $this->objFunc->detalleVueloCalculoA7($this->objParam);
+            }
+            $this->res->imprimirRespuesta($this->res->generarJson());
+        }else{
+            $this->mensajeFail=new Mensaje();
+            $this->mensajeFail->setMensaje(
+                'ERROR',
+                'driver.php',
+                '<br><span style="color: red; font-weight: bold;">Estimado Usuario:<br> El Servicio de consulta Detalle A7 tiene algunos inconvenientes comunicarse al numero (71721380).</span>',
+                '<br><span style="color: red; font-weight: bold;">Estimado Usuario:<br> El Servicio de consulta Detalle A7 tiene algunos inconvenientes comunicarse al numero (71721380).</span>',
+                'control',
+                'obingresos.ft_reportes_sel',
+                'VEF_OVER_COM_SEL',
+                'SEL');
+            $this->mensajeFail->setDatos(array('error' => true, 'mensaje'=>'<br><span style="color: red; font-weight: bold;">Estimado Usuario:<br> El Servicio de consulta Detalle A7 tiene algunos inconvenientes comunicarse al numero (71721380).</span>'));
+            $this->mensajeFail->imprimirRespuesta($this->mensajeFail->generarJson());
         }
-        $this->res->imprimirRespuesta($this->res->generarJson());
     }
     /**{developer:franklin.espinoza, date:22/12/2020, description: Detalle Vuelo Calculo A7}**/
 

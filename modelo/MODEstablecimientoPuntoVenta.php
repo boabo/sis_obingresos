@@ -67,6 +67,8 @@ class MODEstablecimientoPuntoVenta extends MODbase{
         $this->setParametro('id_lugar','id_lugar','integer');
         $this->setParametro('direccion_estable','direccion_estable','text');
 
+        $this->setParametro('comercio','comercio','varchar');
+
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -91,6 +93,8 @@ class MODEstablecimientoPuntoVenta extends MODbase{
         $this->setParametro('id_stage_pv','id_stage_pv','integer');
         $this->setParametro('id_lugar','id_lugar','integer');
         $this->setParametro('direccion_estable','direccion_estable','text');
+
+        $this->setParametro('comercio','comercio','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

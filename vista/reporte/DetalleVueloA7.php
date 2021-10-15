@@ -429,6 +429,32 @@ header("content-type: text/javascript; charset=UTF-8");
         bdel:false,
         bsave:false,
         fwidth: '90%',
-        fheight: '95%'
+        fheight: '95%',
+
+        /*onButtonAct : function() {
+            Phx.vista.DetalleVueloA7.superclass.onButtonAct.call(this);
+            console.log('llega Detalle Vuelo A7 onButtonAct');
+        },
+        postReloadPage:function(data){
+            Phx.vista.DetalleVueloA7.superclass.postReloadPage.call(this);
+            console.log('llega Detalle Vuelo A7 postReloadPage');
+        },
+        onReloadPage: function(origen) {
+            Phx.vista.DetalleVueloA7.superclass.onReloadPage.call(this);
+            console.log('llega Detalle Vuelo A7 onReloadPage');
+        },
+        /*load: function(res, abs){
+            Phx.vista.DetalleVueloA7.superclass.load.call(this);
+            console.log('load',res, abs);
+            if(reg.ROOT.datos.error){
+                Ext.Msg.show({
+                    title: 'Viáticos',
+                    msg: reg.ROOT.datos.mensaje ,
+                    buttons: Ext.Msg.OK,
+                    width: 400,
+                    icon: Ext.Msg.INFO
+                });
+            }
+        }*/
     });
 </script>
