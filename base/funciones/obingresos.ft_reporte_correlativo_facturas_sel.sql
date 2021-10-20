@@ -949,7 +949,8 @@ $body$
                   FOR v_datos_nota IN ( SELECT  nota.estacion::VARCHAR,
                                                 nota.id_sucursal::INTEGER,
                                                 nota.nroaut::VARCHAR,
-                                                nota.nro_nota::INTEGER
+                                                nota.nro_nota::INTEGER,
+                                                nota.id_liquidacion::INTEGER
 
                                            FROM decr.tnota nota
 
@@ -962,22 +963,35 @@ $body$
                                             ) LOOP
 
 
-                                        IF EXISTS( SELECT 1
-                                                   FROM decr.tsucursal dsuc
-                                                   WHERE dsuc.id_sucursal = v_datos_nota.id_sucursal) THEN
+                                        IF (v_datos_nota.id_liquidacion = 1 ) THEN
 
-                                                 SELECT vsuc.id_sucursal
-                                                 INTO v_id_sucursal_variable
-                                                 FROM decr.tsucursal dsuc
-                                                 left join vef.tsucursal vsuc on vsuc.id_sucursal = dsuc.id_sucursal_vef
-                                                 WHERE dsuc.id_sucursal = v_datos_nota.id_sucursal;
+                                        	SELECT vsuc.id_sucursal
+                                            INTO v_id_sucursal_variable
+                                            FROM decr.tnota nota
+                                            left join decr.tsucursal dsuc on dsuc.estacion = nota.estacion
+                                            left join vef.tsucursal vsuc on vsuc.id_sucursal = dsuc.id_sucursal_vef
+                                            WHERE nota.estacion = v_codigo_lugar;
 
                                         ELSE
 
-                                        		 SELECT vsuc.id_sucursal
-                                                 INTO v_id_sucursal_variable
-                                                 FROM vef.tsucursal vsuc
-                                                 WHERE vsuc.id_sucursal = v_datos_nota.id_sucursal;
+                                            IF EXISTS( SELECT 1
+                                                       FROM decr.tsucursal dsuc
+                                                       WHERE dsuc.id_sucursal = v_datos_nota.id_sucursal) THEN
+
+                                                     SELECT vsuc.id_sucursal
+                                                     INTO v_id_sucursal_variable
+                                                     FROM decr.tsucursal dsuc
+                                                     left join vef.tsucursal vsuc on vsuc.id_sucursal = dsuc.id_sucursal_vef
+                                                     WHERE dsuc.id_sucursal = v_datos_nota.id_sucursal;
+
+                                            ELSE
+
+                                                     SELECT vsuc.id_sucursal
+                                                     INTO v_id_sucursal_variable
+                                                     FROM vef.tsucursal vsuc
+                                                     WHERE vsuc.id_sucursal = v_datos_nota.id_sucursal;
+
+                                            END IF;
 
                                         END IF;
 
