@@ -1327,11 +1327,13 @@ BEGIN
                if (pxp.f_existe_parametro(p_tabla,'tipo_comision') = TRUE) then
                	IF(v_parametros.tipo_comision = 'nacional')THEN
                 	UPDATE obingresos.tboleto_amadeus
-                	SET comision=neto*0.06
+                	SET comision=neto*0.06,
+                    	tipo_comision = v_parametros.tipo_comision
                     WHERE id_boleto_amadeus=v_id_boleto;
                 ELSIF(v_parametros.tipo_comision='internacional')THEN
                 	UPDATE obingresos.tboleto_amadeus
-                	SET comision=neto*0.06
+                	SET comision=neto*0.06,
+                    tipo_comision = v_parametros.tipo_comision
                     WHERE id_boleto_amadeus=v_id_boleto;
                 ELSE
                 	UPDATE obingresos.tboleto_amadeus
