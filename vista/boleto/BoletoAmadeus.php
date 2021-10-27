@@ -2574,7 +2574,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 if (this.timer_actualizar_automatico != undefined) {
                   Ext.TaskMgr.stop(this.timer_actualizar_automatico);
-                  console.log("Proceso Actualizar VG eliminado");
+                  console.log("Proceso Actualizar VG eliminado 30s");
                 }
 
           			Phx.CP.destroyPage(this.idContenedor);
@@ -2584,18 +2584,28 @@ header("content-type: text/javascript; charset=UTF-8");
 
             onButtonAct:function () {
               Phx.vista.BoletoAmadeus.superclass.onButtonAct.call(this);
-              this.iniciarTiempo();
+
+              if (this.timer_id != undefined) {
+                Ext.TaskMgr.stop(this.timer_id);
+                console.log("Proceso Automatico eliminado 30s");
+              }
+
               if (this.timer_actualizar != undefined) {
                 Ext.TaskMgr.stop(this.timer_actualizar);
+                console.log("Proceso Actualizar Automatico eliminado 1min");
               }
 
               if (this.timer_actualizar_automatico != undefined) {
                 Ext.TaskMgr.stop(this.timer_actualizar_automatico);
+                console.log("Proceso Actualizar VG eliminado");
               }
 
-              this.actualizar_automatico = 0;
-              console.log("Se Cancelo el proceso automatico de actualizar");
 
+              this.actualizar_automatico = 0;
+
+              console.log("Se Cancelo los procesos automaticos de actualizar");
+
+              this.iniciarTiempo();
 
 
             },
