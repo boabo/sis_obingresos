@@ -1666,6 +1666,19 @@ BEGIN
 
                 if (v_saldo_fp2 > 0) then
 
+                /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
+                	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+              			v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,null );
+                    else
+                    	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,v_parametros.id_moneda2 );
+                    end if;
+
+
+             		v_saldo_fp2 = v_saldo_fp2 - round (v_valor,3);
+
+				/*Aumentando la condicion para que sea a la inversa igual*/
+                if (v_saldo_fp1 = 0 and v_valor != 0) then
+
                 /*Aumentando control para no duplicar el nro de tarjeta y codigo de autorizacion*/
                 if (trim(v_parametros.numero_tarjeta2) != '' and trim(v_parametros.codigo_tarjeta2) != '') then
                     if (trim(v_parametros.numero_tarjeta2) = trim(v_parametros.numero_tarjeta)) then
@@ -1676,17 +1689,6 @@ BEGIN
                 end if;
                 /********************************************************************************/
 
-
-
-                /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
-                	IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
-              			v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,null );
-                    else
-                    	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp2,v_parametros.id_forma_pago2,v_parametros.id_moneda2 );
-                    end if;
-
-
-             		v_saldo_fp2 = v_saldo_fp2 - round (v_valor,3);
 
                      /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                     IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
@@ -1762,8 +1764,7 @@ BEGIN
                                                                 /*************/
                     END IF;
 
-					/*Aumentando la condicion para que sea a la inversa igual*/
-                    if (v_saldo_fp1 = 0) then
+
 					/*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                   IF v_valor <= 0 THEN
                     raise 'El importe de la segunda forma de pago, no puede ser menor o igual a cero';
