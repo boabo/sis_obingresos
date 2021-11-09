@@ -1416,7 +1416,7 @@ BEGIN
                 	v_valor = obingresos.f_monto_pagar_boleto_amadeus(v_id_boleto,v_saldo_fp1,v_parametros.id_forma_pago,v_parametros.id_moneda);
                 end if;
 				/************************************/
-
+				if (v_valor != 0) then
                     v_saldo_fp1 = v_saldo_fp1 - round(v_valor,3);
                      /*Aumentando condicion para los nuevos medios de pago 24/11/2020 Ismael Valdivia*/
                     IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
@@ -1629,6 +1629,7 @@ BEGIN
 
             	end if;
 
+				end if;
 
                  /*Aqui pondremos la condicion para ver si los medios de pago son distintos*/
                   select ama.forma_pago,

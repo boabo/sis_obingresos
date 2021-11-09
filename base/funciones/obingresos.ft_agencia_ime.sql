@@ -77,6 +77,8 @@ DECLARE
     v_existe_auxiliar_officeID_nuevo	integer;
     v_nombre_agencia_actual	varchar;
     v_codigo_no_iata		varchar;
+    v_existencia_auxiliar_nombre	integer;
+    v_activar_contrato		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_agencia_ime';
@@ -857,9 +859,7 @@ BEGIN
             	raise exception 'No se pudo registrar la agencia ya que el OfficeID: %, esta relacionada a la Agencia % favor verifique la información',trim(v_parametros.office_id),v_nombre_agencia;
             else
             	/*Control de combinacion en formulario*/
-                if (v_parametros.formas_pago = 'postpago' and v_parametros.validar_boleta = 'no') then
-                	raise exception 'Una Agencia con forma de pago postpago necesita registrar una boleta de garantia, y el dato de validar boleta se encuentra como %, favor verificarlo',v_parametros.validar_boleta;
-                end if;
+
 
 
                 if (v_parametros.tipo_institucion is not null and v_parametros.tipo_institucion != '' and v_parametros.tipo_institucion != 'Null' and v_parametros.tipo_institucion != 'NULL' AND v_parametros.tipo_institucion != 'null') then
@@ -867,6 +867,10 @@ BEGIN
                 else
                     v_tipo_institucion = 'privada';
                 end if;
+                --Comentnado esta parte a pedido de Ever ya que solo se necesita controlar el de validar boleta
+                /*if (v_parametros.formas_pago = 'postpago' and v_tipo_institucion = 'privada' and v_parametros.validar_boleta = 'no') then
+                	raise exception 'Una Agencia con forma de pago postpago necesita registrar una boleta de garantia, y el dato de validar boleta se encuentra como %, favor verificarlo',v_parametros.validar_boleta;
+                end if;*/
 
                  if (pxp.f_existe_parametro(p_tabla, 'codigo_noiata'))then
                  	if (v_parametros.codigo_noiata != '') then
@@ -877,6 +881,13 @@ BEGIN
                  else
                  	v_codigo_no_iata = v_parametros.office_id;
                  end if;
+
+
+                 /*Validacion para que la combinacion de las agencias prepagos llegue como validar boleta no*/
+                 if (trim(v_parametros.formas_pago) = 'prepago' and trim(v_parametros.validar_boleta) = 'si') then
+                 	raise exception 'La combinación % con validar boleta %, no existe, favor verificar los datos',v_parametros.formas_pago,v_parametros.validar_boleta;
+                 end if;
+                 /*******************************************************************************************/
 
                 --Sentencia de la insercion
                 insert into obingresos.tagencia(
@@ -973,6 +984,14 @@ BEGIN
                 select count(*) into v_existencia_auxiliar
                 from conta.tauxiliar auxi
                 where auxi.codigo_auxiliar = v_codigo_int;
+
+                select count(*) into v_existencia_auxiliar_nombre
+                from conta.tauxiliar auxi
+                where auxi.nombre_auxiliar = v_nombre_agencia;
+
+                if (v_existencia_auxiliar_nombre > 0) then
+                	raise exception 'El nombre %, ya esta registrado en los auxiliares',v_nombre_agencia;
+                end if;
 
                  if v_existencia_auxiliar = 0 then
                  --Sentencia de la insercion
