@@ -997,7 +997,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 direction: 'ASC'
                             },
                             totalProperty: 'total',
-                            fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
+                            fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo','codigo_fp'],
                             remoteSort: true,
                             baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
                         }),
@@ -1135,6 +1135,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         anchor: '80%',
                         gwidth: 150,
+                        enableKeyEvents: true,
                         minLength:15,
                         maxLength:20,
                         maskRe: /[0-9\s]+/i,
@@ -1375,7 +1376,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 direction: 'ASC'
                             },
                             totalProperty: 'total',
-                            fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo'],
+                            fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo','codigo_fp'],
                             remoteSort: true,
                             baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
                         }),
@@ -1433,6 +1434,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         anchor: '80%',
                         gwidth: 150,
                         maxLength:50,
+                        enableKeyEvents: true,
                         maskRe: /[0-9\s]+/i,
                     },
                     type:'TextField',
@@ -2316,6 +2318,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     if (record) {
                         this.Cmp.moneda_fp1.setValue(this.Cmp.id_moneda.lastSelectionText);
                         this.manejoComponentesFp1(record.data.id_forma_pago,record.data.codigo);
+                        this.codigo_medio_pago = record.data.codigo_fp;
+                        console.log("aqui para dif tarjeta",this.codigo_medio_pago);
                     } else {
                         this.manejoComponentesFp1(this.Cmp.id_forma_pago.getValue(),this.Cmp.codigo_forma_pago.getValue());
                     }
@@ -2429,6 +2433,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     if (record) {
                         this.Cmp.moneda_fp2.setValue(this.Cmp.id_moneda2.lastSelectionText);
                         this.manejoComponentesFp2(record.data.id_forma_pago,record.data.codigo);
+                        this.codigo_medio_pago_2 = record.data.codigo_fp;
+                        console.log("aqui para dif tarjeta2",this.codigo_medio_pago_2);
                     } else {
                         this.manejoComponentesFp2(this.Cmp.id_forma_pago2.getValue(),this.Cmp.codigo_forma_pago2.getValue());
                     }
@@ -3476,6 +3482,31 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.mostrarComponente(this.Cmp.numero_tarjeta);
                           this.mostrarComponente(this.Cmp.codigo_tarjeta);
 
+                          /*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
+                          this.Cmp.numero_tarjeta.on('keyup', function (cmp, e) {
+                              //inserta guiones en codigo de contorl
+                              var value = cmp.getValue(),
+                              tmp = '',
+                              tmp2 = '',
+                              sw = 0;
+
+                              if (this.codigo_medio_pago == 'AX') {
+                                var campoX = 'XXXXXXX';
+                              } else {
+                                var campoX = 'XXXXXXXX';
+                              }
+
+                              tmp = value.replace(/-/g, '');
+                              for (var i = 0; i < tmp.length; i++) {
+                                  tmp2 = tmp2 + tmp[i];
+                                  if ((i + 1) % 3 == 0 && tmp.length == 3) {
+                                      tmp2 = tmp2 + campoX;
+                                  }
+                              }
+                              cmp.setValue(tmp2.toUpperCase());
+                          }, this);
+                          /***************************************************************************/
+
                           /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
                           la primera forma de pago (Ismael Valdivia 16/09/2021)*/
                           this.Cmp.numero_tarjeta.on('change',function(field,newValue,oldValue){
@@ -3667,6 +3698,32 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.Cmp.id_auxiliar.reset();
                           this.mostrarComponente(this.Cmp.numero_tarjeta);
                           this.mostrarComponente(this.Cmp.codigo_tarjeta);
+
+
+                          /*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
+                          this.Cmp.numero_tarjeta.on('keyup', function (cmp, e) {
+                              //inserta guiones en codigo de contorl
+                              var value = cmp.getValue(),
+                              tmp = '',
+                              tmp2 = '',
+                              sw = 0;
+
+                              if (this.codigo_medio_pago == 'AX') {
+                                var campoX = 'XXXXXXX';
+                              } else {
+                                var campoX = 'XXXXXXXX';
+                              }
+
+                              tmp = value.replace(/-/g, '');
+                              for (var i = 0; i < tmp.length; i++) {
+                                  tmp2 = tmp2 + tmp[i];
+                                  if ((i + 1) % 4 == 0 && tmp.length == 4) {
+                                      tmp2 = tmp2 + campoX;
+                                  }
+                              }
+                              cmp.setValue(tmp2.toUpperCase());
+                          }, this);
+                          /***************************************************************************/
 
                           /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
                           la primera forma de pago (Ismael Valdivia 16/09/2021)*/
@@ -3878,6 +3935,31 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
+
+                            /*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
+                            this.Cmp.numero_tarjeta2.on('keyup', function (cmp, e) {
+                                //inserta guiones en codigo de contorl
+                                var value = cmp.getValue(),
+                                tmp = '',
+                                tmp2 = '',
+                                sw = 0;
+
+                                if (this.codigo_medio_pago_2 == 'AX') {
+                                  var campoX = 'XXXXXXX';
+                                } else {
+                                  var campoX = 'XXXXXXXX';
+                                }
+
+                                tmp = value.replace(/-/g, '');
+                                for (var i = 0; i < tmp.length; i++) {
+                                    tmp2 = tmp2 + tmp[i];
+                                    if ((i + 1) % 4 == 0 && tmp.length == 4) {
+                                        tmp2 = tmp2 + campoX;
+                                    }
+                                }
+                                cmp.setValue(tmp2.toUpperCase());
+                            }, this);
+                            /***************************************************************************/
 
                             /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
                             la primera forma de pago (Ismael Valdivia 16/09/2021)*/
@@ -4101,6 +4183,31 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.id_auxiliar2.reset();
                             this.mostrarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
+
+							/*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
+                            this.Cmp.numero_tarjeta2.on('keyup', function (cmp, e) {
+                                //inserta guiones en codigo de contorl
+                                var value = cmp.getValue(),
+                                tmp = '',
+                                tmp2 = '',
+                                sw = 0;
+
+                                if (this.codigo_medio_pago_2 == 'AX') {
+                                  var campoX = 'XXXXXXXXX';
+                                } else {
+                                  var campoX = 'XXXXXXXXXX';
+                                }
+
+                                tmp = value.replace(/-/g, '');
+                                for (var i = 0; i < tmp.length; i++) {
+                                    tmp2 = tmp2 + tmp[i];
+                                    if ((i + 1) % 3 == 0 && tmp.length == 3) {
+                                        tmp2 = tmp2 + campoX;
+                                    }
+                                }
+                                cmp.setValue(tmp2.toUpperCase());
+                            }, this);
+                            /***************************************************************************/
 
                             /*Aumentando control en Interfaz para que el numero de tarjeta y codigo tarjeta no sean el mismo a
                             la primera forma de pago (Ismael Valdivia 16/09/2021)*/
