@@ -67,6 +67,12 @@ DECLARE
     v_id_venta_origen		integer;
     v_usuario_mod			varchar;
 
+    v_estado_periodo		varchar;
+    v_fecha_ini				varchar;
+    v_fecha_fin 			varchar;
+
+    v_fecha_venta			varchar;
+
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_factura_no_utilizada_ime';
@@ -82,6 +88,33 @@ BEGIN
 	if(p_transaccion='OBING_FACMAN_INS')then
 
         begin
+
+        	/*Aumentando el control de periodo para registrar las facturas no utilizadas (Ismael Valdivia 12/11/2021)*/
+            select
+                           per.fecha_ini,
+                           per.fecha_fin,
+                           cp.estado
+                           into
+                           v_fecha_ini,
+                           v_fecha_fin,
+                           v_estado_periodo
+                    from param.tgestion ges
+                    inner join param.tperiodo per on per.id_gestion = ges.id_gestion
+                    inner join conta.tperiodo_compra_venta cp on cp.id_periodo = per.id_periodo
+                    where v_parametros.fecha between per.fecha_ini and per.fecha_fin
+                     and cp.id_depto = (select depo.id_depto
+                    from param.tdepto depo
+                    where depo.codigo = 'CON');
+                    /*********************************************************************/
+
+                    if (v_estado_periodo = 'cerrado') then
+                        raise exception 'No se puede Registrar la factura debido a que el periodo %, %, se encuentra cerrado',v_fecha_ini,v_fecha_fin;
+                    end if;
+
+            /****************************************************************************/
+
+
+
         	--Sentencia de la insercion
         	insert into obingresos.tfactura_no_utilizada(
             --id_lugar_pais,
@@ -576,6 +609,37 @@ BEGIN
             --ELIMINAR FATURAS QUE ESTAN EN TABLA VENTA
             WHILE (v_nro_factura <= v_nro_final)
               LOOP
+              		/*Aumentando para el control de periodo (Ismael Valdivia 12/11/2021)*/
+                    SELECT ven.fecha
+                    INTO v_fecha_venta
+                    FROM vef.tventa ven
+                    WHERE  ven.nro_factura =v_nro_factura
+                    AND ven.id_dosificacion = v_id_dosificacion
+                    AND ven.estado_reg = 'activo';
+
+                     select
+                           per.fecha_ini,
+                           per.fecha_fin,
+                           cp.estado
+                           into
+                           v_fecha_ini,
+                           v_fecha_fin,
+                           v_estado_periodo
+                    from param.tgestion ges
+                    inner join param.tperiodo per on per.id_gestion = ges.id_gestion
+                    inner join conta.tperiodo_compra_venta cp on cp.id_periodo = per.id_periodo
+                    where v_fecha_venta::date between per.fecha_ini and per.fecha_fin
+                     and cp.id_depto = (select depo.id_depto
+                    from param.tdepto depo
+                    where depo.codigo = 'CON');
+                    /*********************************************************************/
+
+                    if (v_estado_periodo = 'cerrado') then
+                        raise exception 'No se puede Eliminar la factura debido a que el periodo %, %, se encuentra cerrado',v_fecha_ini,v_fecha_fin;
+                    end if;
+              		/********************************************************************/
+
+
 
                     update vef.tventa  set
                      estado_reg = 'inactivo',
@@ -717,3 +781,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_factura_no_utilizada_ime (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;
