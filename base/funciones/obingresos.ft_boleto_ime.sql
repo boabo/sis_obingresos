@@ -176,6 +176,16 @@ DECLARE
     v_cajero_desc			varchar;
     v_cuenta_cajero			varchar;
     v_tolerancia_cobro		numeric;
+    --breydi.vasquez variable para emison de boletos con reserva
+    v_id_reserva_pnr		integer; 
+    v_ids_boletos			varchar; 
+    v_msg					varchar;
+    v_inspnr				boolean=true;    
+    v_id_pv_reserva			integer;
+    v_count_bol_ama			integer=0;
+    v_emitido				integer=0;
+    v_id_reserva			integer;
+    v_reg					    record;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -3959,6 +3969,445 @@ BEGIN
             return v_resp;
 
 		end;
+
+         /*********************************
+      #TRANSACCION:  'OBING_REGRPNR_INS'
+      #DESCRIPCION:	registro pnr reserva cobro boletos amadeus
+      #AUTOR:		bvp
+      #FECHA:		04-10-2021
+      ***********************************/
+      elsif(p_transaccion='OBING_REGRPNR_INS')then
+
+          begin
+          
+          if pxp.f_existe_parametro(p_tabla, 'consult_pnr') then
+	          if v_parametros.consult_pnr = 'true' then
+              	 v_inspnr = false;
+              end if;
+          end if;
+
+          -- control verifica si exite ya el pnr emitido 
+          select id_reserva_pnr into v_id_reserva
+          from obingresos.treserva_pnr 
+          where pnr_reserva = v_parametros.pnr and estado = 'emitido';
+
+          if v_id_reserva is not null then
+          	v_emitido = 1;
+          end if;
+          
+          v_boletos = '';
+          
+          for v_reg in (
+                     select id_boleto_amadeus, nro_boleto,fecha_emision, estado
+                      from obingresos.tboleto_amadeus 
+                      where localizador = v_parametros.pnr)                      
+          loop
+          	
+          	if v_reg.id_boleto_amadeus is not null then
+            	v_count_bol_ama = v_count_bol_ama + 1;
+            end if;
+            
+            if v_reg.estado = 'borrador' then
+	            v_boletos = v_boletos||' '||v_reg.nro_boleto||', ';
+            end if;
+            
+            v_fecha_emision = to_char(v_reg.fecha_emision::date, 'DD/MM/YYYY');
+          
+          end loop;
+          
+          
+       /*   select count(id_boleto_amadeus), fecha_emision 
+          into v_count_bol_ama,v_fecha_emision 
+          from obingresos.tboleto_amadeus 
+          where localizador = v_parametros.pnr
+          group by fecha_emision;*/
+          
+          if (v_id_reserva is not null and v_count_bol_ama > 0) then
+            if v_boletos != '' then
+            	v_boletos = substr(v_boletos, 1, char_length(v_boletos) -2);
+            	v_msg = 'El PNR '||v_parametros.pnr||'. De reserva ya fue emitido, en fecha '||v_fecha_emision||' favor actualice la grilla en la pesataña No Revisados y complete las formas de pago de los boletos: '||v_boletos;
+            else 
+	            v_msg = 'El PNR '||v_parametros.pnr||'. De reserva ya fue emitido, en fecha '||v_fecha_emision||' y ya fueron revisados los boletos con sus formas de pago';
+            end if;
+          else
+          	if v_inspnr then
+            	if not exists (select 1 from obingresos.treserva_pnr where pnr_reserva = v_parametros.pnr)then
+                                
+                 INSERT INTO
+                obingresos.treserva_pnr
+                  (
+                    id_usuario_reg,
+                    id_usuario_mod,
+                    fecha_reg,
+                    fecha_mod,
+                    estado_reg,
+                    id_usuario_ai,
+                    usuario_ai,
+                    pnr_reserva
+                  )
+                  VALUES (
+                    p_id_usuario,
+                    NULL,
+                    now(),
+                    NULL,
+                    'activo',
+                    v_parametros._id_usuario_ai,
+                    v_parametros._nombre_usuario_ai,
+                    v_parametros.pnr
+                      
+                 )RETURNING id_reserva_pnr into v_id_reserva_pnr;
+                else 
+                
+                	select id_reserva_pnr into v_id_reserva_pnr
+                    from obingresos.treserva_pnr 
+                    where pnr_reserva = v_parametros.pnr and estado = 'reservado';
+                end if;
+              end if;
+           end if;
+           
+        --Definicion de la respuesta
+        v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
+        v_resp = pxp.f_agrega_clave(v_resp,'id_reserva_pnr', v_id_reserva_pnr::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'msg', v_msg::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'emitido', v_emitido::varchar);
+
+        --Devuelve la respuesta
+        return v_resp;
+
+      end;
+	/*********************************
+ 	#TRANSACCION:  'OBING_UPEMIPNR_IME'
+ 	#DESCRIPCION:	actulizacion de  pnr de reserva emitido
+ 	#AUTOR:		breydi.vasquez
+ 	#FECHA:		09-11-2021
+	***********************************/
+
+	elsif(p_transaccion='OBING_UPEMIPNR_IME')then
+
+		begin
+        	
+        	update obingresos.treserva_pnr set
+            estado = 'emitido',
+            authorization_code = v_parametros.authorizationCode,
+            observacion = v_parametros.mensaje
+            where id_reserva_pnr = v_parametros.id_reserva_pnr
+            and   pnr_reserva = v_parametros.pnr;           
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
+            v_resp = pxp.f_agrega_clave(v_resp,'pnr',v_parametros.pnr::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;  
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_BOLPNR_IME'
+ 	#DESCRIPCION:	captura ids relacionados a un pnr de reserva
+ 	#AUTOR:		breydi.vasquez
+ 	#FECHA:		07-10-2021
+	***********************************/
+
+	elsif(p_transaccion='OBING_BOLPNR_IME')then
+
+		begin
+        	
+            select pxp.list(id_boleto_amadeus::text) into v_ids_boletos
+            from obingresos.tboleto_amadeus
+            where upper(localizador) = upper(v_parametros.pnr);
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
+            v_resp = pxp.f_agrega_clave(v_resp,'ids_boletos_seleccionados',v_ids_boletos::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;        
+
+	/*********************************
+ 	#TRANSACCION:  'OBING_REGTKTPNR_INS'
+ 	#DESCRIPCION:	registro boletos de un pnr de reserva emitido
+ 	#AUTOR:		breydi.vasquez
+ 	#FECHA:		08-11-2021
+	***********************************/
+
+	elsif(p_transaccion='OBING_REGTKTPNR_INS')then
+
+		begin
+        	
+          /*****Recuperamos el id_sucursal para obtener la moneda***/
+          v_moneda = v_parametros.moneda;
+          
+          select venta.id_sucursal into v_id_sucursal
+          from vef.tpunto_venta venta
+          where venta.id_punto_venta = v_parametros.id_punto_venta;
+          /*********************************************************/
+
+          /*Recuperamos el id_moneda de la sucursal obtenida*/
+          select sm.id_moneda into v_id_moneda_moneda_sucursal
+          from vef.tsucursal s
+          inner join vef.tsucursal_moneda sm on s.id_sucursal = sm.id_sucursal
+          where s.id_sucursal = v_id_sucursal and sm.tipo_moneda = 'moneda_base';
+          /**************************************************/
+
+          /*Recuperamos el id_moneda de triangulacion*/
+          select m.id_moneda,m.codigo_internacional,m.moneda || ' (' || m.codigo_internacional || ')' into v_id_moneda_tri
+          from param.tmoneda m
+          where m.estado_reg = 'activo' and m.triangulacion = 'si';
+
+
+          v_tiene_dos_monedas = 'no';
+          v_tipo_cambio_actual = 1;
+
+          if (v_id_moneda_tri != v_id_moneda_moneda_sucursal) then
+                  v_tiene_dos_monedas = 'si';
+                  v_tipo_cambio_actual = param.f_get_tipo_cambio_v2(v_id_moneda_moneda_sucursal, v_id_moneda_tri,v_parametros.fecha_emision::date,'O');
+          end if;
+             /*********************VERIFICAMOS SI EXISTE EL TIPO DE CAMBIO*************************/
+             IF (v_tipo_cambio_actual is null) then
+
+                  select  mon.codigo into v_moneda_desc
+                  from param.tmoneda mon
+                  where mon.id_moneda = v_id_moneda_tri;
+
+                  SELECT to_char(v_parametros.fecha_emision,'DD/MM/YYYY') into v_fecha_emision;
+
+                  raise exception 'No se pudo recuperar el tipo de cambio para la moneda: % en fecha: %, comuniquese con personal de Contabilidad Ingresos.',v_moneda_desc,v_fecha_emision;
+              end if;
+
+        	if (pxp.f_get_variable_global('vef_tiene_apertura_cierre') = 'si') then
+
+            	select id_usuario into v_id_usuario
+                from vef.tsucursal_usuario
+                where id_punto_venta=v_parametros.id_punto_venta
+                and id_usuario=p_id_usuario
+                and tipo_usuario='administrador';
+
+            	IF p_administrador !=1 AND v_id_usuario IS NULL THEN
+                  if (exists(	select 1
+                                    from vef.tapertura_cierre_caja acc
+                                    where acc.id_usuario_cajero = p_id_usuario and
+                                      acc.fecha_apertura_cierre = v_parametros.fecha_emision::date and
+                                      acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                                      acc.id_punto_venta = v_parametros.id_punto_venta)) then
+                        raise exception 'La caja ya fue cerrada, necesita tener la caja abierta para poder finalizar la venta del boleto';
+                    end if;
+
+                    if (not exists(	select 1
+                                    from vef.tapertura_cierre_caja acc
+                                    where acc.id_usuario_cajero = p_id_usuario and
+                                      acc.fecha_apertura_cierre = v_parametros.fecha_emision::date and
+                                      acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                                      acc.id_punto_venta = v_parametros.id_punto_venta)) then
+                        select tpv.tipo
+                        into v_tipo_punto
+                        from vef.tpunto_venta tpv
+                        where tpv.id_punto_venta = v_parametros.id_punto_venta;
+
+                        if v_tipo_punto not in ('Gobierno') then
+                        	raise exception 'Antes de traer boletos debe realizar una apertura de caja';
+                        end if;
+                    end if;
+                END IF;
+            end if;
+
+		    v_localizador = v_parametros.pnr; -- '2VRO96';
+            v_tipo_pago_amadeus = 'CA';
+            v_code = 'TKTT';
+            v_issue_indicator = 'C';
+            
+            select id_punto_venta into v_id_pv_reserva
+            from vef.tpunto_venta 
+            where office_id = v_parametros.offReserva;
+                    
+			--recuperamos los boletos
+            FOR v_record_json_boletos IN (SELECT json_array_elements(v_parametros.pasajerosEmision :: JSON)
+            ) LOOP
+                v_pasajero = v_record_json_boletos.json_array_elements :: JSON ->> 'pasjero';
+                v_nro_boleto = v_record_json_boletos.json_array_elements :: JSON ->> 'tkt';                            	                
+                v_monto_pago_amadeus = v_record_json_boletos.json_array_elements::json->>'monto';
+ 				
+                  --insercion de boleto
+                  IF NOT EXISTS(SELECT 1
+                            FROM obingresos.tboleto_amadeus
+                            WHERE nro_boleto=v_nro_boleto)THEN
+                            
+                    SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
+                    FROM param.tmoneda
+                    WHERE codigo_internacional=v_moneda;
+
+                    select oficial into v_tipo_cambio
+                    from param.ttipo_cambio tc
+                    inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
+                    where mon.tipo_moneda='ref'
+                    and fecha = v_parametros.fecha_emision;
+
+                    select nextval('obingresos.tboleto_amadeus_id_boleto_amadeus_seq'::regclass) into v_id_boleto;
+					
+                    INSERT INTO obingresos.tboleto_amadeus
+                    (nro_boleto,
+                    total,
+                    comision,
+                    moneda,
+                    voided,
+                    estado,
+                    id_punto_venta,
+                    localizador,
+                    fecha_emision,
+                    id_moneda_boleto,
+                    tc,
+                    pasajero,
+                    liquido,
+                    neto,
+                    monto_pagado_moneda_boleto,
+                    id_usuario_reg,
+                    id_boleto_amadeus,
+                    agente_venta,
+                    id_agencia,
+                    forma_pago,
+                    trans_code,
+                    trans_issue_indicator,
+                    id_pv_reserva
+                    )VALUES(v_nro_boleto::varchar,
+                    v_monto_pago_amadeus::numeric,
+                    0.00::numeric,
+                    v_moneda::varchar,
+                    'no'::varchar,
+                    'borrador',
+                    v_parametros.id_punto_venta::integer,
+                    v_localizador::varchar,
+                    v_parametros.fecha_emision::date,
+                    v_id_moneda::integer,
+                    v_tipo_cambio::numeric,
+                    v_pasajero::varchar,
+                    v_monto_pago_amadeus::numeric,
+                    v_monto_pago_amadeus::numeric,
+                    0.00::numeric,
+                    p_id_usuario,
+                    v_id_boleto,
+                    ''::varchar,
+                    v_id_agencia,--v_parametros.id_agencia::integer,
+                    v_tipo_pago_amadeus::varchar,
+                    v_code::varchar,
+                    v_issue_indicator::varchar,
+                    v_id_pv_reserva
+                    );
+
+                    /*Aumentando para que se actualize el contador de error en 0 cuando se haga el insert*/
+                    update obingresos.terror_amadeus set
+                    nro_errores = 0
+                    where id_punto_venta = v_parametros.id_punto_venta::integer;
+                    /*************************************************************************************/
+
+                    if(trim(v_tipo_pago_amadeus)='CA')then
+                      IF(pxp.f_get_variable_global('instancias_de_pago_nuevas') = 'no') THEN
+                            SELECT id_forma_pago into v_id_forma_pago
+                            FROM obingresos.tforma_pago
+                            WHERE codigo=v_tipo_pago_amadeus AND id_moneda=v_id_moneda;
+
+                            SELECT id_forma_pago into v_id_forma_pago
+                            FROM obingresos.tforma_pago
+                            WHERE codigo = v_tipo_pago_amadeus AND
+                                  id_moneda = v_id_moneda AND
+                                  id_lugar = param.f_obtener_padre_id_lugar((select suc.id_lugar
+                                             from vef.tpunto_venta pv
+                                             inner join vef.tsucursal suc on suc.id_sucursal=pv.id_sucursal
+                                             where pv.id_punto_venta=v_parametros.id_punto_venta),'pais');
+
+                            IF v_id_forma_pago IS NOT NULL THEN
+                              INSERT INTO obingresos.tboleto_amadeus_forma_pago
+                              (id_usuario_reg,
+                              id_boleto_amadeus,
+                              id_forma_pago,
+                              importe
+                              )
+                              VALUES(
+                              p_id_usuario,
+                              v_id_boleto,
+                              v_id_forma_pago,
+                              v_monto_pago_amadeus::numeric
+                              );
+                            END IF;
+                      else
+                          select
+                                  mp.id_medio_pago_pw
+                                  into
+                                  v_id_forma_pago
+                          from obingresos.tforma_pago_pw fp
+                          inner join obingresos.tmedio_pago_pw mp on mp.forma_pago_id = fp.id_forma_pago_pw
+                          where fp.fop_code = v_tipo_pago_amadeus;
+
+                          SELECT id_moneda, tipo_moneda into v_id_moneda, v_tipo_moneda
+                          FROM param.tmoneda
+                          WHERE codigo_internacional=v_moneda;
+
+
+                          /************************************************************************/
+                          IF v_id_forma_pago IS NOT NULL THEN
+                              INSERT INTO obingresos.tboleto_amadeus_forma_pago
+                              (id_usuario_reg,
+                              id_boleto_amadeus,
+                              id_medio_pago,
+                              id_moneda,
+                              importe
+                              )
+                              VALUES(
+                              p_id_usuario,
+                              v_id_boleto,
+                              v_id_forma_pago,
+                              v_id_moneda,
+                              v_monto_pago_amadeus::numeric
+                              );
+                            END IF;
+                      end if;
+
+                    end if;
+
+                    select substring(max(nro_boleto)from 4) into v_identificador_reporte
+                    from obingresos.tboleto_amadeus
+                    WHERE id_punto_venta=v_parametros.id_punto_venta
+                                AND fecha_emision=v_parametros.fecha_emision::date
+                                AND moneda=v_moneda;
+
+                    IF NOT EXISTS(SELECT 1
+                                    FROM vef.tpunto_venta_reporte
+                                    WHERE id_punto_venta=v_parametros.id_punto_venta
+                                    AND fecha=v_parametros.fecha_emision::date
+                                    AND moneda=v_moneda)THEN
+
+                        INSERT INTO vef.tpunto_venta_reporte(
+                        id_punto_venta,
+                        fecha,
+                        moneda,
+                        identificador_reporte)VALUES(
+                        v_parametros.id_punto_venta,
+                        v_parametros.fecha_emision::date,
+                        v_moneda,
+                        v_identificador_reporte);
+                    ELSE
+
+                        UPDATE vef.tpunto_venta_reporte
+                        SET identificador_reporte=v_identificador_reporte
+                        WHERE id_punto_venta=v_parametros.id_punto_venta
+                        AND fecha=v_parametros.fecha_emision::date
+                                    AND moneda=v_moneda;
+                    END IF;
+
+                    END IF;
+                   
+            END LOOP;
+
+            --Definicion de la respuesta
+            v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos almacenado(a) con exito');
+            v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus',v_id_boleto::varchar);
+
+            --Devuelve la respuesta
+            return v_resp;
+
+		end;
+    
 	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;

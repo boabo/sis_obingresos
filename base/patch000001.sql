@@ -4199,3 +4199,31 @@ ALTER TABLE obingresos.tagencia
 COMMENT ON COLUMN obingresos.tagencia.expedido
 IS 'Nuevo Campo donde se almacenara donde fue expedido el documento de identificacion dato nos llega desde el portal';
 /***********************************F-SCP-IRVA-OBINGRESOS-0-28/09/2021****************************************/
+
+/***********************************I-SCP-BVP-OBINGRESOS-0-17/11/2021****************************************/
+CREATE TABLE obingresos.treserva_pnr (
+  id_reserva_pnr SERIAL,
+  pnr_reserva VARCHAR(10),
+  estado VARCHAR(20) DEFAULT 'reservado'::character varying,
+  observacion TEXT,
+  authorization_code VARCHAR,
+  CONSTRAINT treserva_pnr_pkey PRIMARY KEY(id_reserva_pnr)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+COMMENT ON TABLE obingresos.treserva_pnr
+IS 'almacena pnr de reserva, tabla usada para enviar codigo de aprobacion para la emision de boletos, segun pnr.';
+
+COMMENT ON COLUMN obingresos.treserva_pnr.pnr_reserva
+IS 'pnr de reserva';
+
+COMMENT ON COLUMN obingresos.treserva_pnr.estado
+IS 'estado del pnr, si fue emitito exitosamente.
+estados (reservado, error_emision, emitido)';
+
+COMMENT ON COLUMN obingresos.treserva_pnr.authorization_code
+IS 'codigo de authorizacion de pago encryptado, con algoritmo 3DES';
+
+ALTER TABLE obingresos.treserva_pnr
+  OWNER TO postgres;
+/***********************************F-SCP-BVP-OBINGRESOS-0-17/1/2021*****************************************/

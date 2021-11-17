@@ -195,7 +195,8 @@ class MODBoleto extends MODbase{
         $this->captura('impreso','varchar');
 
         //Ejecuta la instruccion
-        $this->armarConsulta();//echo($this->consulta); exit;
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
         $this->ejecutarConsulta();
 
         //Devuelve la respuesta
@@ -1296,6 +1297,80 @@ class MODBoleto extends MODbase{
       $this->ejecutarConsulta();
       //Devuelve la respuesta
       return $this->respuesta;
+    }
+    function regReservaPnr(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_REGRPNR_INS';
+        $this->tipo_procedimiento='IME';
+        //Define los parametros para la funcion
+        
+        $this->setParametro('pnr','localizador','varchar');
+        $this->setParametro('consult_pnr','consult_pnr','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function modPnrEmision(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_UPEMIPNR_IME';
+        $this->tipo_procedimiento='IME';
+        //Define los parametros para la funcion
+        
+        $this->setParametro('id_reserva_pnr','id_reserva_pnr','int4');
+        $this->setParametro('authorizationCode','authorizationCode','varchar');
+        $this->setParametro('mensaje','mensaje','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }  
+
+    function listBoletosPnr(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_BOLPNR_IME';
+        $this->tipo_procedimiento='IME';
+        //Define los parametros para la funcion
+        
+        $this->setParametro('pnr','pnr','varchar');
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }  
+    
+    function registroTktPnr() {
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_REGTKTPNR_INS';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_punto_venta','id_punto_venta','integer');
+        $this->setParametro('offReserva','offReserva','varchar');
+        $this->setParametro('fecha_emision','fecha','date');        
+        $this->setParametro('pnr','pnr','varchar');        
+        $this->setParametro('moneda','moneda','varchar');        
+        $this->setParametro('pasajerosEmision','pasajerosEmision','text');        
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
     }
 }
 ?>
