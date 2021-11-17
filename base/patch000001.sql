@@ -4226,4 +4226,10 @@ IS 'codigo de authorizacion de pago encryptado, con algoritmo 3DES';
 
 ALTER TABLE obingresos.treserva_pnr
   OWNER TO postgres;
+
+ALTER TABLE obingresos.tboleto_amadeus
+  ADD COLUMN id_pv_reserva INTEGER;
+
+COMMENT ON COLUMN obingresos.tboleto_amadeus.id_pv_reserva
+IS 'id punto de venta reserva';
 /***********************************F-SCP-BVP-OBINGRESOS-0-17/1/2021*****************************************/
