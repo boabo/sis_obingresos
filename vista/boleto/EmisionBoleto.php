@@ -208,7 +208,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         //text: 'Anular Boleto',
                         //iconCls: 'block',
                         text: '<i class="fa fa-file-excel-o fa-3x"></i> Anular', /*iconCls:'' ,*/
-                        grupo: this.grupoDateFin,
+                        grupo: [3],
                         disabled: true,
                         handler: this.anularBoleto,
                         tooltip: '<b>Anular</b><br/>Anular Boleto'
@@ -217,6 +217,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.addButton('btnPagarGrupo',
                     {
+                        grupo: [1],
                         text: 'Pagar Grupo',
                         iconCls: 'bmoney',
                         disabled: true,                        
@@ -229,7 +230,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     {
                         text: 'Imprimir',
                         iconCls: 'bpdf32',
-                        grupo: [0,1],
+                        // grupo: [0,1],
                         disabled: true,
                         handler: this.imprimirBoleto,
                         tooltip: '<b>Imprimir Boleto</b><br/>Imprime el boleto'
@@ -238,6 +239,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.addButton('btnBoletosTodos',
                     {
+                        grupo: [3],
                         text: 'Traer Todos Boletos',
                         iconCls: 'breload2',
                         disabled: false,
@@ -292,7 +294,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.addButton('btnVoucherCode',
                     {
-                        grupo: [1],
+                        grupo: [3],
                         text: 'Voucher Code',
                         iconCls: 'bdocuments',
                         disabled: true,
@@ -303,7 +305,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.addButton('btnInvoicePNRPDF',
                     {
-                        grupo: [1],
+                        grupo: [0, 1],
                         text: 'Factura Boleto',
                         iconCls: 'bpdf32',
                         disabled: true,
@@ -314,9 +316,10 @@ header("content-type: text/javascript; charset=UTF-8");
 
                 this.getBoton('btnVoucherCode').setVisible(false);
                 this.getBoton('btnInvoicePNRPDF').setVisible(true);
-                this.getBoton('btnBoletosTodos').setVisible(false);                
+                this.getBoton('btnBoletosTodos').setVisible(false);
                 this.getBoton('btnPagarGrupo').setVisible(false);                
                 this.getBoton('btnImprimir').setVisible(false);                
+                this.getBoton('btnAnularBoleto').setVisible(false);                
                 this.tbar.addField(" ");
                 this.tbar.addField(this.nro_pnr_reserva);
                 this.tbar.addField(" ");
@@ -338,14 +341,14 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.iniciarEventos();
                 this.finCons = true;
                 this.seleccionarPuntoVentaSucursal();
-                this.grid.addListener('cellclick', this.oncellclick,this);
+                // this.grid.addListener('cellclick', this.oncellclick,this);
                 this.bloquearOrdenamientoGrid();
 
             },
 
             gruposBarraTareas:[
-                // {name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:0,height:0},
-                // {name:'revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> Revisados</h1>',grupo:1,height:0}
+                {name:'revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> Revisados</h1>',grupo:0,height:0},
+                {name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:1,height:0}
             ],
 
             actualizarSegunTab: function(name, indice){
@@ -724,7 +727,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 checked = 'checked';
                             }
                             if(record.data.tipo_reg != 'summary'){
-                                return  String.format('<div style="vertical-align:middle;text-align:center;"><input style="height:37px;width:37px;" type="checkbox"  {0} {1}></div>',checked, state);
+                                return  String.format('<div style="vertical-align:middle;text-align:center;pointer-events: none"><input style="height:37px;width:37px;" type="checkbox"  {0} {1}></div>',checked, state);
                             }
                             else{
                                 return '';
@@ -833,8 +836,9 @@ header("content-type: text/javascript; charset=UTF-8");
                         allowBlank: true,
                         gwidth: 50,
                         disabled: false,
+                        maxLength:20
                     },
-                    type:'TextField',
+                    type:'NumberField',
                     id_grupo:0,
                     grid:false,
                     form:true,                    
@@ -1164,7 +1168,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo', 'codigo_fp'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
+                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS', emisionReservaBoletos:'si'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
@@ -1543,7 +1547,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             totalProperty: 'total',
                             fields: ['id_forma_pago', 'nombre', 'desc_moneda','registrar_tarjeta','registrar_cc','codigo', 'codigo_fp'],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS'}
+                            baseParams: {par_filtro: 'forpa.name#pago.fop_code'/*'forpa.nombre#forpa.codigo#mon.codigo_internacional'*/,sw_tipo_venta:'BOLETOS', emisionReservaBoletos:'si'}
                         }),
                         valueField: 'id_forma_pago',
                         displayField: 'nombre',
@@ -3575,7 +3579,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.getBoton('btnImprimir').enable();
                 }else{
                     this.getBoton('btnImprimir').setVisible(false);
-                    this.getBoton('btnImprimir').disable();
+                    this.getBoton('btnImprimir').disable();                    
 
                     /*Ext.Ajax.request({
                         url : '../../sis_obingresos/control/Boleto/verificarBoletoExch',

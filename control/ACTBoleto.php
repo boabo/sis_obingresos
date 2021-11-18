@@ -1638,6 +1638,12 @@ class ACTBoleto extends ACTbase{
           if ($this->objParam->getParametro('id_punto_venta') != '') {
               $this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
           }
+          // {dev:breydi.vasquez, date:11/11/2021, desc: addicion filtro emision de boletos por reserva}
+            if ($this->objParam->getParametro('emisionReservaBoletos') == 'si' ) {
+                $this->objParam->addFiltro("bol.id_pv_reserva is not null");
+            } else {
+                $this->objParam->addFiltro("bol.id_pv_reserva is null");
+            }
 
           if ($this->objParam->getParametro('fecha') != '') {
               $fecha = $this->objParam->getParametro('fecha');
@@ -1826,7 +1832,11 @@ class ACTBoleto extends ACTbase{
       }
     } else {        
         // {dev:breydi.vasquez, date:11/11/2021, desc: addicion filtro emision de boletos por reserva}
-        $this->objParam->getParametro('emisionReservaBoletos') == 'si' && $this->objParam->addFiltro("bol.id_pv_reserva is not null");
+        if ($this->objParam->getParametro('emisionReservaBoletos') == 'si' ) {
+            $this->objParam->addFiltro("bol.id_pv_reserva is not null");
+        } else {
+            $this->objParam->addFiltro("bol.id_pv_reserva is null");
+        }
 
         if ($this->objParam->getParametro('id_punto_venta') != '') {
             $this->objParam->addFiltro("bol.id_punto_venta = ". $this->objParam->getParametro('id_punto_venta'));
@@ -2692,7 +2702,7 @@ class ACTBoleto extends ACTbase{
      } 
      
      if (!isset($_SESSION['_credentialPnrEmision']) || $_SESSION['_credentialPnrEmision'] == ''){
-         throw new Exception('No se definieron las credenciales para conectarse al servicio de Reserva Pnr.');
+         throw new Exception('No se definieron las credenciales para conectarse al servicio de Reserva PNR. Consulte con informática.');
      }
 
      $pnr = strtoupper($this->objParam->getParametro('pnr'));
@@ -2718,7 +2728,7 @@ class ACTBoleto extends ACTbase{
      $_out = curl_exec($s);
      $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
      if (!$status) {
-         throw new Exception("No se pudo conectar con el servicio GetBooking, encargado de recuperar la informacion de reserva, Vuelva a intentar. Si el error persiste consulte con informática. ");
+         throw new Exception("No se pudo conectar con el servicio GetBooking. Vuelva a intentar. Si el error persiste consulte con informática. ");
      }
 
      curl_close($s);
@@ -2726,12 +2736,11 @@ class ACTBoleto extends ACTbase{
      $res = json_decode($_out);
      
      if (is_null(json_decode($res->GetBookingResult))) {
-        throw new Exception("PNR  ".$pnr." ".$res->GetBookingResult);
+        throw new Exception("PNR  ".$pnr." ".$res->GetBookingResult.". Favor verifique el PNR y vuelva a intentar.");
      } else {
         $res = json_decode($res->GetBookingResult);
      } 
-     
-    
+         
      $response = array('exito' => false, 'pnr' => $pnr);
     
      if ($res!=null){
@@ -2771,7 +2780,7 @@ class ACTBoleto extends ACTbase{
     // Generación de token de seguridad
 
     $s = curl_init();
-    
+        
     curl_setopt($s, CURLOPT_URL, 'http://ef.boa.bo/ServicesBG/Token.svc/GetToken');
     curl_setopt($s, CURLOPT_POST, true);
     curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
@@ -2786,14 +2795,14 @@ class ACTBoleto extends ACTbase{
     $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
 
     if (!$status) {
-        throw new Exception("No se pudo conectar con servicio GetToken, necesario para la emision de boletos");
+        throw new Exception("No se pudo conectar con el servicio GetToken, Vuelva a intertar. Si el error persiste consulte con informática");
     }
     curl_close($s);
     
     $res = json_decode($_out);
 
     if (is_null($res)){
-        throw new Exception("Emision boleto: No se pudo generar el token de emision");
+        throw new Exception("Emision boleto: No se pudo generar el token de emision. Favor vuelva a intentar. Si el error persiste consulte con informática");
     }
 
     if(substr($res->GetTokenResult, 0, 5) == "Error") {
@@ -2816,7 +2825,7 @@ class ACTBoleto extends ACTbase{
     $json_body = json_encode($body);
 
     $e = curl_init();
-
+    
     curl_setopt($e, CURLOPT_URL, 'http://ef.boa.bo/ServicesBG/ResiberService.svc/SetAuthorizationCH');
     curl_setopt($e, CURLOPT_POST, true);
     curl_setopt($e, CURLOPT_POSTFIELDS, $json_body);
@@ -2830,7 +2839,7 @@ class ACTBoleto extends ACTbase{
     $statusEm = curl_getinfo($e, CURLINFO_HTTP_CODE);
 
     if (!$statusEm) {
-        throw new Exception("No se pudo conectar con servicio SetAuthorizationCH, encargado de la emision de boletos");
+        throw new Exception("No se pudo conectar con el servicio SetAuthorizationCH. Vuelva a intertar. Si el error persiste consulte con informática");
     }
     curl_close($e);
 
@@ -2838,7 +2847,7 @@ class ACTBoleto extends ACTbase{
     $resEmi = json_decode($resEmi->SetAuthorizationCHResult);    
     
     if ($resEmi->ResultSetAuthorization->Estado == "0") {
-        throw new Exception("Emision boleto, ".$resEmi->ResultSetAuthorization->Mensaje);
+        throw new Exception("Emision boleto, ".$resEmi->ResultSetAuthorization->Mensaje." Favor vuelva a intentar. Si el error persiste consulte con informática");
     }
     
     return $resEmi->ResultSetAuthorization->Mensaje;
@@ -2858,7 +2867,7 @@ class ACTBoleto extends ACTbase{
         // Recuperación de los boletos emitidos en la reserva
     
         $s = curl_init();
-                
+                        
         curl_setopt($s, CURLOPT_URL, 'http://ef.boa.bo/ServicesBG/ResiberService.svc/GetTicketPNRPlus');
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
@@ -2873,7 +2882,7 @@ class ACTBoleto extends ACTbase{
         $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
     
         if (!$status) {
-            throw new Exception("No se pudo conectar con servicio GetTicketPNRPlus, encargado de recuperación de los boletos emitidos.");
+            throw new Exception("No se pudo conectar con el servicio GetTicketPNRPlus. Vuelva a intentar. Si el error persiste consulte con informática");
         }
 
         curl_close($s);
@@ -2881,7 +2890,7 @@ class ACTBoleto extends ACTbase{
         $res = json_decode($_out);
 
         if (is_null($res)){
-            throw new Exception("No se puedo recuperación informacion de los boletos emitidos de la reserva.");
+            throw new Exception("No se pudo recuperación informacion de los boletos emitidos de la reserva. Favor vuelva a intentar. Si el error persiste consulte con informática");
         }
     
         if(substr($res->GetTicketPNRPlusResult, 0, 5) == "Error") {
@@ -2912,7 +2921,7 @@ class ACTBoleto extends ACTbase{
 
             } else {                
                 $this->contReserva = 0;                
-                throw new Exception("PNR ".$pnr." ".$res->GetTicketPNRPlusResult);
+                throw new Exception("PNR ".$pnr." ".$res->GetTicketPNRPlusResult." Favor vuelva a intentar. Si el error persiste consulte con informática");
             }            
         } else {
             $res = json_decode($res->GetTicketPNRPlusResult)->ResultGetTicketPNRPlus;
@@ -2926,23 +2935,20 @@ class ACTBoleto extends ACTbase{
         // ordenacion por pasajero y boleto segun string u objeto recibido
         if (gettype($res->pasajeros->string) == "string"){
             array_push($array, array('pasjero' => $res->pasajeros->string, 'tkt' => $res->tkts->string, 'monto' => $total));
-        } elseif(gettype($res->pasajeros->string) == "object") {
-            array_push($array, array('pasjero' => $res->pasajeros->string, 'tkt' => $res->tkts->string, 'monto' => $total));
         } elseif (gettype($res->pasajeros->string) == "array") {            
-            $total = ($monto / count($res->pasajeros->string));
+            $totalPasajero = ($monto / count($res->pasajeros->string));
             foreach ($res->pasajeros->string as $key0 => $value) {
-                array_push($array, array('pasjero' => $value, 'tkt' => '', 'monto' => $total));
+                array_push($array, array('pasjero' => $value, 'tkt' => '', 'monto' => $totalPasajero));
                 foreach ($res->tkts->string as $key1 => $value) {
                     if ($key0 == $key1) {                    
                         $array[$key1][tkt] = $value;
-                        $array[$key1][monto] = $monto;
+                        $array[$key1][monto] = $totalPasajero;
                     }                
                 }
             }            
         }else {
             throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
-        }    
-        
+        }            
         return json_encode($array);
   }
 
@@ -2982,7 +2988,7 @@ class ACTBoleto extends ACTbase{
         $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
     
         if (!$status) {
-            throw new Exception("No se pudo conectar con servicio GetInvoicePNRPDF, encargado de generar la factura de emision.");
+            throw new Exception("No se pudo conectar con el servicio GetInvoicePNRPDF. Vuelva a intentar. Si el error persiste consulte con informática");
         }
         curl_close($s);
 
