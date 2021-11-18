@@ -3499,7 +3499,7 @@ header("content-type: text/javascript; charset=UTF-8");
                               tmp = value.replace(/-/g, '');
                               for (var i = 0; i < tmp.length; i++) {
                                   tmp2 = tmp2 + tmp[i];
-                                  if ((i + 1) % 3 == 0 && tmp.length == 3) {
+                                  if ((i + 1) % 4 == 0 && tmp.length == 4) {
                                       tmp2 = tmp2 + campoX;
                                   }
                               }
@@ -4201,7 +4201,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 tmp = value.replace(/-/g, '');
                                 for (var i = 0; i < tmp.length; i++) {
                                     tmp2 = tmp2 + tmp[i];
-                                    if ((i + 1) % 3 == 0 && tmp.length == 3) {
+                                    if ((i + 1) % 4 == 0 && tmp.length == 4) {
                                         tmp2 = tmp2 + campoX;
                                     }
                                 }
