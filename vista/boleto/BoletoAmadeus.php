@@ -4193,9 +4193,9 @@ header("content-type: text/javascript; charset=UTF-8");
                                 sw = 0;
 
                                 if (this.codigo_medio_pago_2 == 'AX') {
-                                  var campoX = 'XXXXXXXXX';
+                                  var campoX = 'XXXXXXX';
                                 } else {
-                                  var campoX = 'XXXXXXXXXX';
+                                  var campoX = 'XXXXXXXX';
                                 }
 
                                 tmp = value.replace(/-/g, '');
