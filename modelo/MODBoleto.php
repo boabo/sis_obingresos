@@ -1326,6 +1326,9 @@ class MODBoleto extends MODbase{
         $this->setParametro('authorizationCode','authorizationCode','varchar');
         $this->setParametro('mensaje','mensaje','varchar');
         $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('nit','nit','varchar');
+        $this->setParametro('razonSocial','razonSocial','varchar');
+        $this->setParametro('id_cliente','id_cliente','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();

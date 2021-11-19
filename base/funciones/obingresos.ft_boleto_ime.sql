@@ -186,6 +186,7 @@ DECLARE
     v_emitido				integer=0;
     v_id_reserva			integer;
     v_reg					    record;
+    v_nombre_factura		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -4092,6 +4093,33 @@ BEGIN
             observacion = v_parametros.mensaje
             where id_reserva_pnr = v_parametros.id_reserva_pnr
             and   pnr_reserva = v_parametros.pnr;           
+
+			if (pxp.f_is_positive_integer(v_parametros.id_cliente)) THEN
+                select c.nombre_factura into v_nombre_factura
+                from vef.tcliente c
+                where c.id_cliente = v_parametros.id_cliente::integer;            
+            end if;
+
+            if(v_parametros.nit != '' AND v_parametros.nit != '0' AND (v_nombre_factura is null or v_nombre_factura = '')) then
+    		
+              INSERT INTO
+                vef.tcliente
+                (
+                  id_usuario_reg,
+                  fecha_reg,
+                  estado_reg,
+                  nombre_factura,
+                  nit
+                )
+              VALUES (
+                p_id_usuario,
+                now(),
+                'activo',
+                UPPER(regexp_replace(trim(v_parametros.razonSocial), '[^a-zA-ZñÑ0-9\s]', '', 'g')),
+                trim(v_parametros.nit)
+              );
+			
+            end if;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');

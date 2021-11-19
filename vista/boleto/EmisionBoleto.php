@@ -208,7 +208,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         //text: 'Anular Boleto',
                         //iconCls: 'block',
                         text: '<i class="fa fa-file-excel-o fa-3x"></i> Anular', /*iconCls:'' ,*/
-                        grupo: [3],
+                        grupo: [0, 1],
                         disabled: true,
                         handler: this.anularBoleto,
                         tooltip: '<b>Anular</b><br/>Anular Boleto'
@@ -319,7 +319,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.getBoton('btnBoletosTodos').setVisible(false);
                 this.getBoton('btnPagarGrupo').setVisible(false);                
                 this.getBoton('btnImprimir').setVisible(false);                
-                this.getBoton('btnAnularBoleto').setVisible(false);                
+                // this.getBoton('btnAnularBoleto').setVisible(false);                
                 this.tbar.addField(" ");
                 this.tbar.addField(this.nro_pnr_reserva);
                 this.tbar.addField(" ");
@@ -662,6 +662,15 @@ header("content-type: text/javascript; charset=UTF-8");
                         labelSeparator:'',
                         inputType:'hidden',
                         name: 'monedaBasePnr'
+                    },
+                    type:'Field',
+                    form:true
+                },
+                {
+                    config:{
+                        labelSeparator:'',
+                        inputType:'hidden',
+                        name: 'id_cliente'
                     },
                     type:'Field',
                     form:true
@@ -2721,6 +2730,27 @@ header("content-type: text/javascript; charset=UTF-8");
                     }
                 },this);
 
+                this.Cmp.nit.on('blur',function(c) {
+                    if (this.Cmp.nit.getValue() != '' || this.Cmp.nit.getValue() == '0') {
+                        this.Cmp.razonSocial.reset();
+                            Ext.Ajax.request({
+                                url : '../../sis_ventas_facturacion/control/VentaFacturacion/RecuperarCliente',
+                                params : {
+                                    'nit' : this.Cmp.nit.getValue(),
+                                    'razon_social' : this.Cmp.razonSocial.getValue(),
+                                },
+                                success: function(resp){
+                                var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
+                                this.Cmp.razonSocial.setValue(reg.ROOT.datos.razon);
+                                this.Cmp.id_cliente.setValue(reg.ROOT.datos.id_cliente);
+                            },
+                                failure : this.conexionFailure,
+                                timeout : this.timeout,
+                                scope : this
+                        });
+
+                    }
+                }, this)
 
             },
 
@@ -3131,10 +3161,11 @@ header("content-type: text/javascript; charset=UTF-8");
 
             onInfoPnr: function(){
                 Phx.CP.loadingShow();
-                var pnr = this.nro_pnr_reserva.getValue();                                
+                var pnr = this.nro_pnr_reserva.getValue();
+                var fecha = this.campo_fecha.getValue();
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/consultaReservaBoletoExch',                    
-                    params:{ pnr: pnr, id_punto_venta: this.id_punto_venta },
+                    params:{ pnr: pnr, id_punto_venta: this.id_punto_venta, fecha_emision: fecha},
                     success: this.successInfoPnr,
                     failure: this.conexionFailure,
                     timeout: this.timeout,
@@ -3799,7 +3830,7 @@ header("content-type: text/javascript; charset=UTF-8");
                               tmp = value.replace(/-/g, '');
                               for (var i = 0; i < tmp.length; i++) {
                                   tmp2 = tmp2 + tmp[i];
-                                  if ((i + 1) % 3 == 0 && tmp.length == 3) {
+                                  if ((i + 1) % 4 == 0 && tmp.length == 4) {
                                       tmp2 = tmp2 + campoX;
                                   }
                               }
@@ -4492,15 +4523,15 @@ header("content-type: text/javascript; charset=UTF-8");
                                 sw = 0;
 
                                 if (this.codigo_medio_pago_2 == 'AX') {
-                                  var campoX = 'XXXXXXXXX';
+                                  var campoX = 'XXXXXXX';
                                 } else {
-                                  var campoX = 'XXXXXXXXXX';
+                                  var campoX = 'XXXXXXXX';
                                 }
 
                                 tmp = value.replace(/-/g, '');
                                 for (var i = 0; i < tmp.length; i++) {
                                     tmp2 = tmp2 + tmp[i];
-                                    if ((i + 1) % 3 == 0 && tmp.length == 3) {
+                                    if ((i + 1) % 4 == 0 && tmp.length == 4) {
                                         tmp2 = tmp2 + campoX;
                                     }
                                 }

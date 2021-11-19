@@ -2691,6 +2691,8 @@ class ACTBoleto extends ACTbase{
 
  function consultaReservaBoletoExch () {
      
+     $fecha_emision = date("dmy", strtotime($this->objParam->getParametro('fecha_emision')));
+
      $this->objParam->addParametro('consult_pnr', 'true');
      $this->objParam->addParametro('localizador', strtoupper($this->objParam->getParametro('pnr')));
      $this->objFunc = $this->create('MODBoleto');
@@ -2748,18 +2750,23 @@ class ACTBoleto extends ACTbase{
         $pasajeros = $res->reserva->pasajeros->pasajeroDR;
         $monto_total = 0;
         $off_resp = $res->reserva->responsable->off_resp;
+        $fecha_reserva = $res->reserva->fecha_creacion;
 
-        if (gettype($pasajeros) == "object"){
-            $monto_total =  $pasajeros->pago->importe;
-            $moneda = $pasajeros->pago->moneda;
-            $apellido = substr($pasajeros->apdos_nombre, 0, strpos($pasajeros->apdos_nombre, "/"));
-        }elseif (gettype($pasajeros) == "array") {
-            $moneda = $pasajeros[0]->pago->moneda;
-            $apellido = substr($pasajeros[0]->apdos_nombre, 0, strpos($pasajeros[0]->apdos_nombre, "/"));
-            foreach ($pasajeros as $value) {
-              $monto_total = $monto_total + $value->pago->importe;
+        if ($fecha_emision == $fecha_reserva){               
+            if (gettype($pasajeros) == "object"){
+                $monto_total =  $pasajeros->pago->importe;
+                $moneda = $pasajeros->pago->moneda;
+                $apellido = substr($pasajeros->apdos_nombre, 0, strpos($pasajeros->apdos_nombre, "/"));
+            }elseif (gettype($pasajeros) == "array") {
+                $moneda = $pasajeros[0]->pago->moneda;
+                $apellido = substr($pasajeros[0]->apdos_nombre, 0, strpos($pasajeros[0]->apdos_nombre, "/"));
+                foreach ($pasajeros as $value) {
+                $monto_total = $monto_total + $value->pago->importe;
+                }
             }
-        }
+        } else {
+            throw new Exception("La fecha de reserva del pnr, difiere de la fecha de emision seleccionada: ".date("d/m/Y", strtotime($this->objParam->getParametro('fecha_emision'))));
+        } 
 
         $response = array('exito' => true, 'pnr' => $pnr, 'importeTotal' => $monto_total, 'moneda' => $moneda,
                           "identifierPnr" => $apellido, 'offReserva' => $off_resp);
