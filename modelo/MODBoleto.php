@@ -1307,6 +1307,7 @@ class MODBoleto extends MODbase{
         
         $this->setParametro('pnr','localizador','varchar');
         $this->setParametro('consult_pnr','consult_pnr','varchar');
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;

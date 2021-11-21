@@ -128,7 +128,7 @@ header("content-type: text/javascript; charset=UTF-8");
             /*****************************************************************************/
 
             onButtonInvoicePNRPDF: function () {
-                var rec = this.sm.getSelected().data;                
+                var rec = this.sm.getSelected().data;                              
                 if (rec) {
                     Phx.CP.loadingShow();
                     Ext.Ajax.request({
@@ -3810,7 +3810,8 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.ocultarComponente(this.Cmp.mco);
                           this.Cmp.id_auxiliar.reset();
-                          this.mostrarComponente(this.Cmp.numero_tarjeta);
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
+                        //   this.mostrarComponente(this.Cmp.numero_tarjeta);
                           this.mostrarComponente(this.Cmp.codigo_tarjeta);
 
                           /*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
@@ -3885,7 +3886,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.reset();
                           /***********************************************/
-                          this.Cmp.numero_tarjeta.allowBlank = false;
+                          this.Cmp.numero_tarjeta.allowBlank = true; //false
                           this.Cmp.codigo_tarjeta.allowBlank = false;
                           this.Cmp.id_auxiliar.allowBlank = true;
                           this.Cmp.mco.allowBlank = true;
@@ -4027,7 +4028,8 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.ocultarComponente(this.Cmp.mco);
                           this.Cmp.id_auxiliar.reset();
-                          this.mostrarComponente(this.Cmp.numero_tarjeta);
+                        //   this.mostrarComponente(this.Cmp.numero_tarjeta);
+                          this.ocultarComponente(this.Cmp.numero_tarjeta);
                           this.mostrarComponente(this.Cmp.codigo_tarjeta);
 
                           /*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
@@ -4103,7 +4105,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.Cmp.nro_cupon.allowBlank = true;
                           this.Cmp.nro_cuota.allowBlank = true;
                           /******************************************/
-                          this.Cmp.numero_tarjeta.allowBlank = false;
+                          this.Cmp.numero_tarjeta.allowBlank = true; //false
                           this.Cmp.codigo_tarjeta.allowBlank = false;
                           this.Cmp.id_auxiliar.allowBlank = true;
                           this.Cmp.mco.allowBlank = true;
@@ -4263,7 +4265,8 @@ header("content-type: text/javascript; charset=UTF-8");
                             codigo_fp2.startsWith("SF")) {
                             //tarjeta de credito
                             this.Cmp.id_auxiliar2.reset();
-                            this.mostrarComponente(this.Cmp.numero_tarjeta2);
+                            // this.mostrarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
 
                             /*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
@@ -4345,7 +4348,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
 
-                            this.Cmp.numero_tarjeta2.allowBlank = false;
+                            this.Cmp.numero_tarjeta2.allowBlank = true; //false
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
                             this.Cmp.id_auxiliar2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = true;
@@ -4511,7 +4514,8 @@ header("content-type: text/javascript; charset=UTF-8");
                             codigo_fp2.startsWith("SF")) {
                             //tarjeta de credito
                             this.Cmp.id_auxiliar2.reset();
-                            this.mostrarComponente(this.Cmp.numero_tarjeta2);
+                            // this.mostrarComponente(this.Cmp.numero_tarjeta2);
+                            this.ocultarComponente(this.Cmp.numero_tarjeta2);
                             this.mostrarComponente(this.Cmp.codigo_tarjeta2);
 
 							/*Aumentando para solo dijitar los primeros y ultimos digitos de la tarjeta*/
@@ -4592,7 +4596,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
 
-                            this.Cmp.numero_tarjeta2.allowBlank = false;
+                            this.Cmp.numero_tarjeta2.allowBlank = true; //false
                             this.Cmp.codigo_tarjeta2.allowBlank = false;
                             this.Cmp.id_auxiliar2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = true;

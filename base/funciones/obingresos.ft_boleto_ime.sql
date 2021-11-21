@@ -187,6 +187,7 @@ DECLARE
     v_id_reserva			integer;
     v_reg					    record;
     v_nombre_factura		varchar;
+    v_lugar             varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -4015,13 +4016,7 @@ BEGIN
             v_fecha_emision = to_char(v_reg.fecha_emision::date, 'DD/MM/YYYY');
           
           end loop;
-          
-          
-       /*   select count(id_boleto_amadeus), fecha_emision 
-          into v_count_bol_ama,v_fecha_emision 
-          from obingresos.tboleto_amadeus 
-          where localizador = v_parametros.pnr
-          group by fecha_emision;*/
+                    
           
           if (v_id_reserva is not null and v_count_bol_ama > 0) then
             if v_boletos != '' then
@@ -4065,12 +4060,24 @@ BEGIN
                 end if;
               end if;
            end if;
-           
+
+        /* captura de lugar punto de venta para uso de credenciales de emision  */
+      	if pxp.f_existe_parametro(p_tabla, 'id_punto_venta') then
+        	select lr.codigo into v_lugar
+            from vef.tpunto_venta pv
+            inner join vef.tsucursal sr on sr.id_sucursal = pv.id_sucursal
+            inner join param.tlugar lr on lr.id_lugar = sr.id_lugar
+            where pv.id_punto_venta = v_parametros.id_punto_venta;
+        else
+        	v_lugar = '';    
+        end if;
+
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
         v_resp = pxp.f_agrega_clave(v_resp,'id_reserva_pnr', v_id_reserva_pnr::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'msg', v_msg::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'emitido', v_emitido::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'lugar_pv', v_lugar::varchar);
 
         --Devuelve la respuesta
         return v_resp;
