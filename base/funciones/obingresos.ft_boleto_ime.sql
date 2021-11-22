@@ -186,6 +186,8 @@ DECLARE
     v_emitido				integer=0;
     v_id_reserva			integer;
     v_reg					    record;
+    v_nombre_factura		varchar;
+    v_lugar             varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -4014,13 +4016,7 @@ BEGIN
             v_fecha_emision = to_char(v_reg.fecha_emision::date, 'DD/MM/YYYY');
           
           end loop;
-          
-          
-       /*   select count(id_boleto_amadeus), fecha_emision 
-          into v_count_bol_ama,v_fecha_emision 
-          from obingresos.tboleto_amadeus 
-          where localizador = v_parametros.pnr
-          group by fecha_emision;*/
+                    
           
           if (v_id_reserva is not null and v_count_bol_ama > 0) then
             if v_boletos != '' then
@@ -4064,12 +4060,24 @@ BEGIN
                 end if;
               end if;
            end if;
-           
+
+        /* captura de lugar punto de venta para uso de credenciales de emision  */
+      	if pxp.f_existe_parametro(p_tabla, 'id_punto_venta') then
+        	select lr.codigo into v_lugar
+            from vef.tpunto_venta pv
+            inner join vef.tsucursal sr on sr.id_sucursal = pv.id_sucursal
+            inner join param.tlugar lr on lr.id_lugar = sr.id_lugar
+            where pv.id_punto_venta = v_parametros.id_punto_venta;
+        else
+        	v_lugar = '';    
+        end if;
+
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
         v_resp = pxp.f_agrega_clave(v_resp,'id_reserva_pnr', v_id_reserva_pnr::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'msg', v_msg::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'emitido', v_emitido::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'lugar_pv', v_lugar::varchar);
 
         --Devuelve la respuesta
         return v_resp;
@@ -4092,6 +4100,33 @@ BEGIN
             observacion = v_parametros.mensaje
             where id_reserva_pnr = v_parametros.id_reserva_pnr
             and   pnr_reserva = v_parametros.pnr;           
+
+			if (pxp.f_is_positive_integer(v_parametros.id_cliente)) THEN
+                select c.nombre_factura into v_nombre_factura
+                from vef.tcliente c
+                where c.id_cliente = v_parametros.id_cliente::integer;            
+            end if;
+
+            if(v_parametros.nit != '' AND v_parametros.nit != '0' AND (v_nombre_factura is null or v_nombre_factura = '')) then
+    		
+              INSERT INTO
+                vef.tcliente
+                (
+                  id_usuario_reg,
+                  fecha_reg,
+                  estado_reg,
+                  nombre_factura,
+                  nit
+                )
+              VALUES (
+                p_id_usuario,
+                now(),
+                'activo',
+                UPPER(regexp_replace(trim(v_parametros.razonSocial), '[^a-zA-ZñÑ0-9\s]', '', 'g')),
+                trim(v_parametros.nit)
+              );
+			
+            end if;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');

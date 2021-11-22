@@ -1307,6 +1307,7 @@ class MODBoleto extends MODbase{
         
         $this->setParametro('pnr','localizador','varchar');
         $this->setParametro('consult_pnr','consult_pnr','varchar');
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;
@@ -1326,6 +1327,9 @@ class MODBoleto extends MODbase{
         $this->setParametro('authorizationCode','authorizationCode','varchar');
         $this->setParametro('mensaje','mensaje','varchar');
         $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('nit','nit','varchar');
+        $this->setParametro('razonSocial','razonSocial','varchar');
+        $this->setParametro('id_cliente','id_cliente','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
