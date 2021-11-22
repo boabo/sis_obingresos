@@ -361,7 +361,7 @@ BEGIN
 
                       ) values(
                         v_parametros.id_sucursal,
-                        103,--nombre de factura SIN NOMBRE--12, ---id_cliente
+                        146407,--nombre de factura SIN NOMBRE--12, ---id_cliente
                         v_id_proceso_wf,
                         v_id_estado_wf,
                         'activo',
