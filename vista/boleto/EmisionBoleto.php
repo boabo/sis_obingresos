@@ -3213,11 +3213,15 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.Cmp.localizador.setValue(data.pnr)
                     this.Cmp.moneda.setValue(data.moneda)
                     this.Cmp.total.setValue(data.importeTotal)
+                    if (data.moneda != 'BOB') {
+                        this.Cmp.total_moneda_extranjera.setValue(data.importeTotal)
+                    }                    
                     this.Cmp.monto_recibido_forma_pago.setValue(data.importeTotal)
                     this.Cmp.monto_forma_pago.setValue(data.importeTotal)                  
                     this.Cmp.emisionReservaPnr.setValue('true')
                     this.Cmp.PnrReserva.setValue(data.pnr)
                     this.Cmp.offReserva.setValue(data.offReserva)
+                    this.Cmp.tc.setValue(data.tc)
                     this.Cmp.fechaEmisionPnr.setValue(this.campo_fecha.getValue().dateFormat('Ymd'));
                     this.Cmp.monedaBasePnr.setValue(this.store.baseParams.moneda_base)
                     this.Cmp.id_moneda.store.load({params:{start:0,limit:50},
@@ -3347,7 +3351,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 var d = this.sm.getSelected().data;
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/anularBoleto',
-                    params:{id_boleto_amadeus:d.id_boleto_amadeus},
+                    params:{id_boleto_amadeus:d.id_boleto_amadeus, emisionReserva: 'true', fechaEmision: this.campo_fecha.getValue().dateFormat('Ymd')},
                     success:this.successAnularBoleto,
                     failure: this.conexionFailure,
                     timeout:this.timeout,
