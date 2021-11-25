@@ -19,8 +19,8 @@ class ACTBoleto extends ACTbase{
     var $objParamAux;
     var $contReserva = 0;
     var $credentialEmision = ""; 
-    var $keyEmisionBol = ""; 
-    var $apiEmision = "http://ef.boa.bo/ServicesBG/ResiberService.svc/";        
+    var $keyEmisionBol = "";             
+    var $apiEmision = "http://ef.boa.bo/ServicesBG/ResiberService.svc/";            
     var $apiEmisionToken = "http://ef.boa.bo/ServicesBG/Token.svc/";        
 
     function listarBoleto(){
@@ -237,7 +237,7 @@ class ACTBoleto extends ACTbase{
                 $this->objParam->addParametro('todos', 'si');
                                                 
                 sleep(30); // espera 30 segundos luego de la emision de reserva. Recurpera informacion de boletos emitidos
-                $tktsPnr = $this->GetTktPNRPlus($inPnr , $identifierPnr, $montoTotalPnr, $datos['lugar_pv']);                
+                $tktsPnr = $this->GetTktPNRPlus($inPnr , $identifierPnr);                
                 
                 $this->objParam->addParametro('pasajerosEmision', $tktsPnr);                
                 $this->objFunc3=$this->create('MODBoleto');                
@@ -1395,7 +1395,7 @@ class ACTBoleto extends ACTbase{
 
     }
 
-    function anularBoleto(){        
+    function anularBoleto(){   
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->anularBoleto($this->objParam);
         if(($this->res->getTipo() == 'EXITO') && ($this->objParam->getParametro('emisionReserva') == 'true')) {
@@ -2853,7 +2853,7 @@ class ACTBoleto extends ACTbase{
                 $moneda = $pasajeros[0]->pago->moneda;
                 $apellido = substr($pasajeros[0]->apdos_nombre, 0, strpos($pasajeros[0]->apdos_nombre, "/"));
                 foreach ($pasajeros as $value) {
-                $monto_total = $monto_total + $value->pago->importe;
+                    $monto_total = $monto_total + $value->pago->importe;
                 }
             }
         } else {
@@ -3027,112 +3027,106 @@ class ACTBoleto extends ACTbase{
 
    }
 
-   function GetTktPNRPlus($pnr, $identifierPnr, $monto, $lugarPv) {   
+   function GetTktPNRPlus($pnr, $identifierPnr) {   
+            
+    $data = array("credenciales"=>"{B6575E91-D2B3-48A3-B737-B66EDBD60AFA}{C0573161-B781-4B06-B4B7-C8D85DE86239}",
+        "idioma"=>"ES",
+        "pnr"=>$pnr,
+        "apellido"=> $identifierPnr,
+        "ip"=>"127.0.0.1",
+        "xmlJson"=>false);
 
-    //  captura de creadenciales 
-    if (trim($lugarPv) == 'CBB') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];        
-    } elseif (trim($lugarPv) == 'LPB') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];
-    } elseif (trim($lugarPv) == 'SRZ') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];
-    } 
+    $json_data = json_encode($data); 
+            
+    $s = curl_init();        
+    curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINTTest/ServicioInterno.svc/TraerReservaExch');
+    curl_setopt($s, CURLOPT_POST, true);
+    curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+    curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+    curl_setopt($s, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($json_data))
+    );
 
-    $data = array(        
-        "credentials" => $this->credentialEmision,        
-        "locator" => array("pnr" => $pnr, "identifierPnr" => $identifierPnr),    
-        "ipAddress"=> "127.0.0.1",
-        "xmlOrJson" => false);
+    $_out = curl_exec($s);
+    $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+
+    if (!$status) {
+        throw new Exception("No se pudo conectar con el servicio TraerReservaExch. Vuelva a intentar. Si el error persiste consulte con informática");
+    }
+
+    curl_close($s);
+
+    $out_origin = $_out;
+
+    $_out = str_replace('\\','',$_out);
+    $_out = substr($_out,27);
+    $_out = substr($_out,0,-2);
+
+    $res = json_decode($_out);
     
-        $json_data = json_encode($data);        
-        
-        // Recuperación de los boletos emitidos en la reserva
-    
-        $s = curl_init();
-                        
-        curl_setopt($s, CURLOPT_URL, $this->apiEmision.'GetTicketPNRPlus');
-        curl_setopt($s, CURLOPT_POST, true);
-        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
-        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
-        curl_setopt($s, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($json_data))
-        );
-        $_out = curl_exec($s);
-    
-        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
-    
-        if (!$status) {
-            throw new Exception("No se pudo conectar con el servicio GetTicketPNRPlus. Vuelva a intentar. Si el error persiste consulte con informática");
-        }
+    $reservaTkt = false;    
 
-        curl_close($s);
-        
-        $res = json_decode($_out);
-
-        if (is_null($res)){
-            throw new Exception("No se pudo recuperación informacion de los boletos emitidos de la reserva. Favor vuelva a intentar. Si el error persiste consulte con informática");
-        }
-    
-        if(substr($res->GetTicketPNRPlusResult, 0, 5) == "Error") {
-            throw new Exception("Boletos emitidos, ".$res->GetTicketPNRPlusResult);
-        }
-          
-         
-        if (is_null(json_decode($res->GetTicketPNRPlusResult))) {            
-            if(($res->GetTicketPNRPlusResult == "Info: Tickets en proceso de emision") and ($this->contReserva <= 7)) {
-                
-                // Delay de llamadas 
-                if ($this->contReserva == 5) {                    
-                    sleep(5); // 5 segundos de espera
-                    $this->contReserva = $this->contReserva + 1;                    
-                    $this->GetTktPNRPlus($pnr, $identifierPnr, $monto, $lugarPv);                      
-                } elseif ($this->contReserva == 6) {
-                    sleep(10); // 10 segundos de espera
-                    $this->contReserva = $this->contReserva + 1;                    
-                    $this->GetTktPNRPlus($pnr, $identifierPnr, $monto, $lugarPv);                    
-                } elseif ($this->contReserva == 7) {
-                    sleep(20); // 20 segundos de espera
-                    $this->contReserva = $this->contReserva + 1;                    
-                    $this->GetTktPNRPlus($pnr, $identifierPnr, $monto, $lugarPv);                    
-                } else {
-                    $this->contReserva = $this->contReserva + 1;
-                    $this->GetTktPNRPlus($pnr, $identifierPnr, $monto, $lugarPv);
-                }                                
-
-            } else {                
-                $this->contReserva = 0;                
-                throw new Exception("PNR ".$pnr." ".$res->GetTicketPNRPlusResult." Favor vuelva a intentar. Si el error persiste consulte con informática");
-            }            
-        } else {
-            $res = json_decode($res->GetTicketPNRPlusResult)->ResultGetTicketPNRPlus;
-        }        
-
-        $this->contReserva = 0;
-
-        $array = array();    
-        $total = $monto;
+    if ($res->reserva_V2 != null) {
+        $pasajeros = $res->reserva_V2->pasajeros->pasajeroDR;    
+        $reservaTkt = true;
+        $array = array();        
         
         // ordenacion por pasajero y boleto segun string u objeto recibido
-        if (gettype($res->pasajeros->string) == "string"){
-            array_push($array, array('pasjero' => $res->pasajeros->string, 'tkt' => $res->tkts->string, 'monto' => $total));
-        } elseif (gettype($res->pasajeros->string) == "array") {            
-            $totalPasajero = ($monto / count($res->pasajeros->string));
-            foreach ($res->pasajeros->string as $key0 => $value) {
-                array_push($array, array('pasjero' => $value, 'tkt' => '', 'monto' => $totalPasajero));
-                foreach ($res->tkts->string as $key1 => $value) {
-                    if ($key0 == $key1) {                    
-                        $array[$key1][tkt] = $value;
-                        $array[$key1][monto] = $totalPasajero;
-                    }                
+        if (gettype($pasajeros) == "object"){
+            if (is_null($pasajeros->Tkts)) {                
+                $reservaTkt = false;
+            } else {
+                array_push($array, array('pasjero' => $pasajeros->apdos_nombre, 'tkt' => $pasajeros->Tkts->string, 'monto' => $pasajeros->pago->importe));
+                $reservaTkt = true;
+            }
+            
+        } elseif (gettype($pasajeros) == "array") {             
+            foreach ($pasajeros as $value) {
+                if (is_null($value->Tkts)) {
+                    $reservaTkt = false;
                 }
-            }            
-        }else {
-            throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
-        }            
+            }   
 
-        return json_encode($array);
+            if ($reservaTkt) {
+                foreach ($pasajeros as $value) {
+                    array_push($array, array('pasjero' => $value->apdos_nombre, 'tkt' => $value->Tkts->string, 'monto' => $value->pago->importe));
+                }                   
+            }                             
+        }           
+    }    
+
+    if(($reservaTkt == false) and ($this->contReserva <= 7)) {
+                
+        // Delay de llamadas 
+        if ($this->contReserva == 5) {                    
+            sleep(5); // 5 segundos de espera
+            $this->contReserva = $this->contReserva + 1;                    
+            $this->GetTktPNRPlus($pnr, $identifierPnr);                      
+        } elseif ($this->contReserva == 6) {
+            sleep(10); // 10 segundos de espera
+            $this->contReserva = $this->contReserva + 1;                    
+            $this->GetTktPNRPlus($pnr, $identifierPnr);                    
+        } elseif ($this->contReserva == 7) {
+            sleep(20); // 20 segundos de espera
+            $this->contReserva = $this->contReserva + 1;                    
+            $this->GetTktPNRPlus($pnr, $identifierPnr);                    
+        } else {
+            $this->contReserva = $this->contReserva + 1;
+            $this->GetTktPNRPlus($pnr, $identifierPnr);
+        }                                
+
+    }
+
+    $this->contReserva = 0;
+    
+    if (!$reservaTkt) {
+        throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
+    }
+    
+    return json_encode($array);
+
   }
 
    function GetInvoicePNRPDF($pnr="no",  $identifierPnr="sinIden", $lugarPv="") {
