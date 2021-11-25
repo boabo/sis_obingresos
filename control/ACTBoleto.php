@@ -11,6 +11,9 @@ include(dirname(__FILE__).'/../reportes/RBoletoBOPDF.php');
 include(dirname(__FILE__).'/../reportes/RBoletoBRPDF.php');
 include(dirname(__FILE__).'/../reportes/RReporteBoletoResiberVentasWeb.php');
 include(dirname(__FILE__).'/../reportes/RReporteResumenVentasExcel.php');
+include(dirname(__FILE__).'/../../lib/PHPMailer/class.phpmailer.php');
+include(dirname(__FILE__).'/../../lib/PHPMailer/class.smtp.php');
+include(dirname(__FILE__).'/../../lib/lib_general/cls_correo_externo.php');
 
 class ACTBoleto extends ACTbase{
     var $objParamAux;
@@ -1395,6 +1398,58 @@ class ACTBoleto extends ACTbase{
     function anularBoleto(){        
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->anularBoleto($this->objParam);
+        if(($this->res->getTipo() == 'EXITO') && ($this->objParam->getParametro('emisionReserva') == 'true')) {
+
+            $datos = $this->res->getDatos();        
+            // var_dump($datos);exit;
+            if ($datos['boleto_anulado'] != '' && $datos['anulado'] == 'no') {                
+
+                $data_mail = '';
+                $data_mail.= '<!DOCTYPE html>'.
+                '<html lang="en">'.
+                '<head>'.
+                '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'.
+                '<meta name="viewport" content="width=device-width">'.
+                '</head>'.
+                '<body>'.
+                    '<div id="email" style="width:600px;margin: auto;background:white;">'.
+                        '<table role="presentation" border="0" width="100%">'.
+                            '<tr>'.
+                                '<td bgcolor="#EAF0F6" align="justify" style="padding: 30px 30px;">'.
+                                '<b>Estimad@s </b> Informamos la anulacion del boleto: <br><br>'.
+                                '<table border="0"  cellspacing="5" style="text-align: left;">'.
+                                '<tr>'.                                
+                                '<td>'.$datos['boleto_anulado'].'</td>'.
+                                '</tr>'.                                
+                                '</table>'.                             
+                                'Favor tomar en nota.<br>'.
+                                '-------------------------------------<br><br>'.                
+                                '</td>'.
+                                '</tr>'.
+                            '</table>'.     
+                        '</div>'.
+                      '</body>'.
+                '</html>';
+
+                    $correo=new CorreoExterno();                                    
+                    $correo->addDestinatario('mcaballero@boa.bo');    // responsable boletos ERP BOA                                                  
+                    $correo->addDestinatario('dcamacho@boa.bo');     //responsable ventas web boletos BOA                    
+                    //asunto
+                    $correo->setAsunto('Notificacion Anulacion de Boleto.');
+                    //cuerpo mensaje
+                    $correo->setMensaje($data_mail);
+                    $correo->setTitulo('Notificacion Anulacion de Boleto.');
+                    $correo->setDefaultPlantilla();             
+                    $resp=$correo->enviarCorreo();
+                    if($resp=='OK'){                        
+                        $datos['notificado'] = 'si';                        
+                    } else {
+                        $datos['notificado'] = 'no';
+                    }
+                    $this->res->setDatos($datos);
+            }
+        }
+
         $this->res->imprimirRespuesta($this->res->generarJson());
     }
 

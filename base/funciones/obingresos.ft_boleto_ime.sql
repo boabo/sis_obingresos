@@ -3107,7 +3107,7 @@ BEGIN
                begin
 
     ---raise exception 'id %',v_parametros.id_boleto_amadeus;
-
+    v_boletos= '';
     v_ids = string_to_array(v_parametros.id_boleto_amadeus,',');
             FOREACH v_id_boleto_a IN ARRAY v_ids
             LOOP
@@ -3176,12 +3176,17 @@ BEGIN
              			 		where b.id_boleto_amadeus = v_id_boleto_a);
                   END IF;
 
+              v_boletos = v_boleto.nro_boleto;
             	--Definicion de la respuesta
 				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos anulado con exito');
             	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus',v_id_boleto_a::varchar);
 
             END IF;
 		END LOOP;
+
+            v_resp = pxp.f_agrega_clave(v_resp,'boleto_anulado',v_boletos::varchar);
+            v_resp = pxp.f_agrega_clave(v_resp,'anulado',v_boleto.voided::varchar);            
+            v_resp = pxp.f_agrega_clave(v_resp,'notificado', ''::varchar);
             --Devuelve la respuesta
             return v_resp;
 
