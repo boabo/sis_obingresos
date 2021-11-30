@@ -79,6 +79,7 @@ DECLARE
     v_codigo_no_iata		varchar;
     v_existencia_auxiliar_nombre	integer;
     v_activar_contrato		varchar;
+    v_nombre_auxiliar		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_agencia_ime';
@@ -989,11 +990,22 @@ BEGIN
                 from conta.tauxiliar auxi
                 where auxi.nombre_auxiliar = v_nombre_agencia;
 
-                if (v_existencia_auxiliar_nombre > 0) then
-                	raise exception 'El nombre %, ya esta registrado en los auxiliares',v_nombre_agencia;
-                end if;
+
+                select auxi.nombre_auxiliar into v_nombre_auxiliar
+                from conta.tauxiliar auxi
+                where auxi.codigo_auxiliar = v_codigo_int;
+
 
                  if v_existencia_auxiliar = 0 then
+
+                 if (v_existencia_auxiliar_nombre > 0) then
+                	raise exception 'El nombre %, ya esta registrado en los auxiliares',v_nombre_agencia;
+                 end if;
+
+                 if (v_nombre_auxiliar != v_nombre_agencia) then
+                 	raise exception 'El nombre del auxiliar: <b>%</b> es distinto al nombre de la agencia: <b>%</b>',v_nombre_auxiliar,v_nombre_agencia;
+                 end if;
+
                  --Sentencia de la insercion
                   insert into conta.tauxiliar(
                   --id_empresa,
@@ -1022,8 +1034,8 @@ BEGIN
                   v_tipo_auxiliar,
                   null
                   )RETURNING id_auxiliar into v_id_auxiliar;
-                else
-                	raise exception 'Ya Existe la cuenta Corriente para el OfficeID: %, Favor verifique la información',v_codigo_int;
+                --else
+                	--raise exception 'Ya Existe la cuenta Corriente para el OfficeID: %, Favor verifique la información',v_codigo_int;
                 end if;
 			/**********************************************************************************/
 
