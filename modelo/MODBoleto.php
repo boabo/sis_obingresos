@@ -1308,6 +1308,9 @@ class MODBoleto extends MODbase{
         $this->setParametro('pnr','localizador','varchar');
         $this->setParametro('consult_pnr','consult_pnr','varchar');
         $this->setParametro('id_punto_venta','id_punto_venta','int4');
+        $this->setParametro('id_forma_pago','id_forma_pago','int4');
+        $this->setParametro('id_forma_pago2','id_forma_pago2','int4');
+        $this->setParametro('fecha_emision','fecha_emision','date');
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;
@@ -1369,6 +1372,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('pnr','pnr','varchar');        
         $this->setParametro('moneda','moneda','varchar');        
         $this->setParametro('pasajerosEmision','pasajerosEmision','text');        
+        $this->setParametro('id_forma_pago','id_forma_pago','int4');
+        $this->setParametro('id_forma_pago2','id_forma_pago2','int4');
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;

@@ -188,6 +188,9 @@ DECLARE
     v_reg					    record;
     v_nombre_factura		varchar;
     v_lugar             varchar;
+    v_codigo_fp2			varchar;
+    v_msg_caja_abierta		varchar;
+    v_msg_caja_cerrada		varchar;    
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -1594,7 +1597,11 @@ BEGIN
                                                                         v_valor,
                                                                         v_parametros.id_forma_pago,
                                                                         v_id_boleto,
-                                                                        v_parametros.numero_tarjeta,
+                                                                        case when v_parametros.numero_tarjeta = 'X' then
+                                                                        	null
+                                                                        else 
+	                                                                        v_parametros.numero_tarjeta
+                                                                        end,
                                                                         replace (upper(v_parametros.codigo_tarjeta),' ',''),
                                                                         v_codigo_tarjeta,
                                                                         p_id_usuario,
@@ -1626,7 +1633,11 @@ BEGIN
                                                                         v_parametros.id_forma_pago,
                                                                         v_parametros.id_moneda,
                                                                         v_id_boleto,
-                                                                        v_parametros.numero_tarjeta,
+                                                                        case when v_parametros.numero_tarjeta = 'X' then
+                                                                        	null
+                                                                        else 
+                                                                        	v_parametros.numero_tarjeta 
+                                                                        end,
                                                                         replace (upper(v_parametros.codigo_tarjeta),' ',''),
                                                                         v_codigo_tarjeta,
                                                                         p_id_usuario,
@@ -1806,7 +1817,11 @@ BEGIN
                                                                         v_parametros.id_forma_pago2,
                                                                         v_id_boleto,
                                                                         --v_parametros.ctacte,
-                                                                        v_parametros.numero_tarjeta2,
+                                                                        case when v_parametros.numero_tarjeta2 = 'XX' then
+                                                                        	null
+                                                                        else
+                                                                        	v_parametros.numero_tarjeta2
+                                                                        end,
                                                                         replace(upper(v_parametros.codigo_tarjeta2),' ',''),
                                                                         v_codigo_tarjeta,
                                                                         p_id_usuario,
@@ -1840,7 +1855,11 @@ BEGIN
                                                                         v_parametros.id_moneda2,
                                                                         v_id_boleto,
                                                                         --v_parametros.ctacte,
-                                                                        v_parametros.numero_tarjeta2,
+                                                                        case when v_parametros.numero_tarjeta2 = 'XX' then
+                                                                        	null
+                                                                        else
+                                                                        	v_parametros.numero_tarjeta2
+                                                                        end,
                                                                         replace(upper(v_parametros.codigo_tarjeta2),' ',''),
                                                                         v_codigo_tarjeta,
                                                                         p_id_usuario,
@@ -3088,7 +3107,7 @@ BEGIN
                begin
 
     ---raise exception 'id %',v_parametros.id_boleto_amadeus;
-
+    v_boletos= '';
     v_ids = string_to_array(v_parametros.id_boleto_amadeus,',');
             FOREACH v_id_boleto_a IN ARRAY v_ids
             LOOP
@@ -3157,12 +3176,17 @@ BEGIN
              			 		where b.id_boleto_amadeus = v_id_boleto_a);
                   END IF;
 
+              v_boletos = v_boleto.nro_boleto;
             	--Definicion de la respuesta
 				v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Boletos anulado con exito');
             	v_resp = pxp.f_agrega_clave(v_resp,'id_boleto_amadeus',v_id_boleto_a::varchar);
 
             END IF;
 		END LOOP;
+
+            v_resp = pxp.f_agrega_clave(v_resp,'boleto_anulado',v_boletos::varchar);
+            v_resp = pxp.f_agrega_clave(v_resp,'anulado',v_boleto.voided::varchar);            
+            v_resp = pxp.f_agrega_clave(v_resp,'notificado', ''::varchar);
             --Devuelve la respuesta
             return v_resp;
 
@@ -4072,13 +4096,61 @@ BEGIN
         	v_lugar = '';    
         end if;
 
+        if pxp.f_existe_parametro(p_tabla, 'id_forma_pago') then
+            select mp.mop_code into v_codigo_fp
+            from obingresos.tmedio_pago_pw mp
+            where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
+        end if;
+
+        if pxp.f_existe_parametro(p_tabla, 'id_forma_pago2') then
+            select mp.mop_code into v_codigo_fp2
+            from obingresos.tmedio_pago_pw mp
+            where mp.id_medio_pago_pw = v_parametros.id_forma_pago2;
+        end if; 
+        
+        /*control apertura caja */
+        v_msg_caja_abierta='';
+        v_msg_caja_cerrada='';
+        
+        select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+        from segu.vusuario usu
+        where usu.id_usuario = p_id_usuario; 
+        
+        if (exists(	select 1
+                        from vef.tapertura_cierre_caja acc
+                        where acc.id_usuario_cajero = p_id_usuario and
+                          acc.fecha_apertura_cierre = v_parametros.fecha_emision and
+                          acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                          acc.id_punto_venta = v_parametros.id_punto_venta)) then
+            v_msg_caja_cerrada = 'La caja del Cajero(a): '||v_cajero_desc||', con Cuenta Usuario: '||v_cuenta_cajero||' ya fue cerrada, necesita tener la caja abierta para poder emitir la reserva';
+        end if;
+        
+        if (not exists(	select 1
+                         from vef.tapertura_cierre_caja acc
+                         where acc.fecha_apertura_cierre = v_parametros.fecha_emision and
+                               acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                               acc.id_punto_venta = v_parametros.id_punto_venta and acc.id_usuario_cajero = p_id_usuario)) then                                                             
+              v_msg_caja_abierta = 'Antes de emitir la reserva debe realizar una apertura de caja. Cajero(a): '||v_cajero_desc||', Cuenta Usuario: '||v_cuenta_cajero;
+        end if;
+
+        select oficial into v_tipo_cambio
+        from param.ttipo_cambio tc
+        inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
+        where mon.tipo_moneda='ref'
+        and fecha = v_parametros.fecha_emision;
+
+
         --Definicion de la respuesta
         v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
         v_resp = pxp.f_agrega_clave(v_resp,'id_reserva_pnr', v_id_reserva_pnr::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'msg', v_msg::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'emitido', v_emitido::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'lugar_pv', v_lugar::varchar);
-
+        v_resp = pxp.f_agrega_clave(v_resp,'codigo_fp', v_codigo_fp::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'codigo_fp2', v_codigo_fp2::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'msg_caja_abierta', v_msg_caja_abierta::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'msg_caja_cerrada', v_msg_caja_cerrada::varchar);        
+        v_resp = pxp.f_agrega_clave(v_resp,'tc', v_tipo_cambio::varchar);                
         --Devuelve la respuesta
         return v_resp;
 
@@ -4248,8 +4320,22 @@ BEGIN
                 END IF;
             end if;
 
-		    v_localizador = v_parametros.pnr; -- '2VRO96';
-            v_tipo_pago_amadeus = 'CA';
+            select mp.mop_code into v_codigo_fp
+            from obingresos.tmedio_pago_pw mp
+            where mp.id_medio_pago_pw = v_parametros.id_forma_pago;
+
+            select mp.mop_code into v_codigo_fp2
+            from obingresos.tmedio_pago_pw mp
+            where mp.id_medio_pago_pw = v_parametros.id_forma_pago2;
+
+            if (v_codigo_fp != 'CASH' and (v_codigo_fp2 = '' or v_codigo_fp2 is null)) then
+            	v_tipo_pago_amadeus = 'CC';            
+            elsif (v_codigo_fp != 'CASH' and v_codigo_fp2 != 'CASH') then
+            	v_tipo_pago_amadeus = 'CC';
+            else
+            	v_tipo_pago_amadeus = 'CA';
+            end if;
+		    v_localizador = v_parametros.pnr;            
             v_code = 'TKTT';
             v_issue_indicator = 'C';
             
