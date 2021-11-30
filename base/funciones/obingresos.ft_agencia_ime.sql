@@ -1034,8 +1034,10 @@ BEGIN
                   v_tipo_auxiliar,
                   null
                   )RETURNING id_auxiliar into v_id_auxiliar;
-                --else
-                	--raise exception 'Ya Existe la cuenta Corriente para el OfficeID: %, Favor verifique la información',v_codigo_int;
+                else
+                	if (v_nombre_auxiliar != v_nombre_agencia) then
+                 	  raise exception 'El nombre del auxiliar: <b>%</b> es distinto al nombre de la agencia: <b>%</b>',v_nombre_auxiliar,v_nombre_agencia;
+                 	end if;
                 end if;
 			/**********************************************************************************/
 
