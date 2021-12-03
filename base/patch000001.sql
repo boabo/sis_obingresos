@@ -4232,4 +4232,58 @@ ALTER TABLE obingresos.tboleto_amadeus
 
 COMMENT ON COLUMN obingresos.tboleto_amadeus.id_pv_reserva
 IS 'id punto de venta reserva';
-/***********************************F-SCP-BVP-OBINGRESOS-0-17/1/2021*****************************************/
+/***********************************F-SCP-BVP-OBINGRESOS-0-17/11/2021*****************************************/
+
+/***********************************I-SCP-BVP-OBINGRESOS-0-03/12/2021****************************************/
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_llamada_consulta_reserva TIMESTAMP(0) WITHOUT TIME ZONE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_llamada_consulta_reserva
+  IS 'Fecha y hora de llamada a servicio de reserva';
+
+ALTER TABLE obingresos.treserva_pnr
+ALTER COLUMN fecha_llamada_consulta_reserva SET DEFAULT now();
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_respuesta_consulta_reserva TIMESTAMP(0) WITHOUT TIME ZONE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_respuesta_consulta_reserva
+  IS 'Fecha y hora respuesta servicio consulta reserva';
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_llamada_emision_reserva TIMESTAMP(0) WITHOUT TIME ZONE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_llamada_emision_reserva
+  IS 'Fecha y hora llamada al servicio de emision de boletos mediante pnr de reserva.';
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_respuesta_emision_reserva TIMESTAMP(0) WITHOUT TIME ZONE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_respuesta_emision_reserva
+  IS 'Fecha y hora de respuesta servicio de emision de reserva';
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_llamada_tkts_emitido TIMESTAMP(0) WITHOUT TIME ZONE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_llamada_tkts_emitido
+  IS 'Fecha y hora llamada a servicio que devuelve informacion de los boletos emitidos';
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_respuesta_tkts_emitido TIMESTAMP(0) WITHOUT TIME ZONE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_respuesta_tkts_emitido
+  IS 'Fecha y hora respuesta que devuelve informacion de los boletos emitidos';
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_llamada_servicio_factura TIMESTAMP(0) WITHOUT TIME ZONE;
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_respuesta_servicio_factura TIMESTAMP(0) WITHOUT TIME ZONE;
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN cantidad_llamada_consulta_reserva INTEGER;
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN cantidad_llamada_tkts_emitido INTEGER;
+
+/***********************************F-SCP-BVP-OBINGRESOS-0-03/12/2021*****************************************/

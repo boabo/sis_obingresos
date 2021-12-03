@@ -20,8 +20,8 @@ class ACTBoleto extends ACTbase{
     var $contReserva = 0;
     var $credentialEmision = ""; 
     var $keyEmisionBol = "";             
-    var $apiEmision = "http://ef.boa.bo/ServicesBG/ResiberService.svc/";            
-    var $apiEmisionToken = "http://ef.boa.bo/ServicesBG/Token.svc/";        
+    var $apiEmision = "http://ef.boa.bo/ServicesBG/ResiberService.svc/";                        
+    var $apiEmisionToken = "http://ef.boa.bo/ServicesBG/Token.svc/";            
 
     function listarBoleto(){
         $this->objParam->defecto('ordenacion','id_boleto');
@@ -235,9 +235,27 @@ class ACTBoleto extends ACTbase{
                 }
                                                 
                 $this->objParam->addParametro('todos', 'si');
-                                                
-                sleep(30); // espera 30 segundos luego de la emision de reserva. Recurpera informacion de boletos emitidos
-                $tktsPnr = $this->GetTktPNRPlus($inPnr , $identifierPnr);                
+                $contReserva=0;
+                
+                do {
+                    sleep(5); // espera 5 segundos luego de la emision de reserva. Recurpera informacion de boletos emitidos
+                    if($contReserva==0){
+                        // registro log tiempo respuesta                             
+                        $this->objParam->addParametro('tipo', 'GetTktInfo');        
+                        $this->objFuncTktInfo=$this->create('MODBoleto');
+                        $this->objFuncTktInfo->actualizarTiempoEmision($this->objParam);                        
+                    }
+
+                    $tktsPnr = $this->GetTktPNRPlus($inPnr , $identifierPnr);
+                    if (strlen($tktsPnr)>2) {
+                        break;
+                    }              
+                    $contReserva++;
+                } while ($contReserva <= 10);
+                
+                if (strlen($tktsPnr)==2) {        
+                    throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
+                }                
                 
                 $this->objParam->addParametro('pasajerosEmision', $tktsPnr);                
                 $this->objFunc3=$this->create('MODBoleto');                
@@ -256,6 +274,9 @@ class ACTBoleto extends ACTbase{
                     $this->objFunc2=$this->create('MODBoleto');
                     $this->res = $this->objFunc2->modificarAmadeusFpGrupo($this->objParam);                    
                     if($this->res->getTipo() == 'EXITO'){
+                        $this->objParam->arreglo_parametros['tipo'] = 'GetInvoicePNRPDF';        
+                        $this->objFuncPNRPDF=$this->create('MODBoleto');
+                        $this->objFuncPNRPDF->actualizarTiempoEmision($this->objParam); 
                         $base64Invoice = $this->GetInvoicePNRPDF($inPnr, $identifierPnr, $datos['lugar_pv']);                        
                         $respuesta = $this->res->getDatos();
                         array_unshift($respuesta, array('fileInvoice'=> $base64Invoice));
@@ -2766,7 +2787,7 @@ class ACTBoleto extends ACTbase{
      
      $fecha_emision = date("dmy", strtotime($this->objParam->getParametro('fecha_emision')));
 
-     $this->objParam->addParametro('consult_pnr', 'true');
+     $this->objParam->addParametro('consult_pnr', 'false');
      $this->objParam->addParametro('localizador', strtoupper($this->objParam->getParametro('pnr')));
      $this->objFunc = $this->create('MODBoleto');
      $this->res = $this->objFunc->regReservaPnr($this->objParam);
@@ -2838,7 +2859,12 @@ class ACTBoleto extends ACTbase{
      $response = array('exito' => false, 'pnr' => $pnr);
     
      if ($res!=null){
-                  
+        // registro log tiempo respuesta 
+        $this->objParam->addParametro('pnr', strtoupper($this->objParam->getParametro('pnr')));        
+        $this->objParam->addParametro('tipo', 'GetBooking');        
+        $this->objFuncBook=$this->create('MODBoleto');
+        $this->objFuncBook->actualizarTiempoEmision($this->objParam);
+
         $pasajeros = $res->reserva->pasajeros->pasajeroDR;
         $monto_total = 0;
         $off_resp = $res->reserva->responsable->off_resp;
@@ -3067,11 +3093,11 @@ class ACTBoleto extends ACTbase{
     $res = json_decode($_out);
     
     $reservaTkt = false;    
+    $array = array();
 
     if ($res->reserva_V2 != null) {
         $pasajeros = $res->reserva_V2->pasajeros->pasajeroDR;    
-        $reservaTkt = true;
-        $array = array();        
+        $reservaTkt = true;                
         
         // ordenacion por pasajero y boleto segun string u objeto recibido
         if (gettype($pasajeros) == "object"){
@@ -3097,33 +3123,10 @@ class ACTBoleto extends ACTbase{
         }           
     }    
 
-    if(($reservaTkt == false) and ($this->contReserva <= 7)) {
-                
-        // Delay de llamadas 
-        if ($this->contReserva == 5) {                    
-            sleep(5); // 5 segundos de espera
-            $this->contReserva = $this->contReserva + 1;                    
-            $this->GetTktPNRPlus($pnr, $identifierPnr);                      
-        } elseif ($this->contReserva == 6) {
-            sleep(10); // 10 segundos de espera
-            $this->contReserva = $this->contReserva + 1;                    
-            $this->GetTktPNRPlus($pnr, $identifierPnr);                    
-        } elseif ($this->contReserva == 7) {
-            sleep(20); // 20 segundos de espera
-            $this->contReserva = $this->contReserva + 1;                    
-            $this->GetTktPNRPlus($pnr, $identifierPnr);                    
-        } else {
-            $this->contReserva = $this->contReserva + 1;
-            $this->GetTktPNRPlus($pnr, $identifierPnr);
-        }                                
-
-    }
-
-    $this->contReserva = 0;
     
-    if (!$reservaTkt) {
-        throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
-    }
+    // if (!$reservaTkt) {        
+    //     throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
+    // }
     
     return json_encode($array);
 
@@ -3180,6 +3183,12 @@ class ACTBoleto extends ACTbase{
             throw new Exception("No se pudo conectar con el servicio GetInvoicePNRPDF. Vuelva a intentar. Si el error persiste consulte con informática");
         }
         curl_close($s);
+        if ($lugarPv!="") {
+            // registro log tiempo respuesta                             
+            $this->objParam->addParametro('tipo', 'GetInvoicePNRPDFIN');        
+            $this->objFuncPNRPDF=$this->create('MODBoleto');
+            $this->objFuncPNRPDF->actualizarTiempoEmision($this->objParam);
+        }
 
         if ($retorno) {
             echo json_encode(array('pdf' => base64_encode($_out), 'pnr' => $pnr));

@@ -4010,6 +4010,10 @@ BEGIN
 	          if v_parametros.consult_pnr = 'true' then
               	 v_inspnr = false;
               end if;
+          else 
+              update obingresos.treserva_pnr set
+              fecha_llamada_emision_reserva = now()
+              where pnr_reserva = v_parametros.pnr;          
           end if;
 
           -- control verifica si exite ya el pnr emitido 
@@ -4169,7 +4173,8 @@ BEGIN
         	update obingresos.treserva_pnr set
             estado = 'emitido',
             authorization_code = v_parametros.authorizationCode,
-            observacion = v_parametros.mensaje
+            observacion = v_parametros.mensaje,
+            fecha_respuesta_emision_reserva = now()
             where id_reserva_pnr = v_parametros.id_reserva_pnr
             and   pnr_reserva = v_parametros.pnr;           
 
@@ -4243,7 +4248,12 @@ BEGIN
 	elsif(p_transaccion='OBING_REGTKTPNR_INS')then
 
 		begin
-        	
+
+         /**Actulizar respuesta servicio TraerReservaExch con los nro de boletos emitidos**/
+          update obingresos.treserva_pnr set
+          fecha_respuesta_tkts_emitido = now()
+          where pnr_reserva = v_parametros.pnr;
+
           /*****Recuperamos el id_sucursal para obtener la moneda***/
           v_moneda = v_parametros.moneda;
           
@@ -4528,7 +4538,54 @@ BEGIN
             return v_resp;
 
 		end;
-    
+
+      /*********************************
+      #TRANSACCION:  'OBING_UPPNRRT_MOD'
+      #DESCRIPCION: actualizar tiempos de llamada y respuesta servicio emision de reserva
+      #AUTOR:		breydi.vasquez
+      #FECHA:		02-12-2021
+      ***********************************/
+
+      elsif(p_transaccion='OBING_UPPNRRT_MOD')then          	
+		begin
+
+             if v_parametros.tipo = 'GetBooking' then
+                update obingresos.treserva_pnr set
+                fecha_respuesta_consulta_reserva = now(),
+                cantidad_llamada_consulta_reserva = coalesce(cantidad_llamada_consulta_reserva, 0) + 1
+                where pnr_reserva = v_parametros.pnr;              
+             elsif v_parametros.tipo = 'GetTktInfo' then
+             	if exists (select 1
+                	from obingresos.treserva_pnr where pnr_reserva = v_parametros.pnr
+                	and cantidad_llamada_tkts_emitido is  null) then              	
+                  update obingresos.treserva_pnr set
+                  fecha_llamada_tkts_emitido = now(),
+                  cantidad_llamada_tkts_emitido = 0
+                  where pnr_reserva = v_parametros.pnr;              
+               else 
+                  update obingresos.treserva_pnr set
+                  cantidad_llamada_tkts_emitido = coalesce(cantidad_llamada_tkts_emitido, 0) + 1
+                  where pnr_reserva = v_parametros.pnr;
+              end if;  
+             elsif v_parametros.tipo = 'GetInvoicePNRPDF' then
+                  update obingresos.treserva_pnr set
+                  fecha_llamada_servicio_factura = now()
+                  where pnr_reserva = v_parametros.pnr;
+             elsif v_parametros.tipo = 'GetInvoicePNRPDFIN' then
+                  update obingresos.treserva_pnr set
+                  fecha_respuesta_servicio_factura = now()
+                  where pnr_reserva = v_parametros.pnr;                                                    
+             end if;
+
+              --Definicion de la respuesta
+              v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
+              v_resp = pxp.f_agrega_clave(v_resp,'pnr',v_parametros.pnr::varchar);
+
+              --Devuelve la respuesta
+              return v_resp;
+
+          end;
+              
 	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;

@@ -1381,5 +1381,23 @@ class MODBoleto extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+    function actualizarTiempoEmision() {
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_UPPNRRT_MOD';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('tipo','tipo','varchar');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    
 }
 ?>
