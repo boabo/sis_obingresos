@@ -58,6 +58,7 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 
 	},
 
+	bnewGroups: [1,2],
 	beditGroups: [1,2],
 	bdelGroups:  [1,2],
 	bactGroups:  [1,2],
@@ -126,6 +127,70 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 				bottom_filter : true
 		},
 
+		/*Aumentando para el lugar*/
+		{
+				config:{
+						name: 'id_lugar',
+						fieldLabel: 'Lugar',
+						allowBlank: false,
+						emptyText:'Lugar...',
+						store:new Ext.data.JsonStore(
+								{
+										url: '../../sis_parametros/control/Lugar/listarLugar',
+										id: 'id_lugar',
+										root: 'datos',
+										sortInfo:{
+												field: 'nombre',
+												direction: 'ASC'
+										},
+										totalProperty: 'total',
+										fields: ['id_lugar','id_lugar_fk','codigo','nombre','tipo','sw_municipio','sw_impuesto','codigo_largo'],
+										// turn on remote sorting
+										remoteSort: true,
+										baseParams:{par_filtro:'lug.nombre',es_regional:'si'}
+								}),
+						valueField: 'id_lugar',
+						displayField: 'nombre',
+						gdisplayField:'nombre_lugar',
+						hiddenName: 'id_lugar',
+						triggerAction: 'all',
+						lazyRender:true,
+						mode:'remote',
+						pageSize:50,
+						queryDelay:500,
+						anchor:"80%",
+						gwidth:150,
+						minChars:2,
+						renderer:function (value, p, record){return String.format('{0}', record.data['nombre_lugar']);}
+				},
+				type:'ComboBox',
+				filters:{pfiltro:'lug.nombre',type:'string'},
+				id_grupo:1,
+				grid:false,
+				form:true
+		},
+		{
+			config:{
+				name: 'boaagt',
+				fieldLabel: 'Boa Agt',
+				allowBlank:false,
+				emptyText:'Tipo...',
+	       		typeAhead: true,
+	       		triggerAction: 'all',
+	       		lazyRender:true,
+	       		mode: 'local',
+				gwidth: 150,
+				store:['A','B']
+			},
+				type:'ComboBox',
+				filters:{
+	       		         type: 'list',
+	       				 options: ['A','B'],
+	       		 	},
+				id_grupo:1,
+				grid:false,
+				form:true
+		},
 
 		{
 			config:{
@@ -138,12 +203,12 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 	       		lazyRender:true,
 	       		mode: 'local',
 				gwidth: 150,
-				store:['noiata']
+				store:['noiata','iata']
 			},
 				type:'ComboBox',
 				filters:{
 	       		         type: 'list',
-	       				 options: ['noiata'],
+	       				 options: ['noiata','iata'],
 	       		 	},
 				id_grupo:1,
 				grid:true,
@@ -367,6 +432,8 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
 		{name:'validar_boleta', type: 'string'},
 		{name:'controlar_periodos_pago', type: 'string'},
 		{name:'estado_reg', type: 'string'},
+		{name:'id_lugar', type: 'numeric'},
+		{name:'boaagt', type: 'varchar'},
 
 	],
 	sortInfo:{

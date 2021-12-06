@@ -137,6 +137,8 @@ class MODAgencia extends MODbase{
         $this->setParametro('codigo_int','codigo_int','varchar');
         $this->setParametro('codigo','codigo','varchar');
         $this->setParametro('tipo_agencia','tipo_agencia','varchar');
+        $this->setParametro('id_lugar','id_lugar','integer');
+        $this->setParametro('boaagt','boaagt','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -548,7 +550,7 @@ class MODAgencia extends MODbase{
 
         $this->setParametro('id_agencia','id_agencia','int4');
         $this->setParametro('codigo_int','codigo_int','varchar');
-        $this->setParametro('codigo','codigo','varchar');        
+        $this->setParametro('codigo','codigo','varchar');
         $this->setParametro('iata_status','iata_status','varchar');
         $this->setParametro('osd','osd','varchar');
 
