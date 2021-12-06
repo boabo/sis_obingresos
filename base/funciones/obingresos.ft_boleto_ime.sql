@@ -4011,9 +4011,13 @@ BEGIN
               	 v_inspnr = false;
               end if;
           else 
-              update obingresos.treserva_pnr set
-              fecha_llamada_emision_reserva = now()
-              where pnr_reserva = v_parametros.pnr;          
+            if exists (select 1
+                    from obingresos.treserva_pnr where pnr_reserva = v_parametros.pnr
+                    and fecha_llamada_emision_reserva is null) then           
+                update obingresos.treserva_pnr set
+                fecha_llamada_emision_reserva = now()
+                where pnr_reserva = v_parametros.pnr;          
+            end if;
           end if;
 
           -- control verifica si exite ya el pnr emitido 
