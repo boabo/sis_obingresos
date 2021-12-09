@@ -4231,7 +4231,8 @@ BEGIN
         	
             select pxp.list(id_boleto_amadeus::text) into v_ids_boletos
             from obingresos.tboleto_amadeus
-            where upper(localizador) = upper(v_parametros.pnr);
+            where upper(localizador) = upper(v_parametros.pnr)
+            and id_pv_reserva is not null;
 
             --Definicion de la respuesta
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
