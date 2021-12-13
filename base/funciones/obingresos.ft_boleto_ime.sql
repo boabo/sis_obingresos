@@ -3259,6 +3259,7 @@ BEGIN
                                         and bol.fecha_emision=v_parametros.fecha_emision::date
                                         and bol.id_usuario_cajero=v_parametros.id_usuario_cajero
                                         and bol.voided='si'
+                                        and bol.id_pv_reserva is null
                                         order by bol.nro_boleto)LOOP
 
                 IF v_boletos_anulados_amadeus @> ARRAY[v_boletos_anulados_erp.nro_boleto]::text[] != true THEN
@@ -3272,7 +3273,8 @@ BEGIN
                 from obingresos.tboleto_amadeus bol
                 where bol.nro_boleto= v_boleto_anulado_amadeus
                 and bol.id_usuario_cajero=v_parametros.id_usuario_cajero
-                and bol.estado='revisado';
+                and bol.estado='revisado'
+                and bol.id_pv_reserva is null;
 
                 IF v_boleto_voided='no' THEN
                 	v_boletos_no_anulados_erp =  array_append(v_boletos_no_anulados_erp, v_boleto_anulado_amadeus);
