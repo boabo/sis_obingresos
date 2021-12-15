@@ -19,9 +19,9 @@ class ACTBoleto extends ACTbase{
     var $objParamAux;
     var $contReserva = 0;
     var $credentialEmision = ""; 
-    var $keyEmisionBol = "";             
-    var $apiEmision = "http://ef.boa.bo/ServicesBG/ResiberService.svc/";                        
-    var $apiEmisionToken = "http://ef.boa.bo/ServicesBG/Token.svc/";            
+    var $keyEmisionBol = "";                 
+    var $apiEmision = "http://ef.boa.bo/ServicesBG/ResiberService.svc/";      
+    var $apiEmisionToken = "http://ef.boa.bo/ServicesBG/Token.svc/";                      
 
     function listarBoleto(){
         $this->objParam->defecto('ordenacion','id_boleto');
@@ -204,10 +204,6 @@ class ACTBoleto extends ACTbase{
 
             if ($this->objParam->getParametro('emisionReservaPnr') == 'true') { 
 
-                $this->objFunc=$this->create('MODBoleto');                
-                $this->resInsPnr = $this->objFunc->regReservaPnr($this->objParam);
-                $datos = $this->resInsPnr->getDatos();                    
-                
                 $inPnr = strtoupper($this->objParam->getParametro('localizador'));
                 $nit = strtoupper($this->objParam->getParametro('nit'));
                 $razonSocial = strtoupper($this->objParam->getParametro('razonSocial'));
@@ -215,6 +211,19 @@ class ACTBoleto extends ACTbase{
                 $codigoAuth1 = strtoupper($this->objParam->getParametro('codigo_tarjeta'));
                 $codigoAuth2 = strtoupper($this->objParam->getParametro('codigo_tarjeta2'));
                 $montoTotalPnr = $this->objParam->getParametro('total');
+
+                $this->objParam->arreglo_parametros['fecha_emision'] = $this->objParam->getParametro('fechaEmisionPnr');
+                $datosEmison = array('nit' => $nit, 'razon_social' => $razonSocial, 'tipo_comision' => $this->objParam->getParametro('tipo_comision'),
+                                     'id_forma_pago' => $this->objParam->getParametro('id_forma_pago'), 'monto_forma_pago' => $this->objParam->getParametro('monto_forma_pago'), 
+                                     'codigo_tarjeta' => $this->objParam->getParametro('codigo_tarjeta'),
+                                     'id_forma_pago2' => $this->objParam->getParametro('id_forma_pago2'), 'monto_forma_pago2' => $this->objParam->getParametro('monto_forma_pago2'),
+                                     'codigo_tarjeta2' => $this->objParam->getParametro('codigo_tarjeta2'),
+                                     'id_moneda' => $this->objParam->getParametro('id_moneda'), 'id_moneda2' => $this->objParam->getParametro('id_moneda2'),
+                                    );
+                $this->objParam->addParametro('datos_emision', ''.json_encode($datosEmison).'');
+                $this->objFunc=$this->create('MODBoleto');                                
+                $this->resInsPnr = $this->objFunc->regReservaPnr($this->objParam);
+                $datos = $this->resInsPnr->getDatos();                                
 
                 $this->objParam->addParametro('fecha', $this->objParam->getParametro('fechaEmisionPnr'));
                 $this->objParam->addParametro('moneda_base', $this->objParam->getParametro('monedaBasePnr'));                
@@ -238,15 +247,15 @@ class ACTBoleto extends ACTbase{
                 $contReserva=0;
                 
                 do {
-                    sleep(5); // espera 5 segundos luego de la emision de reserva. Recurpera informacion de boletos emitidos
+                    sleep(3); // espera 3 segundos luego de la emision de reserva. Recurpera informacion de boletos emitidos
                     if($contReserva==0){
                         // registro log tiempo respuesta                             
-                        $this->objParam->addParametro('tipo', 'GetTktInfo');        
+                        $this->objParam->arreglo_parametros['tipo'] = 'GetTktInfo';                                
                         $this->objFuncTktInfo=$this->create('MODBoleto');
                         $this->objFuncTktInfo->actualizarTiempoEmision($this->objParam);                        
                     }
 
-                    $tktsPnr = $this->GetTktPNRPlus($inPnr , $identifierPnr);
+                    $tktsPnr = $this->GetTktPNRPlus($inPnr , $identifierPnr, $datos['lugar_pv']);
                     if (strlen($tktsPnr)>2) {
                         break;
                     }              
@@ -262,32 +271,25 @@ class ACTBoleto extends ACTbase{
                 $this->resTktPnr = $this->objFunc3->registroTktPnr($this->objParam);                
                 
 
-                $this->objFunc1=$this->create('MODBoleto');
-                $this->objBoletosPnr = $this->objFunc1->listBoletosPnr($this->objParam);
 
-                if($this->objBoletosPnr->getTipo() == 'EXITO'){
-                    $consult = $this->objBoletosPnr->getDatos();
-                    $idsGrupo = $consult['ids_boletos_seleccionados'];
-                    $this->objParam->arreglo_parametros['ids_seleccionados'] = $idsGrupo;
-                    $this->objParam->arreglo_parametros['numero_tarjeta'] = "X";
-                    $this->objParam->arreglo_parametros['numero_tarjeta2'] = "XX";                    
-                    $this->objFunc2=$this->create('MODBoleto');
-                    $this->res = $this->objFunc2->modificarAmadeusFpGrupo($this->objParam);                    
-                    if($this->res->getTipo() == 'EXITO'){
-                        $this->objParam->arreglo_parametros['tipo'] = 'GetInvoicePNRPDF';        
-                        $this->objFuncPNRPDF=$this->create('MODBoleto');
-                        $this->objFuncPNRPDF->actualizarTiempoEmision($this->objParam); 
-                        $base64Invoice = $this->GetInvoicePNRPDF($inPnr, $identifierPnr, $datos['lugar_pv']);                        
-                        $respuesta = $this->res->getDatos();
-                        array_unshift($respuesta, array('fileInvoice'=> $base64Invoice));
-                        $this->res->setDatos($respuesta); 
-                    }                   
-                }                               
+                $this->objParam->arreglo_parametros['tipo'] = 'GetInvoicePNRPDF';        
+                $this->objFunc1=$this->create('MODBoleto');
+                $this->res=$this->objFunc1->actualizarTiempoEmision($this->objParam);                 
+                $base64Invoice = $this->GetInvoicePNRPDF($inPnr, $identifierPnr, $datos['lugar_pv']);                        
+                $respuesta = $this->res->getDatos();                
+                array_unshift($respuesta, array('fileInvoice'=> $base64Invoice));
+                $this->res->setDatos($respuesta); 
+                    // }                   
+                // }                               
             }else{
                 $this->objFunc=$this->create('MODBoleto');
                 $this->res=$this->objFunc->modificarBoletoAmadeusVenta($this->objParam); 
             }
         } else {
+            if($this->objParam->getParametro('emisionReservaPnr') == 'grupo') {
+                $this->objParam->arreglo_parametros['numero_tarjeta'] = "X";
+                $this->objParam->arreglo_parametros['numero_tarjeta2'] = "XX"; 
+            }
             $this->objFunc=$this->create('MODBoleto');
             $this->res=$this->objFunc->modificarAmadeusFpGrupo($this->objParam);
         }
@@ -2766,12 +2768,34 @@ class ACTBoleto extends ACTbase{
  function encrypt3DES ($text, $lugarPv) { //algoritmo valido para php  <= 7
 
     //  captura de creadenciales 
-    if (trim($lugarPv) == 'CBB') {        
-        $this->keyEmisionBol = $_SESSION['_keyEmisionBolCBB'];
-    } elseif (trim($lugarPv) == 'LPB') {        
-        $this->keyEmisionBol = $_SESSION['_keyEmisionBolLPB'];
-    } elseif (trim($lugarPv) == 'SRZ') {        
-        $this->keyEmisionBol = $_SESSION['_keyEmisionBolSRZ'];
+    switch (trim($lugarPv)) {
+        case 'CBB':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolCBB'];
+            break;
+        case 'LPB':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolLPB'];
+            break;
+        case 'SRZ':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolSRZ'];
+            break;
+        case 'TJA':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolTJA'];
+            break;
+        case 'POI':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolPOI'];
+            break;
+        case 'ORU':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolORU'];
+            break;
+        case 'CHU':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolCHU'];
+            break;
+        case 'BEN':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolBEN'];
+            break;
+        case 'PDO':
+            $this->keyEmisionBol = $_SESSION['_keyEmisionBolPDO'];
+            break;
     }
 
     $td = mcrypt_module_open (MCRYPT_3DES, '', MCRYPT_MODE_ECB, '');
@@ -2784,7 +2808,11 @@ class ACTBoleto extends ACTbase{
  }
 
  function consultaReservaBoletoExch () {
-     
+    
+     if (preg_match('/\s/', strtoupper($this->objParam->getParametro('pnr')))>0) {
+         throw new Exception("El PNR que registro no debe tener espacios en blanco, favor verifique.");         
+     }
+            
      $fecha_emision = date("dmy", strtotime($this->objParam->getParametro('fecha_emision')));
 
      $this->objParam->addParametro('consult_pnr', 'false');
@@ -2806,14 +2834,43 @@ class ACTBoleto extends ACTbase{
      }
                
     //  captura de creadenciales 
-    if (trim($datos['lugar_pv']) == 'CBB') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];        
-     } elseif (trim($datos['lugar_pv']) == 'LPB') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];
-     } elseif (trim($datos['lugar_pv']) == 'SRZ') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];
-     } else {
-         throw new Exception("Error: en llavez de emision, Favor comuniquese con informatica.");         
+    $lugar = trim($datos['lugar_pv']);
+    
+    switch ($lugar) {
+        case 'CBB':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
+            break;
+        case 'LPB':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
+            break;
+        case 'SRZ':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
+            break;
+        case 'TJA':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
+            break;
+        case 'POI':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
+            break;
+        case 'ORU':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
+            break;        
+        case 'CHU':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
+            break;        
+        case 'BEN':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
+            break;        
+        case 'PDO':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
+            break;        
+        default:            
+            $this->credentialEmision = '';
+            break;
+    }
+
+     if ($lugar==''){
+         throw new Exception("Error: las llavez de emision no estan habilitadas para su estacion. Favor comuniquese con informatica.");         
      }
      
      if (!isset($this->credentialEmision) || $this->credentialEmision== ''){
@@ -2913,13 +2970,35 @@ class ACTBoleto extends ACTbase{
    function emisionBoletos($pnr, $identifierPnr, $authCode, $nit, $razonSocial, $lugarPv, $codAuth1, $codigoFp, $codAuth2, $codigoFp2) {
 
     //  captura de creadenciales 
-    if (trim($lugarPv) == 'CBB') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];        
-    } elseif (trim($lugarPv) == 'LPB') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];
-    } elseif (trim($lugarPv) == 'SRZ') {
-        $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];
-    } 
+    switch (trim($lugarPv)) {
+        case 'CBB':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
+            break;
+        case 'LPB':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
+            break;
+        case 'SRZ':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
+            break;
+        case 'TJA':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
+            break;
+        case 'POI':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
+            break;
+        case 'ORU':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
+            break;        
+        case 'CHU':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
+            break;        
+        case 'BEN':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
+            break;        
+        case 'PDO':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
+            break;
+    }
 
     $data = array(
     "credentials" => $this->credentialEmision,
@@ -2984,8 +3063,7 @@ class ACTBoleto extends ACTbase{
         $fechaActual = date("d-m-Y");        
         $date = date("d-m-Y", strtotime($fechaActual."+ 1 year"));
         $expirationDateCC = date("my", strtotime($date)); // formato '1122'
-
-        // $keyCodAut = $this->encrypt3DES($codAuth1, $lugarPv);
+        
 
         $body = array("credentials" => $this->credentialEmision,
                     "language" => "ES",
@@ -3001,6 +3079,9 @@ class ACTBoleto extends ACTbase{
                     "xmlOrJson" => false);    
     }
     
+    $this->objParam->addParametro('tipo', 'EmisionResPNR');        
+    $this->objFuncEmi=$this->create('MODBoleto');    
+    $this->objFuncEmi->actualizarTiempoEmision($this->objParam); 
 
     $json_body = json_encode($body);
     
@@ -3053,19 +3134,48 @@ class ACTBoleto extends ACTbase{
 
    }
 
-   function GetTktPNRPlus($pnr, $identifierPnr) {   
-            
-    $data = array("credenciales"=>"{B6575E91-D2B3-48A3-B737-B66EDBD60AFA}{C0573161-B781-4B06-B4B7-C8D85DE86239}",
-        "idioma"=>"ES",
-        "pnr"=>$pnr,
-        "apellido"=> $identifierPnr,
-        "ip"=>"127.0.0.1",
-        "xmlJson"=>false);
+   function GetTktPNRPlus($pnr, $identifierPnr, $lugarPv) {   
+
+    switch (trim($lugarPv)) {
+        case 'CBB':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
+            break;
+        case 'LPB':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
+            break;
+        case 'SRZ':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
+            break;
+        case 'TJA':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
+            break;
+        case 'POI':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
+            break;
+        case 'ORU':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
+            break;        
+        case 'CHU':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
+            break;        
+        case 'BEN':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
+            break;        
+        case 'PDO':
+            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
+            break;
+    }
+
+    $data = array("credentials"=> $this->credentialEmision,
+        "language"=> "ES",
+        "locator" => array("pnr" => $pnr, "identifierPnr" => $identifierPnr),    
+        "ipAddress"=> "127.0.0.1",
+        "xmlOrJson" => false);
 
     $json_data = json_encode($data); 
             
     $s = curl_init();        
-    curl_setopt($s, CURLOPT_URL, 'https://ef.boa.bo/ServicioINTTest/ServicioInterno.svc/TraerReservaExch');
+    curl_setopt($s, CURLOPT_URL, $this->apiEmision.'GetTicketPNRPlus');
     curl_setopt($s, CURLOPT_POST, true);
     curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
     curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -3079,54 +3189,35 @@ class ACTBoleto extends ACTbase{
     $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
 
     if (!$status) {
-        throw new Exception("No se pudo conectar con el servicio TraerReservaExch. Vuelva a intentar. Si el error persiste consulte con informática");
+        throw new Exception("No se pudo conectar con el servicio GetTicketPNRPlus. Vuelva a intentar. Si el error persiste consulte con informática");
     }
 
     curl_close($s);
-
-    $out_origin = $_out;
-
-    $_out = str_replace('\\','',$_out);
-    $_out = substr($_out,27);
-    $_out = substr($_out,0,-2);
-
-    $res = json_decode($_out);
     
-    $reservaTkt = false;    
+    $res = json_decode($_out);  
+    
+    $res = json_decode($res->GetTicketPNRPlusResult)->ResultGetTicketPNRPlus;
+
     $array = array();
 
-    if ($res->reserva_V2 != null) {
-        $pasajeros = $res->reserva_V2->pasajeros->pasajeroDR;    
-        $reservaTkt = true;                
-        
-        // ordenacion por pasajero y boleto segun string u objeto recibido
-        if (gettype($pasajeros) == "object"){
-            if (is_null($pasajeros->Tkts)) {                
-                $reservaTkt = false;
-            } else {
-                array_push($array, array('pasjero' => $pasajeros->apdos_nombre, 'tkt' => $pasajeros->Tkts->string, 'monto' => $pasajeros->pago->importe));
-                $reservaTkt = true;
+    // ordenacion por pasajero y boleto segun string u objeto recibido
+    if (gettype($res->pasajeros->string) == "string"){
+        array_push($array, array('pasjero' => $res->pasajeros->string, 'tkt' => $res->tkts->string, 'monto' => $res->montosPaxs->double));
+    } elseif (gettype($res->pasajeros->string) == "array") {                    
+        foreach ($res->pasajeros->string as $key0 => $value) {
+            array_push($array, array('pasjero' => $value, 'tkt' => '', 'monto' => ''));
+            foreach ($res->tkts->string as $key1 => $value1) {
+                if ($key0 == $key1) {                    
+                    $array[$key1][tkt] = $value1;                    
+                }                
             }
-            
-        } elseif (gettype($pasajeros) == "array") {             
-            foreach ($pasajeros as $value) {
-                if (is_null($value->Tkts)) {
-                    $reservaTkt = false;
-                }
-            }   
-
-            if ($reservaTkt) {
-                foreach ($pasajeros as $value) {
-                    array_push($array, array('pasjero' => $value->apdos_nombre, 'tkt' => $value->Tkts->string, 'monto' => $value->pago->importe));
-                }                   
-            }                             
-        }           
-    }    
-
-    
-    // if (!$reservaTkt) {        
-    //     throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
-    // }
+            foreach ($res->montosPaxs->double as $key2 => $value2) {
+                if ($key0 == $key2) {                    
+                    $array[$key2][monto] = $value2; 
+                }                
+            }
+        }  
+    }  
     
     return json_encode($array);
 
@@ -3144,15 +3235,38 @@ class ACTBoleto extends ACTbase{
             $retorno = true;
         }         
 
-        //  captura de creadenciales 
-        if (trim($lugarPv) == 'CBB') {
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];        
-        } elseif (trim($lugarPv) == 'LPB') {
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];
-        } elseif (trim($lugarPv) == 'SRZ') {
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];
-        } else {
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];
+        //  captura de creadenciales
+        switch (trim($lugarPv)) {
+            case 'CBB':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
+                break;
+            case 'LPB':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
+                break;
+            case 'SRZ':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
+                break;
+            case 'TJA':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
+                break;
+            case 'POI':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
+                break;
+            case 'ORU':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
+                break;        
+            case 'CHU':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
+                break;        
+            case 'BEN':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
+                break;        
+            case 'PDO':
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
+                break;
+            default:
+                $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];
+                break;
         }
 
         $data = array(
@@ -3196,6 +3310,12 @@ class ACTBoleto extends ACTbase{
             return base64_encode($_out );
         }
         
+   }
+
+   function completarFormasPagoEmision() {            
+        $this->objFunc=$this->create('MODBoleto');
+        $this->res=$this->objFunc->completarFormasPagoEmision($this->objParam);        
+        $this->res->imprimirRespuesta($this->res->generarJson());
    }
 
 }
