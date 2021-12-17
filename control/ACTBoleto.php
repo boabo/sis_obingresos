@@ -263,7 +263,7 @@ class ACTBoleto extends ACTbase{
                 } while ($contReserva <= 10);
                 
                 if (strlen($tktsPnr)==2) {        
-                    throw new Exception("Informacion de emision, no se puedo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
+                    throw new Exception("Informacion de emision, no se pudo recuperar la informacion de boletos emitidos, Favor presione nuevamente el boton Emitir Boleto. Si el mensaje persiste consulte con informática");
                 }                
                 
                 $this->objParam->addParametro('pasajerosEmision', $tktsPnr);                
@@ -1418,7 +1418,7 @@ class ACTBoleto extends ACTbase{
 
     }
 
-    function anularBoleto(){   
+    function anularBoleto(){  
         $this->objFunc=$this->create('MODBoleto');
         $this->res=$this->objFunc->anularBoleto($this->objParam);
         if(($this->res->getTipo() == 'EXITO') && ($this->objParam->getParametro('emisionReserva') == 'true')) {
@@ -3195,6 +3195,13 @@ class ACTBoleto extends ACTbase{
     curl_close($s);
     
     $res = json_decode($_out);  
+
+    if(substr($res->GetTicketPNRPlusResult, 14, 5) == "Error") {
+        throw new Exception("Mensaje. ".substr($res->GetTicketPNRPlusResult, 14, strlen($res->GetTicketPNRPlusResult))." Favor derive al cliente con un counter.");
+    }
+    if(substr($res->GetTicketPNRPlusResult, 0, 5) == "Error") {
+        throw new Exception("Mensaje. ".$res->GetTicketPNRPlusResult. " Favor derive al cliente con un counter.");
+    }
     
     $res = json_decode($res->GetTicketPNRPlusResult)->ResultGetTicketPNRPlus;
 
