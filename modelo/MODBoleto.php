@@ -447,6 +447,7 @@ class MODBoleto extends MODbase{
         $this->setParametro('tipo_comision','tipo_comision','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
+        // echo ($this->consulta);exit;
         $this->ejecutarConsulta();
         //Devuelve la respuesta
         return $this->respuesta;
@@ -1311,6 +1312,7 @@ class MODBoleto extends MODbase{
         $this->setParametro('id_forma_pago','id_forma_pago','int4');
         $this->setParametro('id_forma_pago2','id_forma_pago2','int4');
         $this->setParametro('fecha_emision','fecha_emision','date');
+        $this->setParametro('datos_emision','datos_emision','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;
@@ -1333,6 +1335,7 @@ class MODBoleto extends MODbase{
         $this->setParametro('nit','nit','varchar');
         $this->setParametro('razonSocial','razonSocial','varchar');
         $this->setParametro('id_cliente','id_cliente','varchar');
+        $this->setParametro('fecha_emision','fecha_emision','date');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -1391,6 +1394,25 @@ class MODBoleto extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('fecha_emision','fecha_emision','date');        
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
+    function completarFormasPagoEmision() {
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_ACFMEMB_MOD';
+        $this->tipo_procedimiento='IME';
+
+        //Define los parametros para la funcion
+        $this->setParametro('id_reserva_pnr','id_reserva_pnr','int');
+        $this->setParametro('pnr','pnr','varchar');    
+        $this->setParametro('fecha_emision','fecha_emision','date');                
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;

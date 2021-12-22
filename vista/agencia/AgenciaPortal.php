@@ -16,7 +16,7 @@ header("content-type: text/javascript; charset=UTF-8");
         requireclase:'Phx.vista.Agencia',
         title:'Boleto',
         nombreVista: 'AgenciaPortal',
-        bnew:false,
+        //bnew:true,
         constructor:function(config){
             this.maestro=config.maestro;
             //llama al constructor de la clase padre

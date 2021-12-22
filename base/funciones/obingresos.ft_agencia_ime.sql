@@ -112,7 +112,9 @@ BEGIN
 			usuario_ai,
 			fecha_reg,
 			fecha_mod,
-			id_usuario_mod
+			id_usuario_mod,
+            id_lugar,
+            boaagt
           	) values(
 			v_parametros.id_moneda_control,
 			v_parametros.tipo_cambio,
@@ -129,7 +131,9 @@ BEGIN
 			v_parametros._nombre_usuario_ai,
 			now(),
 			null,
-			null
+			null,
+            v_parametros.id_lugar,
+            v_parametros.boaagt
 
 
 

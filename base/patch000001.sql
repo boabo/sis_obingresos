@@ -4285,5 +4285,17 @@ ALTER TABLE obingresos.treserva_pnr
 
 ALTER TABLE obingresos.treserva_pnr
   ADD COLUMN cantidad_llamada_tkts_emitido INTEGER;
-
 /***********************************F-SCP-BVP-OBINGRESOS-0-03/12/2021*****************************************/
+/***********************************I-SCP-BVP-OBINGRESOS-0-13/12/2021****************************************/
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN fecha_emision DATE;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.fecha_emision
+IS 'fecha emision de reserva';
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN datos_emision varchar;
+
+COMMENT ON COLUMN obingresos.treserva_pnr.datos_emision
+IS 'informacion registrada por el cajero para la emision de la reserva';
+/***********************************F-SCP-BVP-OBINGRESOS-0-13/12/2021*****************************************/

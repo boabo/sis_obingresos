@@ -197,7 +197,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     /**********************************************************************/
           			}
                 Phx.vista.EmisionBoleto.superclass.constructor.call(this,request.arguments);
-                this.store.baseParams.pes_estado = 'revisados';
+                // this.store.baseParams.pes_estado = 'revisados';
                 this.store.baseParams.todos = 'no';
                 this.store.baseParams.emisionReservaBoletos = 'si'
                 var me = this;
@@ -317,7 +317,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.getBoton('btnVoucherCode').setVisible(false);
                 this.getBoton('btnInvoicePNRPDF').setVisible(true);
                 this.getBoton('btnBoletosTodos').setVisible(false);
-                this.getBoton('btnPagarGrupo').setVisible(false);                
+                // this.getBoton('btnPagarGrupo').setVisible(false);                
                 this.getBoton('btnImprimir').setVisible(false);                
                 // this.getBoton('btnAnularBoleto').setVisible(false);                
                 this.tbar.addField(" ");
@@ -347,16 +347,16 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             gruposBarraTareas:[
-                {name:'revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> Revisados</h1>',grupo:0,height:0},
-                {name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:1,height:0}
+                // {name:'revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> Emisiones</h1>',grupo:0,height:0},
+                // {name:'no_revisados',title:'<H1 align="center"><i class="fa fa-eye"></i> No Revisados</h1>',grupo:1,height:0}
             ],
 
-            actualizarSegunTab: function(name, indice){
-                if(this.finCons){
-                    this.store.baseParams.pes_estado = name;
-                    this.load({params:{start:0, limit:this.tam_pag}});
-                }
-            },
+            // actualizarSegunTab: function(name, indice){
+            //     if(this.finCons){
+            //         this.store.baseParams.pes_estado = name;
+            //         this.load({params:{start:0, limit:this.tam_pag}});
+            //     }
+            // },
 
             beditGroups: [0],
             bdelGroups:  [0],
@@ -1642,7 +1642,8 @@ header("content-type: text/javascript; charset=UTF-8");
                         fieldLabel: 'Codigo de Autorización 2',
                         allowBlank: true,
                         anchor: '80%',
-                        maxLength:20,
+                        minLength:6,
+                        maxLength:6,
                         style:'text-transform:uppercase;',
                         maskRe: /[a-zA-Z0-9]+/i,
                         regex: /[a-zA-Z0-9]+/i
@@ -3278,9 +3279,22 @@ header("content-type: text/javascript; charset=UTF-8");
                     html += '</body>';
                     html += '</html>'
                     var win = window.open("","_blank")
-                    win.document.write(html) 
+                    win.document.write(html)                                        
+                    this.actFormsPago(reg.ROOT.datos);
                 }                
-                Phx.vista.EmisionBoleto.superclass.successSave.call(this,resp);
+                Phx.vista.EmisionBoleto.superclass.successSave.call(this,resp);                                
+            },
+
+            actFormsPago: function(data){                               
+                Ext.Ajax.request({
+                    url:'../../sis_obingresos/control/Boleto/completarFormasPagoEmision',                    
+                    params:{ pnr: data.pnr, fecha_emision: data.fecha_emision, id_reserva_pnr: data.id_reserva_pnr },
+                    success: function(resp){                                                                
+                            },
+                    failure: this.conexionFailure,
+                    timeout: this.timeout,
+                    scope: this
+                });
             },
             oncellclick : function(grid, rowIndex, columnIndex, e) {
 
@@ -3511,7 +3525,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 }
                         }, scope : this
                     });
-
+                this.Cmp.emisionReservaPnr.setValue('grupo')
                 //console.log("llega aqui el dato22222222",this.Cmp.moneda.getValue());
                 //this.total_grupo['USD'] = 0;
                 //this.total_grupo[seleccionados[0].data.moneda_sucursal] = 0;
