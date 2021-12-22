@@ -3197,10 +3197,10 @@ class ACTBoleto extends ACTbase{
     $res = json_decode($_out);  
 
     if(substr($res->GetTicketPNRPlusResult, 14, 5) == "Error") {
-        throw new Exception("Mensaje. ".substr($res->GetTicketPNRPlusResult, 14, strlen($res->GetTicketPNRPlusResult))." Favor derive al cliente con un counter.");
+        throw new Exception("Mensaje. ".substr($res->GetTicketPNRPlusResult, 14, strlen($res->GetTicketPNRPlusResult))." Favor presione nuevamente el boton emitir, si el mensaje persiste. Derive al cliente con un counter.");
     }
     if(substr($res->GetTicketPNRPlusResult, 0, 5) == "Error") {
-        throw new Exception("Mensaje. ".$res->GetTicketPNRPlusResult. " Favor derive al cliente con un counter.");
+        throw new Exception("Mensaje. ".$res->GetTicketPNRPlusResult. " Favor presione nuevamente el boton emitir, si el mensaje persiste. Derive al cliente con un counter.");
     }
     
     $res = json_decode($res->GetTicketPNRPlusResult)->ResultGetTicketPNRPlus;
