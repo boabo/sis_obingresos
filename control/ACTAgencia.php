@@ -237,6 +237,26 @@ class ACTAgencia extends ACTbase{
     }
     /************************************/
 
+
+    /*Nuevo Servicio para la ampliacion de contrato*/
+    function registrarAmpliacionContrato(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->registrarAmpliacionContrato($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /***********************************************/
+
+    /*Nuevo Servicio para la ampliacion de contrato*/
+    function actualizarAmpliacionContrato(){
+        $this->objFunc=$this->create('MODAgencia');
+        $this->res=$this->objFunc->actualizarAmpliacionContrato($this->objParam);
+        $this->res->imprimirRespuesta($this->res->generarJson());
+    }
+    /***********************************************/
+
+
+
+
     /**************************************************************************************/
 
 

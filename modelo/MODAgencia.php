@@ -137,6 +137,8 @@ class MODAgencia extends MODbase{
         $this->setParametro('codigo_int','codigo_int','varchar');
         $this->setParametro('codigo','codigo','varchar');
         $this->setParametro('tipo_agencia','tipo_agencia','varchar');
+        $this->setParametro('id_lugar','id_lugar','integer');
+        $this->setParametro('boaagt','boaagt','varchar');
 
         //Ejecuta la instruccion
         $this->armarConsulta();
@@ -548,7 +550,7 @@ class MODAgencia extends MODbase{
 
         $this->setParametro('id_agencia','id_agencia','int4');
         $this->setParametro('codigo_int','codigo_int','varchar');
-        $this->setParametro('codigo','codigo','varchar');        
+        $this->setParametro('codigo','codigo','varchar');
         $this->setParametro('iata_status','iata_status','varchar');
         $this->setParametro('osd','osd','varchar');
 
@@ -560,6 +562,48 @@ class MODAgencia extends MODbase{
         return $this->respuesta;
     }
     /*********************************/
+
+    /*Servicio para actualizar el contrato*/
+    function registrarAmpliacionContrato(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_ampliacion_contrato';
+        $this->transaccion='OBING_AMPLI_CONT_INS';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_contrato_anterior','id_contrato_anterior','int4');
+        $this->setParametro('observaciones','observaciones','varchar');
+        $this->setParametro('fecha_inicio','fecha_inicio','varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('id_funcionario','id_funcionario','integer');
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /*********************************/
+
+    function actualizarAmpliacionContrato(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_ampliacion_contrato';
+        $this->transaccion='OBING_UPDT_AMPL_INS';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_contrato_ampliacion','id_contrato_ampliacion','int4');
+        $this->setParametro('observaciones','observaciones','varchar');
+        $this->setParametro('fecha_inicio','fecha_inicio','varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('id_funcionario','id_funcionario','integer');
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
 
 }
 ?>
