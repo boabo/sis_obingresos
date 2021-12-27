@@ -563,5 +563,47 @@ class MODAgencia extends MODbase{
     }
     /*********************************/
 
+    /*Servicio para actualizar el contrato*/
+    function registrarAmpliacionContrato(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_ampliacion_contrato';
+        $this->transaccion='OBING_AMPLI_CONT_INS';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_contrato_anterior','id_contrato_anterior','int4');
+        $this->setParametro('observaciones','observaciones','varchar');
+        $this->setParametro('fecha_inicio','fecha_inicio','varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('id_funcionario','id_funcionario','integer');
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /*********************************/
+
+    function actualizarAmpliacionContrato(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_ampliacion_contrato';
+        $this->transaccion='OBING_UPDT_AMPL_INS';
+        $this->tipo_procedimiento='IME';
+
+        $this->setParametro('id_contrato_ampliacion','id_contrato_ampliacion','int4');
+        $this->setParametro('observaciones','observaciones','varchar');
+        $this->setParametro('fecha_inicio','fecha_inicio','varchar');
+        $this->setParametro('fecha_fin','fecha_fin','varchar');
+        $this->setParametro('id_funcionario','id_funcionario','integer');
+
+        //Ejecuta la instrucciona
+        $this->armarConsulta();
+        $this->ejecutarConsulta();
+
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+
 }
-?>
+?>    
