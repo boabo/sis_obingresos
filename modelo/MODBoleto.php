@@ -1394,7 +1394,8 @@ class MODBoleto extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('tipo','tipo','varchar');
-        $this->setParametro('fecha_emision','fecha_emision','date');        
+        $this->setParametro('fecha_emision','fecha_emision','date');  
+        $this->setParametro('offReserva','offReserva','varchar');      
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;

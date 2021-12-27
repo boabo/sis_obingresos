@@ -4081,7 +4081,8 @@ BEGIN
                     usuario_ai,
                     pnr_reserva,
                     fecha_emision,
-                    cantidad_llamada_consulta_reserva
+                    cantidad_llamada_consulta_reserva,                    
+                    id_punto_venta
                   )
                   VALUES (
                     p_id_usuario,
@@ -4093,7 +4094,8 @@ BEGIN
                     v_parametros._nombre_usuario_ai,
                     v_parametros.pnr,
                     v_parametros.fecha_emision,
-                    1
+                    1,                    
+                    v_parametros.id_punto_venta
                       
                  )RETURNING id_reserva_pnr into v_id_reserva_pnr;
                 else 
@@ -4334,7 +4336,7 @@ BEGIN
             
             select id_punto_venta into v_id_pv_reserva
             from vef.tpunto_venta 
-            where office_id = v_parametros.offReserva;
+            where trim(office_id) = trim(v_parametros.offReserva);
                     
 			--recuperamos los boletos
             FOR v_record_json_boletos IN (SELECT json_array_elements(v_parametros.pasajerosEmision :: JSON)
@@ -4566,11 +4568,18 @@ BEGIN
                 where pnr_reserva = v_parametros.pnr
                 and fecha_emision = v_parametros.fecha_emision;
 
+			      if (pxp.f_existe_parametro(p_tabla, 'offReserva'))then
+			 	      select id_punto_venta into v_id_pv_reserva
+            	from vef.tpunto_venta 
+            	where trim(office_id) = trim(v_parametros.offReserva);
+             end if;
+
               --Definicion de la respuesta
               v_resp = pxp.f_agrega_clave(v_resp,'mensaje','respuesta');
               v_resp = pxp.f_agrega_clave(v_resp,'pnr',v_parametros.pnr::varchar);
               v_resp = pxp.f_agrega_clave(v_resp,'fecha_emision',v_parametros.fecha_emision::varchar);
               v_resp = pxp.f_agrega_clave(v_resp,'id_reserva_pnr',v_id_reserva_pnr::varchar);
+              v_resp = pxp.f_agrega_clave(v_resp,'id_pv_reserva',v_id_pv_reserva::varchar);
 
               --Devuelve la respuesta
               return v_resp;
