@@ -3361,16 +3361,25 @@ header("content-type: text/javascript; charset=UTF-8");
             },
 
             anularBoleto:function(){
-                Phx.CP.loadingShow();
-                var d = this.sm.getSelected().data;
+                var d = this.sm.getSelected().data;   
+                console.log('d',d)             
+                var tipoMensaje = d.voided == 'no'?'Anular':'Revertir';
+                var that = this;
+                Ext.Msg.confirm(
+						'Mensaje de Confirmación',
+						'Esta Seguro de '+tipoMensaje+' el Boleto',
+						function(btn) {
+                            if (btn == 'yes'){
+                Phx.CP.loadingShow();                
                 Ext.Ajax.request({
                     url:'../../sis_obingresos/control/Boleto/anularBoleto',
-                    params:{id_boleto_amadeus:d.id_boleto_amadeus, emisionReserva: 'true', fechaEmision: this.campo_fecha.getValue().dateFormat('Ymd')},
-                    success:this.successAnularBoleto,
-                    failure: this.conexionFailure,
-                    timeout:this.timeout,
-                    scope:this
+                    params:{id_boleto_amadeus:d.id_boleto_amadeus, emisionReserva: 'true', fechaEmision: that.campo_fecha.getValue().dateFormat('Ymd')},
+                    success:that.successAnularBoleto,
+                    failure: that.conexionFailure,
+                    timeout:that.timeout,
+                    scope:that
                 });
+                        }});
 
             },
 
@@ -3657,7 +3666,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.getBoton('btnAnularBoleto').setDisabled(false);
                 }
                 else{
-                    this.getBoton('btnAnularBoleto').setDisabled(false);
+                    this.getBoton('btnAnularBoleto').setDisabled(true);
                 }
                 if (data['ffid_consul'] != '' && data['voucher_consu'] != '' || data['ffid'] != '' && data['voucher_code'] != '' ){
                     this.getBoton('btnVoucherCode').enable();

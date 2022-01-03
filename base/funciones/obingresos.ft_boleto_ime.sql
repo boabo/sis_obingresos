@@ -3146,13 +3146,16 @@ BEGIN
 
 
             	IF (v_boleto.voided = 'si')THEN
-                  UPDATE obingresos.tboleto_amadeus
-                  SET voided='no',
-                  id_usuario_cajero = p_id_usuario
-                  WHERE id_boleto_amadeus=v_id_boleto_a;
-
-              PERFORM vef.f_anular_forma_pago_amadeus_replicar(v_id_boleto_a);
-
+                	IF pxp.f_existe_parametro(p_tabla, 'emisionReserva') then
+                    	raise 'Estimado usuario. La reversion de un boleto anulado no esta permitido desde la interfaz de Emision de Boletos';
+					        ELSE              
+                    UPDATE obingresos.tboleto_amadeus
+                    SET voided='no',
+                    id_usuario_cajero = p_id_usuario
+                    WHERE id_boleto_amadeus=v_id_boleto_a;
+                    
+                    PERFORM vef.f_anular_forma_pago_amadeus_replicar(v_id_boleto_a);
+                  END IF;            
                 ELSE
                   UPDATE obingresos.tboleto_amadeus
                   SET voided='si',

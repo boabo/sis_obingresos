@@ -319,6 +319,7 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento='IME';
         //Define los parametros para la funcion
         $this->setParametro('id_boleto_amadeus','id_boleto_amadeus','varchar');
+        $this->setParametro('emisionReserva','emisionReserva','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
