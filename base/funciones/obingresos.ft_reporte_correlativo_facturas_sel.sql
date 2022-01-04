@@ -141,7 +141,8 @@ $body$
                 nroaut VARCHAR,
                 nro_factura INTEGER,
                 tipo_generacion VARCHAR,
-                bandera INTEGER
+                bandera INTEGER,
+                estado VARCHAR
   			) ON COMMIT DROP';
 
         v_sql_tabla = 'CREATE TEMPORARY TABLE temp_correlativo
@@ -151,7 +152,8 @@ $body$
                 nroaut VARCHAR,
                 nro_factura_ini INTEGER,
                 nro_factura_fin INTEGER,
-                tipo_generacion VARCHAR
+                tipo_generacion VARCHAR,
+                bandera INTEGER
   			) ON COMMIT DROP';
 
         EXECUTE(v_sql_tabla_todo);
@@ -950,11 +952,13 @@ $body$
                                                 nota.id_sucursal::INTEGER,
                                                 nota.nroaut::VARCHAR,
                                                 nota.nro_nota::INTEGER,
-                                                nota.id_liquidacion::INTEGER
+                                                nota.id_liquidacion::INTEGER,
+                                                nota.estado::VARCHAR
 
                                            FROM decr.tnota nota
 
-                                           WHERE (nota.estado != '9' or nota.estado_reg !='inactivo') --9 = anulado 1 =activo
+                                           --WHERE (nota.estado != '9' or nota.estado_reg !='inactivo') --9 = anulado 1 =activo
+                                           WHERE (nota.estado not like '%9%' or nota.estado_reg !='inactivo')
 
                                            and (case when v_parametros.id_lugar = 'TODOS' then nota.estado_reg='activo'
                                             else nota.estacion = v_codigo_lugar end)
@@ -996,14 +1000,14 @@ $body$
                                         END IF;
 
 
-
                                             insert into temp_correlativo_todo (estacion,
                                                                            id_sucursal,
                                                                           id_punto_venta,
                                                                           nroaut,
                                                                           nro_factura,
                                                                           tipo_generacion,
-                                                                          bandera
+                                                                          bandera,
+                                                                          estado
                                                                           )
                                                                         values (
                                                                         v_datos_nota.estacion,
@@ -1012,7 +1016,8 @@ $body$
                                                                         v_datos_nota.nroaut,
                                                                         v_datos_nota.nro_nota,
                                                                         v_parametros.tipo_generacion,
-                                                                        0
+                                                                        0,
+                                                                        v_datos_nota.estado::varchar
                                                                         );
 
 
@@ -1029,7 +1034,8 @@ $body$
                                                 from temp_correlativo_todo tc
                                                 left join vef.tsucursal su on su.id_sucursal = tc.id_sucursal
 
-                                                where tc.tipo_generacion = '''||v_parametros.tipo_generacion||'''
+                                                where tc.estado !=''9''
+                                                and tc.tipo_generacion = '''||v_parametros.tipo_generacion||'''
 
                                                 and (case when '||v_parametros.id_sucursal||' = 0 then tc.bandera=0
                                             		else tc.id_sucursal = '||v_parametros.id_sucursal||' end)
