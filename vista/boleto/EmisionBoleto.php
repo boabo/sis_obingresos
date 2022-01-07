@@ -2739,6 +2739,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 params : {
                                     'nit' : this.Cmp.nit.getValue(),
                                     'razon_social' : this.Cmp.razonSocial.getValue(),
+                                    'complemento_nit': ''
                                 },
                                 success: function(resp){
                                 var reg =  Ext.decode(Ext.util.Format.trim(resp.responseText));
