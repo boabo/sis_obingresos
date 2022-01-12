@@ -1455,8 +1455,9 @@ class ACTBoleto extends ACTbase{
                 '</html>';
 
                     $correo=new CorreoExterno();                                    
-                    $correo->addDestinatario('mcaballero@boa.bo');    // responsable boletos ERP BOA                                                  
-                    $correo->addDestinatario('dcamacho@boa.bo');     //responsable ventas web boletos BOA                    
+                    foreach ($_SESSION['_responsablesBoletosEmision'] as $value) {
+                        $correo->addDestinatario($value); //noticacion responsables emision boletos
+                    }                    
                     //asunto
                     $correo->setAsunto('Notificacion Anulacion de Boleto.');
                     //cuerpo mensaje
