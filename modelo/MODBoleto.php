@@ -319,6 +319,7 @@ class MODBoleto extends MODbase{
         $this->tipo_procedimiento='IME';
         //Define los parametros para la funcion
         $this->setParametro('id_boleto_amadeus','id_boleto_amadeus','varchar');
+        $this->setParametro('emisionReserva','emisionReserva','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         $this->ejecutarConsulta();
@@ -1394,7 +1395,8 @@ class MODBoleto extends MODbase{
         //Define los parametros para la funcion
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('tipo','tipo','varchar');
-        $this->setParametro('fecha_emision','fecha_emision','date');        
+        $this->setParametro('fecha_emision','fecha_emision','date');  
+        $this->setParametro('offReserva','offReserva','varchar');      
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;

@@ -1455,8 +1455,9 @@ class ACTBoleto extends ACTbase{
                 '</html>';
 
                     $correo=new CorreoExterno();                                    
-                    $correo->addDestinatario('mcaballero@boa.bo');    // responsable boletos ERP BOA                                                  
-                    $correo->addDestinatario('dcamacho@boa.bo');     //responsable ventas web boletos BOA                    
+                    foreach ($_SESSION['_responsablesBoletosEmision'] as $value) {
+                        $correo->addDestinatario($value); //noticacion responsables emision boletos
+                    }                    
                     //asunto
                     $correo->setAsunto('Notificacion Anulacion de Boleto.');
                     //cuerpo mensaje
@@ -2836,45 +2837,14 @@ class ACTBoleto extends ACTbase{
     //  captura de creadenciales 
     $lugar = trim($datos['lugar_pv']);
     
-    switch ($lugar) {
-        case 'CBB':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
-            break;
-        case 'LPB':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
-            break;
-        case 'SRZ':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
-            break;
-        case 'TJA':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
-            break;
-        case 'POI':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
-            break;
-        case 'ORU':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
-            break;        
-        case 'CHU':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
-            break;        
-        case 'BEN':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
-            break;        
-        case 'PDO':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
-            break;        
-        default:            
-            $this->credentialEmision = '';
-            break;
-    }
+    $this->credentialEmision = $this->credencialLugarEmision($lugar);
 
      if ($lugar==''){
-         throw new Exception("Error: las llavez de emision no estan habilitadas para su estacion. Favor comuniquese con informatica.");         
+         throw new Exception("Error: su estacion no esta habilitada para emision. Favor comuniquese con informatica.");         
      }
      
      if (!isset($this->credentialEmision) || $this->credentialEmision== ''){
-        throw new Exception('No se definieron las credenciales para conectarse al servicio de Reserva PNR. Consulte con informática.');
+        throw new Exception('No se definieron las credenciales para conectarse al servicio de Reserva PNR, para su estacion. Consulte con informática.');
      }
 
      $pnr = strtoupper($this->objParam->getParametro('pnr'));
@@ -2916,18 +2886,25 @@ class ACTBoleto extends ACTbase{
      $response = array('exito' => false, 'pnr' => $pnr);
     
      if ($res!=null){
-        // registro log tiempo respuesta 
-        $this->objParam->addParametro('pnr', strtoupper($this->objParam->getParametro('pnr')));        
-        $this->objParam->addParametro('tipo', 'GetBooking');        
-        $this->objFuncBook=$this->create('MODBoleto');
-        $this->objFuncBook->actualizarTiempoEmision($this->objParam);
-
         $pasajeros = $res->reserva->pasajeros->pasajeroDR;
         $monto_total = 0;
         $off_resp = $res->reserva->responsable->off_resp;
         $fecha_reserva = $res->reserva->fecha_creacion;
 
-        if ($fecha_emision == $fecha_reserva){               
+        // registro log tiempo respuesta 
+        $this->objParam->addParametro('pnr', strtoupper($this->objParam->getParametro('pnr')));        
+        $this->objParam->addParametro('tipo', 'GetBooking');       
+        $this->objParam->addParametro('offReserva', $off_resp);        
+        $this->objFuncBook=$this->create('MODBoleto');
+        $this->resReserva = $this->objFuncBook->actualizarTiempoEmision($this->objParam);        
+        $datosReserva = $this->resReserva->getDatos();
+
+        if ($datosReserva['id_pv_reserva'] == "" || $datosReserva['id_pv_reserva'] == null ) {
+            throw new Exception("La reserva fue realizada con el office ID: ".$off_resp." . La cual no esta habilitada para emisiones. Su registro no puede continuar. Favor informe este mensaje con su superior");
+        }
+
+
+        // if ($fecha_emision == $fecha_reserva){               
             if (gettype($pasajeros) == "object"){
                 $monto_total =  $pasajeros->pago->importe;
                 $moneda = $pasajeros->pago->moneda;
@@ -2938,27 +2915,29 @@ class ACTBoleto extends ACTbase{
                 foreach ($pasajeros as $value) {
                     $monto_total = $monto_total + $value->pago->importe;
                 }
+            } else {
+                throw new Exception("No se pudo recuperar la informacion de la reserva.");
             }
-        } else {
+        // } else {
             
-            $a = str_split($fecha_reserva);
-            $t = array();
-            foreach ($a as $i => $v) {
-                if ($i == 2) {
-                    array_push($t, "/");
-                    array_push($t, $v);
-                } elseif ($i == 4) {
-                    array_push($t, "/");
-                    $anio = date("Y");
-                    array_push($t, substr($anio, 0, 2));
-                    array_push($t, $v);
-                } else {
-                    array_push($t, $v);
-                }
-            }            
-            $fechaRe = implode("",$t);            
-            throw new Exception("La fecha de reserva del pnr es: ".$fechaRe.", la cual difiere de la fecha de emision seleccionada: ".date("d/m/Y", strtotime($this->objParam->getParametro('fecha_emision'))). ". La emision solo puede ser realizada en fecha de la reserva.");
-        } 
+        //     $a = str_split($fecha_reserva);
+        //     $t = array();
+        //     foreach ($a as $i => $v) {
+        //         if ($i == 2) {
+        //             array_push($t, "/");
+        //             array_push($t, $v);
+        //         } elseif ($i == 4) {
+        //             array_push($t, "/");
+        //             $anio = date("Y");
+        //             array_push($t, substr($anio, 0, 2));
+        //             array_push($t, $v);
+        //         } else {
+        //             array_push($t, $v);
+        //         }
+        //     }            
+        //     $fechaRe = implode("",$t);            
+        //     throw new Exception("La fecha de reserva del pnr es: ".$fechaRe.", la cual difiere de la fecha de emision seleccionada: ".date("d/m/Y", strtotime($this->objParam->getParametro('fecha_emision'))). ". La emision solo puede ser realizada en fecha de la reserva.");
+        // } 
 
         $response = array('exito' => true, 'pnr' => $pnr, 'importeTotal' => $monto_total, 'moneda' => $moneda,
                           "identifierPnr" => $apellido, 'offReserva' => $off_resp, "lugar_pv" => $datos['lugar_pv'],
@@ -2970,35 +2949,7 @@ class ACTBoleto extends ACTbase{
    function emisionBoletos($pnr, $identifierPnr, $authCode, $nit, $razonSocial, $lugarPv, $codAuth1, $codigoFp, $codAuth2, $codigoFp2) {
 
     //  captura de creadenciales 
-    switch (trim($lugarPv)) {
-        case 'CBB':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
-            break;
-        case 'LPB':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
-            break;
-        case 'SRZ':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
-            break;
-        case 'TJA':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
-            break;
-        case 'POI':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
-            break;
-        case 'ORU':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
-            break;        
-        case 'CHU':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
-            break;        
-        case 'BEN':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
-            break;        
-        case 'PDO':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
-            break;
-    }
+    $this->credentialEmision = $this->credencialLugarEmision($lugarPv);
 
     $data = array(
     "credentials" => $this->credentialEmision,
@@ -3136,35 +3087,7 @@ class ACTBoleto extends ACTbase{
 
    function GetTktPNRPlus($pnr, $identifierPnr, $lugarPv) {   
 
-    switch (trim($lugarPv)) {
-        case 'CBB':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
-            break;
-        case 'LPB':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
-            break;
-        case 'SRZ':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
-            break;
-        case 'TJA':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
-            break;
-        case 'POI':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
-            break;
-        case 'ORU':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
-            break;        
-        case 'CHU':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
-            break;        
-        case 'BEN':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
-            break;        
-        case 'PDO':
-            $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
-            break;
-    }
+    $this->credentialEmision = $this->credencialLugarEmision($lugarPv);
 
     $data = array("credentials"=> $this->credentialEmision,
         "language"=> "ES",
@@ -3243,38 +3166,11 @@ class ACTBoleto extends ACTbase{
         }         
 
         //  captura de creadenciales
-        switch (trim($lugarPv)) {
-            case 'CBB':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];    
-                break;
-            case 'LPB':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionLPB'];    
-                break;
-            case 'SRZ':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionSRZ'];    
-                break;
-            case 'TJA':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionTJA'];    
-                break;
-            case 'POI':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionPOI'];    
-                break;
-            case 'ORU':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionORU'];    
-                break;        
-            case 'CHU':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionCHU'];    
-                break;        
-            case 'BEN':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionBEN'];    
-                break;        
-            case 'PDO':
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionPDO'];    
-                break;
-            default:
-                $this->credentialEmision = $_SESSION['_credentialPnrEmisionCBB'];
-                break;
-        }
+        if ($lugarPv==""){
+            $this->credentialEmision = $this->credencialLugarEmision($lugarPv, true);
+        } else {
+            $this->credentialEmision = $this->credencialLugarEmision($lugarPv);
+        }        
 
         $data = array(
             "credentials" => $this->credentialEmision,
@@ -3317,6 +3213,46 @@ class ACTBoleto extends ACTbase{
             return base64_encode($_out );
         }
         
+   }
+
+   function credencialLugarEmision($lugarPv, $pdf=false) {
+    $emisionCredencial = ""; 
+    switch (trim($lugarPv)) {
+        case 'CBB':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionCBB'];    
+            break;
+        case 'LPB':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionLPB'];    
+            break;
+        case 'SRZ':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionSRZ'];    
+            break;
+        case 'TJA':
+            $emisionCredencial= $_SESSION['_credentialPnrEmisionTJA'];    
+            break;
+        case 'POI':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionPOI'];    
+            break;
+        case 'ORU':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionORU'];    
+            break;        
+        case 'CHU':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionCHU'];    
+            break;        
+        case 'BEN':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionBEN'];    
+            break;        
+        case 'PDO':
+            $emisionCredencial = $_SESSION['_credentialPnrEmisionPDO'];    
+            break;
+    }
+
+    if ($pdf) {
+        $emisionCredencial = $_SESSION['_credentialPnrEmisionCBB'];
+    }
+
+    return $emisionCredencial;
+
    }
 
    function completarFormasPagoEmision() {            
