@@ -992,7 +992,7 @@ BEGIN
 
                 select count(*) into v_existencia_auxiliar_nombre
                 from conta.tauxiliar auxi
-                where auxi.nombre_auxiliar = v_nombre_agencia;
+                where UPPER(TRIM(auxi.nombre_auxiliar)) = UPPER(TRIM(v_nombre_agencia));
 
 
                 select auxi.nombre_auxiliar into v_nombre_auxiliar
@@ -1027,7 +1027,7 @@ BEGIN
                   --v_parametros.id_empresa,
                   'activo',
                   v_codigo_int,
-                  v_nombre_agencia,
+                  UPPER(v_nombre_agencia),
                   now(),
                   p_id_usuario,
                   null,
@@ -1354,11 +1354,11 @@ BEGIN
                     if (trim(v_parametros.nombre) != trim(v_nombre_agencia_actual)) then
                     	select count(aux.id_auxiliar) into v_existe_auxiliar
                         from conta.tauxiliar aux
-                        where aux.nombre_auxiliar = trim(v_parametros.nombre);
+                        where UPPER(TRIM(aux.nombre_auxiliar)) = UPPER(trim(v_parametros.nombre));
                     else
                     	select count(aux.id_auxiliar) into v_existe_auxiliar
                         from conta.tauxiliar aux
-                        where aux.nombre_auxiliar = trim(v_parametros.nombre)
+                        where UPPER(TRIM(aux.nombre_auxiliar)) = UPPER(trim(v_parametros.nombre))
                         and trim(aux.codigo_auxiliar) != trim(v_officeId);
                     end if;
 
@@ -1581,7 +1581,7 @@ BEGIN
 
                      select count(aux.id_auxiliar) into v_existe_auxiliar
                      from conta.tauxiliar aux
-                     where trim(aux.nombre_auxiliar) = trim(v_nombre_agencia_recu)
+                     where UPPER(trim(aux.nombre_auxiliar)) = UPPER(trim(v_nombre_agencia_recu))
                      and aux.estado_reg = 'activo'
                      and trim(aux.codigo_auxiliar) != trim(v_office_id_actual);
 
@@ -1606,7 +1606,7 @@ BEGIN
                                                         --v_parametros.id_empresa,
                                                         'activo',
                                                         trim(v_parametros.codigo_int),
-                                                        trim(v_nombre_agencia_recu),
+                                                        UPPER(trim(v_nombre_agencia_recu)),
                                                         now(),
                                                         p_id_usuario,
                                                         null,

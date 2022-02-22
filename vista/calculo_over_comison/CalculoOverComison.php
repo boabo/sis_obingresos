@@ -236,6 +236,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 handler : this.onExcluirAgencia
             });
 
+            /*this.addButton('btnConsultarExcluir', {
+                text : 'Consulta Agencias Excluidas',//Generar
+                grupo: [0,1],
+                iconCls : 'block',
+                disabled : false,
+                hidden : false,
+                handler : this.onConsultarExcluirAgencia
+            });*/
+
             this.addButton('btnValidar', {
                 text : 'Validar Calculo',//Generar
                 grupo: [0,1],
@@ -372,6 +381,27 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.reload();
             //}
         },*/
+
+        onConsultarExcluirAgencia: function (){
+            let rec = {};
+            if (this.getSelectedData()) {
+                rec = this.getSelectedData();
+                rec.fecha = this.fecha_ini.getValue();
+            } else {
+                rec = {selector: 'generico', fecha: this.fecha_ini.getValue(), fecha_fin: this.fecha_fin.getValue()};
+            }
+
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/calculo_over_comison/ExcluirAgencia.php',
+                'Consulta Agencias Excluidas',
+                {
+                    width: 900,
+                    height: 600
+                },
+                rec,
+                this.idContenedor,
+                'ExcluirAgencia'
+            );
+        },
 
         onExcluirAgencia: function (){
             //console.log('campos ', this.fecha_ini.getValue(), this.fecha_fin.getValue(), this.store.data.items[0].data.status);

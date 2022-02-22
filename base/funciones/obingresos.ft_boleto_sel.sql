@@ -83,6 +83,9 @@ DECLARE
 
     v_indice_tkt		integer=1;
     v_segment_reference	varchar;
+
+    v_fecha_creacion	date;
+    v_fecha_update		date;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -1374,8 +1377,35 @@ BEGIN
                           from tvuelos tv
 
             ';*/
+            --raise 'fecha_upd: %', to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+			v_fecha_creacion = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy');
+            v_fecha_update = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
 
-          	v_consulta:='
+            if v_fecha_emision::date is null then
+              if v_fecha_creacion = v_fecha_update then
+                  v_fecha_creacion = ((to_char(v_fecha_creacion,'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+              elsif v_fecha_creacion < v_fecha_update then
+                  if v_fecha_update is null then
+                      v_fecha_creacion = v_fecha_emision::date;
+                  else
+                      v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                  end if;
+                  --v_fecha_creacion = coalesce(v_fecha_update, v_fecha_emision::date);
+              end if;
+            else
+            	--raise 'v_fecha_creacion: %,v_fecha_emision:% diferencia : %',v_fecha_creacion, v_fecha_emision, v_fecha_creacion = v_fecha_emision::date;
+            	v_fecha_creacion = v_fecha_emision::date;
+                /*if v_fecha_creacion = v_fecha_emision::date then
+            		v_fecha_creacion = v_fecha_emision::date;
+                else
+                	if v_fecha_update is null then
+                      v_fecha_creacion = v_fecha_emision::date;
+                  	else
+                      v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                  	end if;
+                end if;*/
+            end if;
+            v_consulta:='
                           select
                           tv.id_vuelo,
                           tv.clase,
@@ -1402,9 +1432,11 @@ BEGIN
                           '||COALESCE(v_tipo_cambio,0)||'::numeric as tipo_cambio,
                           '''||coalesce((v_parametros.localizador->'endosos'->'endoso'->>'texto'),'')||'''::varchar as endoso,
                           --'''||to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy')||'''::date as fecha_create,
+                          --'||((to_char(to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy'),'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date||' as fecha_create,
                           --'''||v_fecha_emision||'''::date as fecha_create,
-                           '''||coalesce((v_parametros.update->>'fecha_upd')::varchar, v_fecha_emision)||'''::varchar as fecha_create,
-                          ts.moneda_tarifa::varchar as moneda_iva,
+                          --'''||coalesce((v_parametros.update->>'fecha_upd')::varchar, v_fecha_emision)||'''::varchar as fecha_create,
+                          ('''||v_fecha_creacion||'''::date)::varchar fecha_create,
+                          ts.moneda_total::varchar as moneda_iva, --ts.moneda_tarifa::varchar
                           '''||v_tipo_emision||'''::varchar as tipo_emision,
                           ts.moneda_tarifa,
                           '''||v_pasajero||'''::varchar as pasajero,
@@ -3033,3 +3065,6 @@ VOLATILE
 CALLED ON NULL INPUT
 SECURITY INVOKER
 COST 100;
+
+ALTER FUNCTION obingresos.ft_boleto_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
+  OWNER TO postgres;

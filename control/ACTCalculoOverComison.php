@@ -188,6 +188,16 @@ class ACTCalculoOverComison extends ACTbase{
         return $result;
     }
 
+    function array_sort_by(&$arrIni, $col, $order = SORT_ASC){
+        $arrAux = array();
+        foreach ($arrIni as $key=> $row)
+        {
+            $arrAux[$key] = is_object($row) ? $arrAux[$key] = $row->$col : $row[$col];
+            $arrAux[$key] = strtolower($arrAux[$key]);
+        }
+        array_multisort($arrAux, $order, $arrIni);
+    }
+
     function generarMovimientoEntidad(){
 
         $from =  implode('',array_reverse(explode('/',$this->objParam->getParametro('fecha_desde'))));;
@@ -430,10 +440,36 @@ class ACTCalculoOverComison extends ACTbase{
         $nombreArchivo = uniqid(md5(session_id()).$titulo_archivo).'.xls';
         $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
         $this->objParam->addParametro('titulo_archivo',$titulo_archivo);
-        $this->objParam->addParametro('datos',$res->Data);
+        //$this->objParam->addParametro('datos',$res->Data);
         $this->objParam->addParametro('fecha_desde',$from);
         $this->objParam->addParametro('fecha_hasta',$to);
         $this->objParam->addParametro('tipo',$type);
+
+        /******************** ******************** LUGAR CODIGO IATA ******************** ********************/
+        $cone = new conexion();
+        $link = $cone->conectarpdo();
+
+        $sql = "select distinct lug.nombre, agen.codigo codigo_iata, lug.codigo codigo_lugar
+                from obingresos.tagencia agen
+                inner join param.tlugar lug on lug.id_lugar = agen.id_lugar
+                where agen.estado_reg = 'activo' and lug.estado_reg = 'activo'
+                order by nombre asc
+                    ";
+        $consulta = $link->query($sql);
+        $consulta->execute();
+        $lugares = $consulta->fetchAll(PDO::FETCH_ASSOC);
+        /******************** ******************** LUGAR CODIGO IATA ******************** ********************/
+
+        $record = array();
+        foreach ($res->Data as $rec){
+            $punto_index = array_search($rec->IataCode, $this->array_column($lugares, 'codigo_iata'));
+            $rec->lugar = $lugares[$punto_index]["nombre"];
+            $rec->codigo = $lugares[$punto_index]["codigo_lugar"];
+            $record [] = $rec;
+        }
+        $res->Data = $record;
+        //$this->array_sort_by($res->Data,'codigo');
+        $this->objParam->addParametro('datos',$res->Data);
 
         $this->objReporte = new RReporteCalculoOverNoIataXLS($this->objParam);
         $this->objReporte->generarReporte();

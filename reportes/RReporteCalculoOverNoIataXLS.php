@@ -172,10 +172,11 @@ class RReporteCalculoOverNoIataXLS
         $this->docexcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
         $this->docexcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
         $this->docexcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
-        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
-        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(10);
+        $this->docexcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
+        $this->docexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
         $this->docexcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+        $this->docexcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
 
 
         /*logo*/
@@ -192,19 +193,19 @@ class RReporteCalculoOverNoIataXLS
         /*logo*/
 
 
-        $this->docexcel->getActiveSheet()->getStyle('A1:G4')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->getStyle('A1:H4')->applyFromArray($styleTitulos);
 
-        $this->docexcel->getActiveSheet()->getStyle('A1:G2')->getAlignment()->setWrapText(true);
-        $this->docexcel->getActiveSheet()->mergeCells('B2:G2');
-        $this->docexcel->getActiveSheet()->setCellValue('G1','Fecha: '.$fecha);
+        $this->docexcel->getActiveSheet()->getStyle('A1:H2')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->mergeCells('B2:H2');
+        $this->docexcel->getActiveSheet()->setCellValue('H1','Fecha: '.$fecha);
         $this->docexcel->getActiveSheet()->setCellValue('B2','REPORTE ACMs GENERADOS POR COMISIONES');
 
-        $this->docexcel->getActiveSheet()->setCellValue('B3','Desde: ');
-        $this->docexcel->getActiveSheet()->setCellValue('C3',date_format(date_create($fecha_desde),'d/m/Y    '));
-        $this->docexcel->getActiveSheet()->setCellValue('D3','Hasta: ');
-        $this->docexcel->getActiveSheet()->setCellValue('E3',date_format(date_create($fecha_hasta),'d/m/Y    '));
-        $this->docexcel->getActiveSheet()->setCellValue('F3','Agencias: ');
-        $this->docexcel->getActiveSheet()->setCellValue('G3',$tipo);
+        $this->docexcel->getActiveSheet()->setCellValue('C3','Desde: ');
+        $this->docexcel->getActiveSheet()->setCellValue('D3',date_format(date_create($fecha_desde),'d/m/Y    '));
+        $this->docexcel->getActiveSheet()->setCellValue('E3','Hasta: ');
+        $this->docexcel->getActiveSheet()->setCellValue('F3',date_format(date_create($fecha_hasta),'d/m/Y    '));
+        $this->docexcel->getActiveSheet()->setCellValue('G3','Agencias: ');
+        $this->docexcel->getActiveSheet()->setCellValue('H3',$tipo);
 
         /*$this->docexcel->getActiveSheet()->getStyle('A3:R4')->getAlignment()->setWrapText(true);
         $this->docexcel->getActiveSheet()->mergeCells('A3:Q3');
@@ -213,15 +214,16 @@ class RReporteCalculoOverNoIataXLS
         $this->docexcel->getActiveSheet()->setCellValue('R1', 'Fecha');
         $this->docexcel->getActiveSheet()->setCellValue('R2', $fecha);*/
 
-        $this->docexcel->getActiveSheet()->getStyle('A5:G5')->getAlignment()->setWrapText(true);
-        $this->docexcel->getActiveSheet()->getStyle('A5:G5')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->getStyle('A5:H5')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->getStyle('A5:H5')->applyFromArray($styleTitulos1);
         $this->docexcel->getActiveSheet()->setCellValue('A5','Num.');
         $this->docexcel->getActiveSheet()->setCellValue('B5','AGT');
         $this->docexcel->getActiveSheet()->setCellValue('C5','Nombre Agencia de Viaje');
-        $this->docexcel->getActiveSheet()->setCellValue('D5','Nro. ACM');
-        $this->docexcel->getActiveSheet()->setCellValue('E5','Moneda');
-        $this->docexcel->getActiveSheet()->setCellValue('F5','% Comisión');
-        $this->docexcel->getActiveSheet()->setCellValue('G5','Importe Comisión');
+        $this->docexcel->getActiveSheet()->setCellValue('D5','Descripción');
+        $this->docexcel->getActiveSheet()->setCellValue('E5','Nro. ACM');
+        $this->docexcel->getActiveSheet()->setCellValue('F5','Moneda');
+        $this->docexcel->getActiveSheet()->setCellValue('G5','% Comisión');
+        $this->docexcel->getActiveSheet()->setCellValue('H5','Importe Comisión');
 
 
 
@@ -234,41 +236,71 @@ class RReporteCalculoOverNoIataXLS
         $contador = 1;
         $fila_total = $fila;
         $estacion_total = 0;
+
+        $regional = '';
+        $this->array_sort_by($datos,'codigo');
         foreach ($datos as $key => $rec){
 
-            if( $estacion != substr($rec->OfficeId, 0, 3) ) {
-                $estacion = substr($rec->OfficeId, 0, 3);
-                $this->docexcel->getActiveSheet()->setCellValue('A' . $fila, ' Estación: ' .$estacion .' '.$departamentos[$estacion]);
-                $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':E'.$fila);
-                $this->docexcel->getActiveSheet()->setCellValue('F' . $fila, 'Total Estación:');
-                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
-                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
-                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getFont()->setBold(true);
+            if ($regional != $rec->codigo){
+                $this->docexcel->getActiveSheet()->setCellValue('A' . $fila, ' Regional: ' .$rec->codigo .' '.$rec->lugar);
+                $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':F'.$fila);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[2]);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getFont()->setBold(true);
+                $fila++;
+            }
 
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila_total, $estacion_total);
+            if( $estacion != $rec->PointOfSale ) {
+                $estacion = $rec->PointOfSale;
+                $this->docexcel->getActiveSheet()->setCellValue('A' . $fila, ' Agencia: ' .$estacion .' '.$departamentos[$estacion]);
+                $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':F'.$fila);
+                //$this->docexcel->getActiveSheet()->setCellValue('F' . $fila, 'Total Estación:');
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getFont()->setBold(true);
+
+                //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila_total, $estacion_total);
                 $fila_total = $fila;
                 $fila++;
                 $estacion_total = 0;
             }
 
+            /*if( $estacion != $rec->PointOfSale ) {
+                $estacion = $rec->PointOfSale;
+                $this->docexcel->getActiveSheet()->setCellValue('A' . $fila, ' Estación: ' .$estacion .' '.$departamentos[$estacion]);
+                $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':E'.$fila);
+                //$this->docexcel->getActiveSheet()->setCellValue('F' . $fila, 'Total Estación:');
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB($color_cell[3]);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getFont()->setBold(true);
+
+                //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila_total, $estacion_total);
+                $fila_total = $fila;
+                $fila++;
+                $estacion_total = 0;
+            }*/
+
+            $agt = $rec->TypePOS == 'IATA' ? $rec->IataCode : $rec->OfficeId;
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $contador);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $rec->OfficeId);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, $agt );
             $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $rec->PointOfSale);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->DocumentNumber);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $rec->CommissionDescription);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $rec->DocumentNumber);
             //$this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $rec->PaymentDate != null || $rec->PaymentDate != '' ? DateTime::createFromFormat('M j Y g:i:s:a', $rec->PaymentDate)->format('d/m/Y') : '');
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $rec->Currency);
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $rec->CommissionPercent.' %');
-            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->CommssionAmount);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $rec->Currency);
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $rec->CommissionPercent.' %');
+            $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $rec->CommssionAmount);
 
             $estacion_total += $rec->CommssionAmount;
 
             $fila++;
             $contador++;
-            $estacion = substr($rec->OfficeId, 0, 3);;
+            $estacion = $rec->PointOfSale;
+            $regional = $rec->codigo;
         }
 
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila_total, $estacion_total);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila_total, $estacion_total);
 
         /*$this->docexcel->getActiveSheet()->setCellValue('A' . $fila, 'TOTAL MONEDA: ' . $currency);
         $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':G'.$fila);

@@ -181,7 +181,7 @@ class MODReportes extends MODbase{
                 }
 
                 $data[] = $record;
-            }
+            }//exit;
             //var_dump('$data',$data);exit;
             $this->respuesta->datos = $data;
             mssql_free_result($query);

@@ -103,7 +103,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: false,
                     format: 'd/m/Y',
                     msgTarget: 'side',
-                    width : 179
+                    width : 179,
+                    editable: false
 
                 },
                 type:'DateField',
@@ -117,7 +118,8 @@ header("content-type: text/javascript; charset=UTF-8");
                     allowBlank: false,
                     format: 'd/m/Y',
                     msgTarget: 'side',
-                    width : 179
+                    width : 179,
+                    editable: false
 
                 },
                 type:'DateField',
@@ -153,6 +155,13 @@ header("content-type: text/javascript; charset=UTF-8");
             });
 
             this.init();
+            this.current_date = new Date();
+            this.diasMes = [31, new Date(this.current_date.getFullYear(), 2, 0).getDate(), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            this.Cmp.fecha_desde.on('select', function (rec, date) {
+                let fecha_max = new Date(date.getFullYear() ,date.getMonth(), this.diasMes[date.getMonth()])
+                this.Cmp.fecha_hasta.setMaxValue(fecha_max);
+                this.Cmp.fecha_hasta.setMinValue(fecha_max);
+            },this);
 
             this.Cmp.fecha_desde.on('valid',function(){
                 //this.Cmp.fecha_hasta.setMinValue(this.Cmp.fecha_desde.getValue());

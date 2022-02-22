@@ -582,7 +582,8 @@ header("content-type:text/javascript; charset=UTF-8");
                 }else{
                     Ext.Msg.show({
                         title: 'Sistema AMADEUS',
-                        msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> Se ha producido un problema al recuperar la información del sistema Amadeus, posiblemente la ultima emisión del boleto exchange este mal o existio algun problema con el Servicio Web. Revise la construcción del boleto; si ese no es el motivo del problema, reportelo a Sistemas (Cel.: 71721380).</b> </div>',
+                        //msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> Se ha producido un problema al recuperar la información del sistema Amadeus, posiblemente la ultima emisión del boleto exchange este mal o existio algun problema con el Servicio Web. Revise la construcción del boleto; si ese no es el motivo del problema, reportelo a Sistemas (Cel.: 71721380).</b> </div>',
+                        msg: '<div style="text-align: justify;"><b  style="color: red;">Estimado Usuario:</b> <br><br><b> '+objRes.ROOT.datos.error+'.</b> </div>',
                         buttons: Ext.Msg.OK,
                         width: 500,
                         maxWidth: 1024,

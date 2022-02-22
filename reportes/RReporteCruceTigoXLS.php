@@ -14,7 +14,7 @@ class RReporteCruceTigoXLS{
         $this->objParam = $objParam;
         $this->url_archivo = "../../../reportes_generados/".$this->objParam->getParametro('nombre_archivo');
         //ini_set('memory_limit','512M');
-        set_time_limit(400);
+        //set_time_limit(400);
         $cacheMethod = PHPExcel_CachedObjectStorageFactory:: cache_to_phpTemp;
         $cacheSettings = array('memoryCacheSize'  => '10MB');
         PHPExcel_Settings::setCacheStorageMethod($cacheMethod, $cacheSettings);
@@ -741,6 +741,7 @@ class RReporteCruceTigoXLS{
         $this->docexcel->setActiveSheetIndex(0);
         $this->objWriter = PHPExcel_IOFactory::createWriter($this->docexcel, 'Excel5');
         $this->objWriter->save($this->url_archivo);
+        return $this->url_archivo;
     }
 
 }

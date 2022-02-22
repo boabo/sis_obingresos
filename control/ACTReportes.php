@@ -83,19 +83,27 @@ class ACTReportes extends ACTbase{
             session_write_close();
         }
         /********************************* BACKGROUND *********************************/
+        //try {
+            //Instancia la clase de excel
+            if ($tipo_rep == 'pago_atc') {
+                $this->objReporteFormato = new RReporteCruceAtcXLS($this->objParam);
+            } else if ($tipo_rep == 'pago_linkser') {
+                $this->objReporteFormato = new RReporteCruceLinkserXLS($this->objParam);
+            } else if ($tipo_rep == 'pago_tigo') {
+                $this->objParam->addParametro('depositos', $this->res->depositos);
+                $this->objReporteFormato = new RReporteCruceTigoXLS($this->objParam);
+            }
 
-        //Instancia la clase de excel
-        if($tipo_rep == 'pago_atc'){
-            $this->objReporteFormato = new RReporteCruceAtcXLS($this->objParam);
-        }else if($tipo_rep == 'pago_linkser'){
-            $this->objReporteFormato = new RReporteCruceLinkserXLS($this->objParam);
-        }else if($tipo_rep == 'pago_tigo'){
-            $this->objParam->addParametro('depositos',$this->res->depositos);
-            $this->objReporteFormato = new RReporteCruceTigoXLS($this->objParam);
-        }
+            $this->objReporteFormato->imprimeDatos();
+            $url_file_xls = $this->objReporteFormato->generarReporte();
+        /*}catch (Exception $e){
+            $cone = new conexion();
+            $link = $cone->conectarpdo();
 
-        $this->objReporteFormato->imprimeDatos();
-        $url_file_xls = $this->objReporteFormato->generarReporte();
+            $sql = "INSERT INTO obingresos.tdocumento_generado(id_usuario_reg, url, size, fecha_generacion, file_name, format, estado_reg, fecha_ini, fecha_fin) VALUES (".$_SESSION["ss_id_usuario"]."::integer, '".$e->getMessage()."', '0', now(), 'ERROR', 'xls', 'NEW', '".$fecha_desde."'::date, '".$fecha_hasta."'::date) ";
+            $stmt = $link->prepare($sql);
+            $stmt->execute();
+        }*/
 
         /********************************* BACKGROUND FILE *********************************/
         if (true){
@@ -107,8 +115,16 @@ class ACTReportes extends ACTbase{
             $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
             $pow = min($pow, count($units) - 1);
 
+            $equivalencia = 1;
+            if ($units[$pow] == 'KB') {
+                $equivalencia = 1024;
+            } else if ($units[$pow] == 'MB') {
+                $equivalencia = 1048576;
+            } else if ($units[$pow] == 'GB') {
+                $equivalencia = 1073741824;
+            }
 
-            $file_size = round($bytes, 2) . ' ' . $units[$pow];
+            $file_size = round($bytes / $equivalencia, 2) . ' ' . $units[$pow];
             /** Convertir a megas **/
 
             $url_absolute = $url_file_xls;

@@ -198,14 +198,14 @@ $body$
                 (v_record_json->>'NroVuelo')::varchar,
                 case when v_parametros.tipo_rep = 'normal' then (v_record_json->>'RutaVl')::varchar else (v_record_json->>'RutaBoa')::varchar end,
                 (v_record_json->>'NroPaxBoA')::varchar,
-                (v_record_json->>'NroPAxSabsa')::varchar,
-                (v_record_json->>'ImporteSabsa')::numeric,
-                (v_record_json->>'ImporteBoa')::numeric,
-                coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric)-(v_record_json->>'ImporteSabsa')::numeric,
+                coalesce((v_record_json->>'NroPAxSabsa')::varchar,'0'::varchar),
+                coalesce((v_record_json->>'ImporteSabsa')::numeric,0::numeric),
+                coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric),
+                coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric)-coalesce((v_record_json->>'ImporteSabsa')::numeric,0::numeric),
                 coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer),
                 coalesce((v_record_json->>'PaxA7Int')::integer,0::integer),
                 coalesce((v_record_json->>'PaxA70')::integer,0::integer),
-                case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaBoa')::varchar end,
+                /*case when v_parametros.tipo_rep = 'normal' then ''::varchar else*/ (v_record_json->>'MatriculaBoa')::varchar /*end*/,
                 case when v_parametros.tipo_rep = 'normal' then ''::varchar else (v_record_json->>'MatriculaSabsa')::varchar end,
                 (v_record_json->>'RutaPax')::varchar,
                 (v_record_json->>'StatusVl')::varchar
@@ -214,11 +214,11 @@ $body$
             v_total_nacional = v_total_nacional + coalesce((v_record_json->>'PaxA7Nac')::integer,0::integer);
             v_total_inter = v_total_inter + coalesce((v_record_json->>'PaxA7Int')::integer,0::integer);
             v_total_sinA7 = v_total_sinA7 + coalesce((v_record_json->>'PaxA70')::integer,0::integer);
-            v_total_pax_boa = v_total_pax_boa + (v_record_json->>'NroPaxBoA')::integer;
-            v_total_imp_boa = v_total_imp_boa + (v_record_json->>'ImporteBoa')::numeric;
-            v_total_pax_sabsa = v_total_pax_sabsa + (v_record_json->>'NroPAxSabsa')::integer;
-            v_total_imp_sabsa = v_total_imp_sabsa + (v_record_json->>'ImporteSabsa')::numeric;
-            v_total_diferencia = v_total_diferencia + (coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric)-(v_record_json->>'ImporteSabsa')::numeric);
+            v_total_pax_boa = v_total_pax_boa +  coalesce((v_record_json->>'NroPaxBoA')::integer,0::integer);
+            v_total_imp_boa = v_total_imp_boa + coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric);
+            v_total_pax_sabsa = v_total_pax_sabsa +  coalesce((v_record_json->>'NroPAxSabsa')::integer,0::integer);
+            v_total_imp_sabsa = v_total_imp_sabsa + coalesce((v_record_json->>'ImporteSabsa')::numeric,0::numeric);
+            v_total_diferencia = v_total_diferencia + (coalesce((v_record_json->>'ImporteBoa')::numeric,0::numeric)-coalesce((v_record_json->>'ImporteSabsa')::numeric,0::numeric));
 
           	v_contador_id = v_contador_id + 1;
           end loop;
