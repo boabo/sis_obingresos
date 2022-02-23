@@ -1238,7 +1238,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 direction: 'ASC'
                             },
                             totalProperty: 'total',
-                            fields: ['id_venta', 'nro_factura','nombre_factura','total_venta','saldo', 'tex_saldo','moneda'],
+                            fields: ['id_venta', 'nro_factura','nombre_factura','total_venta','saldo', 'tex_saldo','moneda', 'fecha'],
                             remoteSort: true,
                             baseParams: {par_filtro: 'v.nro_factura#v.nombre_factura'}
                         }),
@@ -1246,7 +1246,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nro_factura',
                         gdisplayField: 'nro_factura',
                         hiddenName: 'id_venta',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><div style="font-weight:bold;">Numero <span style="color:blue;"">&nbsp;{nro_factura}</span><br> Nombre: <span style="color:green;"">{nombre_factura}</span> <br> Monto: <span style="color:red;">&nbsp;&nbsp;{total_venta}&nbsp;&nbsp;&nbsp{tex_saldo}</span><br></div></div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><div style="font-weight:bold;">Numero <span style="color:blue;"">&nbsp;{nro_factura}</span><br><b>Fecha: </b>&nbsp;&nbsp;&nbsp;{fecha}<br> Nombre: <span style="color:green;"">{nombre_factura}</span> <br> Monto: <span style="color:red;">&nbsp;&nbsp;{total_venta}&nbsp;&nbsp;&nbsp{tex_saldo}</span><br></div></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
@@ -1534,7 +1534,7 @@ header("content-type: text/javascript; charset=UTF-8");
                                 direction: 'ASC'
                             },
                             totalProperty: 'total',
-                            fields: ['id_venta', 'nro_factura','nombre_factura','total_venta','saldo','tex_saldo','moneda'],
+                            fields: ['id_venta', 'nro_factura','nombre_factura','total_venta','saldo','tex_saldo','moneda', 'fecha'],
                             remoteSort: true,
                             baseParams: {par_filtro: 'v.nro_factura#v.nombre_factura'}
                         }),
@@ -1542,7 +1542,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         displayField: 'nro_factura',
                         gdisplayField: 'nro_factura',
                         hiddenName: 'id_venta',
-                        tpl:'<tpl for="."><div class="x-combo-list-item"><div style="font-weight:bold;">Numero <span style="color:blue;"">&nbsp;{nro_factura}</span><br> Nombre: <span style="color:green;"">{nombre_factura}</span> <br> Monto: <span style="color:red;">&nbsp;&nbsp;{total_venta}&nbsp;&nbsp;&nbsp{tex_saldo}</span><br></div></div></tpl>',
+                        tpl:'<tpl for="."><div class="x-combo-list-item"><div style="font-weight:bold;">Numero <span style="color:blue;"">&nbsp;{nro_factura}</span><br><b>Fecha: </b>&nbsp;&nbsp;&nbsp;{fecha}<br> Nombre: <span style="color:green;"">{nombre_factura}</span> <br> Monto: <span style="color:red;">&nbsp;&nbsp;{total_venta}&nbsp;&nbsp;&nbsp{tex_saldo}</span><br></div></div></tpl>',
                         forceSelection: true,
                         typeAhead: false,
                         triggerAction: 'all',
