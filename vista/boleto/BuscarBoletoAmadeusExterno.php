@@ -526,7 +526,8 @@ header("content-type:text/javascript; charset=UTF-8");
                     params : {
                         'pnr' : rec.localizador,
                         'id_boletos_amadeus': cad,
-                        'nro_boleto' : rec.nro_boleto
+                        'nro_boleto' : rec.nro_boleto,
+                        'source_system': 'erp'
                     },
                     success : this.successExport,
                     failure : this.conexionFailure,

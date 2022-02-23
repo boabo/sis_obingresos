@@ -2380,6 +2380,11 @@ class ACTBoleto extends ACTbase{
         }
 
         $pnr = $this->objParam->getParametro('pnr');
+        $ticket_number = $this->objParam->getParametro('ticket_number');
+        $source_system = $this->objParam->getParametro('source_system');
+
+        //var_dump('$pnr',$pnr, $ticket_number, $source_system);exit;
+
         //"credenciales"=>"{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}"
         $data = array("credenciales"=>"{B6575E91-D2B3-48A3-B737-B66EDBD60AFA}{C0573161-B781-4B06-B4B7-C8D85DE86239}",//{ae7419a1-dbd2-4ea9-9335-2baa08ba78b4}{59331f3e-a518-4e1e-85ca-8df59d14a420}
             "idioma"=>"ES",
@@ -2469,6 +2474,12 @@ class ACTBoleto extends ACTbase{
             $this->objParam->addParametro('vuelo', json_encode($vuelo));
             $this->objParam->addParametro('tipo', 'exchange');
 
+            if($source_system == 'web'){
+                $this->objParam->addParametro('id_boletos_amadeus', '0');
+            }
+            $this->objParam->addParametro('ticket_number', $ticket_number);
+            $this->objParam->addParametro('source_system', $source_system);
+
 
             /*echo('----------------------------------------LOCALIZADOR-----------------------------------------------');
             var_dump($localizador);
@@ -2506,7 +2517,7 @@ class ACTBoleto extends ACTbase{
             $this->objParam->addParametro('datos_detalle', $res->reserva_V2);
             $this->objParam->addParametro('datos', $datos);
 
-            $nombreArchivo = uniqid(md5(session_id()) . 'Boleto BO');
+            $nombreArchivo = uniqid(md5(session_id()) . 'Boleto_BO');
 
 
             $this->objParam->addParametro('titulo_archivo', 'Boleto');
@@ -2517,9 +2528,8 @@ class ACTBoleto extends ACTbase{
 
             //Instancia la clase de pdf
             $this->objReporteFormato = new RBoletoBOPDF($this->objParam);
-            $this->objReporteFormato->generarReporte();
+            $url_file = $this->objReporteFormato->generarReporte();
             $this->objReporteFormato->output($this->objReporteFormato->url_archivo, 'F');
-
 
             //$this->extraData['tipo_emision'] = $datos[0]['tipo_emision'];
 
@@ -2529,13 +2539,21 @@ class ACTBoleto extends ACTbase{
                 $tipo_emision = $datos[0]['tipo_emision'];
             }
 
-            $this->mensajeExito = new Mensaje();
+            if ($source_system == 'erp') {
+                $this->mensajeExito = new Mensaje();
+                $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado', 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+                $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+                $this->mensajeExito->setDatos(array("tipo_emision" => $tipo_emision));
+                $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
 
-            $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado',
-                'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
-            $this->mensajeExito->setArchivoGenerado($nombreArchivo);
-            $this->mensajeExito->setDatos(array("tipo_emision"=>$tipo_emision));
-            $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+            }else if ($source_system == 'web'){
+                $this->mensajeExito = new Mensaje();
+                $this->mensajeExito->setMensaje('EXITO', 'Reporte.php', 'Reporte generado '.$nombreArchivo, 'Se generó con éxito el reporte: ' . $nombreArchivo, 'control');
+                $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+                $this->mensajeExito->setDatos(array("url_file"=>'https://erp.obairlines.bo/reportes_generados/'.$nombreArchivo,"status"=>"exito"));
+                $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+            }
+
         }else{
 
             /*$this->objParam->addParametro('tipo', 'normal');
@@ -2571,8 +2589,13 @@ class ACTBoleto extends ACTbase{
             }else{
                 $tipo_emision = 'estructura';
             }
-            $this->mensajeExito->setDatos(array("tipo_emision"=>$tipo_emision, "error"=>$res->TraerReservaExchResult));
-            $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+            if ($source_system == 'erp') {
+                $this->mensajeExito->setDatos(array("tipo_emision" => $tipo_emision, "error" => $res->TraerReservaExchResult));
+                $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+            }else if ($source_system == 'web'){
+                $this->mensajeExito->setDatos(array("url_file" => "", "status" => $res->TraerReservaExchResult));
+                $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
+            }
         }
         //$this->res->imprimirRespuesta($this->res->generarJson());
     }

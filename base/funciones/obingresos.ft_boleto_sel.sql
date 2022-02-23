@@ -753,6 +753,14 @@ BEGIN
             inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
             where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';
 
+			if v_parametros.source_system = 'web' then
+            	select tba.id_boleto_amadeus
+              	into v_parametros.id_boletos_amadeus
+              	from obingresos.tboleto_amadeus tba
+              	where tba.nro_boleto = v_parametros.ticket_number::varchar;
+            end if;
+
+            --raise 'id_boletos_amadeus: %, %',v_parametros.id_boletos_amadeus, v_parametros.source_system;
 
             select tba.nro_boleto
             into v_numero_billete
@@ -1289,8 +1297,11 @@ BEGIN
             where tba.localizador = v_parametros.pnr and tba.trans_code_exch = 'EXCH';
 
 
-
-            v_nro_boleto = ('930'||v_parametros.nro_boleto);
+			if v_parametros.source_system = 'web' then
+            	v_nro_boleto = v_parametros.ticket_number::varchar;
+            else
+            	v_nro_boleto = ('930'||v_parametros.nro_boleto);
+            end if;
 
             select tba.trans_code_exch
             into v_code_exch

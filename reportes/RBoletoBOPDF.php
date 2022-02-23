@@ -448,7 +448,7 @@ class RBoletoBOPDF extends  ReportePDF {
             $this->Cell(150, 5, ': 1 PIEZA 30 KG', 0, 1, 'L');
         }*/
 
-
+        return $this->url_archivo;
     }
 
 }

@@ -980,6 +980,9 @@ class MODBoleto extends MODbase{
         $this->setParametro('pnr','pnr','varchar');
         $this->setParametro('nro_boleto','nro_boleto','varchar');
 
+        $this->setParametro('ticket_number','ticket_number','varchar');
+        $this->setParametro('source_system','source_system','varchar');
+
         //Definicion de la lista del resultado del query
         $this->captura('id_vuelo','integer');
         $this->captura('clase','varchar');
