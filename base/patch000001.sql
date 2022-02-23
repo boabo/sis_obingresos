@@ -4299,3 +4299,25 @@ ALTER TABLE obingresos.treserva_pnr
 COMMENT ON COLUMN obingresos.treserva_pnr.datos_emision
 IS 'informacion registrada por el cajero para la emision de la reserva';
 /***********************************F-SCP-BVP-OBINGRESOS-0-13/12/2021*****************************************/
+/***********************************I-SCP-IRVA-OBINGRESOS-0-23/02/2022****************************************/
+CREATE TABLE obingresos.ttlog_boleto_amadeus_forma_pago (
+  id_log SERIAL,
+  id_boleto_amadeus_forma_pago INTEGER NOT NULL,
+  observaciones TEXT NOT NULL,
+  estado VARCHAR(50) DEFAULT 'eliminado'::character varying NOT NULL,
+  CONSTRAINT ttlog_boleto_amadeus_forma_pago_pkey PRIMARY KEY(id_log)
+) INHERITS (pxp.tbase)
+WITH (oids = false);
+
+COMMENT ON COLUMN obingresos.ttlog_boleto_amadeus_forma_pago.id_boleto_amadeus_forma_pago
+IS 'Id de la forma de pago eliminada';
+
+COMMENT ON COLUMN obingresos.ttlog_boleto_amadeus_forma_pago.observaciones
+IS 'Alguna descripcion para saber de donde esta ingresando la modificacion';
+
+COMMENT ON COLUMN obingresos.ttlog_boleto_amadeus_forma_pago.estado
+IS 'Estado de la forma de pago, este campo se puede usar en el stage como procesado, etc para marcar cuales ya se excluyeron';
+
+ALTER TABLE obingresos.ttlog_boleto_amadeus_forma_pago
+  OWNER TO postgres;
+/***********************************F-SCP-IRVA-OBINGRESOS-0-23/02/2022*****************************************/
