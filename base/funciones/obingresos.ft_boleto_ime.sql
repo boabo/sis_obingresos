@@ -192,6 +192,9 @@ DECLARE
     v_msg_caja_abierta		varchar;
     v_msg_caja_cerrada		varchar;
     v_datos_recuperados		record;
+    v_boleto_voided_borrador	varchar;
+    v_boletos_no_anulados_erp_borrador varchar[];
+    v_id_boleto_ama			varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -3320,6 +3323,50 @@ BEGIN
                 END IF;
             END LOOP;
 
+
+            FOREACH v_boleto_anulado_amadeus IN ARRAY v_boletos_anulados_amadeus
+            LOOP
+
+                /*Aumentando para comparar tambien con los boletos que estan en el estado borrador Ismael Valdivia(11/03/2022)*/
+                select bol.voided into v_boleto_voided_borrador
+                from obingresos.tboleto_amadeus bol
+                where bol.nro_boleto= v_boleto_anulado_amadeus
+                and bol.id_punto_venta=v_parametros.id_punto_venta
+                and bol.estado='borrador'
+                and bol.id_pv_reserva is null;
+                /**************************************************************************************************************/
+
+
+                IF v_boleto_voided_borrador='no' THEN
+
+                	select ama.id_boleto_amadeus into v_id_boleto_ama
+                    from obingresos.tboleto_amadeus ama
+                    where ama.nro_boleto = v_boleto_anulado_amadeus
+                    and ama.id_punto_venta=v_parametros.id_punto_venta
+                    and ama.estado='borrador'
+                    and ama.id_pv_reserva is null;
+
+                	UPDATE obingresos.tboleto_amadeus
+                    SET voided='si',
+                    id_usuario_cajero = p_id_usuario,
+                    comision = 0,
+                    tipo_comision= 'ninguno'
+                    WHERE id_boleto_amadeus=v_id_boleto_ama::integer;
+
+
+                    delete from obingresos.tmod_forma_pago m
+                    where m.billete = (	select 	b.nro_boleto::numeric
+                                  from obingresos.tboleto_amadeus b
+                                  where b.id_boleto_amadeus = v_id_boleto_ama::integer);
+
+
+
+                END IF;
+
+            END LOOP;
+
+
+
             FOREACH v_boleto_anulado_amadeus IN ARRAY v_boletos_anulados_amadeus
             LOOP
             	select bol.voided into v_boleto_voided
@@ -3327,7 +3374,19 @@ BEGIN
                 where bol.nro_boleto= v_boleto_anulado_amadeus
                 and bol.id_usuario_cajero=v_parametros.id_usuario_cajero
                 and bol.estado='revisado'
+                and bol.id_pv_reserva is null
+
+                union
+
+                /*Aumentando para comparar tambien con los boletos que estan en el estado borrador Ismael Valdivia(11/03/2022)*/
+                select bol.voided
+                from obingresos.tboleto_amadeus bol
+                where bol.nro_boleto= v_boleto_anulado_amadeus
+                and bol.id_punto_venta=v_parametros.id_punto_venta
+                and bol.estado='borrador'
                 and bol.id_pv_reserva is null;
+                /**************************************************************************************************************/
+
 
                 IF v_boleto_voided='no' THEN
                 	v_boletos_no_anulados_erp =  array_append(v_boletos_no_anulados_erp, v_boleto_anulado_amadeus);
