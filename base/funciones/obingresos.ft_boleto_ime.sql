@@ -195,6 +195,7 @@ DECLARE
     v_boleto_voided_borrador	varchar;
     v_boletos_no_anulados_erp_borrador varchar[];
     v_id_boleto_ama			varchar;
+    v_fecha_rango			date;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -3323,6 +3324,9 @@ BEGIN
                 END IF;
             END LOOP;
 
+            select now()::date - 365 into v_fecha_rango;
+
+            if (v_parametros.fecha_emision::date >= v_fecha_rango) then
 
             FOREACH v_boleto_anulado_amadeus IN ARRAY v_boletos_anulados_amadeus
             LOOP
@@ -3401,7 +3405,7 @@ BEGIN
             IF array_length(v_boletos_no_anulados_erp,1) > 0 THEN
             	raise exception 'Boletos no anulados en ERP pero si en Amadeus %',v_boletos_no_anulados_erp;
             END IF;
-
+			end if;
 			v_resp = pxp.f_agrega_clave(v_resp,'mensaje','Los boletos anulados en Amadeus son los mismos boletos anulados en el ERP');
             v_resp = pxp.f_agrega_clave(v_resp,'mensaje_respuesta','Los boletos anulados en Amadeus son los mismos boletos anulados en el ERP');
             --Devuelve la respuesta
