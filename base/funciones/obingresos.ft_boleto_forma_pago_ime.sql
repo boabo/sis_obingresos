@@ -470,6 +470,21 @@ BEGIN
             delete from obingresos.tmod_forma_pago m
             where m.billete = v_datos.nro_boleto::numeric and m.forma = v_datos.codigo and m.importe = v_datos.importe;
 
+            /*Aumentando para recuperar en el LOG Ismael Valdivia (04/04/2022)*/
+            insert into obingresos.ttlog_boleto_amadeus_forma_pago (id_usuario_reg,
+                        															fecha_reg,
+                                                                                    id_boleto_amadeus_forma_pago,
+                                                                                    observaciones,
+                                                                                    estado)
+                                                                                    VALUES (
+                                                                                    p_id_usuario,
+                                                                                    now(),
+                                                                                    v_parametros.id_boleto_amadeus_forma_pago,
+                                                                                    'Modificación de forma de pago desde el detalle',
+                                                                                    'eliminado'
+                                                                                    );
+			/**************************************************************************************************************************/
+
 			--Sentencia de la eliminacion
 			delete from obingresos.tboleto_amadeus_forma_pago
             where id_boleto_amadeus_forma_pago=v_parametros.id_boleto_amadeus_forma_pago;
