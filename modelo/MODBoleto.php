@@ -1425,6 +1425,82 @@ class MODBoleto extends MODbase{
         //Devuelve la respuesta
         return $this->respuesta;
     }
+
+    /**  **/
+    function traerBoletoExchangeWeb(){
+        //Definicion de variables para ejecucion del procedimientp
+        $this->procedimiento='obingresos.ft_boleto_sel';
+        $this->transaccion='OBING_BOL_EXCH_WEB';
+        $this->tipo_procedimiento='SEL';//tipo de transaccion
+        //Define los parametros para la funcion
+
+        $this->setCount(false);
+
+        $this->setParametro('localizador','localizador','jsonb');
+        $this->setParametro('ct','ct','jsonb');
+        $this->setParametro('fc','fc','jsonb');
+        $this->setParametro('pasajeros','pasajeros','jsonb');
+        $this->setParametro('tasa','tasa','jsonb');
+        $this->setParametro('importes','importes','jsonb');
+        $this->setParametro('fn_V2','fn_V2','jsonb');
+        $this->setParametro('ssrs','ssrs','jsonb');
+        $this->setParametro('tl','tl','jsonb');
+        $this->setParametro('responsable','responsable','jsonb');
+        $this->setParametro('tipo_pv','tipo_pv','jsonb');
+        $this->setParametro('update','update','jsonb');
+        $this->setParametro('vuelo','vuelo','jsonb');
+        $this->setParametro('tipo','tipo','varchar');
+        $this->setParametro('id_boletos_amadeus','id_boletos_amadeus','varchar');
+        $this->setParametro('pnr','pnr','varchar');
+        $this->setParametro('nro_boleto','nro_boleto','varchar');
+
+        $this->setParametro('ticket_number','ticket_number','varchar');
+        $this->setParametro('source_system','source_system','varchar');
+
+        //Definicion de la lista del resultado del query
+        $this->captura('id_vuelo','integer');
+        $this->captura('clase','varchar');
+        $this->captura('linea','varchar');
+        $this->captura('estado','varchar');
+        $this->captura('origen','varchar');
+        $this->captura('destino','varchar');
+        $this->captura('num_vuelo','varchar');
+        $this->captura('hora_salida','varchar');
+        $this->captura('fecha_salida','varchar');
+        $this->captura('hora_llegada','varchar');
+
+        $this->captura('codigo_tarifa','varchar');
+        $this->captura('calculo_tarifa','varchar');
+        $this->captura('tasa','varchar');
+        $this->captura('rc_iva','numeric');
+        $this->captura('forma_identificacion','varchar');
+        $this->captura('importe_total','varchar');
+        $this->captura('importe_tarifa','varchar');
+        $this->captura('agente','varchar');
+        $this->captura('nombre_ofi','varchar');
+        $this->captura('codigo_iata','varchar');
+        $this->captura('telefono_ofi','varchar');
+        $this->captura('direccion_ofi','varchar');
+        $this->captura('tipo_cambio','numeric');
+        $this->captura('endoso','varchar');
+        $this->captura('fecha_create','varchar');
+        $this->captura('moneda_iva','varchar');
+        $this->captura('tipo_emision','varchar');
+        $this->captura('moneda_tarifa','varchar');
+        $this->captura('pasajero','varchar');
+        $this->captura('numero_billete','varchar');
+        $this->captura('origen_cod','varchar');
+        $this->captura('destino_cod','varchar');
+
+
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        //echo($this->consulta);exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    /**  **/
     
 }
 ?>

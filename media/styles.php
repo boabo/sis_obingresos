@@ -21,6 +21,12 @@ header("content-type: text/css; charset=UTF-8");
       background-color : #FFC57F;
     }
 
+    .cero{
+        background-color: #FFC57F;
+        color: #FFC57F;
+        font-weight: bold;
+    }
+
     .table_mco {
         background: #fff;
         width: 1000px;

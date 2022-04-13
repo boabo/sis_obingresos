@@ -449,10 +449,16 @@ class ACTCalculoOverComison extends ACTbase{
         $cone = new conexion();
         $link = $cone->conectarpdo();
 
-        $sql = "select distinct lug.nombre, agen.codigo codigo_iata, lug.codigo codigo_lugar
+        /*$sql = "select distinct lug.nombre, agen.codigo codigo_iata, lug.codigo codigo_lugar
                 from obingresos.tagencia agen
                 inner join param.tlugar lug on lug.id_lugar = agen.id_lugar
                 where agen.estado_reg = 'activo' and lug.estado_reg = 'activo'
+                order by nombre asc
+                    ";*/
+
+        $sql = "select distinct agen.city_name nombre, agen.iata_code codigo_iata, agen.city_code codigo_lugar
+                from vef.tstage_punto_venta agen
+                where agen.estado_reg = 'activo'
                 order by nombre asc
                     ";
         $consulta = $link->query($sql);
@@ -461,15 +467,15 @@ class ACTCalculoOverComison extends ACTbase{
         /******************** ******************** LUGAR CODIGO IATA ******************** ********************/
 
         $record = array();
+        $codigos_iata = array_map('trim',$this->array_column($lugares, 'codigo_iata'));
         foreach ($res->Data as $rec){
-            $punto_index = array_search($rec->IataCode, $this->array_column($lugares, 'codigo_iata'));
+            $punto_index = array_search($rec->IataCode, $codigos_iata, true);
             $rec->lugar = $lugares[$punto_index]["nombre"];
             $rec->codigo = $lugares[$punto_index]["codigo_lugar"];
             $record [] = $rec;
         }
         $res->Data = $record;
-        //$this->array_sort_by($res->Data,'codigo');
-        $this->objParam->addParametro('datos',$res->Data);
+        $this->objParam->addParametro('datos',$res->Data);//var_dump('datos',$res->Data);exit;
 
         $this->objReporte = new RReporteCalculoOverNoIataXLS($this->objParam);
         $this->objReporte->generarReporte();
