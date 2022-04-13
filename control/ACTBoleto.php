@@ -1425,7 +1425,16 @@ class ACTBoleto extends ACTbase{
 
             $datos = $this->res->getDatos();        
             // var_dump($datos);exit;
-            if ($datos['boleto_anulado'] != '' && $datos['anulado'] == 'no') {                
+            if ($datos['boleto_anulado'] != '') {                
+                $title_anulacion = 'anulacion';
+                $asunto = 'Anulacion';
+                $titulo = 'Anulacion';
+
+                if ($datos['anulado'] == 'si') {
+                    $title_anulacion = '<u> des anulacion </u>';
+                    $asunto = 'Des Anulacion';
+                    $titulo = '<u>Des Anulacion</u>';
+                }
 
                 $data_mail = '';
                 $data_mail.= '<!DOCTYPE html>'.
@@ -1439,7 +1448,7 @@ class ACTBoleto extends ACTbase{
                         '<table role="presentation" border="0" width="100%">'.
                             '<tr>'.
                                 '<td bgcolor="#EAF0F6" align="justify" style="padding: 30px 30px;">'.
-                                '<b>Estimad@s </b> Informamos la anulacion del boleto: <br><br>'.
+                                '<b>Estimad@s </b> Informamos la '.$title_anulacion.' del boleto: <br><br>'.
                                 '<table border="0"  cellspacing="5" style="text-align: left;">'.
                                 '<tr>'.                                
                                 '<td>'.$datos['boleto_anulado'].'</td>'.
@@ -1459,10 +1468,10 @@ class ACTBoleto extends ACTbase{
                         $correo->addDestinatario($value); //noticacion responsables emision boletos
                     }                    
                     //asunto
-                    $correo->setAsunto('Notificacion Anulacion de Boleto.');
+                    $correo->setAsunto('Notificacion '.$asunto.' de Boleto.');
                     //cuerpo mensaje
                     $correo->setMensaje($data_mail);
-                    $correo->setTitulo('Notificacion Anulacion de Boleto.');
+                    $correo->setTitulo('Notificacion '.$titulo.' de Boleto.');
                     $correo->setDefaultPlantilla();             
                     $resp=$correo->enviarCorreo();
                     if($resp=='OK'){                        
