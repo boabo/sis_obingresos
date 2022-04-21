@@ -63,7 +63,9 @@ BEGIN
                         age.bloquear_emision,
                         age.validar_boleta,
                         age.controlar_periodos_pago,
-                        age.estado_reg
+                        age.estado_reg,
+                        age.id_lugar,
+                        age.boaagt
 						from obingresos.tagencia age
 						inner join segu.tusuario usu1 on usu1.id_usuario = age.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = age.id_usuario_mod
