@@ -3885,7 +3885,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     var mon_sel = r.data.moneda;
                     var dif = imp1 - saldo;
                     this.Cmp.saldo_recibo.setValue(saldo);
-                    if (imp1 > saldo){
+                    if (parseFloat(imp1) > parseFloat(saldo)){
                         Ext.Msg.show({
                          title:'<h1 style="color:red"><center>AVISO</center></h1>',
                          msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',
@@ -4405,7 +4405,7 @@ header("content-type: text/javascript; charset=UTF-8");
                   var dif = parseFloat(imp2 - saldo).toFixed(2);
                   console.log("aqui data",saldo);
                   this.Cmp.saldo_recibo_2.setValue(saldo);
-                  if (imp2 > saldo){
+                  if (parseFloat(imp2) > parseFloat(saldo)){
                       Ext.Msg.show({
                        title:'<h1 style="color:red"><center>AVISO</center></h1>',
                        msg: '<b>El saldo del recibo es: <span style="color:red;"> '+mon_sel+ ' '+saldo+'</span> Falta un monto de <span style="color:red;">'+ mon_sel +' '+ dif +'</span> para la forma de pago recibo anticipo</b>',

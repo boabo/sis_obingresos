@@ -7,6 +7,7 @@
  *@description  Vista para registrar los datos de un funcionario
  */
 
+include_once('../../media/styles.php');
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 
@@ -40,7 +41,12 @@ header("content-type: text/javascript; charset=UTF-8");
         viewConfig: {
             stripeRows: false,
             getRowClass: function(record) {
-                return "x-selectable";
+
+                if (record.data.nro_pax_boa == '0') {
+                    return 'cero';
+                }else {
+                    return "x-selectable";
+                }
             }
         },
         constructor: function(config) {

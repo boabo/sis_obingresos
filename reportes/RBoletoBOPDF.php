@@ -269,7 +269,7 @@ class RBoletoBOPDF extends  ReportePDF {
 
         $this->SetFont('Courier','',9);
 
-        $this->Cell(45,5,'EN FACTURACIÓN, DEBERA PRESENTAR UN DOCUMENTO DE IDENTIDAD CON IDENTIDAD CON FOTOGRAFIA Y',0,1,'L');
+        $this->Cell(45,5,'EN FACTURACIÓN, DEBERA PRESENTAR UN DOCUMENTO DE IDENTIDAD CON FOTOGRAFIA Y',0,1,'L');
         $this->Cell(100,5,'EL DOCUMENTO USADO COMO REFERENCIA AL HACER LA RESERVA.',0,1,'L');
 
         /*if($datos[0]['endoso'] != null || $datos[0]['endoso'] != '') {

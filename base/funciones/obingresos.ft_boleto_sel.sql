@@ -86,6 +86,9 @@ DECLARE
 
     v_fecha_creacion	date;
     v_fecha_update		date;
+
+    v_pnr				varchar;
+    v_tkt_reference		varchar;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
@@ -754,10 +757,14 @@ BEGIN
             where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';
 
 			if v_parametros.source_system = 'web' then
-            	select tba.id_boleto_amadeus
-              	into v_parametros.id_boletos_amadeus
+            	select tba.id_boleto_amadeus, tba.localizador
+              	into v_parametros.id_boletos_amadeus, v_pnr
               	from obingresos.tboleto_amadeus tba
               	where tba.nro_boleto = v_parametros.ticket_number::varchar;
+
+                if v_pnr != v_parametros.pnr then
+                	raise 'Estimado Usuario: El numero de ticket no es parte del Localizador.';
+                end if;
             end if;
 
             --raise 'id_boletos_amadeus: %, %',v_parametros.id_boletos_amadeus, v_parametros.source_system;
@@ -1307,6 +1314,10 @@ BEGIN
             into v_code_exch
             from obingresos.tboleto_amadeus tba
             where tba.nro_boleto = v_nro_boleto;
+
+            if v_tipo_emision != 'R' then
+            	raise 'Estimado Usuario: La emision del ticket no corresponde a un Exchange.';
+            end if;
 
             if v_tipo_emision = 'R' and v_record_exch.trans_code = 'TKTT' and v_contador_exch = 0 and (v_code_exch is null or v_code_exch = '') then
 
@@ -3054,7 +3065,674 @@ BEGIN
           return v_consulta;
 
       end;
+    /*********************************
+      #TRANSACCION: 'OBING_BOL_EXCH_WEB'
+      #DESCRIPCION:	Crea la estructura de factura Exchange Web
+      #AUTOR:		franklin.espinoza
+      #FECHA:		22-02-2022 12:42:25
+     ***********************************/
+    elsif(p_transaccion='OBING_BOL_EXCH_WEB')then
+      begin
+          if v_parametros.tipo = 'exchange' then
 
+
+            select tag.nombre, tag.codigo, ts.telefono, ts.direccion
+            into v_oficina
+            from obingresos.tagencia tag
+            inner join vef.tpunto_venta tpv on tpv.codigo = tag.codigo
+            inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
+            where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';
+
+			if v_parametros.source_system = 'web' then
+            	/*select tba.id_boleto_amadeus, tba.localizador
+              	into v_parametros.id_boletos_amadeus, v_pnr
+              	from obingresos.tboleto_amadeus tba
+              	where tba.nro_boleto = v_parametros.ticket_number::varchar;
+
+                if v_pnr != v_parametros.pnr then
+                	raise 'Estimado Usuario: El numero de ticket no es parte del Localizador.';
+                end if;*/
+            end if;
+
+            v_numero_billete = v_parametros.ticket_number::varchar;
+
+
+            create temp table ttpasajero(
+                  id_pasajero		integer,
+                  nombre			varchar,
+                  importe			numeric,
+                  moneda			varchar,
+                  posicion			integer,
+                  numero_tkt		varchar,
+                  tipo_19			varchar
+            )on commit drop;
+            --mas de un pasajero
+			if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
+
+                  insert into ttpasajero(
+                    id_pasajero,
+                    nombre,
+                    importe,
+                    moneda,
+                    posicion,
+                    numero_tkt,
+                    tipo_19
+                  )values (
+                      v_contador_id,
+                      v_record_json->>'apdos_nombre',
+                      (v_record_json->'pago'->>'importe')::numeric,
+                      v_record_json->'pago'->>'moneda',
+                      (v_record_json->'posicion'->>'numLinea')::integer,
+                      (v_record_json->'Tkts'->>'string')::varchar,
+                      (v_record_json->>'tipo_19')::varchar
+                  );
+                  v_contador_id = v_contador_id + 1;
+
+            	end loop;
+            else
+              insert into ttpasajero(
+                    id_pasajero,
+                    nombre,
+                    importe,
+                    moneda,
+                    posicion,
+                    numero_tkt,
+                    tipo_19
+              )values (
+                  v_contador_id,
+                  v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre',
+                  (v_parametros.pasajeros->'pasajeroDR'->'pago'->>'importe')::numeric,
+                  v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
+                  (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
+                  (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
+                  (v_parametros.pasajeros->'pasajeroDR'->>'tipo_19')::varchar
+              );
+            end if;
+--raise 'pasajero: %',jsonb_typeof(v_parametros.pasajeros->'pasajeroDR');
+            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
+           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR') loop
+
+                	if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
+                      SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                      into v_segment_reference
+                      FROM jsonb_array_elements(v_record_json->'TktsSegment'->'string') rec
+                      where value::text ilike '"'||v_numero_billete||'%';
+
+                      SELECT value::varchar
+                      into v_tkt_reference
+                      FROM jsonb_array_elements(v_record_json->'Tkts'->'string') rec
+                      where value::text ilike '"'||v_numero_billete||'"';
+
+                      if v_tkt_reference is not null then
+                        if v_numero_billete != trim(v_tkt_reference,'"') then
+                          raise ' A Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                        end if;
+                      end if;
+
+              	  	else
+              			v_segment_reference = ((string_to_array(trim((v_record_json->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                        v_tkt_reference = (v_record_json->'Tkts'->>'string')::varchar;
+                        v_pasajero_aux = v_record_json->>'apdos_nombre';
+                        if v_numero_billete = trim(v_tkt_reference,'"') then raise notice 'a: %, b: %, %, [%]',v_numero_billete,trim(v_tkt_reference,'"'), v_segment_reference, v_record_json->'posicion'->>'numLinea';
+                        	exit;
+                        end if;
+              		end if;
+					raise notice 'a: %, b: %, c: %',v_segment_reference,v_tkt_reference, v_record_json->'TktsSegment'->'string';
+                    v_pasajero_aux = v_record_json->>'apdos_nombre';
+                    if v_segment_reference is not null then
+                      --v_pasajero_aux = v_record_json->>'apdos_nombre';
+
+                      /*if v_tkt_reference is not null then
+                        if v_numero_billete != trim(v_tkt_reference,'"') then
+                          raise ' A Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                        end if;
+                      end if;*/
+					  if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
+                      	exit;
+                      end if;
+
+                    end if;
+
+                    if v_tkt_reference is null then
+                    	raise ' B Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                    end if;
+
+            	end loop;
+                if v_tkt_reference is not null then
+                  if v_numero_billete != trim(v_tkt_reference,'"') then
+                    raise 'C Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                  end if;
+                end if;
+                --raise 'sale';
+            else --raise 'B';
+--raise 'string: %',jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string');
+              	if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                    SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                    into v_segment_reference
+                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                    where value::text ilike '"'||v_numero_billete||'%';
+
+                    SELECT value::varchar
+                    into v_tkt_reference
+                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') rec
+                    where value::text ilike '"'||v_numero_billete||'%"';
+                    --raise 'v_tkt_reference: %',v_tkt_reference;
+
+              	else
+              		v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                    v_tkt_reference = (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar;
+              	end if;
+
+                v_pasajero_aux = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+
+
+                if v_tkt_reference is not null then
+                  if v_numero_billete != trim(v_tkt_reference,'"') then
+                  	raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                  end if;
+                end if;
+
+                if v_tkt_reference is null then
+					raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                end if;
+
+            end if;
+
+
+            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+
+              select tp.posicion, tp.nombre, tp.tipo_19
+              into v_posicion, v_pasajero, v_tipo_19
+              from ttpasajero tp
+              where similarity_dist(v_pasajero_aux, tp.nombre) = 0;
+
+              if v_pasajero is null then
+                select tp.posicion, tp.nombre, tp.tipo_19
+                into v_posicion, v_pasajero, v_tipo_19
+                from ttpasajero tp
+                where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
+              end if;
+            else
+              select tp.posicion, tp.nombre, tp.tipo_19
+              into v_posicion, v_pasajero, v_tipo_19
+              from ttpasajero tp
+              where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+            end if;
+
+            /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
+           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR') loop
+
+            	raise notice 'a: %, b: %, %, [%]',v_numero_billete,trim(v_tkt_reference,'"'), v_segment_reference, v_record_json->'posicion'->>'numLinea';
+
+            	end loop;
+                if v_tkt_reference is not null then
+                  if v_numero_billete != trim(v_tkt_reference,'"') then
+                    raise 'C Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                  end if;
+                end if;
+            else --raise 'B';
+
+              	if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                    SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                    into v_segment_reference
+                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                    where value::text ilike '"'||v_numero_billete||'%';
+
+                    SELECT value::varchar
+                    into v_tkt_reference
+                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') rec
+                    where value::text ilike '"'||v_numero_billete||'%"';
+
+              	else
+              		v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                    v_tkt_reference = (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar;
+              	end if;
+
+                v_pasajero_aux = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+
+
+                if v_tkt_reference is not null then
+                  if v_numero_billete != trim(v_tkt_reference,'"') then
+                  	raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                  end if;
+                end if;
+
+            end if;*/
+
+
+            v_contador_id = 1;
+            create temp table ttasa(
+                id_tasa			integer,
+                calculo_tarifa	varchar,
+                tasa			varchar,
+                rc_iva			numeric,
+                moneda_total	varchar,
+                importe_total	varchar,
+                moneda_tarifa   varchar,
+                importe_tarifa	varchar,
+                codigo_tarifa 	varchar,
+                tipo_emision	varchar,
+                tipo_tarifa		varchar,
+                tipo_total		varchar,
+                num_pax			varchar,
+                inf				varchar,
+                pasajero varchar
+            )on commit drop;
+
+            if jsonb_typeof(v_parametros.fn_V2) = 'object' then
+              v_importe = (v_parametros.importes->>'importe_total');
+
+              if jsonb_typeof(v_parametros.tasa) = 'array' then
+                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
+
+                    if v_record_json->>'tipo_tasa' != 'X' then
+                        v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
+                    end if;
+
+                    if v_record_json->>'tipo_tasa' = 'X' then
+                        if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
+                            v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
+                        end if;
+                    end if;
+
+                    v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
+                end loop;
+              else
+              	if v_parametros.tasa->>'tipo_tasa' != 'X' then
+                	v_calculo_tarifa = v_calculo_tarifa ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar;
+                end if;
+                if v_parametros.tasa->>'tipo_tasa' = 'X' then
+                    if v_parametros.tasa->>'codigo_tasa' not in ('QM', 'BO') then
+                        v_importe = v_importe - (v_parametros.tasa->>'importe_tasa')::numeric;
+                    end if;
+                end if;
+                v_tasa = v_tasa ||(v_parametros.tasa->>'moneda_tasa')::varchar||' '||case when v_parametros.tasa->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar||'		';
+              end if;
+
+              v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+
+              if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                	v_codigo_tarifa = v_parametros.fn_V2->>'codigo_tarifa';
+              else
+                	v_codigo_tarifa = v_parametros.importes->'codigo_tarifa'->'string';
+              end if;
+
+              insert into ttasa(
+                  id_tasa,
+                  calculo_tarifa,
+                  tasa,
+                  rc_iva,
+                  moneda_total,
+                  importe_total,
+                  moneda_tarifa,
+                  importe_tarifa,
+                  codigo_tarifa,
+                  tipo_emision,
+                  tipo_tarifa,
+                  tipo_total,
+                  num_pax,
+                  inf,
+                  pasajero
+              )values (
+                v_contador_id,
+                v_calculo_tarifa,
+                v_tasa,
+                v_importe,
+                v_parametros.fn_V2->>'moneda_total',
+                v_parametros.fn_V2->>'importe_total',
+                v_parametros.fn_V2->>'moneda_tarifa',
+                v_parametros.fn_V2->>'importe_tarifa',
+                v_codigo_tarifa,
+                v_parametros.fn_V2->>'tipo_emision',
+                v_parametros.fn_V2->>'tipo_tarifa',
+                v_parametros.fn_V2->>'tipo_total',
+                v_parametros.fn_V2->>'num_pax',
+                v_parametros.fn_V2->>'inf',
+                v_pasajero
+              );
+			        v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
+            else
+--raise 'v_segment_reference: %', v_segment_reference;
+                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
+					raise notice 'v_segment_reference: [%] (%) [%] (%) [%]',v_record_json->>'num_pax', v_posicion, v_record_json->>'ReferenciaSegmento', trim(v_segment_reference), v_record_json->>'tipo_emision';
+                  --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
+                  if (v_record_json->>'num_pax')::integer=v_posicion and (v_record_json->>'ReferenciaSegmento')::varchar=trim(v_segment_reference) and v_record_json->>'tipo_emision' = 'R' then
+
+                      if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
+                    	  continue;
+                      elsif v_tipo_19 in ('CHD','ADT','SNN') and v_record_json->>'inf' = 'Y' then
+                    	  continue;
+                      end if;
+
+                      v_importe = (v_record_json->>'importe_total');
+                      if jsonb_typeof(v_record_json->'Fntaxs'->'tasa') = 'array' then
+                        for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
+
+                            if v_record_json_aux->>'tipo_tasa' != 'X' then
+                                v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
+                            end if;
+
+                            if v_record_json_aux->>'tipo_tasa' = 'X' then
+                                if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
+                                    v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
+                                end if;
+                            end if;
+
+                            v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
+                        end loop;
+                      else
+                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' != 'X' then
+                            v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar;
+                        end if;
+
+                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' = 'X' then
+                            if v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa' not in ('QM', 'BO') then
+                                v_importe = v_importe - (v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::numeric;
+                            end if;
+                        end if;
+                        v_tasa = v_tasa ||(v_record_json->'Fntaxs'->'tasa'->>'moneda_tasa')::varchar||' '||case when v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar||'		';
+                      end if;
+                      v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+
+                      IF jsonb_typeof(v_record_json->'codigo_tarifa'->'string') = 'string' then
+                      	v_codigo_tarifa = v_record_json->'codigo_tarifa'->>'string';
+                      else
+                        SELECT array_agg(value)
+                        into v_cadena
+                        FROM jsonb_array_elements_text(v_record_json->'codigo_tarifa'->'string');
+                        v_codigo_tarifa = v_cadena[v_contador_id];
+                      end if;
+
+                      select count(ta.id_tasa)
+                      into v_cont_pasajero
+                      from ttasa ta
+                      where ta.pasajero = v_pasajero;
+                      --if v_tasa_valida = 'resolve' then
+                      if /*v_importe > 0 and*/ v_cont_pasajero = 0 /*or ((v_record_json->>'importe_total')::numeric = 0 and v_cont_pasajero = 0)*/ then
+                        insert into ttasa(
+                          id_tasa,
+                        calculo_tarifa,
+                        tasa,
+                        rc_iva,
+                            moneda_total,
+                            importe_total,
+                            moneda_tarifa,
+                            importe_tarifa,
+                            codigo_tarifa,
+                            tipo_emision,
+                            tipo_tarifa,
+                            tipo_total,
+                            num_pax,
+                            inf,
+                            pasajero
+                        )values (
+                          v_contador_id,
+                          v_calculo_tarifa,
+                          v_tasa,
+                          v_importe,
+                          v_record_json->>'moneda_total',
+                          v_record_json->>'importe_total',
+                          v_record_json->>'moneda_tarifa',
+                          v_record_json->>'importe_tarifa',
+                          v_codigo_tarifa,--v_cadena[v_contador_id],
+                          v_record_json->>'tipo_emision',
+                          v_record_json->>'tipo_tarifa',
+                          v_record_json->>'tipo_total',
+                          v_record_json->>'num_pax',
+                          v_record_json->>'inf',
+                          v_pasajero
+                        );
+                        v_tipo_emision = v_record_json->>'tipo_emision';
+                        v_contador_id = v_contador_id + 1;
+
+                      else
+                        v_tasa = '';
+                      end if;
+                  else
+                    continue;
+                  end if;
+                end loop;
+            end if;
+
+			v_fecha_emision = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+
+            v_contador_id = 1;
+            create temp table tvuelos(
+                id_vuelo		integer,
+                clase 			varchar,
+                linea 			varchar,
+                estado 			varchar,
+                origen 			varchar,
+                destino 		varchar,
+                num_vuelo 		varchar,
+                hora_salida		varchar,
+                fecha_salida	varchar,
+                hora_llegada 	varchar,
+                codigo_tarifa	varchar,
+                origen_cod		varchar,
+                destino_cod		varchar
+            )on commit drop;
+
+
+          if jsonb_typeof(v_parametros.vuelo) = 'array' and jsonb_typeof(v_parametros.fn_V2) = 'object' then
+            if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+   				SELECT array_agg(value)
+              	into v_cadena
+   				FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
+            else
+            	SELECT array_agg(tt.codigo_tarifa)
+              	into v_cadena
+   				FROM ttasa tt;
+            end if;
+          else
+		  	SELECT array_agg(tt.codigo_tarifa)
+            into v_cadena
+   			FROM ttasa tt;
+          end if;
+
+            if jsonb_typeof(v_parametros.vuelo) = 'array' then
+              v_tam_cod_tarifa = array_length(v_cadena,1);
+              for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
+
+                  select tl.nombre, tl.codigo, tl.id_lugar
+                  into v_ciudad_o
+                  from param.tlugar tl
+                  where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
+
+                  select tl.codigo
+                  into v_pais_o
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+
+                  select tl.nombre, tl.codigo, tl.id_lugar
+                  into v_ciudad_d
+                  from param.tlugar tl
+                  where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
+
+                  select tl.codigo
+                  into v_pais_d
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+
+                  if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' )::date >= to_date(v_parametros.update->>'fecha_upd', 'ddMONyy') ) then
+                    --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
+                      insert into tvuelos(
+                        id_vuelo,
+                        clase,
+                        linea,
+                        estado,
+                        origen,
+                        destino,
+                        num_vuelo,
+                        hora_salida,
+                        fecha_salida,
+                        hora_llegada,
+                        codigo_tarifa,
+                        origen_cod,
+                		    destino_cod
+                      )values (
+                          v_contador_id,
+                          (v_record_json->>'clase')::varchar,
+                          (v_record_json->>'linea')::varchar,
+                          (v_record_json->>'estado')::varchar,
+                          (v_ciudad_o.nombre||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
+                          (v_ciudad_d.nombre||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
+                          (v_record_json->>'num_vuelo')::varchar,
+                          (v_record_json->>'hora_salida')::varchar,
+                          (v_record_json->>'fecha_salida')::varchar,
+                          (v_record_json->>'hora_llegada')::varchar,
+                          case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end,
+                          v_pais_o,
+                          v_pais_d
+                      );
+                    --end if;
+                  end if;
+                  v_contador_id = v_contador_id + 1;
+              end loop;
+            else
+
+                 select tl.nombre, tl.codigo, tl.id_lugar
+                  into v_ciudad_o
+                  from param.tlugar tl
+                  where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
+
+                  select tl.codigo
+                  into v_pais_o
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+
+                  select tl.nombre, tl.codigo, tl.id_lugar
+                  into v_ciudad_d
+                  from param.tlugar tl
+                  where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
+
+                  select tl.codigo
+                  into v_pais_d
+                  from param.tlugar tl
+                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+
+                  if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                      SELECT array_agg(value)
+                      into v_cadena
+                      FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
+                  else
+                      SELECT array_agg(tt.codigo_tarifa)
+                      into v_cadena
+                      FROM ttasa tt;
+                  end if;
+                  if (v_parametros.vuelo->>'estado')::varchar != 'B' or ((v_parametros.vuelo->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
+
+                      insert into tvuelos(
+                        id_vuelo,
+                        clase,
+                        linea,
+                        estado,
+                        origen,
+                        destino,
+                        num_vuelo,
+                        hora_salida,
+                        fecha_salida,
+                        hora_llegada,
+                        codigo_tarifa,
+                        origen_cod,
+                		    destino_cod
+                      )values (
+                          1,
+                          (v_parametros.vuelo->>'clase')::varchar,
+                          (v_parametros.vuelo->>'linea')::varchar,
+                          (v_parametros.vuelo->>'estado')::varchar,
+                          (v_ciudad_o.nombre||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
+                          (v_ciudad_d.nombre||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
+                          (v_parametros.vuelo->>'num_vuelo')::varchar,
+                          (v_parametros.vuelo->>'hora_salida')::varchar,
+                          (v_parametros.vuelo->>'fecha_salida')::varchar,
+                          (v_parametros.vuelo->>'hora_llegada')::varchar,
+                          case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end,
+                          v_pais_o,
+                          v_pais_d
+                      );
+
+                  end if;
+            end if;
+
+            v_nro_boleto = v_parametros.ticket_number::varchar;
+
+            if v_tipo_emision != 'R' then
+            	raise 'Estimado Usuario: La emision del ticket % no corresponde a un Exchange.', v_numero_billete;
+            end if;
+
+            select tc.oficial
+            INTO v_tipo_cambio
+            from param.ttipo_cambio tc
+            where tc.fecha = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') and tc.id_moneda = 2;
+
+			v_fecha_creacion = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy');
+            v_fecha_update = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+
+            if v_fecha_emision::date is null then
+              if v_fecha_creacion = v_fecha_update then
+                  v_fecha_creacion = ((to_char(v_fecha_creacion,'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+              elsif v_fecha_creacion < v_fecha_update then
+                  if v_fecha_update is null then
+                      v_fecha_creacion = v_fecha_emision::date;
+                  else
+                      v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                  end if;
+              end if;
+            else
+            	v_fecha_creacion = v_fecha_emision::date;
+            end if;
+--raise 'v_tkt_reference: %',v_tkt_reference;
+            /*if v_tkt_reference is null or v_tkt_reference = '' then
+            	raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+            end if;*/
+
+            v_consulta = '
+                          select
+                          tv.id_vuelo,
+                          tv.clase,
+                          tv.linea,
+                          tv.estado,
+                          tv.origen,
+                          tv.destino,
+                          tv.num_vuelo,
+                          tv.hora_salida,
+                          tv.fecha_salida,
+                          tv.hora_llegada,
+                          tv.codigo_tarifa::varchar as codigo_tarifa,
+                          ts.calculo_tarifa::varchar as calculo_tarifa,
+                          ts.tasa::varchar as tasa,
+                          ts.rc_iva as rc_iva,
+                          '''|| COALESCE((v_parametros.ssrs->'ssr'->>'texto'),'')||'''::varchar as forma_identificacion,
+                          (ts.moneda_total ||'' ''|| ts.importe_total)::varchar as importe_total,
+                          (ts.moneda_tarifa ||'' ''|| ts.importe_tarifa)::varchar as importe_tarifa,
+                          '''|| coalesce((v_parametros.responsable->>'tipo_reserva'),'')||'''::varchar as agente,
+                          '''||COALESCE(v_oficina.nombre,'')||'''::varchar as nombre_ofi,
+                          '''||COALESCE(v_oficina.codigo,'')||'''::varchar as codigo_iata,
+                          '''||COALESCE(v_oficina.telefono,'')||'''::varchar as telefono_ofi,
+                          '''||COALESCE(v_oficina.direccion,'')||'''::varchar as direccion_ofi,
+                          '||COALESCE(v_tipo_cambio,0)||'::numeric as tipo_cambio,
+                          '''||coalesce((v_parametros.localizador->'endosos'->'endoso'->>'texto'),'')||'''::varchar as endoso,
+                          ('''||v_fecha_creacion||'''::date)::varchar fecha_create,
+                          ts.moneda_total::varchar as moneda_iva, --ts.moneda_tarifa::varchar
+                          '''||v_tipo_emision||'''::varchar as tipo_emision,
+                          ts.moneda_tarifa,
+                          '''||v_pasajero||'''::varchar as pasajero,
+                          '''||coalesce(trim(v_tkt_reference,'"'),'')||'''::varchar as numero_billete,
+                          tv.origen_cod,
+                          tv.destino_cod
+                          from tvuelos tv
+                          cross join ttasa ts
+            ';
+
+
+                --Devuelve la respuesta
+                return v_consulta;
+          else
+
+          end if;
+		end;
     else
 
       raise exception 'Transaccion inexistente';
