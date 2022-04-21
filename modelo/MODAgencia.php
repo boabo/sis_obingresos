@@ -39,6 +39,8 @@ class MODAgencia extends MODbase{
         $this->captura('validar_boleta','varchar');
         $this->captura('controlar_periodos_pago','varchar');
         $this->captura('estado_reg','varchar');
+        $this->captura('id_lugar','int4');
+        $this->captura('boaagt','varchar');
 
 
         //Ejecuta la instruccion
@@ -606,4 +608,4 @@ class MODAgencia extends MODbase{
     }
 
 }
-?>    
+?>

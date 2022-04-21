@@ -46,6 +46,25 @@ Phx.vista.Agencia=Ext.extend(Phx.gridInterfaz,{
         );*/
 	},
 
+	onButtonEdit:function () {
+		Phx.vista.Agencia.superclass.onButtonEdit.call(this);
+
+		var rec = this.sm.getSelected();
+		console.log("aqui llega seleccoinado",rec);
+		this.Cmp.id_lugar.store.load({params:{start:0,limit:50},
+					 callback : function (r) {
+						 console.log("aqui llega lugar",r);
+						 for (var i = 0; i < r.length; i++) {
+							 if (r[i].data.id_lugar == rec.data.id_lugar) {
+								 this.Cmp.id_lugar.setValue(r[i].data.id_lugar);
+								 this.Cmp.id_lugar.fireEvent('select', this.Cmp.id_lugar,this.Cmp.id_lugar.store.getById(r[i].data.id_lugar));
+							 }
+						 }
+						}, scope : this
+				});
+
+	},
+
 	gruposBarraTareas:[
 										  {name:'activo',title:'<H1 style="font-size:12px;" align="center">Activos</h1>',grupo:1,height:0},
 											{name:'inactivo',title:'<H1 style="font-size:12px;" align="center">Inactivos</h1>',grupo:2,height:0},
