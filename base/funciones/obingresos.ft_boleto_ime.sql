@@ -3201,7 +3201,7 @@ BEGIN
 
             	IF (v_boleto.voided = 'si')THEN
                 	--IF pxp.f_existe_parametro(p_tabla, 'emisionReserva') then
-                    	--raise 'Estimado usuario. La reversion de un boleto anulado no esta permitido desde la interfaz de Emision de Boletos';
+                    --	raise 'Estimado usuario. La reversion de un boleto anulado no esta permitido desde la interfaz de Emision de Boletos';
 					--ELSE
                       UPDATE obingresos.tboleto_amadeus
                       SET voided='no',
@@ -3209,7 +3209,7 @@ BEGIN
                       WHERE id_boleto_amadeus=v_id_boleto_a;
 
                       PERFORM vef.f_anular_forma_pago_amadeus_replicar(v_id_boleto_a);
-                    --END IF;
+                   -- END IF;
                 ELSE
                   UPDATE obingresos.tboleto_amadeus
                   SET voided='si',
@@ -3220,12 +3220,49 @@ BEGIN
                   set comision = 0,
                   tipo_comision= 'ninguno'
                   where id_boleto_amadeus = v_id_boleto_a;
-                  -- breydi vasquez 12/01/2021 quitar relacion con recibo de la forma de pago
+
                   update obingresos.tboleto_amadeus_forma_pago
                   set
                   id_venta = null
                   where id_boleto_amadeus = v_id_boleto_a;
 
+
+                  /*Eliminar la forma de pago para volver a registrar ya que esta ocacionando conflicto
+                  Ismael Valdivia 29/04/2022*/
+                   /*Aumentando insert para guardar en la tabla log de eliminacion de formas de pago 22/02/2022*/
+                    --Insertamos los datos originales en la tabla log de modificaciones
+                    for v_datos_recuperados in (select fp.id_boleto_amadeus_forma_pago
+                                                from obingresos.tboleto_amadeus_forma_pago fp
+                                                where fp.id_boleto_amadeus = v_id_boleto_a) loop
+
+                    	insert into obingresos.ttlog_boleto_amadeus_forma_pago (id_usuario_reg,
+                        															fecha_reg,
+                                                                                    id_boleto_amadeus_forma_pago,
+                                                                                    observaciones,
+                                                                                    estado)
+                                                                                    VALUES (
+                                                                                    p_id_usuario,
+                                                                                    now(),
+                                                                                    v_datos_recuperados.id_boleto_amadeus_forma_pago,
+                                                                                    'Eliminado por anular el Boleto',
+                                                                                    'eliminado'
+                                                                                    );
+
+
+                    end loop;
+                    /********************************************************************************************/
+
+
+                  delete from obingresos.tboleto_amadeus_forma_pago m
+                  where m.id_boleto_amadeus = v_id_boleto_a;
+
+
+                  update obingresos.tboleto_amadeus
+                  set
+                  estado = 'borrador'
+                  where id_boleto_amadeus = v_id_boleto_a;
+
+                  /************************************************************************************/
 
                   delete from obingresos.tmod_forma_pago m
                   where m.billete = (	select 	b.nro_boleto::numeric
