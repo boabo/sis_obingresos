@@ -2906,11 +2906,23 @@ BEGIN
                   FROM param.tmoneda
                   WHERE codigo_internacional=v_moneda;
 
-                  select oficial into v_tipo_cambio
+                  /*select oficial into v_tipo_cambio
                   from param.ttipo_cambio tc
                   inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
                   where mon.tipo_moneda='ref'
-                  and fecha = v_parametros.fecha_emision;
+                  and fecha = v_parametros.fecha_emision;*/
+
+                  select tc.oficial
+                         into
+                         v_tipo_cambio
+                  from conta.tmoneda_pais mp
+                  inner join param.tlugar lu on lu.id_lugar = mp.id_lugar
+                  inner join param.tmoneda mon on mon.id_moneda = mp.id_moneda
+                  inner join conta.ttipo_cambio_pais tc on tc.id_moneda_pais = mp.id_moneda_pais
+                  where mp.id_lugar = 1 and mon.id_moneda = 2
+                  and tc.fecha = v_parametros.fecha_emision;
+
+
 
                   select nextval('obingresos.tboleto_amadeus_id_boleto_amadeus_seq'::regclass) into v_id_boleto;
 
@@ -4309,11 +4321,21 @@ BEGIN
               v_msg_caja_abierta = 'Antes de emitir la reserva debe realizar una apertura de caja. en fecha '||to_char(v_parametros.fecha_emision::date, 'DD/MM/YYYY')||' Cajero(a): '||v_cajero_desc||', Cuenta Usuario: '||v_cuenta_cajero;
         end if;
 
-        select oficial into v_tipo_cambio
+        /*select oficial into v_tipo_cambio
         from param.ttipo_cambio tc
         inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
         where mon.tipo_moneda='ref'
-        and fecha = v_parametros.fecha_emision;
+        and fecha = v_parametros.fecha_emision;*/
+
+        select tc.oficial
+               into
+               v_tipo_cambio
+        from conta.tmoneda_pais mp
+        inner join param.tlugar lu on lu.id_lugar = mp.id_lugar
+        inner join param.tmoneda mon on mon.id_moneda = mp.id_moneda
+        inner join conta.ttipo_cambio_pais tc on tc.id_moneda_pais = mp.id_moneda_pais
+        where mp.id_lugar = 1 and mon.id_moneda = 2
+        and tc.fecha = v_parametros.fecha_emision;
 
 
         --Definicion de la respuesta
@@ -4507,11 +4529,21 @@ BEGIN
                     FROM param.tmoneda
                     WHERE codigo_internacional=v_moneda;
 
-                    select oficial into v_tipo_cambio
+                   /* select oficial into v_tipo_cambio
                     from param.ttipo_cambio tc
                     inner join param.tmoneda mon on mon.id_moneda=tc.id_moneda
                     where mon.tipo_moneda='ref'
-                    and fecha = v_parametros.fecha_emision;
+                    and fecha = v_parametros.fecha_emision;*/
+
+                    select tc.oficial
+                           into
+                           v_tipo_cambio
+                    from conta.tmoneda_pais mp
+                    inner join param.tlugar lu on lu.id_lugar = mp.id_lugar
+                    inner join param.tmoneda mon on mon.id_moneda = mp.id_moneda
+                    inner join conta.ttipo_cambio_pais tc on tc.id_moneda_pais = mp.id_moneda_pais
+                    where mp.id_lugar = 1 and mon.id_moneda = 2
+                    and tc.fecha = v_parametros.fecha_emision;
 
                     select nextval('obingresos.tboleto_amadeus_id_boleto_amadeus_seq'::regclass) into v_id_boleto;
 
