@@ -126,6 +126,95 @@ header("content-type: text/javascript; charset=UTF-8");
               }
             },
             /*****************************************************************************/
+            creaFormPnr: function (estado) {
+
+                this.formPnr = new Ext.form.FormPanel({
+                    id: this.idContenedor + '_REGPNR',
+                    bodyStyle: 'padding: 10px;',
+                    items: [
+                        new Ext.form.TextField({
+                            fieldLabel: 'Pnr',
+                            name: 'pnr_regularizar_erp',                            
+                            allowBlank: false,
+                            width: '95%',
+                            style: 'text-transform: upperCase'
+                        })
+                    ],
+                    autoScroll: false,
+                    autoDestroy: true,
+                    autoScroll: true
+                });
+
+
+                // Definicion de la ventana que contiene al formulario
+                this.windowPNREG = new Ext.Window({
+                    // id:this.idContenedor+'_W',
+                    title: '<h6 style="font-size:11pt;">Digite el PNR</h6>',
+                    modal: true,
+                    width: 400,
+                    height: 150,
+                    bodyStyle: 'padding: 5px;',
+                    layout: 'fit',
+                    hidden: true,
+                    autoScroll: false,
+                    maximizable: true,
+                    buttons: [{
+                        text: 'Guardar',
+                        arrowAlign: 'bottom',
+                        handler: this.onSubmitPnr,
+                        argument: {
+                            'news': false
+                        },
+                        scope: this,
+                        tipoEvent: estado
+
+                    },
+                        {
+                            text: 'Declinar',
+                            handler: this.onDeclinarPnr,
+                            scope: this
+                        }],
+                    items: this.formPnr,
+                    autoDestroy: true,
+                    closeAction: 'hide'
+                });
+            },
+
+            onDeclinarPnr: function () {
+                this.windowPNREG.hide();
+            },                       
+            onButtonRegularizePNR: function () {
+                this.creaFormPnr();
+                this.windowPNREG.show();
+            },            
+
+            onSubmitPnr: function () {
+                console.log('data',this);
+                var fecha = this.campo_fecha.getValue();
+                var pnr = this.formPnr.getForm().findField('pnr_regularizar_erp').getValue();
+                if ((pnr=='') || (pnr.length<3)) {
+                    alert('Registre el previamente')
+                }else {
+                    this.windowPNREG.hide();
+                    
+                    Phx.CP.loadingShow();
+                    Ext.Ajax.request({
+                        url : '../../sis_obingresos/control/Boleto/regularizarBoletosERPEmitido',
+                        params : {
+                            pnr : pnr,
+                            fecha_emision: fecha,
+                            id_punto_venta: this.id_punto_venta
+                        },
+                        success : function(resp){
+                            Phx.CP.loadingHide();                            
+                            this.reload();                            
+                        },
+                        failure: this.conexionFailure,
+                        timeout: this.timeout,
+                        scope:this
+                    });                
+                }
+            },
 
             onButtonInvoicePNRPDF: function () {
                 var rec = this.sm.getSelected().data;                              
@@ -311,6 +400,16 @@ header("content-type: text/javascript; charset=UTF-8");
                         disabled: true,
                         handler: this.onButtonInvoicePNRPDF,
                         tooltip: 'Factura Boleto'
+                    }
+                );
+                this.addButton('btnInvoiceRegularizePNR',
+                    {
+                        grupo: [0, 1],
+                        text: 'Regularizar tkts ERP',
+                        iconCls: 'blist',
+                        disabled: false,
+                        handler: this.onButtonRegularizePNR,
+                        tooltip: 'Regularizar pnr emision en ERP'
                     }
                 );
 
@@ -3180,7 +3279,7 @@ header("content-type: text/javascript; charset=UTF-8");
             successInfoPnr: function(resp){
                 Phx.CP.loadingHide();
                 data = JSON.parse(resp.responseText)                      
-                
+                console.log('data',data);
                 if(data.exito){                             
                     
                     if (this.window.buttons.length == 3) {

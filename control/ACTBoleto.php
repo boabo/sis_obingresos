@@ -2942,7 +2942,7 @@ class ACTBoleto extends ACTbase{
         $res = json_decode($_out);
 
         if (is_null(json_decode($res->GetBookingResult))) {
-            throw new Exception("PNR  ".$pnr." ".$res->GetBookingResult.". Favor verifique el PNR y vuelva a intentar.");
+            throw new Exception("PNR  ".$pnr." ".$res->GetBookingResult.". ");                   
         } else {
             $res = json_decode($res->GetBookingResult);
         }
@@ -2955,20 +2955,6 @@ class ACTBoleto extends ACTbase{
             $off_resp = $res->reserva->responsable->off_resp;
             $fecha_reserva = $res->reserva->fecha_creacion;
 
-            // registro log tiempo respuesta
-            $this->objParam->addParametro('pnr', strtoupper($this->objParam->getParametro('pnr')));
-            $this->objParam->addParametro('tipo', 'GetBooking');
-            $this->objParam->addParametro('offReserva', $off_resp);
-            $this->objFuncBook=$this->create('MODBoleto');
-            $this->resReserva = $this->objFuncBook->actualizarTiempoEmision($this->objParam);
-            $datosReserva = $this->resReserva->getDatos();
-
-            if ($datosReserva['id_pv_reserva'] == "" || $datosReserva['id_pv_reserva'] == null ) {
-                throw new Exception("La reserva fue realizada con el office ID: ".$off_resp." . La cual no esta habilitada para emisiones. Su registro no puede continuar. Favor informe este mensaje con su superior");
-            }
-
-
-            // if ($fecha_emision == $fecha_reserva){
             if (gettype($pasajeros) == "object"){
                 $monto_total =  $pasajeros->pago->importe;
                 $moneda = $pasajeros->pago->moneda;
@@ -2982,6 +2968,25 @@ class ACTBoleto extends ACTbase{
             } else {
                 throw new Exception("No se pudo recuperar la informacion de la reserva.");
             }
+
+            // registro log tiempo respuesta
+            $this->objParam->addParametro('pnr', strtoupper($this->objParam->getParametro('pnr')));
+            $this->objParam->addParametro('tipo', 'GetBooking');
+            $this->objParam->addParametro('offReserva', $off_resp);
+            $this->objParam->addParametro('moneda_reserva', $moneda);
+            $this->objParam->addParametro('identifier_pnr', $apellido);
+            
+            $this->objFuncBook=$this->create('MODBoleto');
+            $this->resReserva = $this->objFuncBook->actualizarTiempoEmision($this->objParam);
+            $datosReserva = $this->resReserva->getDatos();            
+
+            if ($datosReserva['id_pv_reserva'] == "" || $datosReserva['id_pv_reserva'] == null ) {
+                throw new Exception("La reserva fue realizada con el office ID: ".$off_resp." . La cual no esta habilitada para emisiones. Su registro no puede continuar. Favor informe este mensaje con su superior");
+            }
+
+
+            // if ($fecha_emision == $fecha_reserva){
+
             // } else {
 
             //     $a = str_split($fecha_reserva);
@@ -3202,12 +3207,12 @@ class ACTBoleto extends ACTbase{
                 array_push($array, array('pasjero' => $value, 'tkt' => '', 'monto' => ''));
                 foreach ($res->tkts->string as $key1 => $value1) {
                     if ($key0 == $key1) {
-                        $array[$key1][tkt] = $value1;
+                        $array[$key1]['tkt'] = $value1;
                     }
                 }
                 foreach ($res->montosPaxs->double as $key2 => $value2) {
                     if ($key0 == $key2) {
-                        $array[$key2][monto] = $value2;
+                        $array[$key2]['monto'] = $value2;
                     }
                 }
             }
@@ -3521,6 +3526,155 @@ class ACTBoleto extends ACTbase{
                 $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());
             }
         }
+    }
+
+    /**
+     * descripcion recupera la informacion de boletos emitidos pero no registrados en el ERP. consultando segun el pnr de reserva. 
+     * Y registra la informaicion de los boletos en el ERP.
+     * @arrayData[5] = pnr - datos_cobro_emision - id_reserva - identifier_pnr - lugar - moneda_reserva - office_id_reserva - fecha_emision
+    */
+    function regularizarBoletosERPEmitido() {
+
+        if (preg_match('/\s/', strtoupper($this->objParam->getParametro('pnr')))>0) {
+            throw new Exception("El PNR que registro no debe tener espacios en blanco, favor verifique.");
+        }
+
+        $fecha_emision = $this->objParam->getParametro('fecha_emision');
+        $pnr = strtoupper($this->objParam->getParametro('pnr'));
+
+        $this->objParam->addParametro('consult_pnr', 'false');
+        $this->objParam->addParametro('localizador', strtoupper($this->objParam->getParametro('pnr')));
+        $this->objFunc = $this->create('MODBoleto');
+        $this->res = $this->objFunc->regularizarBoletosERPPnr($this->objParam);
+        $datos = $this->res->getDatos();
+
+
+        if ($datos["id_reserva_pnr"] == ""){
+            throw new Exception("Mensaje: no se tiene informacion complementaria en el ERP, sobre el pnr consultado. su proceso no puede continuar.");
+        }
+
+        if ((int)$datos["emitido"] == 1 && (int)$datos["boletos_registrado"] > 0 ){
+            throw new Exception("Los boletos referentes al PNR ".$pnr.", ya fueron emitidos y registrados en el ERP. en fecha de emision ".date("d/m/Y", strtotime($fecha_emision)));
+        }
+
+        if ($datos['msg_caja_abierta'] != "") {
+            throw new Exception($datos['msg_caja_abierta']);
+        }
+
+        if ($datos['msg_caja_cerrada'] != "") {
+            throw new Exception($datos['msg_caja_cerrada']);
+        }
+
+        //  captura de creadenciales
+        $lugar = trim($datos['lugar_pv']);
+        
+
+        $this->credentialEmision = $this->credencialLugarEmision($lugar);
+
+        if ($lugar==''){
+            throw new Exception("Error: su estacion no esta habilitada para emision. Favor comuniquese con informatica.");
+        }
+
+        if (!isset($this->credentialEmision) || $this->credentialEmision== ''){
+            throw new Exception('No se definieron las credenciales para conectarse al servicio de Reserva PNR, para su estacion. Consulte con informática.');
+        }
+
+        $this->credentialEmision = $this->credencialLugarEmision($lugar);
+
+        $data = array("credentials"=> $this->credentialEmision,
+            "language"=> "ES",            
+            "locator" => array("pnr" => $pnr, "identifierPnr" => $datos['identifier_pnr']),
+            "ipAddress"=> "127.0.0.1",
+            "xmlOrJson" => false);
+
+        $json_data = json_encode($data);
+
+        $s = curl_init();
+        curl_setopt($s, CURLOPT_URL, $this->apiEmision.'GetTicketPNRPlus');
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+
+        $_out = curl_exec($s);
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+
+        if (!$status) {
+            throw new Exception("Mensaje - No se pudo conectar con el servicio GetTicketPNRPlus. Vuelva a intentar. Si el error persiste consulte con informática");
+        }
+
+        curl_close($s);
+
+        if ($status == 400) {
+            throw new Exception("Mensaje - informacion enviada al servicio GetTicketPNRPlus erronea . favor consulte con sistemas.");
+        }
+
+        $res = json_decode($_out);
+
+        if(substr($res->GetTicketPNRPlusResult, 14, 5) == "Error") {
+            throw new Exception("Mensaje - . ".substr($res->GetTicketPNRPlusResult, 14, strlen($res->GetTicketPNRPlusResult))." Favor intente nuevamente, Si el error persiste consulte con informática");
+        }
+        if(substr($res->GetTicketPNRPlusResult, 0, 5) == "Error") {
+            throw new Exception("Mensaje - . ".$res->GetTicketPNRPlusResult. " Favor intente nuevamente, Si el error persiste consulte con informática");
+        }
+
+        $res = json_decode($res->GetTicketPNRPlusResult)->ResultGetTicketPNRPlus;
+
+        $array = array();
+
+        // ordenacion por pasajero y boleto segun string u objeto recibido
+        if (gettype($res->pasajeros->string) == "string"){
+            array_push($array, array('pasjero' => $res->pasajeros->string, 'tkt' => $res->tkts->string, 'monto' => $res->montosPaxs->double));
+        } elseif (gettype($res->pasajeros->string) == "array") {
+            foreach ($res->pasajeros->string as $key0 => $value) {
+                array_push($array, array('pasjero' => $value, 'tkt' => '', 'monto' => ''));
+                foreach ($res->tkts->string as $key1 => $value1) {
+                    if ($key0 == $key1) {
+                        $array[$key1]['tkt'] = $value1;
+                    }
+                }
+                foreach ($res->montosPaxs->double as $key2 => $value2) {
+                    if ($key0 == $key2) {
+                        $array[$key2]['monto'] = $value2;
+                    }
+                }
+            }
+        }
+
+        if (count($array) != 0) {
+            $infoPago = json_decode($datos['datos_cobro_emision']);
+
+            $this->objParam->addParametro('offReserva', $datos['office_id_reserva']);
+            $this->objParam->addParametro('moneda', $datos['moneda_reserva']);
+            $this->objParam->addParametro('fecha', $fecha_emision);
+            $this->objParam->addParametro('id_forma_pago', $infoPago->id_forma_pago);
+            $this->objParam->addParametro('id_forma_pago2', $infoPago->id_forma_pago2);
+            $this->objParam->addParametro('reg_erp_por_error_conexion', "reg_erp_por_error_conexion");                                
+            $this->objParam->addParametro('pasajerosEmision', json_encode($array));
+            
+            $this->objFunc3=$this->create('MODBoleto');
+            $this->resTktPnr = $this->objFunc3->registroTktPnr($this->objParam);  //registro de boletos recuperados de la reserva
+            
+            if($this->resTktPnr->getTipo() != 'EXITO') {
+                throw new Exception("Registro boletos mensaje ERP: ".$this->resTktPnr->getMensaje());
+            } else {
+
+                $this->objParam->addParametro('id_reserva_pnr', $datos['id_reserva']);                    
+                $this->objFunc4=$this->create('MODBoleto');                
+                $this->res4=$this->objFunc4->completarFormasPagoEmision($this->objParam); // registro completo de formas de pago segun lo cobrado
+                if($this->res4->getTipo() != 'EXITO') {
+                    throw new Exception("Revision formas de Pago mensaje ERP: ".$this->res4->getMensaje());
+                }                    
+            }         
+        } else {
+            throw new Exception("Mensaje: no se encontro informacion de boletos emitidos con el pnr consultado y el identificador '".$datos['identifier_pnr']."' para el registro en el ERP.");                
+        }
+        echo 'procesado';exit;
+        
     }
     /**  **/
 

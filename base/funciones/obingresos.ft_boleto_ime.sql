@@ -196,6 +196,9 @@ DECLARE
     v_boletos_no_anulados_erp_borrador varchar[];
     v_id_boleto_ama			varchar;
     v_fecha_rango			date;
+    v_datos_cobro_emision			text;
+    v_identifier_pnr				varchar;
+    v_office_id_reserva				varchar;    
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_ime';
@@ -4193,7 +4196,8 @@ BEGIN
           end if;
 
           -- control verifica si exite ya el pnr emitido
-          select id_reserva_pnr into v_id_reserva
+          select id_reserva_pnr, datos_emision, identifier_pnr, moneda_reserva, office_id_reserva_pnr
+           into v_id_reserva, v_datos_cobro_emision, v_identifier_pnr, v_moneda, v_office_id_reserva
           from obingresos.treserva_pnr
           where pnr_reserva = v_parametros.pnr and estado = 'emitido'
           and fecha_emision = v_parametros.fecha_emision;
@@ -4201,36 +4205,13 @@ BEGIN
           if v_id_reserva is not null then
           	v_emitido = 1;
           end if;
+         
+   	    -- verificar si se emitio los boletos con el pnr y la fecha de emision
+		     select count(id_boleto_amadeus) into v_contar
+         from obingresos.tboleto_amadeus
+         where localizador = v_parametros.pnr
+         and fecha_emision = v_parametros.fecha_emision;
 
-          /*v_boletos = '';
-
-          for v_reg in (
-                     select id_boleto_amadeus, nro_boleto,fecha_emision, estado
-                      from obingresos.tboleto_amadeus
-                      where localizador = v_parametros.pnr)
-          loop
-
-          	if v_reg.id_boleto_amadeus is not null then
-            	v_count_bol_ama = v_count_bol_ama + 1;
-            end if;
-
-            if v_reg.estado = 'borrador' then
-	            v_boletos = v_boletos||' '||v_reg.nro_boleto||', ';
-            end if;
-
-            v_fecha_emision = to_char(v_reg.fecha_emision::date, 'DD/MM/YYYY');
-
-          end loop;
-
-
-          if (v_id_reserva is not null and v_count_bol_ama > 0) then
-            if v_boletos != '' then
-            	v_boletos = substr(v_boletos, 1, char_length(v_boletos) -2);
-            	v_msg = 'El PNR '||v_parametros.pnr||'. De reserva ya fue emitido, en fecha '||v_fecha_emision||' favor actualice la grilla en la pesataña No Revisados y complete las formas de pago de los boletos: '||v_boletos;
-            else
-	            v_msg = 'El PNR '||v_parametros.pnr||'. De reserva ya fue emitido, en fecha '||v_fecha_emision||' y ya fueron revisados los boletos con sus formas de pago';
-            end if;
-          else*/
           	--if v_inspnr then
             	if not exists (select 1 from obingresos.treserva_pnr where pnr_reserva = v_parametros.pnr and fecha_emision = v_parametros.fecha_emision)then
 
@@ -4349,6 +4330,12 @@ BEGIN
         v_resp = pxp.f_agrega_clave(v_resp,'msg_caja_abierta', v_msg_caja_abierta::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'msg_caja_cerrada', v_msg_caja_cerrada::varchar);
         v_resp = pxp.f_agrega_clave(v_resp,'tc', v_tipo_cambio::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'datos_cobro_emision', v_datos_cobro_emision::varchar); 
+        v_resp = pxp.f_agrega_clave(v_resp,'id_reserva', v_id_reserva::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'boletos_registrado', v_contar::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'identifier_pnr', v_identifier_pnr::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'moneda_reserva', v_moneda::varchar);                
+        v_resp = pxp.f_agrega_clave(v_resp,'office_id_reserva', v_office_id_reserva::varchar);          
         --Devuelve la respuesta
         return v_resp;
 
@@ -4445,10 +4432,17 @@ BEGIN
 		begin
 
          /**Actulizar respuesta servicio TraerReservaExch con los nro de boletos emitidos**/
+         if (pxp.f_existe_parametro(p_tabla, 'reg_erp_por_error_conexion')) then
+          update obingresos.treserva_pnr set
+          observacion = 'regularizado por error en conexion'
+          where pnr_reserva = v_parametros.pnr
+          and fecha_emision = v_parametros.fecha_emision;         
+         else          
           update obingresos.treserva_pnr set
           fecha_respuesta_tkts_emitido = now()
           where pnr_reserva = v_parametros.pnr
           and fecha_emision = v_parametros.fecha_emision;
+         end if;
 
           /*****Recuperamos el id_sucursal para obtener la moneda***/
           v_moneda = v_parametros.moneda;
@@ -4757,6 +4751,13 @@ BEGIN
 			 	select id_punto_venta into v_id_pv_reserva
             	from vef.tpunto_venta
                 where trim(office_id) = trim(v_parametros.offReserva);
+
+                update obingresos.treserva_pnr set
+                office_id_reserva_pnr = trim(v_parametros.offReserva),
+                moneda_reserva = v_parametros.moneda_reserva,
+                identifier_pnr = v_parametros.identifier_pnr
+                where pnr_reserva = v_parametros.pnr
+                and fecha_emision = v_parametros.fecha_emision;                
              end if;
 
               --Definicion de la respuesta
@@ -4834,6 +4835,104 @@ BEGIN
 
     end;
 
+     /*********************************
+      #TRANSACCION:  'OBING_RGUPNREP_INS'
+      #DESCRIPCION:	regularizacion de boletos emitiods en el ERP
+      #AUTOR:		bvp
+      #FECHA:		12-05-2022
+      ***********************************/
+      elsif(p_transaccion='OBING_RGUPNREP_INS')then
+
+          begin
+
+          -- control verifica si exite ya el pnr emitido
+          select id_reserva_pnr, datos_emision, identifier_pnr, moneda_reserva, office_id_reserva_pnr
+           into v_id_reserva, v_datos_cobro_emision, v_identifier_pnr, v_moneda, v_office_id_reserva
+          from obingresos.treserva_pnr
+          where pnr_reserva = v_parametros.pnr and estado = 'emitido'
+          and fecha_emision = v_parametros.fecha_emision;
+
+          if v_id_reserva is not null then
+          	v_emitido = 1;
+          end if;
+		
+      	 v_contar = 0;
+         
+      	 -- verificar si se emitio los boletos con el pnr y la fecha de emision
+		 select count(id_boleto_amadeus) into v_contar
+         from obingresos.tboleto_amadeus
+         where localizador = v_parametros.pnr
+         and fecha_emision = v_parametros.fecha_emision;
+         
+
+        /* captura de lugar punto de venta para uso de credenciales de emision  */
+      	if pxp.f_existe_parametro(p_tabla, 'id_punto_venta') then
+        	select lr.codigo into v_lugar
+            from vef.tpunto_venta pv
+            inner join vef.tsucursal sr on sr.id_sucursal = pv.id_sucursal
+            inner join param.tlugar lr on lr.id_lugar = sr.id_lugar
+            where pv.id_punto_venta = v_parametros.id_punto_venta;
+        else
+        	v_lugar = '';
+        end if;
+
+
+        /*control apertura caja */
+        v_msg_caja_abierta='';
+        v_msg_caja_cerrada='';
+
+        select usu.desc_persona, usu.cuenta into v_cajero_desc, v_cuenta_cajero
+        from segu.vusuario usu
+        where usu.id_usuario = p_id_usuario;
+
+        if (exists(	select 1
+                        from vef.tapertura_cierre_caja acc
+                        where acc.id_usuario_cajero = p_id_usuario and
+                          acc.fecha_apertura_cierre = v_parametros.fecha_emision and
+                          acc.estado_reg = 'activo' and acc.estado = 'cerrado' and
+                          acc.id_punto_venta = v_parametros.id_punto_venta)) then
+            v_msg_caja_cerrada = 'La caja del Cajero(a): '||v_cajero_desc||', con Cuenta Usuario: '||v_cuenta_cajero||' ya fue cerrada, necesita tener la caja abierta para poder emitir la reserva';
+        end if;
+
+        if (not exists(	select 1
+                         from vef.tapertura_cierre_caja acc
+                         where acc.fecha_apertura_cierre = v_parametros.fecha_emision and
+                               acc.estado_reg = 'activo' and acc.estado = 'abierto' and
+                               acc.id_punto_venta = v_parametros.id_punto_venta and acc.id_usuario_cajero = p_id_usuario)) then
+              v_msg_caja_abierta = 'Antes de emitir la reserva debe realizar una apertura de caja. en fecha '||to_char(v_parametros.fecha_emision::date, 'DD/MM/YYYY')||' Cajero(a): '||v_cajero_desc||', Cuenta Usuario: '||v_cuenta_cajero;
+        end if;
+
+        
+        select tc.oficial 
+               into
+               v_tipo_cambio
+        from conta.tmoneda_pais mp
+        inner join param.tlugar lu on lu.id_lugar = mp.id_lugar
+        inner join param.tmoneda mon on mon.id_moneda = mp.id_moneda
+        inner join conta.ttipo_cambio_pais tc on tc.id_moneda_pais = mp.id_moneda_pais
+        where mp.id_lugar = 1 and mon.id_moneda = 2
+        and tc.fecha = v_parametros.fecha_emision;
+
+
+        --Definicion de la respuesta
+        v_resp = pxp.f_agrega_clave(v_resp,'mensaje','inserto');
+        v_resp = pxp.f_agrega_clave(v_resp,'id_reserva_pnr', v_id_reserva::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'emitido', v_emitido::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'lugar_pv', v_lugar::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'msg_caja_abierta', v_msg_caja_abierta::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'msg_caja_cerrada', v_msg_caja_cerrada::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'tc', v_tipo_cambio::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'datos_cobro_emision', v_datos_cobro_emision::varchar); 
+        v_resp = pxp.f_agrega_clave(v_resp,'id_reserva', v_id_reserva::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'boletos_registrado', v_contar::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'identifier_pnr', v_identifier_pnr::varchar);
+        v_resp = pxp.f_agrega_clave(v_resp,'moneda_reserva', v_moneda::varchar);                
+        v_resp = pxp.f_agrega_clave(v_resp,'office_id_reserva', v_office_id_reserva::varchar);  
+                               
+        --Devuelve la respuesta
+        return v_resp;
+
+      end;
 	else
 
     	raise exception 'Transaccion inexistente: %',p_transaccion;

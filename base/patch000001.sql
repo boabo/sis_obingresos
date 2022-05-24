@@ -4321,3 +4321,29 @@ IS 'Estado de la forma de pago, este campo se puede usar en el stage como proces
 ALTER TABLE obingresos.ttlog_boleto_amadeus_forma_pago
   OWNER TO postgres;
 /***********************************F-SCP-IRVA-OBINGRESOS-0-23/02/2022*****************************************/
+
+/***********************************I-SCP-BVP-OBINGRESOS-0-23/05/2022****************************************/
+COMMENT ON COLUMN obingresos.treserva_pnr.id_punto_venta
+IS 'punto de venta aperturada por el cajero en el ERP, para emision de reserva';
+
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN office_id_reserva_pnr VARCHAR(50);
+
+COMMENT ON COLUMN obingresos.treserva_pnr.office_id_reserva_pnr
+IS 'office id del punto de venta donde fue generada el PNR de reserva.';
+
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN identifier_pnr VARCHAR(100);
+
+COMMENT ON COLUMN obingresos.treserva_pnr.identifier_pnr
+IS 'identificador apellido de pasajero, usado para consulta en el servicio de boletos emitidos';
+
+
+ALTER TABLE obingresos.treserva_pnr
+  ADD COLUMN moneda_reserva VARCHAR(20);
+
+COMMENT ON COLUMN obingresos.treserva_pnr.moneda_reserva
+IS 'moneda reserva';
+/***********************************F-SCP-BVP-OBINGRESOS-0-23/05/2022*****************************************/

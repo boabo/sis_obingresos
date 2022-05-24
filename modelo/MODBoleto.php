@@ -1381,6 +1381,7 @@ class MODBoleto extends MODbase{
         $this->setParametro('pasajerosEmision','pasajerosEmision','text');        
         $this->setParametro('id_forma_pago','id_forma_pago','int4');
         $this->setParametro('id_forma_pago2','id_forma_pago2','int4');
+        $this->setParametro('reg_erp_por_error_conexion','reg_erp_por_error_conexion','varchar');
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;
@@ -1400,6 +1401,8 @@ class MODBoleto extends MODbase{
         $this->setParametro('tipo','tipo','varchar');
         $this->setParametro('fecha_emision','fecha_emision','date');  
         $this->setParametro('offReserva','offReserva','varchar');      
+        $this->setParametro('moneda_reserva','moneda_reserva','varchar');      
+        $this->setParametro('identifier_pnr','identifier_pnr','varchar');      
         //Ejecuta la instruccion
         $this->armarConsulta();
         // echo($this->consulta); exit;
@@ -1496,6 +1499,23 @@ class MODBoleto extends MODbase{
         //Ejecuta la instruccion
         $this->armarConsulta();
         //echo($this->consulta);exit;
+        $this->ejecutarConsulta();
+        //Devuelve la respuesta
+        return $this->respuesta;
+    }
+    function regularizarBoletosERPPnr(){
+        //Definicion de variables para ejecucion del procedimiento
+        $this->procedimiento='obingresos.ft_boleto_ime';
+        $this->transaccion='OBING_RGUPNREP_INS';
+        $this->tipo_procedimiento='IME';
+        //Define los parametros para la funcion
+        
+        $this->setParametro('pnr','localizador','varchar');        
+        $this->setParametro('id_punto_venta','id_punto_venta','int4');
+        $this->setParametro('fecha_emision','fecha_emision','date');
+        //Ejecuta la instruccion
+        $this->armarConsulta();
+        // echo($this->consulta); exit;
         $this->ejecutarConsulta();
         //Devuelve la respuesta
         return $this->respuesta;
