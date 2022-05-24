@@ -4751,13 +4751,15 @@ BEGIN
 			 	select id_punto_venta into v_id_pv_reserva
             	from vef.tpunto_venta
                 where trim(office_id) = trim(v_parametros.offReserva);
-
-                update obingresos.treserva_pnr set
-                office_id_reserva_pnr = trim(v_parametros.offReserva),
-                moneda_reserva = v_parametros.moneda_reserva,
-                identifier_pnr = v_parametros.identifier_pnr
-                where pnr_reserva = v_parametros.pnr
-                and fecha_emision = v_parametros.fecha_emision;                
+				if (pxp.f_existe_parametro(p_tabla, 'moneda_reserva') and pxp.f_existe_parametro(p_tabla, 'identifier_pnr'))then
+                
+                    update obingresos.treserva_pnr set
+                    office_id_reserva_pnr = trim(v_parametros.offReserva),
+                    moneda_reserva = v_parametros.moneda_reserva,
+                    identifier_pnr = v_parametros.identifier_pnr
+                    where pnr_reserva = v_parametros.pnr
+                    and fecha_emision = v_parametros.fecha_emision; 
+                end if;                
              end if;
 
               --Definicion de la respuesta
