@@ -188,31 +188,35 @@ header("content-type: text/javascript; charset=UTF-8");
                 this.windowPNREG.show();
             },            
 
-            onSubmitPnr: function () {
-                console.log('data',this);
+            onSubmitPnr: function () {                
                 var fecha = this.campo_fecha.getValue();
-                var pnr = this.formPnr.getForm().findField('pnr_regularizar_erp').getValue();
-                if ((pnr=='') || (pnr.length<3)) {
-                    alert('Registre el previamente')
-                }else {
-                    this.windowPNREG.hide();
-                    
-                    Phx.CP.loadingShow();
-                    Ext.Ajax.request({
-                        url : '../../sis_obingresos/control/Boleto/regularizarBoletosERPEmitido',
-                        params : {
-                            pnr : pnr,
-                            fecha_emision: fecha,
-                            id_punto_venta: this.id_punto_venta
-                        },
-                        success : function(resp){
-                            Phx.CP.loadingHide();                            
-                            this.reload();                            
-                        },
-                        failure: this.conexionFailure,
-                        timeout: this.timeout,
-                        scope:this
-                    });                
+                if (fecha == "") {
+                    alert("El campo fecha no tiene un valor seleccionado, favor seleccione la fecha de emision, o habra nuevamente la interfaz de emision de boletos.")
+                    Phx.CP.loadingHide();
+                } else {                
+                    var pnr = this.formPnr.getForm().findField('pnr_regularizar_erp').getValue();
+                    if ((pnr=='') || (pnr.length<3)) {
+                        alert('Registre el previamente')
+                    }else {
+                        this.windowPNREG.hide();
+                        
+                        Phx.CP.loadingShow();
+                        Ext.Ajax.request({
+                            url : '../../sis_obingresos/control/Boleto/regularizarBoletosERPEmitido',
+                            params : {
+                                pnr : pnr,
+                                fecha_emision: fecha,
+                                id_punto_venta: this.id_punto_venta
+                            },
+                            success : function(resp){
+                                Phx.CP.loadingHide();                            
+                                this.reload();                            
+                            },
+                            failure: this.conexionFailure,
+                            timeout: this.timeout,
+                            scope:this
+                        });                
+                    }
                 }
             },
 
@@ -3264,16 +3268,20 @@ header("content-type: text/javascript; charset=UTF-8");
                 Phx.CP.loadingShow();
                 var pnr = this.nro_pnr_reserva.getValue();
                 var fecha = this.campo_fecha.getValue();
-                Ext.Ajax.request({
-                    url:'../../sis_obingresos/control/Boleto/consultaReservaBoletoExch',                    
-                    params:{ pnr: pnr, id_punto_venta: this.id_punto_venta, fecha_emision: fecha},
-                    success: this.successInfoPnr,
-                    failure: this.conexionFailure,
-                    timeout: this.timeout,
-                    scope: this
-                });
+                if (fecha == "") {
+                    alert("El campo fecha no tiene un valor seleccionado, favor seleccione la fecha de emision, o habra nuevamente la interfaz de emision de boletos.")
+                    Phx.CP.loadingHide();
+                } else {
+                    Ext.Ajax.request({
+                        url:'../../sis_obingresos/control/Boleto/consultaReservaBoletoExch',                    
+                        params:{ pnr: pnr, id_punto_venta: this.id_punto_venta, fecha_emision: fecha},
+                        success: this.successInfoPnr,
+                        failure: this.conexionFailure,
+                        timeout: this.timeout,
+                        scope: this
+                    });
 
-
+                }
             },
 
             successInfoPnr: function(resp){

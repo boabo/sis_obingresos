@@ -212,6 +212,13 @@ class ACTBoleto extends ACTbase{
                 $codigoAuth2 = strtoupper($this->objParam->getParametro('codigo_tarjeta2'));
                 $montoTotalPnr = $this->objParam->getParametro('total');
 
+                // control de montos forma de pago registrados desde la interfaz
+                if ((int)$this->objParam->getParametro('monto_forma_pago') <= 0) {
+                    throw new Exception("El importe de la forma de pago no puede ser menor o igual a cero favor verifique.");  
+                } elseif ($this->objParam->getParametro('id_forma_pago2') != "" && (int)$this->objParam->getParametro('monto_forma_pago2') <= 0) {
+                    throw new Exception("El importe de la segunda forma de pago no puede ser menor o igual a cero favor verifique.");
+                }
+                
                 $this->objParam->arreglo_parametros['fecha_emision'] = $this->objParam->getParametro('fechaEmisionPnr');
                 $datosEmison = array('nit' => $nit, 'razon_social' => $razonSocial, 'tipo_comision' => $this->objParam->getParametro('tipo_comision'),
                     'id_forma_pago' => $this->objParam->getParametro('id_forma_pago'), 'monto_forma_pago' => $this->objParam->getParametro('monto_forma_pago'),
@@ -2880,6 +2887,9 @@ class ACTBoleto extends ACTbase{
 
         $fecha_emision = date("dmy", strtotime($this->objParam->getParametro('fecha_emision')));
 
+        if ($this->objParam->getParametro('fecha_emision') == "") {
+            throw new Exception("El campo fecha no tiene un valor seleccionado, favor seleccione la fecha de emision, o habra nuevamente la interfaz de emision de boletos.");            
+        }
         $this->objParam->addParametro('consult_pnr', 'false');
         $this->objParam->addParametro('localizador', strtoupper($this->objParam->getParametro('pnr')));
         $this->objFunc = $this->create('MODBoleto');
@@ -3539,6 +3549,9 @@ class ACTBoleto extends ACTbase{
             throw new Exception("El PNR que registro no debe tener espacios en blanco, favor verifique.");
         }
 
+        if ($this->objParam->getParametro('fecha_emision') == "") {
+            throw new Exception("El campo fecha no tiene un valor seleccionado, favor seleccione la fecha de emision, o habra nuevamente la interfaz de emision de boletos.");            
+        }
         $fecha_emision = $this->objParam->getParametro('fecha_emision');
         $pnr = strtoupper($this->objParam->getParametro('pnr'));
 
