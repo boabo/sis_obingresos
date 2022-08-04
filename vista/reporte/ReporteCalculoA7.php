@@ -455,6 +455,29 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
+                    fieldLabel: "Factor Demora",
+                    gwidth: 100,
+                    name: 'factor_demora',
+                    allowBlank:true,
+                    maxLength:100,
+                    minLength:1,
+                    anchor:'100%',
+                    disabled: true,
+                    style: 'color: blue; background-color: orange;',
+                    renderer: function (value, p, record){
+                        return String.format('<div style="color: #586E7E; font-weight: bold;">{0}</div>', value);
+                    }
+                },
+                type:'TextField',
+                //filters:{pfiltro:'NroVuelo',type:'string'},
+                //bottom_filter : true,
+                id_grupo:1,
+                grid:true,
+                form:true
+            },
+
+            {
+                config:{
                     fieldLabel: "Ruta BoA",
                     gwidth: 100,
                     name: 'ruta_vl',
@@ -524,7 +547,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Matricula SABSA",
+                    fieldLabel: "Matricula NAABOL",
                     gwidth: 100,
                     name: 'matricula_sabsa',
                     allowBlank:true,
@@ -682,7 +705,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Total Pax Sabsa",
+                    fieldLabel: "Total Pax Naabol",
                     gwidth: 110,
                     name: 'nro_pax_sabsa',
                     allowBlank:true,
@@ -705,7 +728,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "Importe Sabsa (Bs.)",
+                    fieldLabel: "Importe Naabol (Bs.)",
                     gwidth: 120,
                     name: 'importe_sabsa',
                     allowBlank:true,
@@ -747,7 +770,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
             {
                 config:{
-                    fieldLabel: "(Imp. BoA - Imp. Sabsa) (Bs.)",
+                    fieldLabel: "(Imp. BoA - Imp. Naabol) (Bs.)",
                     gwidth: 200,
                     name: 'diferencia',
                     allowBlank:true,
@@ -809,7 +832,8 @@ header("content-type: text/javascript; charset=UTF-8");
             {name:'matricula_boa', type: 'string'},
             {name:'matricula_sabsa', type: 'string'},
             {name:'ruta_sabsa', type: 'string'},
-            {name:'status', type: 'string'}
+            {name:'status', type: 'string'},
+            {name:'factor_demora', type: 'string'},
         ],
         /*sortInfo:{
             field: 'PERSON.nombre_completo2',

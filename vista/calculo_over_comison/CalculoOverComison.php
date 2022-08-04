@@ -318,9 +318,27 @@ header("content-type: text/javascript; charset=UTF-8");
             //this.grid.addListener('keydown', this.controlarEscape,this);
 
             this.fecha_ini.on('select', function (rec, date) {
-                let fecha_max = new Date(date.getFullYear() ,date.getMonth(), this.diasMes[date.getMonth()])
+
+                const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, -1);
+                const month = (lastDay.getMonth()+1) < 10 ? '0'+(lastDay.getMonth()+1): (lastDay.getMonth()+1);
+                const lastDate = lastDay.getDate()+'/'+month+'/'+lastDay.getFullYear();
+                const patternDays = [
+                    '^1','^2[0-7]','^01', '^02', '^03', '^04', '^05', '^06', '^07', '^08', '^09',
+                    '28/01/..','29/01/..','30/01/..','27/02/..','28/03/..','29/03/..','30/03/..',
+                    '28/04/..','29/04/..','28/05/..','29/05/..','30/05/..','28/06/..','29/06/..',
+                    '28/07/..','29/07/..','30/07/..','28/08/..','29/08/..','30/08/..','28/09/..',
+                    '29/09/..','28/10/..','29/10/..','30/10/..','28/11/..','29/11/..','28/12/..',
+                    '29/12/..','30/12/..',lastDate.toString()
+                ];
+                this.fecha_fin.setDisabledDates(patternDays);
+
+                //this.fecha_ini.disabledDates = ['^02', '^03', '^04', '^05', '^06', '^07', '^08', '^09', '^1', '^2', '^3', '01/03/2015']
+                /*const fecha = new Date(date.getFullYear() ,date.getMonth(), this.diasMes[date.getMonth()]);
+                this.fecha_fin.setValue(fecha);
+
+                let fecha_max = new Date(date.getFullYear() ,date.getMonth()+1, this.diasMes[date.getMonth()+1]);
                 this.fecha_fin.setMaxValue(fecha_max);
-                this.fecha_fin.setMinValue(fecha_max);
+                this.fecha_fin.setMinValue(fecha_max);*/
             },this);
 
             this.init();

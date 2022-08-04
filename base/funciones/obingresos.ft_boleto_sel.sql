@@ -1,10 +1,10 @@
 CREATE OR REPLACE FUNCTION obingresos.ft_boleto_sel (
-  p_administrador integer,
-  p_id_usuario integer,
-  p_tabla varchar,
-  p_transaccion varchar
+    p_administrador integer,
+    p_id_usuario integer,
+    p_tabla varchar,
+    p_transaccion varchar
 )
-RETURNS varchar AS
+    RETURNS varchar AS
 $body$
 /**************************************************************************
  SISTEMA:		Ingresos
@@ -23,16 +23,16 @@ $body$
 
 DECLARE
 
-	v_consulta    		varchar;
-	v_parametros  		record;
-	v_nombre_funcion   	text;
-	v_resp				varchar;
+    v_consulta    		varchar;
+    v_parametros  		record;
+    v_nombre_funcion   	text;
+    v_resp				varchar;
     v_conexion			varchar;
-	--variables boleto exchange
+    --variables boleto exchange
     v_record_json		jsonb;
 
     v_record_json_aux	jsonb;
-	v_ciudad_o			record;
+    v_ciudad_o			record;
     v_ciudad_d			record;
     v_record 			record;
     v_contador_id		integer=1;
@@ -89,23 +89,25 @@ DECLARE
 
     v_pnr				varchar;
     v_tkt_reference		varchar;
+
+    v_tam_pasajeros		integer;
 BEGIN
 
     v_nombre_funcion = 'obingresos.ft_boleto_sel';
     v_parametros = pxp.f_get_record(p_tabla);
 
-	/*********************************
+    /*********************************
      #TRANSACCION:  'OBING_BOL_SEL'
- 	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		jrivera
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+     #DESCRIPCION:	Consulta de datos
+     #AUTOR:		jrivera
+     #FECHA:		06-01-2016 22:42:25
+    ***********************************/
 
     if(p_transaccion='OBING_BOL_SEL')then
 
-    	begin
-    		--Sentencia de la consulta
-        v_consulta:='with forma_pago_temporal as(
+        begin
+            --Sentencia de la consulta
+            v_consulta:='with forma_pago_temporal as(
 					    	select count(*)as cantidad_forma_pago,bfp.id_boleto,
 					        	array_agg(fp.id_forma_pago) as id_forma_pago, array_agg(fp.nombre || '' - '' || mon.codigo_internacional) as forma_pago,
                                 array_agg(bfp.importe) as monto_forma_pago,array_agg(fp.codigo) as codigo_forma_pago,
@@ -217,27 +219,27 @@ BEGIN
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
 				        where bol.estado_reg = ''activo'' and ';
 
-			--Definicion de la respuesta
-			v_consulta:=v_consulta||v_parametros.filtro;
-        v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        raise notice '%', v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --Definicion de la respuesta
+            v_consulta:=v_consulta||v_parametros.filtro;
+            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+            raise notice '%', v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
 
-	/*********************************
-     #TRANSACCION:  'OBING_PNRBOL_SEL'
- 	#DESCRIPCION:	Consulta de datos
- 	#AUTOR:		Gonzalo Sarmiento
- 	#FECHA:		14-07-2017
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_PNRBOL_SEL'
+         #DESCRIPCION:	Consulta de datos
+         #AUTOR:		Gonzalo Sarmiento
+         #FECHA:		14-07-2017
+        ***********************************/
 
     elsif(p_transaccion='OBING_PNRBOL_SEL')then
 
-		begin
-			v_consulta:='with formas_pago as(select localizador,
+        begin
+            v_consulta:='with formas_pago as(select localizador,
                                array_agg(fp.id_forma_pago) as ids_forma_pago,
                                array_agg(fp.nombre||'' - ''||mon.codigo_internacional)::varchar[] as formas_pago,
                                array_agg(pfp.importe) as importes
@@ -269,27 +271,27 @@ BEGIN
                         left join formas_pago fpo on fpo.localizador=nr.localizador
                         where ';
 
-			--Definicion de la respuesta
-			v_consulta:=v_consulta||v_parametros.filtro;
+            --Definicion de la respuesta
+            v_consulta:=v_consulta||v_parametros.filtro;
             v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-			raise notice 'v_consulta %',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            raise notice 'v_consulta %',v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-    /*********************************
-     #TRANSACCION:  'OBING_BOLEMI_SEL'
- 	#DESCRIPCION:	Consulta de datos boletos emitidos de amadeus
- 	#AUTOR:		Gonzalo Sarmiento
- 	#FECHA:		26-09-2017
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_BOLEMI_SEL'
+         #DESCRIPCION:	Consulta de datos boletos emitidos de amadeus
+         #AUTOR:		Gonzalo Sarmiento
+         #FECHA:		26-09-2017
+        ***********************************/
 
     elsif(p_transaccion='OBING_BOLEMI_SEL')then
 
-		begin
-        --raise exception 'id: %',v_parametros.filtro;
-        	v_consulta:='with forma_pago_temporal as(
+        begin
+            --raise exception 'id: %',v_parametros.filtro;
+            v_consulta:='with forma_pago_temporal as(
                                           select bol.id_boleto_amadeus,
                                                  array_agg(fp.id_forma_pago) as id_forma_pago,
                                                  array_agg(mon.codigo_internacional) as moneda_fp,
@@ -368,26 +370,26 @@ BEGIN
                           left join obingresos.tconsulta_viajero_frecuente cvf on cvf.nro_boleto = nr.nro_boleto';
 
             --Definicion de la respuesta
-			--v_consulta:=v_consulta||v_parametros.filtro;
-        	v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        	raise notice 'v_consulta %', v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --v_consulta:=v_consulta||v_parametros.filtro;
+            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+            raise notice 'v_consulta %', v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
         end;
 
-	/*********************************
-     #TRANSACCION:  'OBING_BOL_CONT'
- 	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		jrivera
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_BOL_CONT'
+         #DESCRIPCION:	Conteo de registros
+         #AUTOR:		jrivera
+         #FECHA:		06-01-2016 22:42:25
+        ***********************************/
 
     elsif(p_transaccion='OBING_BOL_CONT')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
-        v_consulta:='select count(id_boleto)
+        begin
+            --Sentencia de la consulta de conteo de registros
+            v_consulta:='select count(id_boleto)
 					    from obingresos.tboleto bol
                         inner join obingresos.tagencia age on age.id_agencia = bol.id_agencia
                         inner join param.tmoneda mon on mon.id_moneda = bol.id_moneda_boleto
@@ -395,79 +397,79 @@ BEGIN
 						left join segu.tusuario usu2 on usu2.id_usuario = bol.id_usuario_mod
 					    where  bol.estado_reg = ''activo'' and  ';
 
-			--Definicion de la respuesta
-			v_consulta:=v_consulta||v_parametros.filtro;
-			raise notice 'v_consulta %', v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --Definicion de la respuesta
+            v_consulta:=v_consulta||v_parametros.filtro;
+            raise notice 'v_consulta %', v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-    /*********************************
-     #TRANSACCION:  'OBING_PNRBOL_CONT'
- 	#DESCRIPCION:	Conteo de registros
- 	#AUTOR:		Gonzalo Sarmiento
- 	#FECHA:		14-07-2017
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_PNRBOL_CONT'
+         #DESCRIPCION:	Conteo de registros
+         #AUTOR:		Gonzalo Sarmiento
+         #FECHA:		14-07-2017
+        ***********************************/
 
     elsif(p_transaccion='OBING_PNRBOL_CONT')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
+        begin
+            --Sentencia de la consulta de conteo de registros
             v_consulta:='select count(localizador)
 						from obingresos.vpnr nr
                         where ';
 
-			--Definicion de la respuesta
-			v_consulta:=v_consulta||v_parametros.filtro;
-			raise notice 'v_consulta %',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --Definicion de la respuesta
+            v_consulta:=v_consulta||v_parametros.filtro;
+            raise notice 'v_consulta %',v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-    /*********************************
-     #TRANSACCION:  'OBING_BOLEMI_CONT'
- 	#DESCRIPCION:	Conteo de registros boletos emitidos amadeus
- 	#AUTOR:		Gonzalo Sarmiento
- 	#FECHA:		26-09-2017
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_BOLEMI_CONT'
+         #DESCRIPCION:	Conteo de registros boletos emitidos amadeus
+         #AUTOR:		Gonzalo Sarmiento
+         #FECHA:		26-09-2017
+        ***********************************/
 
     elsif(p_transaccion='OBING_BOLEMI_CONT')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
+        begin
+            --Sentencia de la consulta de conteo de registros
             v_consulta:='select count(bol.id_boleto_amadeus)
 						from obingresos.tboleto_amadeus bol
                         where ';
 
-			--Definicion de la respuesta
-			v_consulta:=v_consulta||v_parametros.filtro;
-			raise notice 'v_consulta %',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --Definicion de la respuesta
+            v_consulta:=v_consulta||v_parametros.filtro;
+            raise notice 'v_consulta %',v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-    /*********************************
- 	#TRANSACCION:  'OBING_BOLFAC_SEL'
- 	#DESCRIPCION:	Reporte de Boleto
- 	#AUTOR:		jrivera
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_BOLFAC_SEL'
+         #DESCRIPCION:	Reporte de Boleto
+         #AUTOR:		jrivera
+         #FECHA:		06-01-2016 22:42:25
+        ***********************************/
 
     elsif(p_transaccion='OBING_BOLFAC_SEL')then
 
-		begin
-        select ((sum(COALESCE(bv.tiempo_conexion,0)) /60 ) || 'h' || (sum(COALESCE(bv.tiempo_conexion,0)) % 60 ) || 'm')::varchar as conexion
-        	into v_conexion
-		from obingresos.tboleto_vuelo bv
-        where (bv.id_boleto = v_parametros.id_boleto or bv.id_boleto_conjuncion = v_parametros.id_boleto) and cupon != 1 and retorno != 'si';
-        if (v_conexion is null) then
-        	v_conexion = '';
-        end if;
-        	--Sentencia de la consulta de conteo de registros
-        v_consulta:='
+        begin
+            select ((sum(COALESCE(bv.tiempo_conexion,0)) /60 ) || 'h' || (sum(COALESCE(bv.tiempo_conexion,0)) % 60 ) || 'm')::varchar as conexion
+            into v_conexion
+            from obingresos.tboleto_vuelo bv
+            where (bv.id_boleto = v_parametros.id_boleto or bv.id_boleto_conjuncion = v_parametros.id_boleto) and cupon != 1 and retorno != 'si';
+            if (v_conexion is null) then
+                v_conexion = '';
+            end if;
+            --Sentencia de la consulta de conteo de registros
+            v_consulta:='
     with
     origen as (select bv.id_boleto, l.codigo as pais
 				from obingresos.tboleto_vuelo bv
@@ -546,24 +548,24 @@ BEGIN
                         left join origen ori on ori.id_boleto = b.id_boleto
                         where b.id_boleto =  ' || v_parametros.id_boleto;
 
-        raise notice '%',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            raise notice '%',v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-     /*********************************
-  #TRANSACCION:  'OBING_BOLFACDET_SEL'
- 	#DESCRIPCION:	Detalle de vuelos por boleto
- 	#AUTOR:		jrivera
- 	#FECHA:		06-01-2016 22:42:25
-	***********************************/
+        /*********************************
+     #TRANSACCION:  'OBING_BOLFACDET_SEL'
+        #DESCRIPCION:	Detalle de vuelos por boleto
+        #AUTOR:		jrivera
+        #FECHA:		06-01-2016 22:42:25
+       ***********************************/
 
     elsif(p_transaccion='OBING_BOLFACDET_SEL')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
-        v_consulta:='select to_char(bv.fecha_hora_origen,''DDMON'')::varchar as fecha_origen,
+        begin
+            --Sentencia de la consulta de conteo de registros
+            v_consulta:='select to_char(bv.fecha_hora_origen,''DDMON'')::varchar as fecha_origen,
         					to_char(bv.fecha_hora_destino,''DDMON'')::varchar as fecha_origen,
                           (bv.linea || bv.vuelo)::varchar,
                           (lo.nombre || '' ('' || ao.codigo || '')'')::varchar as desde,
@@ -591,27 +593,27 @@ BEGIN
                           order by bv.cupon ASC';
 
 
-        --Devuelve la respuesta
-        return v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-      end;
-    /*********************************
-  #TRANSACCION:  'OBING_BOLSERV_SEL'
-  #DESCRIPCION:	DDevuelve un boleto en base al parametro enviado (para servicio)
-  #AUTOR:		jrivera
-  #FECHA:		06-01-2016 22:42:25
- ***********************************/
+        end;
+        /*********************************
+      #TRANSACCION:  'OBING_BOLSERV_SEL'
+      #DESCRIPCION:	DDevuelve un boleto en base al parametro enviado (para servicio)
+      #AUTOR:		jrivera
+      #FECHA:		06-01-2016 22:42:25
+     ***********************************/
 
     elsif(p_transaccion='OBING_BOLSERV_SEL')then
 
-      begin
+        begin
 
-        if (exists (select 1 from obingresos.tboleto
-        where nro_boleto = v_parametros.nro_boleto and voided = 'si')) then
-          raise exception 'El boleto ha sido anulado';
-        end if;
-        --Sentencia de la consulta de conteo de registros
-        v_consulta:='	with boleto as (
+            if (exists (select 1 from obingresos.tboleto
+                        where nro_boleto = v_parametros.nro_boleto and voided = 'si')) then
+                raise exception 'El boleto ha sido anulado';
+            end if;
+            --Sentencia de la consulta de conteo de registros
+            v_consulta:='	with boleto as (
             				select b.id_boleto,b.nro_boleto,b.pasajero,to_char(b.fecha_emision,''DD/MM/YYYY'') as fecha_emision,b.moneda,b.total,b.neto,b.nit,b.razon,b.localizador
             				from obingresos.tboleto b
                             where b.estado_reg = ''activo'' and b.nro_boleto = ''' || v_parametros.nro_boleto || '''
@@ -643,21 +645,21 @@ BEGIN
                             ';
 
 
-			--Devuelve la respuesta
-			return v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-    /*********************************
-    #TRANSACCION:  'OBING_REPRESVEW_SEL'
-    #DESCRIPCION:	Reporte Deposito
-    #AUTOR:		Gonzalo Sarmiento
-    #FECHA:		06-12-2016
-    ***********************************/
+        /*********************************
+        #TRANSACCION:  'OBING_REPRESVEW_SEL'
+        #DESCRIPCION:	Reporte Deposito
+        #AUTOR:		Gonzalo Sarmiento
+        #FECHA:		06-12-2016
+        ***********************************/
 
     ELSIF(p_transaccion= 'OBING_REPRESVEW_SEL')then
-      begin
-        if(v_parametros.tipo = 'sin_boletos_web')then
+        begin
+            if(v_parametros.tipo = 'sin_boletos_web')then
                 v_consulta = 'select b.nro_boleto as boleto_resiber,
                               dbw.billete as boleto_ventas_web,
                              bfp.numero_tarjeta,
@@ -714,7 +716,7 @@ BEGIN
                                   voided = ''si''  and  dbw.medio_pago != ''COMPLETAR-CC'' and
                                   b.estado_reg =''activo'' and vwm.nro_boleto is null
                             order by fecha';
-	else
+            else
                 v_consulta='select b.nro_boleto as boleto_resiber,
                             dbw.billete as boleto_ventas_web,
                            bfp.numero_tarjeta,
@@ -735,699 +737,737 @@ BEGIN
                     dbw.importe, dbw.moneda, b.total, b.moneda
                     order by fecha';
             end if;
-        return v_consulta;
-      end;
-    /*********************************
-      #TRANSACCION: 'OBING_BOL_EXCH_SEL'
-      #DESCRIPCION:	Crea la estructura de factura Exchange
-      #AUTOR:		franklin.espinoza
-      #FECHA:		01-10-2018 12:42:25
-     ***********************************/
+            return v_consulta;
+        end;
+        /*********************************
+          #TRANSACCION: 'OBING_BOL_EXCH_SEL'
+          #DESCRIPCION:	Crea la estructura de factura Exchange
+          #AUTOR:		franklin.espinoza
+          #FECHA:		01-10-2018 12:42:25
+         ***********************************/
     elsif(p_transaccion='OBING_BOL_EXCH_SEL')then
 
-      begin
-          if v_parametros.tipo = 'exchange' then
+        begin
+            if v_parametros.tipo = 'exchange' then
 
 
-            select tag.nombre, tag.codigo, ts.telefono, ts.direccion
-            into v_oficina
-            from obingresos.tagencia tag
-            inner join vef.tpunto_venta tpv on tpv.codigo = tag.codigo
-            inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
-            where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';
+                /*select tag.nombre, tag.codigo, ts.telefono, ts.direccion
+                into v_oficina
+                from obingresos.tagencia tag
+                inner join vef.tpunto_venta tpv on tpv.codigo = tag.codigo
+                inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
+                where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';*/
 
-			if v_parametros.source_system = 'web' then
-            	select tba.id_boleto_amadeus, tba.localizador
-              	into v_parametros.id_boletos_amadeus, v_pnr
-              	from obingresos.tboleto_amadeus tba
-              	where tba.nro_boleto = v_parametros.ticket_number::varchar;
+                select tp.nombre, tp.codigo, ts.telefono, ts.direccion, tp.descripcion
+                into v_oficina
+                from vef.tpunto_venta tp
+                         inner join vef.tsucursal ts on ts.id_sucursal = tp.id_sucursal
+                where tp.office_id = v_parametros.localizador->>'pv'; --and tp.estado_reg = 'activo';
 
-                if v_pnr != v_parametros.pnr then
-                	raise 'Estimado Usuario: El numero de ticket no es parte del Localizador.';
-                end if;
-            end if;
+                if v_parametros.source_system = 'web' then
+                    select tba.id_boleto_amadeus, tba.localizador
+                    into v_parametros.id_boletos_amadeus, v_pnr
+                    from obingresos.tboleto_amadeus tba
+                    where tba.nro_boleto = v_parametros.ticket_number::varchar;
 
-            --raise 'id_boletos_amadeus: %, %',v_parametros.id_boletos_amadeus, v_parametros.source_system;
-
-            select tba.nro_boleto
-            into v_numero_billete
-            from obingresos.tboleto_amadeus tba
-            where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
-
-            v_exch_sel = string_to_array(v_parametros.id_boletos_amadeus,',');
-
-            select tba.*
-            into v_record_exch
-            from obingresos.tboleto_amadeus tba
-            where tba.id_boleto_amadeus = any(v_exch_sel);
-
-            --raise 'v_record_exch: %', v_record_exch.fecha_emision;
-
-            create temp table ttpasajero(
-                  id_pasajero		integer,
-                  nombre			varchar,
-                  importe			numeric,
-                  moneda			varchar,
-                  posicion			integer,
-                  numero_tkt		varchar,
-                  tipo_19			varchar
-            )on commit drop;
---RAISE 'PASAJEROS: %', v_parametros.pasajeros->'pasajeroDR';
-            --mas de un pasajero
-			if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
-           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
-                  --raise notice 'v_record_json: %',v_record_json;
-                  insert into ttpasajero(
-                    id_pasajero,
-                    nombre,
-                    importe,
-                    moneda,
-                    posicion,
-                    numero_tkt,
-                    tipo_19
-                  )values (
-                      v_contador_id,
-                      v_record_json->>'apdos_nombre',
-                      (v_record_json->'pago'->>'importe')::numeric,
-                      v_record_json->'pago'->>'moneda',
-                      (v_record_json->'posicion'->>'numLinea')::integer,
-                      (v_record_json->'Tkts'->>'string')::varchar,
-                      (v_record_json->>'tipo_19')::varchar
-                  );
-                  v_contador_id = v_contador_id + 1;
-
-            	end loop;
-            else
-              insert into ttpasajero(
-                    id_pasajero,
-                    nombre,
-                    importe,
-                    moneda,
-                    posicion,
-                    numero_tkt,
-                    tipo_19
-              )values (
-                  v_contador_id,
-                  v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre',
-                  (v_parametros.pasajeros->'pasajeroDR'->'pago'->>'importe')::numeric,
-                  v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
-                  (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
-                  (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
-                  (v_parametros.pasajeros->'pasajeroDR'->>'tipo_19')::varchar
-              );
-            end if;
-
-
-            select tba.pasajero
-            into v_pasajero_aux
-            from obingresos.tboleto_amadeus tba
-            where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
-
-
-            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
-           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
-                	if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
-                      SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
-                      into v_segment_reference
-                      FROM jsonb_array_elements(v_record_json->'TktsSegment'->'string') rec
-                      where value::text ilike '"'||v_record_exch.nro_boleto||'%';
-              	  	else
-              			v_segment_reference = ((string_to_array(trim((v_record_json->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
-              		end if;
-                    if v_segment_reference is not null then
-                    	exit;
+                    if v_pnr != v_parametros.pnr then
+                        raise 'Estimado Usuario: El numero de ticket no es parte del Localizador.';
                     end if;
-              		raise notice 'v_segment_reference: %, %, %',v_record_json->'TktsSegment'->'string', v_segment_reference, v_record_exch.nro_boleto;
-            	end loop;
-            else
+                end if;
+
+                --raise 'id_boletos_amadeus: %, %',v_parametros.id_boletos_amadeus, v_parametros.source_system;
+
+                select tba.nro_boleto
+                into v_numero_billete
+                from obingresos.tboleto_amadeus tba
+                where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
+
+                v_exch_sel = string_to_array(v_parametros.id_boletos_amadeus,',');
+
+                select tba.*
+                into v_record_exch
+                from obingresos.tboleto_amadeus tba
+                where tba.id_boleto_amadeus = any(v_exch_sel);
+
+                --raise 'v_record_exch: %', v_record_exch.fecha_emision;
+
+                create temp table ttpasajero(
+                                                id_pasajero		integer,
+                                                nombre			varchar,
+                                                importe			numeric,
+                                                moneda			varchar,
+                                                posicion			integer,
+                                                numero_tkt		varchar,
+                                                tipo_19			varchar
+                )on commit drop;
+                --RAISE 'PASAJEROS: %', v_parametros.pasajeros->'pasajeroDR';
+                --mas de un pasajero
+                if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
+                        --raise notice 'v_record_json: %',v_record_json;
+
+                        /*if jsonb_typeof((v_record_json->'Tkts'->>'string')) = 'array' then
+                          insert into ttpasajero(
+                            id_pasajero,
+                            nombre,
+                            importe,
+                            moneda,
+                            posicion,
+                            numero_tkt,
+                            tipo_19
+                          )values (
+                              v_contador_id,
+                              v_record_json->>'apdos_nombre',
+                              (v_record_json->'pago'->>'importe')::numeric,
+                              v_record_json->'pago'->>'moneda',
+                              (v_record_json->'posicion'->>'numLinea')::integer,
+                              (v_record_json->'Tkts'->>'string')[array_length((v_record_json->'Tkts'->>'string'),1)],
+                              (v_record_json->>'tipo_19')::varchar
+                          );
+                        else */
+                        insert into ttpasajero(
+                            id_pasajero,
+                            nombre,
+                            importe,
+                            moneda,
+                            posicion,
+                            numero_tkt,
+                            tipo_19
+                        )values (
+                                    v_contador_id,
+                                    v_record_json->>'apdos_nombre',
+                                    (v_record_json->'pago'->>'importe')::numeric,
+                                    v_record_json->'pago'->>'moneda',
+                                    (v_record_json->'posicion'->>'numLinea')::integer,
+                                    (v_record_json->'Tkts'->>'string')::varchar,
+                                    (v_record_json->>'tipo_19')::varchar
+                                );
+
+                        --end if;
+                        v_contador_id = v_contador_id + 1;
+
+                    end loop;
+                else
+                    insert into ttpasajero(
+                        id_pasajero,
+                        nombre,
+                        importe,
+                        moneda,
+                        posicion,
+                        numero_tkt,
+                        tipo_19
+                    )values (
+                                v_contador_id,
+                                v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre',
+                                (v_parametros.pasajeros->'pasajeroDR'->'pago'->>'importe')::numeric,
+                                v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
+                                (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
+                                (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
+                                (v_parametros.pasajeros->'pasajeroDR'->>'tipo_19')::varchar
+                            );
+                end if;
 
 
-              	if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
-                    SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
-                    into v_segment_reference
-                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
-                    where value::text ilike '"'||v_record_exch.nro_boleto||'%';
-              	else
-              		v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
-              	end if;
-            end if;
-            raise notice 'v_segment_reference: %',v_segment_reference;
+                select tba.pasajero
+                into v_pasajero_aux
+                from obingresos.tboleto_amadeus tba
+                where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
+--raise 'v_pasajero_aux: %',v_pasajero_aux;
 
-            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
+                if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
+                        if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
+                            SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                            into v_segment_reference
+                            FROM jsonb_array_elements(v_record_json->'TktsSegment'->'string') rec
+                            where value::text ilike '"'||v_record_exch.nro_boleto||'%';
+                        else
+                            v_segment_reference = ((string_to_array(trim((v_record_json->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                        end if;
+                        if v_segment_reference is not null then
+                            exit;
+                        end if;
+                        raise notice 'v_segment_reference: %, %, %',v_record_json->'TktsSegment'->'string', v_segment_reference, v_record_exch.nro_boleto;
+                    end loop;
+                else
 
-              select tp.posicion, tp.nombre, tp.tipo_19
-              into v_posicion, v_pasajero, v_tipo_19
-              from ttpasajero tp
-              where similarity_dist(v_pasajero_aux, tp.nombre) = 0;
 
-              if v_pasajero is null then
-                select tp.posicion, tp.nombre, tp.tipo_19
-                into v_posicion, v_pasajero, v_tipo_19
-                from ttpasajero tp
-                where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
-              end if;
+                    if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                        SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                        into v_segment_reference
+                        FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                        where value::text ilike '"'||v_record_exch.nro_boleto||'%';
+                    else
+                        v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                    end if;
+                end if;
+                raise notice 'v_segment_reference: %',v_segment_reference;
 
-            else --raise 'B : %', v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string';
+                if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
 
-              /*select value
-              into v_record_exch
-              from json_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') ;
-              raise 'valor :%',v_record_exch;*/
+                    select tp.posicion, tp.nombre, tp.tipo_19
+                    into v_posicion, v_pasajero, v_tipo_19
+                    from ttpasajero tp
+                    where similarity_dist(v_pasajero_aux, tp.nombre) = 0;
 
-				/*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                    /*select tba.nro_boleto
+                    into v_pasajero_aux
+                    from obingresos.tboleto_amadeus tba
+                    where tba.id_boleto_amadeus = v_parametros.id_boletos_amadeus::integer;
+
+                    select tp.posicion, tp.nombre, tp.tipo_19
+                    into v_posicion, v_pasajero, v_tipo_19
+                    from ttpasajero tp
+                    where similarity_dist(v_pasajero_aux, tp.numero_tkt) = 0;*/
+
+                    if v_pasajero is null then
+                        select tp.posicion, tp.nombre, tp.tipo_19
+                        into v_posicion, v_pasajero, v_tipo_19
+                        from ttpasajero tp
+                        where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
+                    end if;
+
+                else --raise 'B : %', v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string';
+
+                /*select value
+                into v_record_exch
+                from json_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') ;
+                raise 'valor :%',v_record_exch;*/
+
+                /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
                   SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
                   into v_segment_reference
                   FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
                   where value::text ilike '"'||v_record_exch.nro_boleto||'%';
                 else
-                	v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                    v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
                 end if;*/
                 --raise notice 'v_segment_reference %',v_segment_reference;
-              /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
-              	raise notice 'boletos: %',v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string';
-              	for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')  loop
-                	raise notice 'v_record_json adentro: %, %, ',trim(v_record_json::varchar,'"'), (v_record_exch.nro_boleto||'%')::varchar, (v_record_exch.nro_boleto||'%')::varchar like trim(v_record_json::varchar,'"')::varchar;
-               		if (v_record_exch.nro_boleto||'%')::varchar like trim(v_record_json::varchar,'"')::varchar then
-                  		raise notice 'v_record_json adentro: %',trim(v_record_json::varchar,'"');
-                        exit;
-               		end if;
-                    v_indice_tkt = v_indice_tkt + 1;
-                end loop;
-                raise notice 'v_indice_tkt: %',v_indice_tkt;
-              else
+                /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                    raise notice 'boletos: %',v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string';
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')  loop
+                      raise notice 'v_record_json adentro: %, %, ',trim(v_record_json::varchar,'"'), (v_record_exch.nro_boleto||'%')::varchar, (v_record_exch.nro_boleto||'%')::varchar like trim(v_record_json::varchar,'"')::varchar;
+                         if (v_record_exch.nro_boleto||'%')::varchar like trim(v_record_json::varchar,'"')::varchar then
+                            raise notice 'v_record_json adentro: %',trim(v_record_json::varchar,'"');
+                          exit;
+                         end if;
+                      v_indice_tkt = v_indice_tkt + 1;
+                  end loop;
+                  raise notice 'v_indice_tkt: %',v_indice_tkt;
+                else
 
-              end if;*/
+                end if;*/
 
-              select tp.posicion, tp.nombre, tp.tipo_19
-              into v_posicion, v_pasajero, v_tipo_19
-              from ttpasajero tp
-              where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
-            end if;
-            ---------------------------------------------------------
-            /*IF v_pasajero_aux IS NOT NULL OR v_pasajero_aux != '' THEN
-            	v_pasajero = v_pasajero_aux;
-            END IF;*/
+                    select tp.posicion, tp.nombre, tp.tipo_19
+                    into v_posicion, v_pasajero, v_tipo_19
+                    from ttpasajero tp
+                    where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+                end if;
+                ---------------------------------------------------------
+                /*IF v_pasajero_aux IS NOT NULL OR v_pasajero_aux != '' THEN
+                    v_pasajero = v_pasajero_aux;
+                END IF;*/
 
-            ---------------------------------------------------------
+                ---------------------------------------------------------
 --RAISE 'DATOS: %, %, %', v_posicion, v_pasajero, v_tipo_19;
 
 
-            v_contador_id = 1;
-            create temp table ttasa(
-                id_tasa			integer,
-                calculo_tarifa	varchar,
-                tasa			varchar,
-                rc_iva			numeric,
-                moneda_total	varchar,
-                importe_total	varchar,
-                moneda_tarifa   varchar,
-                importe_tarifa	varchar,
-                codigo_tarifa 	varchar,
-                tipo_emision	varchar,
-                tipo_tarifa		varchar,
-                tipo_total		varchar,
-                num_pax			varchar,
-                inf				varchar,
-                pasajero varchar
-            )on commit drop;
+                v_contador_id = 1;
+                create temp table ttasa(
+                                           id_tasa			integer,
+                                           calculo_tarifa	varchar,
+                                           tasa			varchar,
+                                           rc_iva			numeric,
+                                           moneda_total	varchar,
+                                           importe_total	varchar,
+                                           moneda_tarifa   varchar,
+                                           importe_tarifa	varchar,
+                                           codigo_tarifa 	varchar,
+                                           tipo_emision	varchar,
+                                           tipo_tarifa		varchar,
+                                           tipo_total		varchar,
+                                           num_pax			varchar,
+                                           inf				varchar,
+                                           pasajero varchar
+                )on commit drop;
 
-            if jsonb_typeof(v_parametros.fn_V2) = 'object' then
-              v_importe = (v_parametros.importes->>'importe_total');
+                if jsonb_typeof(v_parametros.fn_V2) = 'object' then
+                    v_importe = (v_parametros.importes->>'importe_total');
 
-              if jsonb_typeof(v_parametros.tasa) = 'array' then
-                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
-                    --raise exception 'tasa: %, %, %', v_record_json->>'tipo_tasa', v_record_json->>'importe_tasa',v_record_json->>'codigo_tasa';
-                    if v_record_json->>'tipo_tasa' != 'X' then
-                        v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
-                    end if;
-
-                    if v_record_json->>'tipo_tasa' = 'X' then
-                        if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
-                            v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
-                        end if;
-                    end if;
-
-                    v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
-                end loop;
-              else
-              	if v_parametros.tasa->>'tipo_tasa' != 'X' then
-                	v_calculo_tarifa = v_calculo_tarifa ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar;
-                end if;
-                if v_parametros.tasa->>'tipo_tasa' = 'X' then
-                    if v_parametros.tasa->>'codigo_tasa' not in ('QM', 'BO') then
-                        v_importe = v_importe - (v_parametros.tasa->>'importe_tasa')::numeric;
-                    end if;
-                end if;
-                v_tasa = v_tasa ||(v_parametros.tasa->>'moneda_tasa')::varchar||' '||case when v_parametros.tasa->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar||'		';
-              end if;
-
-              v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
-
-              if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
-                	v_codigo_tarifa = v_parametros.fn_V2->>'codigo_tarifa';
-              else
-                	v_codigo_tarifa = v_parametros.importes->'codigo_tarifa'->'string';
-              end if;
-
-              insert into ttasa(
-                  id_tasa,
-                  calculo_tarifa,
-                  tasa,
-                  rc_iva,
-                  moneda_total,
-                  importe_total,
-                  moneda_tarifa,
-                  importe_tarifa,
-                  codigo_tarifa,
-                  tipo_emision,
-                  tipo_tarifa,
-                  tipo_total,
-                  num_pax,
-                  inf,
-                  pasajero
-              )values (
-                v_contador_id,
-                v_calculo_tarifa,
-                v_tasa,
-                v_importe,
-                v_parametros.fn_V2->>'moneda_total',
-                v_parametros.fn_V2->>'importe_total',
-                v_parametros.fn_V2->>'moneda_tarifa',
-                v_parametros.fn_V2->>'importe_tarifa',
-                v_codigo_tarifa,--v_parametros.fn_V2->>'codigo_tarifa',
-                v_parametros.fn_V2->>'tipo_emision',
-                v_parametros.fn_V2->>'tipo_tarifa',
-                v_parametros.fn_V2->>'tipo_total',
-                v_parametros.fn_V2->>'num_pax',
-                v_parametros.fn_V2->>'inf',
-                v_pasajero
-              );
-			        v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
-            else
-
-                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
-
-                  --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
-                  if (v_record_json->>'num_pax')::integer=v_posicion and (v_record_json->>'ReferenciaSegmento')::varchar=v_segment_reference and v_record_json->>'tipo_emision' = 'R' then
-
-                      if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
-                    	  continue;
-                      elsif v_tipo_19 in ('CHD','ADT','SNN') and v_record_json->>'inf' = 'Y' then
-                    	  continue;
-                      end if;
-
-                      v_importe = (v_record_json->>'importe_total');
-                      if jsonb_typeof(v_record_json->'Fntaxs'->'tasa') = 'array' then
-                        for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
-
-                            if v_record_json_aux->>'tipo_tasa' != 'X' then
-                                v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
-                                /*if v_record_json->>'tipo_emision' = 'R' then
-                                  v_tasa_valida = 'resolve';
-                                end if;*/
+                    if jsonb_typeof(v_parametros.tasa) = 'array' then
+                        for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
+                            --raise exception 'tasa: %, %, %', v_record_json->>'tipo_tasa', v_record_json->>'importe_tasa',v_record_json->>'codigo_tasa';
+                            if v_record_json->>'tipo_tasa' != 'X' then
+                                v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
                             end if;
 
-                            if v_record_json_aux->>'tipo_tasa' = 'X' then
-                                if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
-                                    v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
+                            if v_record_json->>'tipo_tasa' = 'X' then
+                                if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
+                                    v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
                                 end if;
-                                /*if v_record_json->>'tipo_emision' = 'R' then
-                                  v_tasa_valida = 'resolve';
-                                end if;*/
                             end if;
 
-                            v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
+                            v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
                         end loop;
-                      else
-                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' != 'X' then
-                            v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar;
+                    else
+                        if v_parametros.tasa->>'tipo_tasa' != 'X' then
+                            v_calculo_tarifa = v_calculo_tarifa ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar;
                         end if;
-
-                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' = 'X' then
-                            if v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa' not in ('QM', 'BO') then
-                                v_importe = v_importe - (v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::numeric;
+                        if v_parametros.tasa->>'tipo_tasa' = 'X' then
+                            if v_parametros.tasa->>'codigo_tasa' not in ('QM', 'BO') then
+                                v_importe = v_importe - (v_parametros.tasa->>'importe_tasa')::numeric;
                             end if;
                         end if;
-                        v_tasa = v_tasa ||(v_record_json->'Fntaxs'->'tasa'->>'moneda_tasa')::varchar||' '||case when v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar||'		';
-                      end if;
-                      v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+                        v_tasa = v_tasa ||(v_parametros.tasa->>'moneda_tasa')::varchar||' '||case when v_parametros.tasa->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar||'		';
+                    end if;
 
-                      IF jsonb_typeof(v_record_json->'codigo_tarifa'->'string') = 'string' then
-                      	v_codigo_tarifa = v_record_json->'codigo_tarifa'->>'string';
-                      else
-                        SELECT array_agg(value)
-                        into v_cadena
-                        FROM jsonb_array_elements_text(v_record_json->'codigo_tarifa'->'string');
-                        v_codigo_tarifa = v_cadena[v_contador_id];
-                      end if;
+                    v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
 
-                      select count(ta.id_tasa)
-                      into v_cont_pasajero
-                      from ttasa ta
-                      where ta.pasajero = v_pasajero;
-                      --if v_tasa_valida = 'resolve' then
-                      if /*v_importe > 0 and*/ v_cont_pasajero = 0 /*or ((v_record_json->>'importe_total')::numeric = 0 and v_cont_pasajero = 0)*/ then
-                        insert into ttasa(
-                          id_tasa,
+                    if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                        v_codigo_tarifa = v_parametros.fn_V2->>'codigo_tarifa';
+                    else
+                        v_codigo_tarifa = v_parametros.importes->'codigo_tarifa'->'string';
+                    end if;
+
+                    insert into ttasa(
+                        id_tasa,
                         calculo_tarifa,
                         tasa,
                         rc_iva,
-                            moneda_total,
-                            importe_total,
-                            moneda_tarifa,
-                            importe_tarifa,
-                            codigo_tarifa,
-                            tipo_emision,
-                            tipo_tarifa,
-                            tipo_total,
-                            num_pax,
-                            inf,
-                            pasajero
-                        )values (
-                          v_contador_id,
-                          v_calculo_tarifa,
-                          v_tasa,
-                          v_importe,
-                          v_record_json->>'moneda_total',
-                          v_record_json->>'importe_total',
-                          v_record_json->>'moneda_tarifa',
-                          v_record_json->>'importe_tarifa',
-                          v_codigo_tarifa,--v_cadena[v_contador_id],
-                          v_record_json->>'tipo_emision',
-                          v_record_json->>'tipo_tarifa',
-                          v_record_json->>'tipo_total',
-                          v_record_json->>'num_pax',
-                          v_record_json->>'inf',
-                          v_pasajero
-                        );
-                        v_tipo_emision = v_record_json->>'tipo_emision';
+                        moneda_total,
+                        importe_total,
+                        moneda_tarifa,
+                        importe_tarifa,
+                        codigo_tarifa,
+                        tipo_emision,
+                        tipo_tarifa,
+                        tipo_total,
+                        num_pax,
+                        inf,
+                        pasajero
+                    )values (
+                                v_contador_id,
+                                v_calculo_tarifa,
+                                v_tasa,
+                                v_importe,
+                                v_parametros.fn_V2->>'moneda_total',
+                                v_parametros.fn_V2->>'importe_total',
+                                v_parametros.fn_V2->>'moneda_tarifa',
+                                v_parametros.fn_V2->>'importe_tarifa',
+                                v_codigo_tarifa,--v_parametros.fn_V2->>'codigo_tarifa',
+                                v_parametros.fn_V2->>'tipo_emision',
+                                v_parametros.fn_V2->>'tipo_tarifa',
+                                v_parametros.fn_V2->>'tipo_total',
+                                v_parametros.fn_V2->>'num_pax',
+                                v_parametros.fn_V2->>'inf',
+                                v_pasajero
+                            );
+                    v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
+                else
+
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
+
+                        --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
+                        if (v_record_json->>'num_pax')::integer=v_posicion and (v_record_json->>'ReferenciaSegmento')::varchar=v_segment_reference and v_record_json->>'tipo_emision' = 'R' then
+
+                            if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
+                                continue;
+                            elsif v_tipo_19 in ('CHD','ADT','SNN') and v_record_json->>'inf' = 'Y' then
+                                continue;
+                            end if;
+
+                            v_importe = (v_record_json->>'importe_total');
+                            if jsonb_typeof(v_record_json->'Fntaxs'->'tasa') = 'array' then
+                                for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
+
+                                    if v_record_json_aux->>'tipo_tasa' != 'X' then
+                                        v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
+                                        /*if v_record_json->>'tipo_emision' = 'R' then
+                                          v_tasa_valida = 'resolve';
+                                        end if;*/
+                                    end if;
+
+                                    if v_record_json_aux->>'tipo_tasa' = 'X' then
+                                        if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
+                                            v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
+                                        end if;
+                                        /*if v_record_json->>'tipo_emision' = 'R' then
+                                          v_tasa_valida = 'resolve';
+                                        end if;*/
+                                    end if;
+
+                                    v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
+                                end loop;
+                            else
+                                if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' != 'X' then
+                                    v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar;
+                                end if;
+
+                                if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' = 'X' then
+                                    if v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa' not in ('QM', 'BO') then
+                                        v_importe = v_importe - (v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::numeric;
+                                    end if;
+                                end if;
+                                v_tasa = v_tasa ||(v_record_json->'Fntaxs'->'tasa'->>'moneda_tasa')::varchar||' '||case when v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar||'		';
+                            end if;
+                            v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+
+                            IF jsonb_typeof(v_record_json->'codigo_tarifa'->'string') = 'string' then
+                                v_codigo_tarifa = v_record_json->'codigo_tarifa'->>'string';
+                            else
+                                SELECT array_agg(value)
+                                into v_cadena
+                                FROM jsonb_array_elements_text(v_record_json->'codigo_tarifa'->'string');
+                                v_codigo_tarifa = v_cadena[v_contador_id];
+                            end if;
+
+                            select count(ta.id_tasa)
+                            into v_cont_pasajero
+                            from ttasa ta
+                            where ta.pasajero = v_pasajero;
+                            --if v_tasa_valida = 'resolve' then
+                            if /*v_importe > 0 and*/ v_cont_pasajero = 0 /*or ((v_record_json->>'importe_total')::numeric = 0 and v_cont_pasajero = 0)*/ then
+                                insert into ttasa(
+                                    id_tasa,
+                                    calculo_tarifa,
+                                    tasa,
+                                    rc_iva,
+                                    moneda_total,
+                                    importe_total,
+                                    moneda_tarifa,
+                                    importe_tarifa,
+                                    codigo_tarifa,
+                                    tipo_emision,
+                                    tipo_tarifa,
+                                    tipo_total,
+                                    num_pax,
+                                    inf,
+                                    pasajero
+                                )values (
+                                            v_contador_id,
+                                            v_calculo_tarifa,
+                                            v_tasa,
+                                            v_importe,
+                                            v_record_json->>'moneda_total',
+                                            v_record_json->>'importe_total',
+                                            v_record_json->>'moneda_tarifa',
+                                            v_record_json->>'importe_tarifa',
+                                            v_codigo_tarifa,--v_cadena[v_contador_id],
+                                            v_record_json->>'tipo_emision',
+                                            v_record_json->>'tipo_tarifa',
+                                            v_record_json->>'tipo_total',
+                                            v_record_json->>'num_pax',
+                                            v_record_json->>'inf',
+                                            v_pasajero
+                                        );
+                                v_tipo_emision = v_record_json->>'tipo_emision';
+                                v_contador_id = v_contador_id + 1;
+
+                            else
+                                v_tasa = '';
+                            end if;
+                        else
+                            continue;
+                        end if;
+                    end loop;
+                end if;
+
+                select max(tba.fecha_emision)::varchar
+                into v_fecha_emision
+                from obingresos.tboleto_amadeus tba
+                where tba.localizador = v_parametros.pnr;
+
+                v_contador_id = 1;
+                create temp table tvuelos(
+                                             id_vuelo		integer,
+                                             clase 			varchar,
+                                             linea 			varchar,
+                                             estado 			varchar,
+                                             origen 			varchar,
+                                             destino 		varchar,
+                                             num_vuelo 		varchar,
+                                             hora_salida		varchar,
+                                             fecha_salida	varchar,
+                                             hora_llegada 	varchar,
+                                             codigo_tarifa	varchar,
+                                             origen_cod		varchar,
+                                             destino_cod		varchar
+                )on commit drop;
+
+
+                if jsonb_typeof(v_parametros.vuelo) = 'array' and jsonb_typeof(v_parametros.fn_V2) = 'object' then
+
+                    if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                        SELECT array_agg(value)
+                        into v_cadena
+                        FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
+                    else
+                        SELECT array_agg(tt.codigo_tarifa)
+                        into v_cadena
+                        FROM ttasa tt;
+                    end if;
+                else
+                    SELECT array_agg(tt.codigo_tarifa)
+                    into v_cadena
+                    FROM ttasa tt;
+                end if;
+
+                if jsonb_typeof(v_parametros.vuelo) = 'array' then
+                    v_tam_cod_tarifa = array_length(v_cadena,1);
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
+
+                        select tl.nombre, tl.codigo, tl.id_lugar
+                        into v_ciudad_o
+                        from param.tlugar tl
+                        where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
+
+                        select tl.codigo
+                        into v_pais_o
+                        from param.tlugar tl
+                        where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+
+                        select tl.nombre, tl.codigo, tl.id_lugar
+                        into v_ciudad_d
+                        from param.tlugar tl
+                        where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
+
+                        select tl.codigo
+                        into v_pais_d
+                        from param.tlugar tl
+                        where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+
+                        if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' )::date >= v_record_exch.fecha_emision/*v_fecha_emision::date != current_date*/) then
+                            --raise notice 'v_record_exch.fecha_emision: %, %', to_char(v_record_exch.fecha_emision, 'dd/mm/YYYY' ), to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' );
+                            --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
+                            insert into tvuelos(
+                                id_vuelo,
+                                clase,
+                                linea,
+                                estado,
+                                origen,
+                                destino,
+                                num_vuelo,
+                                hora_salida,
+                                fecha_salida,
+                                hora_llegada,
+                                codigo_tarifa,
+                                origen_cod,
+                                destino_cod
+                            )values (
+                                        v_contador_id,
+                                        (v_record_json->>'clase')::varchar,
+                                        (v_record_json->>'linea')::varchar,
+                                        (v_record_json->>'estado')::varchar,
+                                        (v_ciudad_o.nombre||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
+                                        (v_ciudad_d.nombre||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
+                                        (v_record_json->>'num_vuelo')::varchar,
+                                        (v_record_json->>'hora_salida')::varchar,
+                                        (v_record_json->>'fecha_salida')::varchar,
+                                        (v_record_json->>'hora_llegada')::varchar,
+                                        case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end,
+                                        v_pais_o,
+                                        v_pais_d
+                                    );
+                            --end if;
+                        end if;
                         v_contador_id = v_contador_id + 1;
-
-                      else
-                        v_tasa = '';
-                      end if;
-                  else
-                    continue;
-                  end if;
-                end loop;
-            end if;
-
-            select max(tba.fecha_emision)::varchar
-            into v_fecha_emision
-            from obingresos.tboleto_amadeus tba
-            where tba.localizador = v_parametros.pnr;
-
-            v_contador_id = 1;
-            create temp table tvuelos(
-                id_vuelo		integer,
-                clase 			varchar,
-                linea 			varchar,
-                estado 			varchar,
-                origen 			varchar,
-                destino 		varchar,
-                num_vuelo 		varchar,
-                hora_salida		varchar,
-                fecha_salida	varchar,
-                hora_llegada 	varchar,
-                codigo_tarifa	varchar,
-                origen_cod		varchar,
-                destino_cod		varchar
-            )on commit drop;
-
-
-          if jsonb_typeof(v_parametros.vuelo) = 'array' and jsonb_typeof(v_parametros.fn_V2) = 'object' then
-
-            if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
-   				    SELECT array_agg(value)
-              into v_cadena
-   				    FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
-            else
-              SELECT array_agg(tt.codigo_tarifa)
-              into v_cadena
-   				    FROM ttasa tt;
-            end if;
-          else
-		  		  SELECT array_agg(tt.codigo_tarifa)
-            into v_cadena
-   				  FROM ttasa tt;
-          end if;
-
-            if jsonb_typeof(v_parametros.vuelo) = 'array' then
-              v_tam_cod_tarifa = array_length(v_cadena,1);
-              for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
-
-                  select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_o
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
-
-                  select tl.codigo
-                  into v_pais_o
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
-
-                  select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_d
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
-
-                  select tl.codigo
-                  into v_pais_d
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
-
-                  if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' )::date >= v_record_exch.fecha_emision/*v_fecha_emision::date != current_date*/) then
-                    --raise notice 'v_record_exch.fecha_emision: %, %', to_char(v_record_exch.fecha_emision, 'dd/mm/YYYY' ), to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' );
-                    --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
-                      insert into tvuelos(
-                        id_vuelo,
-                        clase,
-                        linea,
-                        estado,
-                        origen,
-                        destino,
-                        num_vuelo,
-                        hora_salida,
-                        fecha_salida,
-                        hora_llegada,
-                        codigo_tarifa,
-                        origen_cod,
-                		    destino_cod
-                      )values (
-                          v_contador_id,
-                          (v_record_json->>'clase')::varchar,
-                          (v_record_json->>'linea')::varchar,
-                          (v_record_json->>'estado')::varchar,
-                          (v_ciudad_o.nombre||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
-                          (v_ciudad_d.nombre||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
-                          (v_record_json->>'num_vuelo')::varchar,
-                          (v_record_json->>'hora_salida')::varchar,
-                          (v_record_json->>'fecha_salida')::varchar,
-                          (v_record_json->>'hora_llegada')::varchar,
-                          case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end,
-                          v_pais_o,
-                          v_pais_d
-                      );
-                    --end if;
-                  end if;
-                  v_contador_id = v_contador_id + 1;
-              end loop;
-            else
-
-                 select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_o
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
-
-                  select tl.codigo
-                  into v_pais_o
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
-
-                  select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_d
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
-
-                  select tl.codigo
-                  into v_pais_d
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
-
-                  if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
-                      SELECT array_agg(value)
-                      into v_cadena
-                      FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
-                  else
-                      SELECT array_agg(tt.codigo_tarifa)
-                      into v_cadena
-                      FROM ttasa tt;
-                  end if;
-                  if (v_parametros.vuelo->>'estado')::varchar != 'B' or ((v_parametros.vuelo->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
-
-                      insert into tvuelos(
-                        id_vuelo,
-                        clase,
-                        linea,
-                        estado,
-                        origen,
-                        destino,
-                        num_vuelo,
-                        hora_salida,
-                        fecha_salida,
-                        hora_llegada,
-                        codigo_tarifa,
-                        origen_cod,
-                		    destino_cod
-                      )values (
-                          1,
-                          (v_parametros.vuelo->>'clase')::varchar,
-                          (v_parametros.vuelo->>'linea')::varchar,
-                          (v_parametros.vuelo->>'estado')::varchar,
-                          (v_ciudad_o.nombre||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
-                          (v_ciudad_d.nombre||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
-                          (v_parametros.vuelo->>'num_vuelo')::varchar,
-                          (v_parametros.vuelo->>'hora_salida')::varchar,
-                          (v_parametros.vuelo->>'fecha_salida')::varchar,
-                          (v_parametros.vuelo->>'hora_llegada')::varchar,
-                          case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end,
-                          v_pais_o,
-                          v_pais_d
-                      );
-
-                  end if;
-            end if;
-
-            select count(tba.id_boleto_amadeus)
-            into v_contador_exch
-            from obingresos.tboleto_amadeus tba
-            where tba.localizador = v_parametros.pnr and tba.trans_code_exch = 'EXCH';
-
-
-			if v_parametros.source_system = 'web' then
-            	v_nro_boleto = v_parametros.ticket_number::varchar;
-            else
-            	v_nro_boleto = ('930'||v_parametros.nro_boleto);
-            end if;
-
-            select tba.trans_code_exch
-            into v_code_exch
-            from obingresos.tboleto_amadeus tba
-            where tba.nro_boleto = v_nro_boleto;
-
-            if v_tipo_emision != 'R' then
-            	raise 'Estimado Usuario: La emision del ticket no corresponde a un Exchange.';
-            end if;
-
-            if v_tipo_emision = 'R' and v_record_exch.trans_code = 'TKTT' and v_contador_exch = 0 and (v_code_exch is null or v_code_exch = '') then
-
-                select max(tba.nro_boleto)
-            	into v_max_exch
-            	from obingresos.tboleto_amadeus tba
-            	where tba.localizador = v_parametros.pnr and tba.trans_code != 'EMDS';
-
-                if v_nro_boleto  > v_max_exch then
-                  	update  obingresos.tboleto_amadeus set
-                      impreso = 'si',
-                      trans_code_exch = 'EXCH'
-                    where nro_boleto = v_nro_boleto::varchar;
-                  	--where id_boleto_amadeus = any(v_exch_sel);
+                    end loop;
                 else
-                	update  obingresos.tboleto_amadeus set
-                      impreso = 'si',
-                      trans_code_exch = 'EXCH'
-                  	where nro_boleto = v_max_exch::varchar;
-                    --where id_boleto_amadeus = any(v_exch_sel);
+
+                    select tl.nombre, tl.codigo, tl.id_lugar
+                    into v_ciudad_o
+                    from param.tlugar tl
+                    where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
+
+                    select tl.codigo
+                    into v_pais_o
+                    from param.tlugar tl
+                    where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+
+                    select tl.nombre, tl.codigo, tl.id_lugar
+                    into v_ciudad_d
+                    from param.tlugar tl
+                    where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
+
+                    select tl.codigo
+                    into v_pais_d
+                    from param.tlugar tl
+                    where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+
+                    if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                        SELECT array_agg(value)
+                        into v_cadena
+                        FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
+                    else
+                        SELECT array_agg(tt.codigo_tarifa)
+                        into v_cadena
+                        FROM ttasa tt;
+                    end if;
+                    if (v_parametros.vuelo->>'estado')::varchar != 'B' or ((v_parametros.vuelo->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
+
+                        insert into tvuelos(
+                            id_vuelo,
+                            clase,
+                            linea,
+                            estado,
+                            origen,
+                            destino,
+                            num_vuelo,
+                            hora_salida,
+                            fecha_salida,
+                            hora_llegada,
+                            codigo_tarifa,
+                            origen_cod,
+                            destino_cod
+                        )values (
+                                    1,
+                                    (v_parametros.vuelo->>'clase')::varchar,
+                                    (v_parametros.vuelo->>'linea')::varchar,
+                                    (v_parametros.vuelo->>'estado')::varchar,
+                                    (v_ciudad_o.nombre||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
+                                    (v_ciudad_d.nombre||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
+                                    (v_parametros.vuelo->>'num_vuelo')::varchar,
+                                    (v_parametros.vuelo->>'hora_salida')::varchar,
+                                    (v_parametros.vuelo->>'fecha_salida')::varchar,
+                                    (v_parametros.vuelo->>'hora_llegada')::varchar,
+                                    case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end,
+                                    v_pais_o,
+                                    v_pais_d
+                                );
+
+                    end if;
                 end if;
 
-            else
+                select count(tba.id_boleto_amadeus)
+                into v_contador_exch
+                from obingresos.tboleto_amadeus tba
+                where tba.localizador = v_parametros.pnr and tba.trans_code_exch = 'EXCH';
 
-            	if v_code_exch = 'EXCH' then
-                  	update  obingresos.tboleto_amadeus set
-                    	impreso = 'si',
-                    	trans_code_exch = 'EXCH'
-                    where nro_boleto = v_nro_boleto::varchar;
-                  	--where id_boleto_amadeus = any(v_exch_sel);
+
+                if v_parametros.source_system = 'web' then
+                    v_nro_boleto = v_parametros.ticket_number::varchar;
                 else
-                	update  obingresos.tboleto_amadeus set
-                    	impreso = 'si',
-                    	trans_code_exch = 'ORIG'
-                    where nro_boleto = v_nro_boleto::varchar;
-                  	--where id_boleto_amadeus = any(v_exch_sel);
+                    v_nro_boleto = ('930'||v_parametros.nro_boleto);
                 end if;
-            end if;
 
-			/*select tba.tc
-            into v_tipo_cambio
-            from  obingresos.tboleto_amadeus tba
-            where tba.code_a = 'TKTT' and tba.tc is not null and tba.localizador =  (v_parametros.localizador->>'localizador_resiber')::varchar ;*/
+                select tba.trans_code_exch
+                into v_code_exch
+                from obingresos.tboleto_amadeus tba
+                where tba.nro_boleto = v_nro_boleto;
 
-            select tc.oficial
-            INTO v_tipo_cambio
-			      from param.ttipo_cambio tc
-			      where tc.fecha = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') and tc.id_moneda = 2;
+                if v_tipo_emision != 'R' then
+                    raise 'Estimado Usuario: La emision del ticket no corresponde a un Exchange.';
+                end if;
 
+                if v_tipo_emision = 'R' and v_record_exch.trans_code = 'TKTT' and v_contador_exch = 0 and (v_code_exch is null or v_code_exch = '') then
 
-            /*v_consulta:='
-                          select
-                          tv.id_vuelo,
-                          tv.clase,
-                          tv.linea,
-                          tv.estado,
-                          tv.origen,
-                          tv.destino,
-                          tv.num_vuelo,
-                          tv.hora_salida,
-                          tv.fecha_salida,
-                          tv.hora_llegada,
-                          tv.codigo_tarifa as codigo_tarifa,
-                          '''||COALESCE(v_calculo_tarifa,'')||'''::varchar as calculo_tarifa,
-                          '''||COALESCE(v_tasa,'')||'''::varchar as tasa,
-                          '||COALESCE(v_importe,0)||'::numeric as rc_iva,
-                          '''|| COALESCE((v_parametros.ssrs->'ssr'->>'texto'),'')||'''::varchar as forma_identificacion,
-                          '''||(v_parametros.importes->>'moneda_total')||' '||(v_parametros.importes->>'importe_total')||'''::varchar as importe_total,
-                          '''||(v_parametros.importes->>'moneda_tarifa')||' '||(v_parametros.importes->>'importe_tarifa')||'''::varchar as importe_tarifa,
-                          '''|| (v_parametros.responsable->>'tipo_reserva')||'''::varchar as agente,
-                          '''||COALESCE(v_oficina.nombre,'')||'''::varchar as nombre_ofi,
-                          '''||COALESCE(v_oficina.codigo,'')||'''::varchar as codigo_iata,
-                          '''||COALESCE(v_oficina.telefono,'')||'''::varchar as telefono_ofi,
-                          '''||COALESCE(v_oficina.direccion,'')||'''::varchar as direccion_ofi,
-                          '||COALESCE(v_tipo_cambio,0)||'::numeric as tipo_cambio,
-                          '''||coalesce((v_parametros.localizador->'endosos'->'endoso'->>'texto'),'')||'''::varchar as endoso,
-                          '''||to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy')||'''::date as fecha_create,
-                          '''||(v_parametros.importes->>'moneda_tarifa')||'''::varchar as moneda_iva
-                          from tvuelos tv
+                    select max(tba.nro_boleto)
+                    into v_max_exch
+                    from obingresos.tboleto_amadeus tba
+                    where tba.localizador = v_parametros.pnr and tba.trans_code != 'EMDS';
 
-            ';*/
-            --raise 'fecha_upd: %', to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
-			v_fecha_creacion = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy');
-            v_fecha_update = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+                    if v_nro_boleto  > v_max_exch then
+                        update  obingresos.tboleto_amadeus set
+                                                               impreso = 'si',
+                                                               trans_code_exch = 'EXCH'
+                        where nro_boleto = v_nro_boleto::varchar;
+                        --where id_boleto_amadeus = any(v_exch_sel);
+                    else
+                        update  obingresos.tboleto_amadeus set
+                                                               impreso = 'si',
+                                                               trans_code_exch = 'EXCH'
+                        where nro_boleto = v_max_exch::varchar;
+                        --where id_boleto_amadeus = any(v_exch_sel);
+                    end if;
 
-            if v_fecha_emision::date is null then
-              if v_fecha_creacion = v_fecha_update then
-                  v_fecha_creacion = ((to_char(v_fecha_creacion,'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date;
-              elsif v_fecha_creacion < v_fecha_update then
-                  if v_fecha_update is null then
-                      v_fecha_creacion = v_fecha_emision::date;
-                  else
-                      v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
-                  end if;
-                  --v_fecha_creacion = coalesce(v_fecha_update, v_fecha_emision::date);
-              end if;
-            else
-            	--raise 'v_fecha_creacion: %,v_fecha_emision:% diferencia : %',v_fecha_creacion, v_fecha_emision, v_fecha_creacion = v_fecha_emision::date;
-            	v_fecha_creacion = v_fecha_emision::date;
-                /*if v_fecha_creacion = v_fecha_emision::date then
-            		v_fecha_creacion = v_fecha_emision::date;
                 else
-                	if v_fecha_update is null then
-                      v_fecha_creacion = v_fecha_emision::date;
-                  	else
-                      v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
-                  	end if;
-                end if;*/
-            end if;
-            v_consulta:='
+
+                    if v_code_exch = 'EXCH' then
+                        update  obingresos.tboleto_amadeus set
+                                                               impreso = 'si',
+                                                               trans_code_exch = 'EXCH'
+                        where nro_boleto = v_nro_boleto::varchar;
+                        --where id_boleto_amadeus = any(v_exch_sel);
+                    else
+                        update  obingresos.tboleto_amadeus set
+                                                               impreso = 'si',
+                                                               trans_code_exch = 'ORIG'
+                        where nro_boleto = v_nro_boleto::varchar;
+                        --where id_boleto_amadeus = any(v_exch_sel);
+                    end if;
+                end if;
+
+                /*select tba.tc
+                into v_tipo_cambio
+                from  obingresos.tboleto_amadeus tba
+                where tba.code_a = 'TKTT' and tba.tc is not null and tba.localizador =  (v_parametros.localizador->>'localizador_resiber')::varchar ;*/
+
+                select tc.oficial
+                INTO v_tipo_cambio
+                from param.ttipo_cambio tc
+                where tc.fecha = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') and tc.id_moneda = 2;
+
+
+                /*v_consulta:='
+                              select
+                              tv.id_vuelo,
+                              tv.clase,
+                              tv.linea,
+                              tv.estado,
+                              tv.origen,
+                              tv.destino,
+                              tv.num_vuelo,
+                              tv.hora_salida,
+                              tv.fecha_salida,
+                              tv.hora_llegada,
+                              tv.codigo_tarifa as codigo_tarifa,
+                              '''||COALESCE(v_calculo_tarifa,'')||'''::varchar as calculo_tarifa,
+                              '''||COALESCE(v_tasa,'')||'''::varchar as tasa,
+                              '||COALESCE(v_importe,0)||'::numeric as rc_iva,
+                              '''|| COALESCE((v_parametros.ssrs->'ssr'->>'texto'),'')||'''::varchar as forma_identificacion,
+                              '''||(v_parametros.importes->>'moneda_total')||' '||(v_parametros.importes->>'importe_total')||'''::varchar as importe_total,
+                              '''||(v_parametros.importes->>'moneda_tarifa')||' '||(v_parametros.importes->>'importe_tarifa')||'''::varchar as importe_tarifa,
+                              '''|| (v_parametros.responsable->>'tipo_reserva')||'''::varchar as agente,
+                              '''||COALESCE(v_oficina.nombre,'')||'''::varchar as nombre_ofi,
+                              '''||COALESCE(v_oficina.codigo,'')||'''::varchar as codigo_iata,
+                              '''||COALESCE(v_oficina.telefono,'')||'''::varchar as telefono_ofi,
+                              '''||COALESCE(v_oficina.direccion,'')||'''::varchar as direccion_ofi,
+                              '||COALESCE(v_tipo_cambio,0)||'::numeric as tipo_cambio,
+                              '''||coalesce((v_parametros.localizador->'endosos'->'endoso'->>'texto'),'')||'''::varchar as endoso,
+                              '''||to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy')||'''::date as fecha_create,
+                              '''||(v_parametros.importes->>'moneda_tarifa')||'''::varchar as moneda_iva
+                              from tvuelos tv
+
+                ';*/
+                --raise 'fecha_upd: %', to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+                v_fecha_creacion = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy');
+                v_fecha_update = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+
+                if v_fecha_emision::date is null then
+                    if v_fecha_creacion = v_fecha_update then
+                        v_fecha_creacion = ((to_char(v_fecha_creacion,'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                    elsif v_fecha_creacion < v_fecha_update then
+                        if v_fecha_update is null then
+                            v_fecha_creacion = v_fecha_emision::date;
+                        else
+                            v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                        end if;
+                        --v_fecha_creacion = coalesce(v_fecha_update, v_fecha_emision::date);
+                    end if;
+                else
+                    --raise 'v_fecha_creacion: %,v_fecha_emision:% diferencia : %',v_fecha_creacion, v_fecha_emision, v_fecha_creacion = v_fecha_emision::date;
+                    v_fecha_creacion = v_fecha_emision::date;
+                    /*if v_fecha_creacion = v_fecha_emision::date then
+                        v_fecha_creacion = v_fecha_emision::date;
+                    else
+                        if v_fecha_update is null then
+                          v_fecha_creacion = v_fecha_emision::date;
+                          else
+                          v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                          end if;
+                    end if;*/
+                end if;
+                v_consulta:='
                           select
                           tv.id_vuelo,
                           tv.clase,
@@ -1447,7 +1487,7 @@ BEGIN
                           (ts.moneda_total ||'' ''|| ts.importe_total)::varchar as importe_total,
                           (ts.moneda_tarifa ||'' ''|| ts.importe_tarifa)::varchar as importe_tarifa,
                           '''|| coalesce((v_parametros.responsable->>'tipo_reserva'),'')||'''::varchar as agente,
-                          '''||COALESCE(v_oficina.nombre,'')||'''::varchar as nombre_ofi,
+                          '''||CASE WHEN char_length(v_oficina.nombre) > 33 AND v_oficina.descripcion IS NOT NULL AND v_oficina.descripcion != ''  THEN COALESCE(v_oficina.descripcion,'') ELSE COALESCE(v_oficina.nombre,'') END||'''::varchar as nombre_ofi,
                           '''||COALESCE(v_oficina.codigo,'')||'''::varchar as codigo_iata,
                           '''||COALESCE(v_oficina.telefono,'')||'''::varchar as telefono_ofi,
                           '''||COALESCE(v_oficina.direccion,'')||'''::varchar as direccion_ofi,
@@ -1472,408 +1512,408 @@ BEGIN
 
                 --Devuelve la respuesta
                 return v_consulta;
-          else
+            else
 
-          end if;
-		end;
+            end if;
+        end;
 
-	/*********************************
- 	#TRANSACCION:  'OBING_SAL_BOL_SEL'
- 	#DESCRIPCION:	Consulta de Boletos Vendidos
- 	#AUTOR:		franklin.espinoza
- 	#FECHA:		09-04-2019 20:28:10
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_SAL_BOL_SEL'
+         #DESCRIPCION:	Consulta de Boletos Vendidos
+         #AUTOR:		franklin.espinoza
+         #FECHA:		09-04-2019 20:28:10
+        ***********************************/
 
-	elsif(p_transaccion='OBING_SAL_BOL_SEL')then
+    elsif(p_transaccion='OBING_SAL_BOL_SEL')then
 
-       begin
-    		--Sentencia de la consulta
+        begin
+            --Sentencia de la consulta
 
             /*Cambiando la consulta para separar moneda local y moneda exranjera (Ismael Valdivia 26/02/2020)*/
 
             if (v_parametros.tipo_interfaz = 'ResumenDetalle') then
 
-            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
-                                      pasajero varchar,
-                                      localizador varchar,
-                                      nro_boleto varchar,
-          							  forma_pago_amadeus varchar,
-                                      moneda varchar,
-                                      precio_total_ml numeric,
-                                      precio_total_me numeric,
-                                      agente_venta varchar,
-                                      id_forma_pago int4,
-                                      monto_forma_pago_ml numeric,
-                                      monto_forma_pago_me numeric,
-                                      forma_pago varchar,
-                                      fecha_emision date,
-                                      trans_code varchar,
-                                      trans_issue_indicator varchar,
-                                      nombre varchar,
-                                      trans_code_exch varchar,
-                                      impreso varchar,
-                                      neto_ml numeric,
-                                      neto_me numeric )ON COMMIT DROP;
+                CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                                       pasajero varchar,
+                                                       localizador varchar,
+                                                       nro_boleto varchar,
+                                                       forma_pago_amadeus varchar,
+                                                       moneda varchar,
+                                                       precio_total_ml numeric,
+                                                       precio_total_me numeric,
+                                                       agente_venta varchar,
+                                                       id_forma_pago int4,
+                                                       monto_forma_pago_ml numeric,
+                                                       monto_forma_pago_me numeric,
+                                                       forma_pago varchar,
+                                                       fecha_emision date,
+                                                       trans_code varchar,
+                                                       trans_issue_indicator varchar,
+                                                       nombre varchar,
+                                                       trans_code_exch varchar,
+                                                       impreso varchar,
+                                                       neto_ml numeric,
+                                                       neto_me numeric )ON COMMIT DROP;
 
 
-           /* select ex.id_usuario into v_id_usuario
-            from segu.tusuario_externo ex
-            where ex.usuario_externo = v_parametros.agente_venta;*/
+                /* select ex.id_usuario into v_id_usuario
+                 from segu.tusuario_externo ex
+                 where ex.usuario_externo = v_parametros.agente_venta;*/
 
 
-              For v_datos in (with forma_pago_temporal as(
-                                            select bol.id_boleto_amadeus,
-                                                   array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                   array_agg(mon.codigo_internacional) as moneda_fp,
-                                                   array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                   array_agg(fp.codigo) as codigo_forma_pago,
-                                                   array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                   array_agg(bfp.mco) as mco,
-                                                   array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                   array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                   array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                   array_agg(bfp.importe) as monto_forma_pago
-                                            from obingresos.tboleto_amadeus bol
-                                                 left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                                 left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                                 left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                                 left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                            where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
-                                            group by bol.id_boleto_amadeus)
+                For v_datos in (with forma_pago_temporal as(
+                    select bol.id_boleto_amadeus,
+                           array_agg(fp.id_forma_pago) as id_forma_pago,
+                           array_agg(mon.codigo_internacional) as moneda_fp,
+                           array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                           array_agg(fp.codigo) as codigo_forma_pago,
+                           array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                           array_agg(bfp.mco) as mco,
+                           array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                           array_agg(bfp.id_auxiliar) as id_auxiliar,
+                           array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                           array_agg(bfp.importe) as monto_forma_pago
+                    from obingresos.tboleto_amadeus bol
+                             left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                             left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                             left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                             left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                    where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                    group by bol.id_boleto_amadeus)
 
-                            select nr.id_boleto_amadeus,
-                                   nr.pasajero as pasajero,
-                                   nr.localizador as localizador,
-                                   substring(nr.nro_boleto from 4)::varchar as nro_boleto,
-                                   nr.forma_pago as forma_pago_amadeus,
-                                   nr.moneda,
-                                   nr.total as precio_total,
-                                   nr.agente_venta as codigo_agente,
-                                   fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
-                                   fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
-                                   fpo.forma_pago [ 1 ]::varchar as forma_pago,
-                                   nr.fecha_emision,
-                                   nr.trans_code,
-                                   nr.trans_issue_indicator,
-                                   pv.nombre as punto_venta,
-                                   nr.trans_code_exch,
-                                   nr.impreso,
-                                   fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
-                                   nr.neto
+                                select nr.id_boleto_amadeus,
+                                       nr.pasajero as pasajero,
+                                       nr.localizador as localizador,
+                                       substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                       nr.forma_pago as forma_pago_amadeus,
+                                       nr.moneda,
+                                       nr.total as precio_total,
+                                       nr.agente_venta as codigo_agente,
+                                       fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                       fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                       fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                       nr.fecha_emision,
+                                       nr.trans_code,
+                                       nr.trans_issue_indicator,
+                                       pv.nombre as punto_venta,
+                                       nr.trans_code_exch,
+                                       nr.impreso,
+                                       fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                       nr.neto
 
-                            from obingresos.tboleto_amadeus nr
-                            inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                            inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                            inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                            inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                            left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                            where nr.agente_venta = v_parametros.agente_venta and pv.id_punto_venta = v_parametros.punto_venta::integer)
+                                from obingresos.tboleto_amadeus nr
+                                         inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                         inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                         inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                         inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                         left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                where nr.agente_venta = v_parametros.agente_venta and pv.id_punto_venta = v_parametros.punto_venta::integer)
 
-                          LOOP
+                    LOOP
 
-                          if (v_datos.moneda = 'USD') then
-
-                          		 insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_me,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-                                      neto_me
-
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
-                           	else
+                        if (v_datos.moneda = 'USD') then
 
                             insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_ml,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-                                      neto_ml
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_me,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_me
 
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
+                        else
+
+                            insert into datos_amadeus (
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_ml,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_ml
+
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
 
 
-                            end if;
+                        end if;
 
-                          END LOOP;
+                    END LOOP;
 
             else
 
-            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
-                                      pasajero varchar,
-                                      localizador varchar,
-                                      nro_boleto varchar,
-          							  forma_pago_amadeus varchar,
-                                      moneda varchar,
-                                      precio_total_ml numeric,
-                                      precio_total_me numeric,
-                                      agente_venta varchar,
-                                      id_forma_pago int4,
-                                      monto_forma_pago_ml numeric,
-                                      monto_forma_pago_me numeric,
-                                      forma_pago varchar,
-                                      fecha_emision date,
-                                      trans_code varchar,
-                                      trans_issue_indicator varchar,
-                                      nombre varchar,
-                                      trans_code_exch varchar,
-                                      impreso varchar,
-                                      neto_ml numeric,
-                                      neto_me numeric )ON COMMIT DROP;
+                CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                                       pasajero varchar,
+                                                       localizador varchar,
+                                                       nro_boleto varchar,
+                                                       forma_pago_amadeus varchar,
+                                                       moneda varchar,
+                                                       precio_total_ml numeric,
+                                                       precio_total_me numeric,
+                                                       agente_venta varchar,
+                                                       id_forma_pago int4,
+                                                       monto_forma_pago_ml numeric,
+                                                       monto_forma_pago_me numeric,
+                                                       forma_pago varchar,
+                                                       fecha_emision date,
+                                                       trans_code varchar,
+                                                       trans_issue_indicator varchar,
+                                                       nombre varchar,
+                                                       trans_code_exch varchar,
+                                                       impreso varchar,
+                                                       neto_ml numeric,
+                                                       neto_me numeric )ON COMMIT DROP;
 
 
 
 
-            For v_datos in (with forma_pago_temporal as(
-                                          select bol.id_boleto_amadeus,
-                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                 array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(fp.codigo) as codigo_forma_pago,
-                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                 array_agg(bfp.mco) as mco,
-                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                 array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto_amadeus bol
-                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision = v_parametros.fecha::date
-                                          group by bol.id_boleto_amadeus)
+                For v_datos in (with forma_pago_temporal as(
+                    select bol.id_boleto_amadeus,
+                           array_agg(fp.id_forma_pago) as id_forma_pago,
+                           array_agg(mon.codigo_internacional) as moneda_fp,
+                           array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                           array_agg(fp.codigo) as codigo_forma_pago,
+                           array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                           array_agg(bfp.mco) as mco,
+                           array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                           array_agg(bfp.id_auxiliar) as id_auxiliar,
+                           array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                           array_agg(bfp.importe) as monto_forma_pago
+                    from obingresos.tboleto_amadeus bol
+                             left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                             left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                             left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                             left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                    where bol.fecha_emision = v_parametros.fecha::date
+                    group by bol.id_boleto_amadeus)
 
-                          select nr.id_boleto_amadeus,
-                          		 nr.pasajero as pasajero,
-                          		 nr.localizador as localizador,
-                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
-                                 nr.forma_pago as forma_pago_amadeus,
-                                 nr.moneda,
-                                 nr.total as precio_total,
-                                 nr.agente_venta as codigo_agente,
-                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
-                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
-                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
-                                 nr.fecha_emision,
-                                 nr.trans_code,
-                         		 nr.trans_issue_indicator,
-                         		 pv.nombre as punto_venta,
-                                 nr.trans_code_exch,
-                                 nr.impreso,
-                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
-                                 nr.neto
+                                select nr.id_boleto_amadeus,
+                                       nr.pasajero as pasajero,
+                                       nr.localizador as localizador,
+                                       substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                       nr.forma_pago as forma_pago_amadeus,
+                                       nr.moneda,
+                                       nr.total as precio_total,
+                                       nr.agente_venta as codigo_agente,
+                                       fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                       fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                       fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                       nr.fecha_emision,
+                                       nr.trans_code,
+                                       nr.trans_issue_indicator,
+                                       pv.nombre as punto_venta,
+                                       nr.trans_code_exch,
+                                       nr.impreso,
+                                       fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                       nr.neto
 
-                          from obingresos.tboleto_amadeus nr
-                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          where usuex.id_usuario = p_id_usuario)
+                                from obingresos.tboleto_amadeus nr
+                                         inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                         inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                         inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                         inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                         left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                where usuex.id_usuario = p_id_usuario)
 
-                          LOOP
+                    LOOP
 
-                          if (v_datos.moneda = 'USD') then
-
-                          		 insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_me,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-                                      neto_me
-
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
-                           	else
+                        if (v_datos.moneda = 'USD') then
 
                             insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_ml,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-                                      neto_ml
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_me,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_me
 
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
+                        else
+
+                            insert into datos_amadeus (
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_ml,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_ml
+
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
 
 
-                            end if;
+                        end if;
 
-                          END LOOP;
+                    END LOOP;
             end if;
 
-			v_consulta:='select id_boleto_amadeus,
+            v_consulta:='select id_boleto_amadeus,
                                       pasajero,
                                       localizador,
                                       nro_boleto,
@@ -1899,407 +1939,407 @@ BEGIN
                           where ';
 
             --Definicion de la respuesta
-			v_consulta = v_consulta||v_parametros.filtro;
-        	v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+            v_consulta = v_consulta||v_parametros.filtro;
+            v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 
             raise notice 'v_consulta: %',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-	/*********************************
- 	#TRANSACCION:  'OBING_SAL_BOL_CONT'
- 	#DESCRIPCION:	Conteo de boletos vendidos
- 	#AUTOR:		franklin.espinoza
- 	#FECHA:		09-04-2019 20:28:10
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_SAL_BOL_CONT'
+         #DESCRIPCION:	Conteo de boletos vendidos
+         #AUTOR:		franklin.espinoza
+         #FECHA:		09-04-2019 20:28:10
+        ***********************************/
 
-	elsif(p_transaccion='OBING_SAL_BOL_CONT')then
+    elsif(p_transaccion='OBING_SAL_BOL_CONT')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
+        begin
+            --Sentencia de la consulta de conteo de registros
 
-             if (v_parametros.tipo_interfaz = 'ResumenDetalle') then
+            if (v_parametros.tipo_interfaz = 'ResumenDetalle') then
 
-            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
-                                      pasajero varchar,
-                                      localizador varchar,
-                                      nro_boleto varchar,
-          							  forma_pago_amadeus varchar,
-                                      moneda varchar,
-                                      precio_total_ml numeric,
-                                      precio_total_me numeric,
-                                      agente_venta varchar,
-                                      id_forma_pago int4,
-                                      monto_forma_pago_ml numeric,
-                                      monto_forma_pago_me numeric,
-                                      forma_pago varchar,
-                                      fecha_emision date,
-                                      trans_code varchar,
-                                      trans_issue_indicator varchar,
-                                      nombre varchar,
-                                      trans_code_exch varchar,
-                                      impreso varchar,
-                                      neto_ml numeric,
-                                      neto_me numeric )ON COMMIT DROP;
-
-
-            /*select ex.id_usuario into v_id_usuario
-            from segu.tusuario_externo ex
-            where ex.usuario_externo = v_parametros.agente_venta;*/
+                CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                                       pasajero varchar,
+                                                       localizador varchar,
+                                                       nro_boleto varchar,
+                                                       forma_pago_amadeus varchar,
+                                                       moneda varchar,
+                                                       precio_total_ml numeric,
+                                                       precio_total_me numeric,
+                                                       agente_venta varchar,
+                                                       id_forma_pago int4,
+                                                       monto_forma_pago_ml numeric,
+                                                       monto_forma_pago_me numeric,
+                                                       forma_pago varchar,
+                                                       fecha_emision date,
+                                                       trans_code varchar,
+                                                       trans_issue_indicator varchar,
+                                                       nombre varchar,
+                                                       trans_code_exch varchar,
+                                                       impreso varchar,
+                                                       neto_ml numeric,
+                                                       neto_me numeric )ON COMMIT DROP;
 
 
-            For v_datos in (with forma_pago_temporal as(
-                                          select bol.id_boleto_amadeus,
-                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                 array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(fp.codigo) as codigo_forma_pago,
-                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                 array_agg(bfp.mco) as mco,
-                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                 array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto_amadeus bol
-                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
-                                          group by bol.id_boleto_amadeus)
+                /*select ex.id_usuario into v_id_usuario
+                from segu.tusuario_externo ex
+                where ex.usuario_externo = v_parametros.agente_venta;*/
 
-                          select nr.id_boleto_amadeus,
-                          		 nr.pasajero as pasajero,
-                          		 nr.localizador as localizador,
-                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
-                                 nr.forma_pago as forma_pago_amadeus,
-                                 nr.moneda,
-                                 nr.total as precio_total,
-                                 nr.agente_venta as codigo_agente,
-                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
-                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
-                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
-                                 nr.fecha_emision,
-                                 nr.trans_code,
-                         		 nr.trans_issue_indicator,
-                         		 pv.nombre as punto_venta,
-                                 nr.trans_code_exch,
-                                 nr.impreso,
-                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
-                                 nr.neto
 
-                          from obingresos.tboleto_amadeus nr
-                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          where nr.agente_venta = v_parametros.agente_venta and pv.id_punto_venta = v_parametros.punto_venta::integer)
+                For v_datos in (with forma_pago_temporal as(
+                    select bol.id_boleto_amadeus,
+                           array_agg(fp.id_forma_pago) as id_forma_pago,
+                           array_agg(mon.codigo_internacional) as moneda_fp,
+                           array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                           array_agg(fp.codigo) as codigo_forma_pago,
+                           array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                           array_agg(bfp.mco) as mco,
+                           array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                           array_agg(bfp.id_auxiliar) as id_auxiliar,
+                           array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                           array_agg(bfp.importe) as monto_forma_pago
+                    from obingresos.tboleto_amadeus bol
+                             left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                             left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                             left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                             left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                    where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                    group by bol.id_boleto_amadeus)
 
-                          LOOP
+                                select nr.id_boleto_amadeus,
+                                       nr.pasajero as pasajero,
+                                       nr.localizador as localizador,
+                                       substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                       nr.forma_pago as forma_pago_amadeus,
+                                       nr.moneda,
+                                       nr.total as precio_total,
+                                       nr.agente_venta as codigo_agente,
+                                       fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                       fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                       fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                       nr.fecha_emision,
+                                       nr.trans_code,
+                                       nr.trans_issue_indicator,
+                                       pv.nombre as punto_venta,
+                                       nr.trans_code_exch,
+                                       nr.impreso,
+                                       fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                       nr.neto
 
-                          if (v_datos.moneda = 'USD') then
+                                from obingresos.tboleto_amadeus nr
+                                         inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                         inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                         inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                         inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                         left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                where nr.agente_venta = v_parametros.agente_venta and pv.id_punto_venta = v_parametros.punto_venta::integer)
 
-                          		 insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_me,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-									  neto_me
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
-                           	else
+                    LOOP
+
+                        if (v_datos.moneda = 'USD') then
 
                             insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_ml,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-                                      neto_ml
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_me,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
+                        else
 
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
+                            insert into datos_amadeus (
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_ml,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_ml
+
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
 
 
-                            end if;
+                        end if;
 
-                          END LOOP;
+                    END LOOP;
 
             else
 
-            CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
-                                      pasajero varchar,
-                                      localizador varchar,
-                                      nro_boleto varchar,
-          							  forma_pago_amadeus varchar,
-                                      moneda varchar,
-                                      precio_total_ml numeric,
-                                      precio_total_me numeric,
-                                      agente_venta varchar,
-                                      id_forma_pago int4,
-                                      monto_forma_pago_ml numeric,
-                                      monto_forma_pago_me numeric,
-                                      forma_pago varchar,
-                                      fecha_emision date,
-                                      trans_code varchar,
-                                      trans_issue_indicator varchar,
-                                      nombre varchar,
-                                      trans_code_exch varchar,
-                                      impreso varchar,
-                                      neto_ml numeric,
-                                      neto_me numeric )ON COMMIT DROP;
+                CREATE TEMPORARY TABLE datos_amadeus ( id_boleto_amadeus  int4,
+                                                       pasajero varchar,
+                                                       localizador varchar,
+                                                       nro_boleto varchar,
+                                                       forma_pago_amadeus varchar,
+                                                       moneda varchar,
+                                                       precio_total_ml numeric,
+                                                       precio_total_me numeric,
+                                                       agente_venta varchar,
+                                                       id_forma_pago int4,
+                                                       monto_forma_pago_ml numeric,
+                                                       monto_forma_pago_me numeric,
+                                                       forma_pago varchar,
+                                                       fecha_emision date,
+                                                       trans_code varchar,
+                                                       trans_issue_indicator varchar,
+                                                       nombre varchar,
+                                                       trans_code_exch varchar,
+                                                       impreso varchar,
+                                                       neto_ml numeric,
+                                                       neto_me numeric )ON COMMIT DROP;
 
 
 
 
-            For v_datos in (with forma_pago_temporal as(
-                                          select bol.id_boleto_amadeus,
-                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                 array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(fp.codigo) as codigo_forma_pago,
-                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                 array_agg(bfp.mco) as mco,
-                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                 array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto_amadeus bol
-                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision = v_parametros.fecha::date
-                                          group by bol.id_boleto_amadeus)
+                For v_datos in (with forma_pago_temporal as(
+                    select bol.id_boleto_amadeus,
+                           array_agg(fp.id_forma_pago) as id_forma_pago,
+                           array_agg(mon.codigo_internacional) as moneda_fp,
+                           array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                           array_agg(fp.codigo) as codigo_forma_pago,
+                           array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                           array_agg(bfp.mco) as mco,
+                           array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                           array_agg(bfp.id_auxiliar) as id_auxiliar,
+                           array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                           array_agg(bfp.importe) as monto_forma_pago
+                    from obingresos.tboleto_amadeus bol
+                             left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                             left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                             left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                             left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                    where bol.fecha_emision = v_parametros.fecha::date
+                    group by bol.id_boleto_amadeus)
 
-                          select nr.id_boleto_amadeus,
-                          		 nr.pasajero as pasajero,
-                          		 nr.localizador as localizador,
-                                 substring(nr.nro_boleto from 4)::varchar as nro_boleto,
-                                 nr.forma_pago as forma_pago_amadeus,
-                                 nr.moneda,
-                                 nr.total as precio_total,
-                                 nr.agente_venta as codigo_agente,
-                                 fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
-                                 fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
-                                 fpo.forma_pago [ 1 ]::varchar as forma_pago,
-                                 nr.fecha_emision,
-                                 nr.trans_code,
-                         		 nr.trans_issue_indicator,
-                         		 pv.nombre as punto_venta,
-                                 nr.trans_code_exch,
-                                 nr.impreso,
-                                 fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
-                                 nr.neto
+                                select nr.id_boleto_amadeus,
+                                       nr.pasajero as pasajero,
+                                       nr.localizador as localizador,
+                                       substring(nr.nro_boleto from 4)::varchar as nro_boleto,
+                                       nr.forma_pago as forma_pago_amadeus,
+                                       nr.moneda,
+                                       nr.total as precio_total,
+                                       nr.agente_venta as codigo_agente,
+                                       fpo.id_forma_pago [ 1 ]::integer as id_forma_pago,
+                                       fpo.monto_forma_pago [ 1 ]::numeric as monto_forma_pago,
+                                       fpo.forma_pago [ 1 ]::varchar as forma_pago,
+                                       nr.fecha_emision,
+                                       nr.trans_code,
+                                       nr.trans_issue_indicator,
+                                       pv.nombre as punto_venta,
+                                       nr.trans_code_exch,
+                                       nr.impreso,
+                                       fpo.moneda_fp [ 1 ]::varchar as moneda_fp,
+                                       nr.neto
 
-                          from obingresos.tboleto_amadeus nr
-                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          where usuex.id_usuario = p_id_usuario)
+                                from obingresos.tboleto_amadeus nr
+                                         inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                         inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                         inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                         inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                         left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                where usuex.id_usuario = p_id_usuario)
 
-                          LOOP
+                    LOOP
 
-                          if (v_datos.moneda = 'USD') then
-
-                          		 insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_me,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-									  neto_me
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
-                           	else
+                        if (v_datos.moneda = 'USD') then
 
                             insert into datos_amadeus (
-                                      id_boleto_amadeus,
-                                      pasajero,
-                                      localizador,
-                                      nro_boleto,
-          							  forma_pago_amadeus,
-                                      moneda,
-                                      precio_total_ml,
-                                      agente_venta,
-                                      id_forma_pago,
-                                      monto_forma_pago_me,
-                                      monto_forma_pago_ml,
-                                      forma_pago,
-                                      fecha_emision,
-                                      trans_code,
-                                      trans_issue_indicator,
-                                      nombre,
-                                      trans_code_exch,
-                                      impreso,
-									  neto_ml
-                                        )
-                                        values(
-                                        v_datos.id_boleto_amadeus,
-                                        v_datos.pasajero,
-                                        v_datos.localizador,
-                                        v_datos.nro_boleto,
-                                        v_datos.forma_pago_amadeus,
-                                        v_datos.moneda,
-                                        v_datos.precio_total,
-                                        v_datos.codigo_agente,
-                                        v_datos.id_forma_pago,
-                                        CASE WHEN v_datos.moneda_fp = 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        CASE WHEN v_datos.moneda_fp != 'USD' then
-                                        v_datos.monto_forma_pago
-                                        else
-                                        0
-                                        end,
-                                        v_datos.forma_pago,
-                                        v_datos.fecha_emision,
-                                        v_datos.trans_code,
-                                        v_datos.trans_issue_indicator,
-                                        v_datos.punto_venta,
-                                        v_datos.trans_code_exch,
-                                        v_datos.impreso,
-                                        v_datos.neto
-                                      );
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_me,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
+                        else
+
+                            insert into datos_amadeus (
+                                id_boleto_amadeus,
+                                pasajero,
+                                localizador,
+                                nro_boleto,
+                                forma_pago_amadeus,
+                                moneda,
+                                precio_total_ml,
+                                agente_venta,
+                                id_forma_pago,
+                                monto_forma_pago_me,
+                                monto_forma_pago_ml,
+                                forma_pago,
+                                fecha_emision,
+                                trans_code,
+                                trans_issue_indicator,
+                                nombre,
+                                trans_code_exch,
+                                impreso,
+                                neto_ml
+                            )
+                            values(
+                                      v_datos.id_boleto_amadeus,
+                                      v_datos.pasajero,
+                                      v_datos.localizador,
+                                      v_datos.nro_boleto,
+                                      v_datos.forma_pago_amadeus,
+                                      v_datos.moneda,
+                                      v_datos.precio_total,
+                                      v_datos.codigo_agente,
+                                      v_datos.id_forma_pago,
+                                      CASE WHEN v_datos.moneda_fp = 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      CASE WHEN v_datos.moneda_fp != 'USD' then
+                                               v_datos.monto_forma_pago
+                                           else
+                                               0
+                                          end,
+                                      v_datos.forma_pago,
+                                      v_datos.fecha_emision,
+                                      v_datos.trans_code,
+                                      v_datos.trans_issue_indicator,
+                                      v_datos.punto_venta,
+                                      v_datos.trans_code_exch,
+                                      v_datos.impreso,
+                                      v_datos.neto
+                                  );
 
 
-                            end if;
+                        end if;
 
-                          END LOOP;
+                    END LOOP;
             end if;
 
-			v_consulta:='select count(id_boleto_amadeus) as total,
+            v_consulta:='select count(id_boleto_amadeus) as total,
                         		COALESCE (sum(precio_total_ml),0) as precio_total_ml,
                                 COALESCE (sum(precio_total_me),0) as precio_total_me,
                                 COALESCE (sum(neto_ml),0) as neto_total_ml,
@@ -2307,11 +2347,11 @@ BEGIN
                           from datos_amadeus
                           where ';
 
-			v_consulta:=v_consulta||v_parametros.filtro;
-			--Devuelve la respuesta
-			return v_consulta;
+            v_consulta:=v_consulta||v_parametros.filtro;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
         /*********************************
  	#TRANSACCION:  'OBING_RESUVEN_SEL'
@@ -2320,127 +2360,127 @@ BEGIN
  	#FECHA:		26-02-2022 18:00:00
 	***********************************/
 
-	elsif(p_transaccion='OBING_RESUVEN_SEL')then
+    elsif(p_transaccion='OBING_RESUVEN_SEL')then
 
-       begin
-    		--Sentencia de la consulta
+        begin
+            --Sentencia de la consulta
 
             CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
-            									   counter varchar,
+                                                   counter varchar,
                                                    monto_ml numeric,
                                                    monto_me numeric,
                                                    neto_ml numeric,
                                                    neto_me numeric
-             				          )ON COMMIT DROP;
+            )ON COMMIT DROP;
 
 
 
 
             For v_datos in (with forma_pago_temporal as(
-                                          select bol.id_boleto_amadeus,
-                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                 array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(fp.codigo) as codigo_forma_pago,
-                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                 array_agg(bfp.mco) as mco,
-                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                 array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto_amadeus bol
-                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
-                                          group by bol.id_boleto_amadeus)
+                select bol.id_boleto_amadeus,
+                       array_agg(fp.id_forma_pago) as id_forma_pago,
+                       array_agg(mon.codigo_internacional) as moneda_fp,
+                       array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                       array_agg(fp.codigo) as codigo_forma_pago,
+                       array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                       array_agg(bfp.mco) as mco,
+                       array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                       array_agg(bfp.id_auxiliar) as id_auxiliar,
+                       array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                       array_agg(bfp.importe) as monto_forma_pago
+                from obingresos.tboleto_amadeus bol
+                         left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                         left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                         left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                         left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                group by bol.id_boleto_amadeus)
 
-                          select
-                                 nr.agente_venta as codigo_agente,
-                                 per.nombre_completo2,
-                                 nr.moneda,
-                                 sum (nr.total) as precio_total,
-                                 sum (nr.neto) as neto_total
+                            select
+                                nr.agente_venta as codigo_agente,
+                                per.nombre_completo2,
+                                nr.moneda,
+                                sum (nr.total) as precio_total,
+                                sum (nr.neto) as neto_total
 
-                          from obingresos.tboleto_amadeus nr
-                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
-                          left join segu.vpersona per on per.id_persona = usu.id_persona
-                          where pv.id_punto_venta = v_parametros.punto_venta::integer
-                          group by nr.agente_venta, per.nombre_completo2, nr.moneda)
+                            from obingresos.tboleto_amadeus nr
+                                     inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                     inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                     inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                     inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                     left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                     left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
+                                     left join segu.vpersona per on per.id_persona = usu.id_persona
+                            where pv.id_punto_venta = v_parametros.punto_venta::integer
+                            group by nr.agente_venta, per.nombre_completo2, nr.moneda)
 
-                          LOOP
+                LOOP
 
-                          		select count(*) into v_contador
-                                    from datos_resumen
-                                    where agente_venta = v_datos.codigo_agente;
+                    select count(*) into v_contador
+                    from datos_resumen
+                    where agente_venta = v_datos.codigo_agente;
 
-                                 if (v_contador = 0) then
+                    if (v_contador = 0) then
 
-                                 	if (v_datos.moneda = 'USD') then
+                        if (v_datos.moneda = 'USD') then
 
-                                       insert into datos_resumen (
-                                              agente_venta,
-                                              counter,
-                                              monto_ml,
-                                              monto_me,
-                                              neto_ml,
-                                              neto_me
-                                              )
-                                              values(
-                                              v_datos.codigo_agente,
-                                              v_datos.nombre_completo2,
-                                              0,
-                                              v_datos.precio_total,
-                                              0,
-                                              v_datos.neto_total
-                                            );
-                                    else
-                                    	insert into datos_resumen (
-                                              agente_venta,
-                                              counter,
-                                              monto_ml,
-                                              monto_me,
-                                              neto_ml,
-                                              neto_me
-                                              )
-                                              values(
-                                              v_datos.codigo_agente,
-                                              v_datos.nombre_completo2,
-                                              v_datos.precio_total,
-                                              0,
-                                              v_datos.neto_total,
-                                              0
-                                            );
-                                    end if;
+                            insert into datos_resumen (
+                                agente_venta,
+                                counter,
+                                monto_ml,
+                                monto_me,
+                                neto_ml,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.codigo_agente,
+                                      v_datos.nombre_completo2,
+                                      0,
+                                      v_datos.precio_total,
+                                      0,
+                                      v_datos.neto_total
+                                  );
+                        else
+                            insert into datos_resumen (
+                                agente_venta,
+                                counter,
+                                monto_ml,
+                                monto_me,
+                                neto_ml,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.codigo_agente,
+                                      v_datos.nombre_completo2,
+                                      v_datos.precio_total,
+                                      0,
+                                      v_datos.neto_total,
+                                      0
+                                  );
+                        end if;
 
-                                else
+                    else
 
-                                    	if (v_datos.moneda = 'USD')  then
-                                            update datos_resumen set
-                                            monto_me = v_datos.precio_total,
-                                            neto_me = v_datos.neto_total
-                                            where agente_venta = v_datos.codigo_agente;
+                        if (v_datos.moneda = 'USD')  then
+                            update datos_resumen set
+                                                     monto_me = v_datos.precio_total,
+                                                     neto_me = v_datos.neto_total
+                            where agente_venta = v_datos.codigo_agente;
 
-                                        else
-                                            update datos_resumen set
-                                            monto_ml = v_datos.precio_total,
-                                            neto_ml = v_datos.neto_total
-                                            where agente_venta = v_datos.codigo_agente;
-                                        end if;
+                        else
+                            update datos_resumen set
+                                                     monto_ml = v_datos.precio_total,
+                                                     neto_ml = v_datos.neto_total
+                            where agente_venta = v_datos.codigo_agente;
+                        end if;
 
-                            	end if;
+                    end if;
 
 
 
-                          END LOOP;
+                END LOOP;
 
-			v_consulta:='select agente_venta,
+            v_consulta:='select agente_venta,
             					counter,
                                 monto_ml,
                                 monto_me,
@@ -2450,143 +2490,143 @@ BEGIN
                           where ';
 
             --Definicion de la respuesta
-			v_consulta = v_consulta||v_parametros.filtro;
-        	v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+            v_consulta = v_consulta||v_parametros.filtro;
+            v_consulta = v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
 
             --raise notice 'v_consulta: %',v_consulta;
-			--Devuelve la respuesta
-			return v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
-	/*********************************
- 	#TRANSACCION:  'OBING_RESUVEN_CONT'
- 	#DESCRIPCION:	Conteo de boletos vendidos
- 	#AUTOR:		franklin.espinoza
- 	#FECHA:		09-04-2019 20:28:10
-	***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_RESUVEN_CONT'
+         #DESCRIPCION:	Conteo de boletos vendidos
+         #AUTOR:		franklin.espinoza
+         #FECHA:		09-04-2019 20:28:10
+        ***********************************/
 
-	elsif(p_transaccion='OBING_RESUVEN_CONT')then
+    elsif(p_transaccion='OBING_RESUVEN_CONT')then
 
-		begin
-			--Sentencia de la consulta de conteo de registros
+        begin
+            --Sentencia de la consulta de conteo de registros
 
-             CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
-            									   counter varchar,
+            CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
+                                                   counter varchar,
                                                    monto_ml numeric,
                                                    monto_me numeric,
                                                    neto_ml numeric,
                                                    neto_me numeric
-             				          )ON COMMIT DROP;
+            )ON COMMIT DROP;
 
 
 
 
             For v_datos in (with forma_pago_temporal as(
-                                          select bol.id_boleto_amadeus,
-                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                 array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(fp.codigo) as codigo_forma_pago,
-                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                 array_agg(bfp.mco) as mco,
-                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                 array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto_amadeus bol
-                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
-                                          group by bol.id_boleto_amadeus)
+                select bol.id_boleto_amadeus,
+                       array_agg(fp.id_forma_pago) as id_forma_pago,
+                       array_agg(mon.codigo_internacional) as moneda_fp,
+                       array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                       array_agg(fp.codigo) as codigo_forma_pago,
+                       array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                       array_agg(bfp.mco) as mco,
+                       array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                       array_agg(bfp.id_auxiliar) as id_auxiliar,
+                       array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                       array_agg(bfp.importe) as monto_forma_pago
+                from obingresos.tboleto_amadeus bol
+                         left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                         left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                         left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                         left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                group by bol.id_boleto_amadeus)
 
-                          select
-                                 nr.agente_venta as codigo_agente,
-                                 per.nombre_completo2,
-                                 nr.moneda,
-                                 sum (nr.total) as precio_total,
-                                 sum (nr.neto) as neto_total
+                            select
+                                nr.agente_venta as codigo_agente,
+                                per.nombre_completo2,
+                                nr.moneda,
+                                sum (nr.total) as precio_total,
+                                sum (nr.neto) as neto_total
 
-                          from obingresos.tboleto_amadeus nr
-                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
-                          left join segu.vpersona per on per.id_persona = usu.id_persona
-                          where pv.id_punto_venta = v_parametros.punto_venta::integer
-                          group by nr.agente_venta, per.nombre_completo2, nr.moneda)
+                            from obingresos.tboleto_amadeus nr
+                                     inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                     inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                     inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                     inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                     left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                     left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
+                                     left join segu.vpersona per on per.id_persona = usu.id_persona
+                            where pv.id_punto_venta = v_parametros.punto_venta::integer
+                            group by nr.agente_venta, per.nombre_completo2, nr.moneda)
 
-                          LOOP
+                LOOP
 
-                          		select count(*) into v_contador
-                                    from datos_resumen
-                                    where agente_venta = v_datos.codigo_agente;
+                    select count(*) into v_contador
+                    from datos_resumen
+                    where agente_venta = v_datos.codigo_agente;
 
-                                 if (v_contador = 0) then
+                    if (v_contador = 0) then
 
-                                 	if (v_datos.moneda = 'USD') then
+                        if (v_datos.moneda = 'USD') then
 
-                                       insert into datos_resumen (
-                                              agente_venta,
-                                              counter,
-                                              monto_ml,
-                                              monto_me,
-                                              neto_ml,
-                                              neto_me
-                                              )
-                                              values(
-                                              v_datos.codigo_agente,
-                                              v_datos.nombre_completo2,
-                                              0,
-                                              v_datos.precio_total,
-                                              0,
-                                              v_datos.neto_total
-                                            );
-                                    else
-                                    	insert into datos_resumen (
-                                              agente_venta,
-                                              counter,
-                                              monto_ml,
-                                              monto_me,
-                                              neto_ml,
-                                              neto_me
-                                              )
-                                              values(
-                                              v_datos.codigo_agente,
-                                              v_datos.nombre_completo2,
-                                              v_datos.precio_total,
-                                              0,
-                                              v_datos.neto_total,
-                                              0
-                                            );
-                                    end if;
+                            insert into datos_resumen (
+                                agente_venta,
+                                counter,
+                                monto_ml,
+                                monto_me,
+                                neto_ml,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.codigo_agente,
+                                      v_datos.nombre_completo2,
+                                      0,
+                                      v_datos.precio_total,
+                                      0,
+                                      v_datos.neto_total
+                                  );
+                        else
+                            insert into datos_resumen (
+                                agente_venta,
+                                counter,
+                                monto_ml,
+                                monto_me,
+                                neto_ml,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.codigo_agente,
+                                      v_datos.nombre_completo2,
+                                      v_datos.precio_total,
+                                      0,
+                                      v_datos.neto_total,
+                                      0
+                                  );
+                        end if;
 
-                                else
+                    else
 
-                                    	if (v_datos.moneda = 'USD')  then
-                                            update datos_resumen set
-                                            monto_me = v_datos.precio_total,
-                                            neto_me = v_datos.neto_total
-                                            where agente_venta = v_datos.codigo_agente;
+                        if (v_datos.moneda = 'USD')  then
+                            update datos_resumen set
+                                                     monto_me = v_datos.precio_total,
+                                                     neto_me = v_datos.neto_total
+                            where agente_venta = v_datos.codigo_agente;
 
-                                        else
-                                            update datos_resumen set
-                                            monto_ml = v_datos.precio_total,
-                                            neto_ml = v_datos.neto_total
-                                            where agente_venta = v_datos.codigo_agente;
-                                        end if;
+                        else
+                            update datos_resumen set
+                                                     monto_ml = v_datos.precio_total,
+                                                     neto_ml = v_datos.neto_total
+                            where agente_venta = v_datos.codigo_agente;
+                        end if;
 
-                            	end if;
+                    end if;
 
 
 
-                          END LOOP;
+                END LOOP;
 
-			v_consulta:='select count(agente_venta),
+            v_consulta:='select count(agente_venta),
                                 sum(monto_ml),
                                 sum(monto_me),
                                 sum(neto_ml),
@@ -2594,11 +2634,11 @@ BEGIN
                           from datos_resumen
                           where ';
 
-			v_consulta:=v_consulta||v_parametros.filtro;
-			--Devuelve la respuesta
-			return v_consulta;
+            v_consulta:=v_consulta||v_parametros.filtro;
+            --Devuelve la respuesta
+            return v_consulta;
 
-		end;
+        end;
 
 
 
@@ -2609,130 +2649,130 @@ BEGIN
  	#FECHA:		26-02-2022 18:00:00
 	***********************************/
 
-	elsif(p_transaccion='OBING_RESUVENREP_SEL')then
+    elsif(p_transaccion='OBING_RESUVENREP_SEL')then
 
-       begin
-    		--Sentencia de la consulta
+        begin
+            --Sentencia de la consulta
 
             /*Cambiando la consulta para separar moneda local y moneda exranjera (Ismael Valdivia 26/02/2020)*/
 
 
             CREATE TEMPORARY TABLE datos_resumen ( agente_venta varchar,
-            									   counter varchar,
+                                                   counter varchar,
                                                    monto_ml numeric,
                                                    monto_me numeric,
                                                    neto_ml numeric,
                                                    neto_me numeric
-             				          )ON COMMIT DROP;
+            )ON COMMIT DROP;
 
 
 
 
             For v_datos in (with forma_pago_temporal as(
-                                          select bol.id_boleto_amadeus,
-                                                 array_agg(fp.id_forma_pago) as id_forma_pago,
-                                                 array_agg(mon.codigo_internacional) as moneda_fp,
-                                                 array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
-                                                 array_agg(fp.codigo) as codigo_forma_pago,
-                                                 array_agg(bfp.numero_tarjeta) as numero_tarjeta,
-                                                 array_agg(bfp.mco) as mco,
-                                                 array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
-                                                 array_agg(bfp.id_auxiliar) as id_auxiliar,
-                                                 array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
-                                                 array_agg(bfp.importe) as monto_forma_pago
-                                          from obingresos.tboleto_amadeus bol
-                                               left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
-                                               left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
-                                               left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
-                                               left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
-                                          where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
-                                          group by bol.id_boleto_amadeus)
+                select bol.id_boleto_amadeus,
+                       array_agg(fp.id_forma_pago) as id_forma_pago,
+                       array_agg(mon.codigo_internacional) as moneda_fp,
+                       array_agg(fp.nombre || ' - ' || mon.codigo_internacional) as forma_pago,
+                       array_agg(fp.codigo) as codigo_forma_pago,
+                       array_agg(bfp.numero_tarjeta) as numero_tarjeta,
+                       array_agg(bfp.mco) as mco,
+                       array_agg(bfp.codigo_tarjeta) as codigo_tarjeta,
+                       array_agg(bfp.id_auxiliar) as id_auxiliar,
+                       array_agg(aux.nombre_auxiliar) as nombre_auxiliar,
+                       array_agg(bfp.importe) as monto_forma_pago
+                from obingresos.tboleto_amadeus bol
+                         left join obingresos.tboleto_amadeus_forma_pago bfp on bfp.id_boleto_amadeus=bol.id_boleto_amadeus
+                         left join obingresos.tforma_pago fp on fp.id_forma_pago = bfp.id_forma_pago
+                         left join param.tmoneda mon on mon.id_moneda = fp.id_moneda
+                         left join conta.tauxiliar aux on aux.id_auxiliar=bfp.id_auxiliar
+                where bol.fecha_emision between v_parametros.fecha_ini::date and v_parametros.fecha_fin::date
+                group by bol.id_boleto_amadeus)
 
-                          select
-                                 nr.agente_venta as codigo_agente,
-                                 per.nombre_completo2,
-                                 nr.moneda,
-                                 sum (nr.total) as precio_total,
-                                 sum (nr.neto) as neto_total
+                            select
+                                nr.agente_venta as codigo_agente,
+                                per.nombre_completo2,
+                                nr.moneda,
+                                sum (nr.total) as precio_total,
+                                sum (nr.neto) as neto_total
 
-                          from obingresos.tboleto_amadeus nr
-                          inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
-                          inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
-                          inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
-                          inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
-                          left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
-                          left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
-                          left join segu.vpersona per on per.id_persona = usu.id_persona
-                          where pv.id_punto_venta = v_parametros.punto_venta::integer
-                          group by nr.agente_venta, per.nombre_completo2, nr.moneda)
+                            from obingresos.tboleto_amadeus nr
+                                     inner join vef.tpunto_venta pv on pv.id_punto_venta=nr.id_punto_venta
+                                     inner join vef.tsucursal_moneda suc on suc.id_sucursal=pv.id_sucursal and suc.tipo_moneda='moneda_base'
+                                     inner join param.tmoneda mon on mon.id_moneda=suc.id_moneda
+                                     inner join forma_pago_temporal fpo on fpo.id_boleto_amadeus=nr.id_boleto_amadeus
+                                     left join segu.tusuario_externo usuex on usuex.usuario_externo=nr.agente_venta
+                                     left join segu.tusuario usu on usu.id_usuario = usuex.id_usuario
+                                     left join segu.vpersona per on per.id_persona = usu.id_persona
+                            where pv.id_punto_venta = v_parametros.punto_venta::integer
+                            group by nr.agente_venta, per.nombre_completo2, nr.moneda)
 
-                          LOOP
+                LOOP
 
-                          		select count(*) into v_contador
-                                    from datos_resumen
-                                    where agente_venta = v_datos.codigo_agente;
+                    select count(*) into v_contador
+                    from datos_resumen
+                    where agente_venta = v_datos.codigo_agente;
 
-                                 if (v_contador = 0) then
+                    if (v_contador = 0) then
 
-                                 	if (v_datos.moneda = 'USD') then
+                        if (v_datos.moneda = 'USD') then
 
-                                       insert into datos_resumen (
-                                              agente_venta,
-                                              counter,
-                                              monto_ml,
-                                              monto_me,
-                                              neto_ml,
-                                              neto_me
-                                              )
-                                              values(
-                                              v_datos.codigo_agente,
-                                              v_datos.nombre_completo2,
-                                              0,
-                                              v_datos.precio_total,
-                                              0,
-                                              v_datos.neto_total
-                                            );
-                                    else
-                                    	insert into datos_resumen (
-                                              agente_venta,
-                                              counter,
-                                              monto_ml,
-                                              monto_me,
-                                              neto_ml,
-                                              neto_me
-                                              )
-                                              values(
-                                              v_datos.codigo_agente,
-                                              v_datos.nombre_completo2,
-                                              v_datos.precio_total,
-                                              0,
-                                              v_datos.neto_total,
-                                              0
-                                            );
-                                    end if;
+                            insert into datos_resumen (
+                                agente_venta,
+                                counter,
+                                monto_ml,
+                                monto_me,
+                                neto_ml,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.codigo_agente,
+                                      v_datos.nombre_completo2,
+                                      0,
+                                      v_datos.precio_total,
+                                      0,
+                                      v_datos.neto_total
+                                  );
+                        else
+                            insert into datos_resumen (
+                                agente_venta,
+                                counter,
+                                monto_ml,
+                                monto_me,
+                                neto_ml,
+                                neto_me
+                            )
+                            values(
+                                      v_datos.codigo_agente,
+                                      v_datos.nombre_completo2,
+                                      v_datos.precio_total,
+                                      0,
+                                      v_datos.neto_total,
+                                      0
+                                  );
+                        end if;
 
-                                else
+                    else
 
-                                    	if (v_datos.moneda = 'USD')  then
-                                            update datos_resumen set
-                                            monto_me = v_datos.precio_total,
-                                            neto_me = v_datos.neto_total
-                                            where agente_venta = v_datos.codigo_agente;
+                        if (v_datos.moneda = 'USD')  then
+                            update datos_resumen set
+                                                     monto_me = v_datos.precio_total,
+                                                     neto_me = v_datos.neto_total
+                            where agente_venta = v_datos.codigo_agente;
 
-                                        else
-                                            update datos_resumen set
-                                            monto_ml = v_datos.precio_total,
-                                            neto_ml = v_datos.neto_total
-                                            where agente_venta = v_datos.codigo_agente;
-                                        end if;
+                        else
+                            update datos_resumen set
+                                                     monto_ml = v_datos.precio_total,
+                                                     neto_ml = v_datos.neto_total
+                            where agente_venta = v_datos.codigo_agente;
+                        end if;
 
-                            	end if;
+                    end if;
 
 
 
-                          END LOOP;
+                END LOOP;
 
-			v_consulta:='select agente_venta,
+            v_consulta:='select agente_venta,
             					counter,
                                 monto_ml,
                                 monto_me,
@@ -2742,22 +2782,22 @@ BEGIN
                           order by counter ASC
                           ';
 
-			return v_consulta;
+            return v_consulta;
 
         end;
 
-     /*********************************
-     #TRANSACCION:  'OBING_GET_PV_SEL'
-     #DESCRIPCION:	Consulta de datos
-     #AUTOR:		Ismael Valdivia
-     #FECHA:		03-03-2020 08:30:00
-    ***********************************/
+        /*********************************
+        #TRANSACCION:  'OBING_GET_PV_SEL'
+        #DESCRIPCION:	Consulta de datos
+        #AUTOR:		Ismael Valdivia
+        #FECHA:		03-03-2020 08:30:00
+       ***********************************/
 
     elsif(p_transaccion='OBING_GET_PV_SEL')then
 
-      begin
-      			if (p_administrador = 1 or p_id_usuario in(48,725,68)) then
-                	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+        begin
+            if (p_administrador = 1 or p_id_usuario in(48,725,68)) then
+                CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
                                                                nombre varchar,
@@ -2766,10 +2806,10 @@ BEGIN
                                                                habilitar_comisiones varchar,
                                                                formato_comprobante varchar,
                                                                tipo varchar
-                                                  )ON COMMIT DROP;
+                )ON COMMIT DROP;
 
 
-                      for v_puntos_venta_counter in ( select
+                for v_puntos_venta_counter in ( select
                                                     puve.id_punto_venta,
                                                     puve.estado_reg,
                                                     puve.id_sucursal,
@@ -2779,16 +2819,16 @@ BEGIN
                                                     puve.habilitar_comisiones,
                                                     suc.formato_comprobante,
                                                     puve.tipo
-                                                    from vef.tpunto_venta puve
-                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
-                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
-                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                                    inner join obingresos.tagencia ag on ag.codigo = puve.codigo
-                                                    where ag.boaagt = 'B' and (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
-                                                	p_id_usuario in (select id_usuario from
-                                                	vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
-                                                    sucusu.tipo_usuario = 'administrador')))
-                                                    group by
+                                                from vef.tpunto_venta puve
+                                                         inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                         left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                         inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                         inner join obingresos.tagencia ag on ag.codigo = puve.codigo
+                                                where ag.boaagt = 'B' and (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
+                                                        p_id_usuario in (select id_usuario from
+                                                        vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
+                                                                                 sucusu.tipo_usuario = 'administrador')))
+                                                group by
                                                     puve.id_punto_venta,
                                                     puve.estado_reg,
                                                     puve.id_sucursal,
@@ -2798,56 +2838,56 @@ BEGIN
                                                     puve.habilitar_comisiones,
                                                     suc.formato_comprobante,
                                                     puve.tipo
-                                                    )
-                      LOOP
+                )
+                    LOOP
 
-                                      insert into puntos_venta_counter (
-                                             id_punto_venta,
-                                             estado_reg,
-                                             id_sucursal,
-                                             nombre,
-                                             descripcion,
-                                             codigo,
-                                             habilitar_comisiones,
-                                             formato_comprobante,
-                                             tipo
-                                      )VALUES(
-                                             v_puntos_venta_counter.id_punto_venta,
-                                             v_puntos_venta_counter.estado_reg,
-                                             v_puntos_venta_counter.id_sucursal,
-                                             v_puntos_venta_counter.nombre,
-                                             v_puntos_venta_counter.descripcion,
-                                             v_puntos_venta_counter.codigo,
-                                             v_puntos_venta_counter.habilitar_comisiones,
-                                             v_puntos_venta_counter.formato_comprobante,
-                                             v_puntos_venta_counter.tipo
-                                      );
+                        insert into puntos_venta_counter (
+                            id_punto_venta,
+                            estado_reg,
+                            id_sucursal,
+                            nombre,
+                            descripcion,
+                            codigo,
+                            habilitar_comisiones,
+                            formato_comprobante,
+                            tipo
+                        )VALUES(
+                                   v_puntos_venta_counter.id_punto_venta,
+                                   v_puntos_venta_counter.estado_reg,
+                                   v_puntos_venta_counter.id_sucursal,
+                                   v_puntos_venta_counter.nombre,
+                                   v_puntos_venta_counter.descripcion,
+                                   v_puntos_venta_counter.codigo,
+                                   v_puntos_venta_counter.habilitar_comisiones,
+                                   v_puntos_venta_counter.formato_comprobante,
+                                   v_puntos_venta_counter.tipo
+                               );
 
-                      end loop;
+                    end loop;
 
-                      else
-                      select ex.usuario_externo into v_agente_venta
-                      from segu.tusuario_externo ex
-                      where ex.id_usuario = p_id_usuario;
+            else
+                select ex.usuario_externo into v_agente_venta
+                from segu.tusuario_externo ex
+                where ex.id_usuario = p_id_usuario;
 
-                      select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
-                      from obingresos.tboleto_amadeus ama
-                      where ama.agente_venta = v_agente_venta;
-
-
-                      CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
-                                                                     estado_reg varchar,
-                                                                     id_sucursal int4,
-                                                                     nombre varchar,
-                                                                     descripcion text,
-                                                                     codigo varchar,
-                                                                     habilitar_comisiones varchar,
-                                                                     formato_comprobante varchar,
-                                                                     tipo varchar
-                                                        )ON COMMIT DROP;
+                select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
+                from obingresos.tboleto_amadeus ama
+                where ama.agente_venta = v_agente_venta;
 
 
-                      for v_puntos_venta_counter in ( select
+                CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+                                                               estado_reg varchar,
+                                                               id_sucursal int4,
+                                                               nombre varchar,
+                                                               descripcion text,
+                                                               codigo varchar,
+                                                               habilitar_comisiones varchar,
+                                                               formato_comprobante varchar,
+                                                               tipo varchar
+                )ON COMMIT DROP;
+
+
+                for v_puntos_venta_counter in ( select
                                                     puve.id_punto_venta,
                                                     puve.estado_reg,
                                                     puve.id_sucursal,
@@ -2857,40 +2897,40 @@ BEGIN
                                                     puve.habilitar_comisiones,
                                                     suc.formato_comprobante,
                                                     puve.tipo
-                                                    from vef.tpunto_venta puve
-                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
-                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
-                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                                    where puve.id_punto_venta = any (v_puntos_venta) )
-                      LOOP
+                                                from vef.tpunto_venta puve
+                                                         inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                         left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                         inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                where puve.id_punto_venta = any (v_puntos_venta) )
+                    LOOP
 
-                                      insert into puntos_venta_counter (
-                                             id_punto_venta,
-                                             estado_reg,
-                                             id_sucursal,
-                                             nombre,
-                                             descripcion,
-                                             codigo,
-                                             habilitar_comisiones,
-                                             formato_comprobante,
-                                             tipo
-                                      )VALUES(
-                                             v_puntos_venta_counter.id_punto_venta,
-                                             v_puntos_venta_counter.estado_reg,
-                                             v_puntos_venta_counter.id_sucursal,
-                                             v_puntos_venta_counter.nombre,
-                                             v_puntos_venta_counter.descripcion,
-                                             v_puntos_venta_counter.codigo,
-                                             v_puntos_venta_counter.habilitar_comisiones,
-                                             v_puntos_venta_counter.formato_comprobante,
-                                             v_puntos_venta_counter.tipo
-                                      );
+                        insert into puntos_venta_counter (
+                            id_punto_venta,
+                            estado_reg,
+                            id_sucursal,
+                            nombre,
+                            descripcion,
+                            codigo,
+                            habilitar_comisiones,
+                            formato_comprobante,
+                            tipo
+                        )VALUES(
+                                   v_puntos_venta_counter.id_punto_venta,
+                                   v_puntos_venta_counter.estado_reg,
+                                   v_puntos_venta_counter.id_sucursal,
+                                   v_puntos_venta_counter.nombre,
+                                   v_puntos_venta_counter.descripcion,
+                                   v_puntos_venta_counter.codigo,
+                                   v_puntos_venta_counter.habilitar_comisiones,
+                                   v_puntos_venta_counter.formato_comprobante,
+                                   v_puntos_venta_counter.tipo
+                               );
 
-                      end loop;
-                end if;
+                    end loop;
+            end if;
 
-        --Sentencia de la consulta
-        v_consulta:='select
+            --Sentencia de la consulta
+            v_consulta:='select
 						 id_punto_venta,
                          estado_reg,
                          id_sucursal,
@@ -2903,26 +2943,26 @@ BEGIN
                          from puntos_venta_counter
                          where ';
 
-        v_consulta:=v_consulta||v_parametros.filtro;
-        v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
-        raise notice '%',v_consulta;
-        --Devuelve la respuesta
-        return v_consulta;
+            v_consulta:=v_consulta||v_parametros.filtro;
+            v_consulta:=v_consulta||' order by ' ||v_parametros.ordenacion|| ' ' || v_parametros.dir_ordenacion || ' limit ' || v_parametros.cantidad || ' offset ' || v_parametros.puntero;
+            raise notice '%',v_consulta;
+            --Devuelve la respuesta
+            return v_consulta;
 
-      end;
+        end;
 
-      /*********************************
-       #TRANSACCION:  'OBING_GET_PV_CONT'
-       #DESCRIPCION:	Conteo de registros
-       #AUTOR:		Ismael Valdivia
-     #FECHA:		03-03-2020 08:30:00
-      ***********************************/
+        /*********************************
+         #TRANSACCION:  'OBING_GET_PV_CONT'
+         #DESCRIPCION:	Conteo de registros
+         #AUTOR:		Ismael Valdivia
+       #FECHA:		03-03-2020 08:30:00
+        ***********************************/
 
-      elsif(p_transaccion='OBING_GET_PV_CONT')then
+    elsif(p_transaccion='OBING_GET_PV_CONT')then
 
         begin
-        if (p_administrador = 1 or p_id_usuario in(48,725,68)) then
-                	CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+            if (p_administrador = 1 or p_id_usuario in(48,725,68)) then
+                CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
                                                                estado_reg varchar,
                                                                id_sucursal int4,
                                                                nombre varchar,
@@ -2931,10 +2971,10 @@ BEGIN
                                                                habilitar_comisiones varchar,
                                                                formato_comprobante varchar,
                                                                tipo varchar
-                                                  )ON COMMIT DROP;
+                )ON COMMIT DROP;
 
 
-                      for v_puntos_venta_counter in ( select
+                for v_puntos_venta_counter in ( select
                                                     puve.id_punto_venta,
                                                     puve.estado_reg,
                                                     puve.id_sucursal,
@@ -2944,16 +2984,16 @@ BEGIN
                                                     puve.habilitar_comisiones,
                                                     suc.formato_comprobante,
                                                     puve.tipo
-                                                    from vef.tpunto_venta puve
-                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
-                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
-                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                                    inner join obingresos.tagencia ag on ag.codigo = puve.codigo
-                                                    where ag.boaagt = 'B' and (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
-                                                	p_id_usuario in (select id_usuario from
-                                                	vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
-                                                    sucusu.tipo_usuario = 'administrador')))
-                                                    group by
+                                                from vef.tpunto_venta puve
+                                                         inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                         left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                         inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                         inner join obingresos.tagencia ag on ag.codigo = puve.codigo
+                                                where ag.boaagt = 'B' and (1 in (select id_rol from segu.tusuario_rol ur where ur.id_usuario = p_id_usuario ) or (
+                                                        p_id_usuario in (select id_usuario from
+                                                        vef.tsucursal_usuario sucusu where puve.id_punto_venta = sucusu.id_punto_venta and
+                                                                                 sucusu.tipo_usuario = 'administrador')))
+                                                group by
                                                     puve.id_punto_venta,
                                                     puve.estado_reg,
                                                     puve.id_sucursal,
@@ -2963,56 +3003,56 @@ BEGIN
                                                     puve.habilitar_comisiones,
                                                     suc.formato_comprobante,
                                                     puve.tipo
-                                                    )
-                      LOOP
+                )
+                    LOOP
 
-                                      insert into puntos_venta_counter (
-                                             id_punto_venta,
-                                             estado_reg,
-                                             id_sucursal,
-                                             nombre,
-                                             descripcion,
-                                             codigo,
-                                             habilitar_comisiones,
-                                             formato_comprobante,
-                                             tipo
-                                      )VALUES(
-                                             v_puntos_venta_counter.id_punto_venta,
-                                             v_puntos_venta_counter.estado_reg,
-                                             v_puntos_venta_counter.id_sucursal,
-                                             v_puntos_venta_counter.nombre,
-                                             v_puntos_venta_counter.descripcion,
-                                             v_puntos_venta_counter.codigo,
-                                             v_puntos_venta_counter.habilitar_comisiones,
-                                             v_puntos_venta_counter.formato_comprobante,
-                                             v_puntos_venta_counter.tipo
-                                      );
+                        insert into puntos_venta_counter (
+                            id_punto_venta,
+                            estado_reg,
+                            id_sucursal,
+                            nombre,
+                            descripcion,
+                            codigo,
+                            habilitar_comisiones,
+                            formato_comprobante,
+                            tipo
+                        )VALUES(
+                                   v_puntos_venta_counter.id_punto_venta,
+                                   v_puntos_venta_counter.estado_reg,
+                                   v_puntos_venta_counter.id_sucursal,
+                                   v_puntos_venta_counter.nombre,
+                                   v_puntos_venta_counter.descripcion,
+                                   v_puntos_venta_counter.codigo,
+                                   v_puntos_venta_counter.habilitar_comisiones,
+                                   v_puntos_venta_counter.formato_comprobante,
+                                   v_puntos_venta_counter.tipo
+                               );
 
-                      end loop;
+                    end loop;
 
-                      else
-                      select ex.usuario_externo into v_agente_venta
-                      from segu.tusuario_externo ex
-                      where ex.id_usuario = p_id_usuario;
+            else
+                select ex.usuario_externo into v_agente_venta
+                from segu.tusuario_externo ex
+                where ex.id_usuario = p_id_usuario;
 
-                      select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
-                      from obingresos.tboleto_amadeus ama
-                      where ama.agente_venta = v_agente_venta;
-
-
-                      CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
-                                                                     estado_reg varchar,
-                                                                     id_sucursal int4,
-                                                                     nombre varchar,
-                                                                     descripcion text,
-                                                                     codigo varchar,
-                                                                     habilitar_comisiones varchar,
-                                                                     formato_comprobante varchar,
-                                                                     tipo varchar
-                                                        )ON COMMIT DROP;
+                select string_to_array (list(distinct (ama.id_punto_venta)::varchar),',')::integer[] into v_puntos_venta
+                from obingresos.tboleto_amadeus ama
+                where ama.agente_venta = v_agente_venta;
 
 
-                      for v_puntos_venta_counter in ( select
+                CREATE TEMPORARY TABLE puntos_venta_counter (  id_punto_venta int4,
+                                                               estado_reg varchar,
+                                                               id_sucursal int4,
+                                                               nombre varchar,
+                                                               descripcion text,
+                                                               codigo varchar,
+                                                               habilitar_comisiones varchar,
+                                                               formato_comprobante varchar,
+                                                               tipo varchar
+                )ON COMMIT DROP;
+
+
+                for v_puntos_venta_counter in ( select
                                                     puve.id_punto_venta,
                                                     puve.estado_reg,
                                                     puve.id_sucursal,
@@ -3022,673 +3062,683 @@ BEGIN
                                                     puve.habilitar_comisiones,
                                                     suc.formato_comprobante,
                                                     puve.tipo
-                                                    from vef.tpunto_venta puve
-                                                    inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
-                                                    left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
-                                                    inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
-                                                    where puve.id_punto_venta = any (v_puntos_venta) )
-                      LOOP
+                                                from vef.tpunto_venta puve
+                                                         inner join segu.tusuario usu1 on usu1.id_usuario = puve.id_usuario_reg
+                                                         left join segu.tusuario usu2 on usu2.id_usuario = puve.id_usuario_mod
+                                                         inner join vef.tsucursal suc on suc.id_sucursal = puve.id_sucursal
+                                                where puve.id_punto_venta = any (v_puntos_venta) )
+                    LOOP
 
-                                      insert into puntos_venta_counter (
-                                             id_punto_venta,
-                                             estado_reg,
-                                             id_sucursal,
-                                             nombre,
-                                             descripcion,
-                                             codigo,
-                                             habilitar_comisiones,
-                                             formato_comprobante,
-                                             tipo
-                                      )VALUES(
-                                             v_puntos_venta_counter.id_punto_venta,
-                                             v_puntos_venta_counter.estado_reg,
-                                             v_puntos_venta_counter.id_sucursal,
-                                             v_puntos_venta_counter.nombre,
-                                             v_puntos_venta_counter.descripcion,
-                                             v_puntos_venta_counter.codigo,
-                                             v_puntos_venta_counter.habilitar_comisiones,
-                                             v_puntos_venta_counter.formato_comprobante,
-                                             v_puntos_venta_counter.tipo
-                                      );
+                        insert into puntos_venta_counter (
+                            id_punto_venta,
+                            estado_reg,
+                            id_sucursal,
+                            nombre,
+                            descripcion,
+                            codigo,
+                            habilitar_comisiones,
+                            formato_comprobante,
+                            tipo
+                        )VALUES(
+                                   v_puntos_venta_counter.id_punto_venta,
+                                   v_puntos_venta_counter.estado_reg,
+                                   v_puntos_venta_counter.id_sucursal,
+                                   v_puntos_venta_counter.nombre,
+                                   v_puntos_venta_counter.descripcion,
+                                   v_puntos_venta_counter.codigo,
+                                   v_puntos_venta_counter.habilitar_comisiones,
+                                   v_puntos_venta_counter.formato_comprobante,
+                                   v_puntos_venta_counter.tipo
+                               );
 
-                      end loop;
-                end if;
-          --Sentencia de la consulta de conteo de registros
-          v_consulta:='select
+                    end loop;
+            end if;
+            --Sentencia de la consulta de conteo de registros
+            v_consulta:='select
 						 count (id_punto_venta)
                          from puntos_venta_counter
                          where ';
-          --Devuelve la respuesta
+            --Devuelve la respuesta
 
-          v_consulta:=v_consulta||v_parametros.filtro;
+            v_consulta:=v_consulta||v_parametros.filtro;
 
-          return v_consulta;
+            return v_consulta;
 
-      end;
-    /*********************************
-      #TRANSACCION: 'OBING_BOL_EXCH_WEB'
-      #DESCRIPCION:	Crea la estructura de factura Exchange Web
-      #AUTOR:		franklin.espinoza
-      #FECHA:		22-02-2022 12:42:25
-     ***********************************/
+        end;
+        /*********************************
+          #TRANSACCION: 'OBING_BOL_EXCH_WEB'
+          #DESCRIPCION:	Crea la estructura de factura Exchange Web
+          #AUTOR:		franklin.espinoza
+          #FECHA:		22-02-2022 12:42:25
+         ***********************************/
     elsif(p_transaccion='OBING_BOL_EXCH_WEB')then
-      begin
-          if v_parametros.tipo = 'exchange' then
+        begin
+            if v_parametros.tipo = 'exchange' then
 
 
-            select tag.nombre, tag.codigo, ts.telefono, ts.direccion
-            into v_oficina
-            from obingresos.tagencia tag
-            inner join vef.tpunto_venta tpv on tpv.codigo = tag.codigo
-            inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
-            where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';
+                /*select tag.nombre, tag.codigo, ts.telefono, ts.direccion
+                into v_oficina
+                from obingresos.tagencia tag
+                inner join vef.tpunto_venta tpv on tpv.codigo = tag.codigo
+                inner join vef.tsucursal ts on ts.id_sucursal = tpv.id_sucursal
+                where tag.codigo_int = v_parametros.localizador->>'pv' and tag.estado_reg = 'activo';*/
 
-			if v_parametros.source_system = 'web' then
-            	/*select tba.id_boleto_amadeus, tba.localizador
-              	into v_parametros.id_boletos_amadeus, v_pnr
-              	from obingresos.tboleto_amadeus tba
-              	where tba.nro_boleto = v_parametros.ticket_number::varchar;
+                select tp.nombre, tp.codigo, ts.telefono, ts.direccion
+                into v_oficina
+                from vef.tpunto_venta tp
+                         inner join vef.tsucursal ts on ts.id_sucursal = tp.id_sucursal
+                where tp.office_id = v_parametros.localizador->>'pv'; --and tp.estado_reg = 'activo';
+                --RAISE 'v_oficina: %',v_oficina;
 
-                if v_pnr != v_parametros.pnr then
-                	raise 'Estimado Usuario: El numero de ticket no es parte del Localizador.';
-                end if;*/
-            end if;
+                if v_parametros.source_system = 'web' then
+                    /*select tba.id_boleto_amadeus, tba.localizador
+                      into v_parametros.id_boletos_amadeus, v_pnr
+                      from obingresos.tboleto_amadeus tba
+                      where tba.nro_boleto = v_parametros.ticket_number::varchar;
 
-            v_numero_billete = v_parametros.ticket_number::varchar;
+                    if v_pnr != v_parametros.pnr then
+                        raise 'Estimado Usuario: El numero de ticket no es parte del Localizador.';
+                    end if;*/
+                end if;
+
+                v_numero_billete = v_parametros.ticket_number::varchar;
 
 
-            create temp table ttpasajero(
-                  id_pasajero		integer,
-                  nombre			varchar,
-                  importe			numeric,
-                  moneda			varchar,
-                  posicion			integer,
-                  numero_tkt		varchar,
-                  tipo_19			varchar
-            )on commit drop;
-            --mas de un pasajero
-			if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
-           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
+                create temp table ttpasajero(
+                                                id_pasajero		integer,
+                                                nombre			varchar,
+                                                importe			numeric,
+                                                moneda			varchar,
+                                                posicion			integer,
+                                                numero_tkt		varchar,
+                                                tipo_19			varchar
+                )on commit drop;
+                --mas de un pasajero
+                if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR')  loop
 
-                  insert into ttpasajero(
-                    id_pasajero,
-                    nombre,
-                    importe,
-                    moneda,
-                    posicion,
-                    numero_tkt,
-                    tipo_19
-                  )values (
-                      v_contador_id,
-                      v_record_json->>'apdos_nombre',
-                      (v_record_json->'pago'->>'importe')::numeric,
-                      v_record_json->'pago'->>'moneda',
-                      (v_record_json->'posicion'->>'numLinea')::integer,
-                      (v_record_json->'Tkts'->>'string')::varchar,
-                      (v_record_json->>'tipo_19')::varchar
-                  );
-                  v_contador_id = v_contador_id + 1;
+                        insert into ttpasajero(
+                            id_pasajero,
+                            nombre,
+                            importe,
+                            moneda,
+                            posicion,
+                            numero_tkt,
+                            tipo_19
+                        )values (
+                                    v_contador_id,
+                                    v_record_json->>'apdos_nombre',
+                                    (v_record_json->'pago'->>'importe')::numeric,
+                                    v_record_json->'pago'->>'moneda',
+                                    (v_record_json->'posicion'->>'numLinea')::integer,
+                                    (v_record_json->'Tkts'->>'string')::varchar,
+                                    (v_record_json->>'tipo_19')::varchar
+                                );
+                        v_contador_id = v_contador_id + 1;
 
-            	end loop;
-            else
-              insert into ttpasajero(
-                    id_pasajero,
-                    nombre,
-                    importe,
-                    moneda,
-                    posicion,
-                    numero_tkt,
-                    tipo_19
-              )values (
-                  v_contador_id,
-                  v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre',
-                  (v_parametros.pasajeros->'pasajeroDR'->'pago'->>'importe')::numeric,
-                  v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
-                  (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
-                  (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
-                  (v_parametros.pasajeros->'pasajeroDR'->>'tipo_19')::varchar
-              );
-            end if;
+                    end loop;
+                else
+                    insert into ttpasajero(
+                        id_pasajero,
+                        nombre,
+                        importe,
+                        moneda,
+                        posicion,
+                        numero_tkt,
+                        tipo_19
+                    )values (
+                                v_contador_id,
+                                v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre',
+                                (v_parametros.pasajeros->'pasajeroDR'->'pago'->>'importe')::numeric,
+                                v_parametros.pasajeros->'pasajeroDR'->'pago'->>'moneda',
+                                (v_parametros.pasajeros->'pasajeroDR'->'posicion'->>'numLinea')::integer,
+                                (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar,
+                                (v_parametros.pasajeros->'pasajeroDR'->>'tipo_19')::varchar
+                            );
+                end if;
 --raise 'pasajero: %',jsonb_typeof(v_parametros.pasajeros->'pasajeroDR');
-            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
-           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR') loop
+                if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A : %', v_parametros.pasajeros->'pasajeroDR';
+                    v_tam_pasajeros = jsonb_array_length(v_parametros.pasajeros->'pasajeroDR');--raise 'A %',v_tam_pasajeros;
+                    v_contador = 0;
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR') loop
+                        v_contador = v_contador + 1;
+                        if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then --raise 'A';
+                            SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                            into v_segment_reference
+                            FROM jsonb_array_elements(v_record_json->'TktsSegment'->'string') rec
+                            where value::text ilike '"'||v_numero_billete||'%';
 
-                	if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
-                      SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
-                      into v_segment_reference
-                      FROM jsonb_array_elements(v_record_json->'TktsSegment'->'string') rec
-                      where value::text ilike '"'||v_numero_billete||'%';
+                            SELECT value::varchar
+                            into v_tkt_reference
+                            FROM jsonb_array_elements(v_record_json->'Tkts'->'string') rec
+                            where value::text ilike '"'||v_numero_billete||'"';
 
-                      SELECT value::varchar
-                      into v_tkt_reference
-                      FROM jsonb_array_elements(v_record_json->'Tkts'->'string') rec
-                      where value::text ilike '"'||v_numero_billete||'"';
-
-                      if v_tkt_reference is not null then
-                        if v_numero_billete != trim(v_tkt_reference,'"') then
-                          raise ' A Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                        end if;
-                      end if;
-
-              	  	else
-              			v_segment_reference = ((string_to_array(trim((v_record_json->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
-                        v_tkt_reference = (v_record_json->'Tkts'->>'string')::varchar;
-                        v_pasajero_aux = v_record_json->>'apdos_nombre';
-                        if v_numero_billete = trim(v_tkt_reference,'"') then raise notice 'a: %, b: %, %, [%]',v_numero_billete,trim(v_tkt_reference,'"'), v_segment_reference, v_record_json->'posicion'->>'numLinea';
-                        	exit;
-                        end if;
-              		end if;
-					raise notice 'a: %, b: %, c: %',v_segment_reference,v_tkt_reference, v_record_json->'TktsSegment'->'string';
-                    v_pasajero_aux = v_record_json->>'apdos_nombre';
-                    if v_segment_reference is not null then
-                      --v_pasajero_aux = v_record_json->>'apdos_nombre';
-
-                      /*if v_tkt_reference is not null then
-                        if v_numero_billete != trim(v_tkt_reference,'"') then
-                          raise ' A Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                        end if;
-                      end if;*/
-					  if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
-                      	exit;
-                      end if;
-
-                    end if;
-
-                    if v_tkt_reference is null then
-                    	raise ' B Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                    end if;
-
-            	end loop;
-                if v_tkt_reference is not null then
-                  if v_numero_billete != trim(v_tkt_reference,'"') then
-                    raise 'C Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                  end if;
-                end if;
-                --raise 'sale';
-            else --raise 'B';
---raise 'string: %',jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string');
-              	if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
-                    SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
-                    into v_segment_reference
-                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
-                    where value::text ilike '"'||v_numero_billete||'%';
-
-                    SELECT value::varchar
-                    into v_tkt_reference
-                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') rec
-                    where value::text ilike '"'||v_numero_billete||'%"';
-                    --raise 'v_tkt_reference: %',v_tkt_reference;
-
-              	else
-              		v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
-                    v_tkt_reference = (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar;
-              	end if;
-
-                v_pasajero_aux = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
-
-
-                if v_tkt_reference is not null then
-                  if v_numero_billete != trim(v_tkt_reference,'"') then
-                  	raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                  end if;
-                end if;
-
-                if v_tkt_reference is null then
-					raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                end if;
-
-            end if;
-
-
-            if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
-
-              select tp.posicion, tp.nombre, tp.tipo_19
-              into v_posicion, v_pasajero, v_tipo_19
-              from ttpasajero tp
-              where similarity_dist(v_pasajero_aux, tp.nombre) = 0;
-
-              if v_pasajero is null then
-                select tp.posicion, tp.nombre, tp.tipo_19
-                into v_posicion, v_pasajero, v_tipo_19
-                from ttpasajero tp
-                where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
-              end if;
-            else
-              select tp.posicion, tp.nombre, tp.tipo_19
-              into v_posicion, v_pasajero, v_tipo_19
-              from ttpasajero tp
-              where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
-            end if;
-
-            /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
-           		for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR') loop
-
-            	raise notice 'a: %, b: %, %, [%]',v_numero_billete,trim(v_tkt_reference,'"'), v_segment_reference, v_record_json->'posicion'->>'numLinea';
-
-            	end loop;
-                if v_tkt_reference is not null then
-                  if v_numero_billete != trim(v_tkt_reference,'"') then
-                    raise 'C Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                  end if;
-                end if;
-            else --raise 'B';
-
-              	if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
-                    SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
-                    into v_segment_reference
-                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
-                    where value::text ilike '"'||v_numero_billete||'%';
-
-                    SELECT value::varchar
-                    into v_tkt_reference
-                    FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') rec
-                    where value::text ilike '"'||v_numero_billete||'%"';
-
-              	else
-              		v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
-                    v_tkt_reference = (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar;
-              	end if;
-
-                v_pasajero_aux = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
-
-
-                if v_tkt_reference is not null then
-                  if v_numero_billete != trim(v_tkt_reference,'"') then
-                  	raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-                  end if;
-                end if;
-
-            end if;*/
-
-
-            v_contador_id = 1;
-            create temp table ttasa(
-                id_tasa			integer,
-                calculo_tarifa	varchar,
-                tasa			varchar,
-                rc_iva			numeric,
-                moneda_total	varchar,
-                importe_total	varchar,
-                moneda_tarifa   varchar,
-                importe_tarifa	varchar,
-                codigo_tarifa 	varchar,
-                tipo_emision	varchar,
-                tipo_tarifa		varchar,
-                tipo_total		varchar,
-                num_pax			varchar,
-                inf				varchar,
-                pasajero varchar
-            )on commit drop;
-
-            if jsonb_typeof(v_parametros.fn_V2) = 'object' then
-              v_importe = (v_parametros.importes->>'importe_total');
-
-              if jsonb_typeof(v_parametros.tasa) = 'array' then
-                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
-
-                    if v_record_json->>'tipo_tasa' != 'X' then
-                        v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
-                    end if;
-
-                    if v_record_json->>'tipo_tasa' = 'X' then
-                        if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
-                            v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
-                        end if;
-                    end if;
-
-                    v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
-                end loop;
-              else
-              	if v_parametros.tasa->>'tipo_tasa' != 'X' then
-                	v_calculo_tarifa = v_calculo_tarifa ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar;
-                end if;
-                if v_parametros.tasa->>'tipo_tasa' = 'X' then
-                    if v_parametros.tasa->>'codigo_tasa' not in ('QM', 'BO') then
-                        v_importe = v_importe - (v_parametros.tasa->>'importe_tasa')::numeric;
-                    end if;
-                end if;
-                v_tasa = v_tasa ||(v_parametros.tasa->>'moneda_tasa')::varchar||' '||case when v_parametros.tasa->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar||'		';
-              end if;
-
-              v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
-
-              if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
-                	v_codigo_tarifa = v_parametros.fn_V2->>'codigo_tarifa';
-              else
-                	v_codigo_tarifa = v_parametros.importes->'codigo_tarifa'->'string';
-              end if;
-
-              insert into ttasa(
-                  id_tasa,
-                  calculo_tarifa,
-                  tasa,
-                  rc_iva,
-                  moneda_total,
-                  importe_total,
-                  moneda_tarifa,
-                  importe_tarifa,
-                  codigo_tarifa,
-                  tipo_emision,
-                  tipo_tarifa,
-                  tipo_total,
-                  num_pax,
-                  inf,
-                  pasajero
-              )values (
-                v_contador_id,
-                v_calculo_tarifa,
-                v_tasa,
-                v_importe,
-                v_parametros.fn_V2->>'moneda_total',
-                v_parametros.fn_V2->>'importe_total',
-                v_parametros.fn_V2->>'moneda_tarifa',
-                v_parametros.fn_V2->>'importe_tarifa',
-                v_codigo_tarifa,
-                v_parametros.fn_V2->>'tipo_emision',
-                v_parametros.fn_V2->>'tipo_tarifa',
-                v_parametros.fn_V2->>'tipo_total',
-                v_parametros.fn_V2->>'num_pax',
-                v_parametros.fn_V2->>'inf',
-                v_pasajero
-              );
-			        v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
-            else
---raise 'v_segment_reference: %', v_segment_reference;
-                for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
-					raise notice 'v_segment_reference: [%] (%) [%] (%) [%]',v_record_json->>'num_pax', v_posicion, v_record_json->>'ReferenciaSegmento', trim(v_segment_reference), v_record_json->>'tipo_emision';
-                  --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
-                  if (v_record_json->>'num_pax')::integer=v_posicion and (v_record_json->>'ReferenciaSegmento')::varchar=trim(v_segment_reference) and v_record_json->>'tipo_emision' = 'R' then
-
-                      if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
-                    	  continue;
-                      elsif v_tipo_19 in ('CHD','ADT','SNN') and v_record_json->>'inf' = 'Y' then
-                    	  continue;
-                      end if;
-
-                      v_importe = (v_record_json->>'importe_total');
-                      if jsonb_typeof(v_record_json->'Fntaxs'->'tasa') = 'array' then
-                        for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
-
-                            if v_record_json_aux->>'tipo_tasa' != 'X' then
-                                v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
-                            end if;
-
-                            if v_record_json_aux->>'tipo_tasa' = 'X' then
-                                if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
-                                    v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
+                            if v_tkt_reference is not null then
+                                if v_numero_billete != trim(v_tkt_reference,'"') then
+                                    raise ' A Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
                                 end if;
                             end if;
 
-                            v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
-                        end loop;
-                      else
-                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' != 'X' then
-                            v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar;
-                        end if;
-
-                        if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' = 'X' then
-                            if v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa' not in ('QM', 'BO') then
-                                v_importe = v_importe - (v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::numeric;
+                        else --raise 'B';
+                            v_segment_reference = ((string_to_array(trim((v_record_json->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                            v_tkt_reference = (v_record_json->'Tkts'->>'string')::varchar;
+                            v_pasajero_aux = v_record_json->>'apdos_nombre';
+                            RAISE NOTICE 'valores => %, %, %, %', v_segment_reference, v_tkt_reference, v_pasajero_aux, v_numero_billete;
+                            if trim(v_numero_billete) = trim(v_tkt_reference,'"') then --raise 'a: %, b: %, %, [%]',v_numero_billete,trim(v_tkt_reference,'"'), v_segment_reference, v_record_json->'posicion'->>'numLinea';
+                                exit;
                             end if;
                         end if;
-                        v_tasa = v_tasa ||(v_record_json->'Fntaxs'->'tasa'->>'moneda_tasa')::varchar||' '||case when v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar||'		';
-                      end if;
-                      v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+                        --raise notice 'a: %, b: %, c: %',v_segment_reference,v_tkt_reference, v_record_json->'TktsSegment'->'string';
+                        v_pasajero_aux = v_record_json->>'apdos_nombre';
+                        if v_segment_reference is not null then
+                            --v_pasajero_aux = v_record_json->>'apdos_nombre';
 
-                      IF jsonb_typeof(v_record_json->'codigo_tarifa'->'string') = 'string' then
-                      	v_codigo_tarifa = v_record_json->'codigo_tarifa'->>'string';
+                            /*if v_tkt_reference is not null then
+                              if v_numero_billete != trim(v_tkt_reference,'"') then
+                                raise ' A Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                              end if;
+                            end if;*/
+                            if jsonb_typeof(v_record_json->'Tkts'->'string') = 'array' then
+                                exit;
+                            end if;
+
+                        end if;
+
+                        if v_tkt_reference is null and v_tam_pasajeros = v_contador then
+                            raise ' B Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                        end if;
+
+                    end loop;
+                    if v_tkt_reference is not null then
+                        if v_numero_billete != trim(v_tkt_reference,'"') then
+                            raise 'C Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                        end if;
+                    end if;
+                    --raise 'sale';
+                else --raise 'B';
+--raise 'string: %',jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string');
+                    if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                        SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                        into v_segment_reference
+                        FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                        where value::text ilike '"'||v_numero_billete||'%';
+
+                        SELECT value::varchar
+                        into v_tkt_reference
+                        FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') rec
+                        where value::text ilike '"'||v_numero_billete||'%"';
+                        --raise 'v_tkt_reference: %',v_tkt_reference;
+
+                    else
+                        v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                        v_tkt_reference = (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar;
+                    end if;
+
+                    v_pasajero_aux = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+
+
+                    if v_tkt_reference is not null then
+                        if v_numero_billete != trim(v_tkt_reference,'"') then
+                            raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                        end if;
+                    end if;
+
+                    if v_tkt_reference is null then
+                        raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                    end if;
+
+                end if;
+
+
+                if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then
+
+                    select tp.posicion, tp.nombre, tp.tipo_19
+                    into v_posicion, v_pasajero, v_tipo_19
+                    from ttpasajero tp
+                    where similarity_dist(v_pasajero_aux, tp.nombre) = 0;
+
+                    if v_pasajero is null then
+                        select tp.posicion, tp.nombre, tp.tipo_19
+                        into v_posicion, v_pasajero, v_tipo_19
+                        from ttpasajero tp
+                        where similarity_dist(v_pasajero_aux, tp.nombre) <= 0.40;--<0.38
+                    end if;
+                else
+                    select tp.posicion, tp.nombre, tp.tipo_19
+                    into v_posicion, v_pasajero, v_tipo_19
+                    from ttpasajero tp
+                    where tp.nombre = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+                end if;
+
+                /*if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR') = 'array' then --raise 'A';
+                       for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR') loop
+
+                    raise notice 'a: %, b: %, %, [%]',v_numero_billete,trim(v_tkt_reference,'"'), v_segment_reference, v_record_json->'posicion'->>'numLinea';
+
+                    end loop;
+                    if v_tkt_reference is not null then
+                      if v_numero_billete != trim(v_tkt_reference,'"') then
+                        raise 'C Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                      end if;
+                    end if;
+                else --raise 'B';
+
+                      if jsonb_typeof(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') = 'array' then
+                        SELECT ((string_to_array(trim(value::varchar,'"'), ' '))[2])::varchar
+                        into v_segment_reference
+                        FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string') rec
+                        where value::text ilike '"'||v_numero_billete||'%';
+
+                        SELECT value::varchar
+                        into v_tkt_reference
+                        FROM jsonb_array_elements(v_parametros.pasajeros->'pasajeroDR'->'Tkts'->'string') rec
+                        where value::text ilike '"'||v_numero_billete||'%"';
+
                       else
-                        SELECT array_agg(value)
-                        into v_cadena
-                        FROM jsonb_array_elements_text(v_record_json->'codigo_tarifa'->'string');
-                        v_codigo_tarifa = v_cadena[v_contador_id];
+                          v_segment_reference = ((string_to_array(trim((v_parametros.pasajeros->'pasajeroDR'->'TktsSegment'->'string')::varchar,'"'), ' '))[2])::varchar ;
+                        v_tkt_reference = (v_parametros.pasajeros->'pasajeroDR'->'Tkts'->>'string')::varchar;
                       end if;
 
-                      select count(ta.id_tasa)
-                      into v_cont_pasajero
-                      from ttasa ta
-                      where ta.pasajero = v_pasajero;
-                      --if v_tasa_valida = 'resolve' then
-                      if /*v_importe > 0 and*/ v_cont_pasajero = 0 /*or ((v_record_json->>'importe_total')::numeric = 0 and v_cont_pasajero = 0)*/ then
-                        insert into ttasa(
-                          id_tasa,
+                    v_pasajero_aux = v_parametros.pasajeros->'pasajeroDR'->>'apdos_nombre';
+
+
+                    if v_tkt_reference is not null then
+                      if v_numero_billete != trim(v_tkt_reference,'"') then
+                          raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                      end if;
+                    end if;
+
+                end if;*/
+
+
+                v_contador_id = 1;
+                create temp table ttasa(
+                                           id_tasa			integer,
+                                           calculo_tarifa	varchar,
+                                           tasa			varchar,
+                                           rc_iva			numeric,
+                                           moneda_total	varchar,
+                                           importe_total	varchar,
+                                           moneda_tarifa   varchar,
+                                           importe_tarifa	varchar,
+                                           codigo_tarifa 	varchar,
+                                           tipo_emision	varchar,
+                                           tipo_tarifa		varchar,
+                                           tipo_total		varchar,
+                                           num_pax			varchar,
+                                           inf				varchar,
+                                           pasajero varchar
+                )on commit drop;
+
+                if jsonb_typeof(v_parametros.fn_V2) = 'object' then
+                    v_importe = (v_parametros.importes->>'importe_total');
+
+                    if jsonb_typeof(v_parametros.tasa) = 'array' then
+                        for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.tasa)  loop
+
+                            if v_record_json->>'tipo_tasa' != 'X' then
+                                v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar;
+                            end if;
+
+                            if v_record_json->>'tipo_tasa' = 'X' then
+                                if v_record_json->>'codigo_tasa' not in ('QM', 'BO') then
+                                    v_importe = v_importe - (v_record_json->>'importe_tasa')::numeric;
+                                end if;
+                            end if;
+
+                            v_tasa = v_tasa ||(v_record_json->>'moneda_tasa')::varchar||' '||case when v_record_json->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->>'importe_tasa')::varchar||(v_record_json->>'codigo_tasa')::varchar||'		';
+                        end loop;
+                    else
+                        if v_parametros.tasa->>'tipo_tasa' != 'X' then
+                            v_calculo_tarifa = v_calculo_tarifa ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar;
+                        end if;
+                        if v_parametros.tasa->>'tipo_tasa' = 'X' then
+                            if v_parametros.tasa->>'codigo_tasa' not in ('QM', 'BO') then
+                                v_importe = v_importe - (v_parametros.tasa->>'importe_tasa')::numeric;
+                            end if;
+                        end if;
+                        v_tasa = v_tasa ||(v_parametros.tasa->>'moneda_tasa')::varchar||' '||case when v_parametros.tasa->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_parametros.tasa->>'importe_tasa')::varchar||(v_parametros.tasa->>'codigo_tasa')::varchar||'		';
+                    end if;
+
+                    v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+
+                    if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                        v_codigo_tarifa = v_parametros.fn_V2->>'codigo_tarifa';
+                    else
+                        v_codigo_tarifa = v_parametros.importes->'codigo_tarifa'->'string';
+                    end if;
+
+                    insert into ttasa(
+                        id_tasa,
                         calculo_tarifa,
                         tasa,
                         rc_iva,
-                            moneda_total,
-                            importe_total,
-                            moneda_tarifa,
-                            importe_tarifa,
-                            codigo_tarifa,
-                            tipo_emision,
-                            tipo_tarifa,
-                            tipo_total,
-                            num_pax,
-                            inf,
-                            pasajero
-                        )values (
-                          v_contador_id,
-                          v_calculo_tarifa,
-                          v_tasa,
-                          v_importe,
-                          v_record_json->>'moneda_total',
-                          v_record_json->>'importe_total',
-                          v_record_json->>'moneda_tarifa',
-                          v_record_json->>'importe_tarifa',
-                          v_codigo_tarifa,--v_cadena[v_contador_id],
-                          v_record_json->>'tipo_emision',
-                          v_record_json->>'tipo_tarifa',
-                          v_record_json->>'tipo_total',
-                          v_record_json->>'num_pax',
-                          v_record_json->>'inf',
-                          v_pasajero
-                        );
-                        v_tipo_emision = v_record_json->>'tipo_emision';
+                        moneda_total,
+                        importe_total,
+                        moneda_tarifa,
+                        importe_tarifa,
+                        codigo_tarifa,
+                        tipo_emision,
+                        tipo_tarifa,
+                        tipo_total,
+                        num_pax,
+                        inf,
+                        pasajero
+                    )values (
+                                v_contador_id,
+                                v_calculo_tarifa,
+                                v_tasa,
+                                v_importe,
+                                v_parametros.fn_V2->>'moneda_total',
+                                v_parametros.fn_V2->>'importe_total',
+                                v_parametros.fn_V2->>'moneda_tarifa',
+                                v_parametros.fn_V2->>'importe_tarifa',
+                                v_codigo_tarifa,
+                                v_parametros.fn_V2->>'tipo_emision',
+                                v_parametros.fn_V2->>'tipo_tarifa',
+                                v_parametros.fn_V2->>'tipo_total',
+                                v_parametros.fn_V2->>'num_pax',
+                                v_parametros.fn_V2->>'inf',
+                                v_pasajero
+                            );
+                    v_tipo_emision = v_parametros.fn_V2->>'tipo_emision';
+                else
+--raise 'v_segment_reference: %', v_segment_reference;
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.fn_V2)  loop
+                        raise notice 'v_segment_reference: [%] (%) [%] (%) [%]',v_record_json->>'num_pax', v_posicion, v_record_json->>'ReferenciaSegmento', trim(v_segment_reference), v_record_json->>'tipo_emision';
+                        --if (v_record_json->>'num_pax')::integer=v_posicion and v_record_json->>'tipo_emision' = 'R' then
+                        if (v_record_json->>'num_pax')::integer=v_posicion and (v_record_json->>'ReferenciaSegmento')::varchar=trim(v_segment_reference) and v_record_json->>'tipo_emision' = 'R' then
+
+                            if v_tipo_19 in ('INF') and v_record_json->>'inf' = 'N' then
+                                continue;
+                            elsif v_tipo_19 in ('CHD','ADT','SNN') and v_record_json->>'inf' = 'Y' then
+                                continue;
+                            end if;
+
+                            v_importe = (v_record_json->>'importe_total');
+                            if jsonb_typeof(v_record_json->'Fntaxs'->'tasa') = 'array' then
+                                for v_record_json_aux in SELECT * FROM jsonb_array_elements(v_record_json->'Fntaxs'->'tasa')  loop
+
+                                    if v_record_json_aux->>'tipo_tasa' != 'X' then
+                                        v_calculo_tarifa = v_calculo_tarifa ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar;
+                                    end if;
+
+                                    if v_record_json_aux->>'tipo_tasa' = 'X' then
+                                        if v_record_json_aux->>'codigo_tasa' not in ('QM', 'BO') then
+                                            v_importe = v_importe - (v_record_json_aux->>'importe_tasa')::numeric;
+                                        end if;
+                                    end if;
+
+                                    v_tasa = v_tasa ||(v_record_json_aux->>'moneda_tasa')::varchar||' '||case when v_record_json_aux->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json_aux->>'importe_tasa')::varchar||(v_record_json_aux->>'codigo_tasa')::varchar||'		';
+                                end loop;
+                            else
+                                if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' != 'X' then
+                                    v_calculo_tarifa = v_calculo_tarifa ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar;
+                                end if;
+
+                                if v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa' = 'X' then
+                                    if v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa' not in ('QM', 'BO') then
+                                        v_importe = v_importe - (v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::numeric;
+                                    end if;
+                                end if;
+                                v_tasa = v_tasa ||(v_record_json->'Fntaxs'->'tasa'->>'moneda_tasa')::varchar||' '||case when v_record_json->'Fntaxs'->'tasa'->>'tipo_tasa'= 'O' then 'PD '::varchar else ' '::varchar end ||(v_record_json->'Fntaxs'->'tasa'->>'importe_tasa')::varchar||(v_record_json->'Fntaxs'->'tasa'->>'codigo_tasa')::varchar||'		';
+                            end if;
+                            v_calculo_tarifa = ' PDXT '||v_calculo_tarifa;
+
+                            IF jsonb_typeof(v_record_json->'codigo_tarifa'->'string') = 'string' then
+                                v_codigo_tarifa = v_record_json->'codigo_tarifa'->>'string';
+                            else
+                                SELECT array_agg(value)
+                                into v_cadena
+                                FROM jsonb_array_elements_text(v_record_json->'codigo_tarifa'->'string');
+                                v_codigo_tarifa = v_cadena[v_contador_id];
+                            end if;
+
+                            select count(ta.id_tasa)
+                            into v_cont_pasajero
+                            from ttasa ta
+                            where ta.pasajero = v_pasajero;
+                            --if v_tasa_valida = 'resolve' then
+                            if /*v_importe > 0 and*/ v_cont_pasajero = 0 /*or ((v_record_json->>'importe_total')::numeric = 0 and v_cont_pasajero = 0)*/ then
+                                insert into ttasa(
+                                    id_tasa,
+                                    calculo_tarifa,
+                                    tasa,
+                                    rc_iva,
+                                    moneda_total,
+                                    importe_total,
+                                    moneda_tarifa,
+                                    importe_tarifa,
+                                    codigo_tarifa,
+                                    tipo_emision,
+                                    tipo_tarifa,
+                                    tipo_total,
+                                    num_pax,
+                                    inf,
+                                    pasajero
+                                )values (
+                                            v_contador_id,
+                                            v_calculo_tarifa,
+                                            v_tasa,
+                                            v_importe,
+                                            v_record_json->>'moneda_total',
+                                            v_record_json->>'importe_total',
+                                            v_record_json->>'moneda_tarifa',
+                                            v_record_json->>'importe_tarifa',
+                                            v_codigo_tarifa,--v_cadena[v_contador_id],
+                                            v_record_json->>'tipo_emision',
+                                            v_record_json->>'tipo_tarifa',
+                                            v_record_json->>'tipo_total',
+                                            v_record_json->>'num_pax',
+                                            v_record_json->>'inf',
+                                            v_pasajero
+                                        );
+                                v_tipo_emision = v_record_json->>'tipo_emision';
+                                v_contador_id = v_contador_id + 1;
+
+                            else
+                                v_tasa = '';
+                            end if;
+                        else
+                            continue;
+                        end if;
+                    end loop;
+                end if;
+
+                v_fecha_emision = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+
+                v_contador_id = 1;
+                create temp table tvuelos(
+                                             id_vuelo		integer,
+                                             clase 			varchar,
+                                             linea 			varchar,
+                                             estado 			varchar,
+                                             origen 			varchar,
+                                             destino 		varchar,
+                                             num_vuelo 		varchar,
+                                             hora_salida		varchar,
+                                             fecha_salida	varchar,
+                                             hora_llegada 	varchar,
+                                             codigo_tarifa	varchar,
+                                             origen_cod		varchar,
+                                             destino_cod		varchar
+                )on commit drop;
+
+
+                if jsonb_typeof(v_parametros.vuelo) = 'array' and jsonb_typeof(v_parametros.fn_V2) = 'object' then
+                    if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                        SELECT array_agg(value)
+                        into v_cadena
+                        FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
+                    else
+                        SELECT array_agg(tt.codigo_tarifa)
+                        into v_cadena
+                        FROM ttasa tt;
+                    end if;
+                else
+                    SELECT array_agg(tt.codigo_tarifa)
+                    into v_cadena
+                    FROM ttasa tt;
+                end if;
+
+                if jsonb_typeof(v_parametros.vuelo) = 'array' then
+                    v_tam_cod_tarifa = array_length(v_cadena,1);
+                    for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
+
+                        select tl.nombre, tl.codigo, tl.id_lugar
+                        into v_ciudad_o
+                        from param.tlugar tl
+                        where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
+
+                        select tl.codigo
+                        into v_pais_o
+                        from param.tlugar tl
+                        where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+
+                        select tl.nombre, tl.codigo, tl.id_lugar
+                        into v_ciudad_d
+                        from param.tlugar tl
+                        where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
+
+                        select tl.codigo
+                        into v_pais_d
+                        from param.tlugar tl
+                        where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+
+                        if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' )::date >= to_date(v_parametros.update->>'fecha_upd', 'ddMONyy') ) then
+                            --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
+                            insert into tvuelos(
+                                id_vuelo,
+                                clase,
+                                linea,
+                                estado,
+                                origen,
+                                destino,
+                                num_vuelo,
+                                hora_salida,
+                                fecha_salida,
+                                hora_llegada,
+                                codigo_tarifa,
+                                origen_cod,
+                                destino_cod
+                            )values (
+                                        v_contador_id,
+                                        (v_record_json->>'clase')::varchar,
+                                        (v_record_json->>'linea')::varchar,
+                                        (v_record_json->>'estado')::varchar,
+                                        (v_ciudad_o.nombre||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
+                                        (v_ciudad_d.nombre||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
+                                        (v_record_json->>'num_vuelo')::varchar,
+                                        (v_record_json->>'hora_salida')::varchar,
+                                        (v_record_json->>'fecha_salida')::varchar,
+                                        (v_record_json->>'hora_llegada')::varchar,
+                                        case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end,
+                                        v_pais_o,
+                                        v_pais_d
+                                    );
+                            --end if;
+                        end if;
                         v_contador_id = v_contador_id + 1;
+                    end loop;
+                else
 
-                      else
-                        v_tasa = '';
-                      end if;
-                  else
-                    continue;
-                  end if;
-                end loop;
-            end if;
+                    select tl.nombre, tl.codigo, tl.id_lugar
+                    into v_ciudad_o
+                    from param.tlugar tl
+                    where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
 
-			v_fecha_emision = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
+                    select tl.codigo
+                    into v_pais_o
+                    from param.tlugar tl
+                    where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
 
-            v_contador_id = 1;
-            create temp table tvuelos(
-                id_vuelo		integer,
-                clase 			varchar,
-                linea 			varchar,
-                estado 			varchar,
-                origen 			varchar,
-                destino 		varchar,
-                num_vuelo 		varchar,
-                hora_salida		varchar,
-                fecha_salida	varchar,
-                hora_llegada 	varchar,
-                codigo_tarifa	varchar,
-                origen_cod		varchar,
-                destino_cod		varchar
-            )on commit drop;
+                    select tl.nombre, tl.codigo, tl.id_lugar
+                    into v_ciudad_d
+                    from param.tlugar tl
+                    where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
 
+                    select tl.codigo
+                    into v_pais_d
+                    from param.tlugar tl
+                    where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
 
-          if jsonb_typeof(v_parametros.vuelo) = 'array' and jsonb_typeof(v_parametros.fn_V2) = 'object' then
-            if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
-   				SELECT array_agg(value)
-              	into v_cadena
-   				FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
-            else
-            	SELECT array_agg(tt.codigo_tarifa)
-              	into v_cadena
-   				FROM ttasa tt;
-            end if;
-          else
-		  	SELECT array_agg(tt.codigo_tarifa)
-            into v_cadena
-   			FROM ttasa tt;
-          end if;
+                    if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
+                        SELECT array_agg(value)
+                        into v_cadena
+                        FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
+                    else
+                        SELECT array_agg(tt.codigo_tarifa)
+                        into v_cadena
+                        FROM ttasa tt;
+                    end if;
+                    if (v_parametros.vuelo->>'estado')::varchar != 'B' or ((v_parametros.vuelo->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
 
-            if jsonb_typeof(v_parametros.vuelo) = 'array' then
-              v_tam_cod_tarifa = array_length(v_cadena,1);
-              for v_record_json in SELECT * FROM jsonb_array_elements(v_parametros.vuelo)  loop
+                        insert into tvuelos(
+                            id_vuelo,
+                            clase,
+                            linea,
+                            estado,
+                            origen,
+                            destino,
+                            num_vuelo,
+                            hora_salida,
+                            fecha_salida,
+                            hora_llegada,
+                            codigo_tarifa,
+                            origen_cod,
+                            destino_cod
+                        )values (
+                                    1,
+                                    (v_parametros.vuelo->>'clase')::varchar,
+                                    (v_parametros.vuelo->>'linea')::varchar,
+                                    (v_parametros.vuelo->>'estado')::varchar,
+                                    (v_ciudad_o.nombre||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
+                                    (v_ciudad_d.nombre||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
+                                    (v_parametros.vuelo->>'num_vuelo')::varchar,
+                                    (v_parametros.vuelo->>'hora_salida')::varchar,
+                                    (v_parametros.vuelo->>'fecha_salida')::varchar,
+                                    (v_parametros.vuelo->>'hora_llegada')::varchar,
+                                    case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end,
+                                    v_pais_o,
+                                    v_pais_d
+                                );
 
-                  select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_o
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_record_json->>'origen')::varchar;
+                    end if;
+                end if;
 
-                  select tl.codigo
-                  into v_pais_o
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
+                v_nro_boleto = v_parametros.ticket_number::varchar;
 
-                  select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_d
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_record_json->>'destino')::varchar;
+                if v_tipo_emision != 'R' then
+                    raise 'Estimado Usuario: La emision del ticket % no corresponde a un Exchange.', v_numero_billete;
+                end if;
 
-                  select tl.codigo
-                  into v_pais_d
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
+                select tc.oficial
+                INTO v_tipo_cambio
+                from param.ttipo_cambio tc
+                where tc.fecha = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') and tc.id_moneda = 2;
 
-                  if (v_record_json->>'estado')::varchar != 'B' or ((v_record_json->>'estado')::varchar = 'B' and to_char( (v_record_json->>'fecha_salida')::date, 'dd/mm/YYYY' )::date >= to_date(v_parametros.update->>'fecha_upd', 'ddMONyy') ) then
-                    --if (v_record_json->>'hora_salida')::time > current_time and (v_record_json->>'fecha_salida')::date >= current_date then
-                      insert into tvuelos(
-                        id_vuelo,
-                        clase,
-                        linea,
-                        estado,
-                        origen,
-                        destino,
-                        num_vuelo,
-                        hora_salida,
-                        fecha_salida,
-                        hora_llegada,
-                        codigo_tarifa,
-                        origen_cod,
-                		    destino_cod
-                      )values (
-                          v_contador_id,
-                          (v_record_json->>'clase')::varchar,
-                          (v_record_json->>'linea')::varchar,
-                          (v_record_json->>'estado')::varchar,
-                          (v_ciudad_o.nombre||' '||'('||(v_record_json->>'origen')::varchar||')')::varchar,
-                          (v_ciudad_d.nombre||' '||'('||(v_record_json->>'destino')::varchar||')')::varchar,
-                          (v_record_json->>'num_vuelo')::varchar,
-                          (v_record_json->>'hora_salida')::varchar,
-                          (v_record_json->>'fecha_salida')::varchar,
-                          (v_record_json->>'hora_llegada')::varchar,
-                          case when v_tam_cod_tarifa > 1 then v_cadena[v_contador_id]::varchar else  trim(v_cadena[1]::varchar,'"') end,
-                          v_pais_o,
-                          v_pais_d
-                      );
-                    --end if;
-                  end if;
-                  v_contador_id = v_contador_id + 1;
-              end loop;
-            else
+                v_fecha_creacion = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy');
+                v_fecha_update = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
 
-                 select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_o
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_parametros.vuelo->>'origen')::varchar;
+                if v_fecha_emision::date is null then
+                    if v_fecha_creacion = v_fecha_update then
+                        v_fecha_creacion = ((to_char(v_fecha_creacion,'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                    elsif v_fecha_creacion < v_fecha_update then
+                        if v_fecha_update is null then
+                            v_fecha_creacion = v_fecha_emision::date;
+                        else
+                            v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
+                        end if;
+                    end if;
+                else
+                    v_fecha_creacion = v_fecha_emision::date;
+                end if;
+                --raise 'v_tkt_reference: %',v_tkt_reference;
+                /*if v_tkt_reference is null or v_tkt_reference = '' then
+                    raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
+                end if;*/
 
-                  select tl.codigo
-                  into v_pais_o
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_o.id_lugar);
-
-                  select tl.nombre, tl.codigo, tl.id_lugar
-                  into v_ciudad_d
-                  from param.tlugar tl
-                  where tl.codigo::varchar = (v_parametros.vuelo->>'destino')::varchar;
-
-                  select tl.codigo
-                  into v_pais_d
-                  from param.tlugar tl
-                  where tl.id_lugar = param.f_get_id_lugar_pais(v_ciudad_d.id_lugar);
-
-                  if jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'object' or jsonb_typeof(v_parametros.importes->'codigo_tarifa'->'string') = 'array' then
-                      SELECT array_agg(value)
-                      into v_cadena
-                      FROM jsonb_array_elements_text(v_parametros.importes->'codigo_tarifa'->'string');
-                  else
-                      SELECT array_agg(tt.codigo_tarifa)
-                      into v_cadena
-                      FROM ttasa tt;
-                  end if;
-                  if (v_parametros.vuelo->>'estado')::varchar != 'B' or ((v_parametros.vuelo->>'estado')::varchar = 'B' and v_fecha_emision::date != current_date) then
-
-                      insert into tvuelos(
-                        id_vuelo,
-                        clase,
-                        linea,
-                        estado,
-                        origen,
-                        destino,
-                        num_vuelo,
-                        hora_salida,
-                        fecha_salida,
-                        hora_llegada,
-                        codigo_tarifa,
-                        origen_cod,
-                		    destino_cod
-                      )values (
-                          1,
-                          (v_parametros.vuelo->>'clase')::varchar,
-                          (v_parametros.vuelo->>'linea')::varchar,
-                          (v_parametros.vuelo->>'estado')::varchar,
-                          (v_ciudad_o.nombre||' '||'('||(v_parametros.vuelo->>'origen')::varchar||')')::varchar,
-                          (v_ciudad_d.nombre||' '||'('||(v_parametros.vuelo->>'destino')::varchar||')')::varchar,
-                          (v_parametros.vuelo->>'num_vuelo')::varchar,
-                          (v_parametros.vuelo->>'hora_salida')::varchar,
-                          (v_parametros.vuelo->>'fecha_salida')::varchar,
-                          (v_parametros.vuelo->>'hora_llegada')::varchar,
-                          case when (v_parametros.importes->'codigo_tarifa'->>'string') is null then v_cadena[1] else (v_parametros.importes->'codigo_tarifa'->>'string') end,
-                          v_pais_o,
-                          v_pais_d
-                      );
-
-                  end if;
-            end if;
-
-            v_nro_boleto = v_parametros.ticket_number::varchar;
-
-            if v_tipo_emision != 'R' then
-            	raise 'Estimado Usuario: La emision del ticket % no corresponde a un Exchange.', v_numero_billete;
-            end if;
-
-            select tc.oficial
-            INTO v_tipo_cambio
-            from param.ttipo_cambio tc
-            where tc.fecha = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy') and tc.id_moneda = 2;
-
-			v_fecha_creacion = to_date((v_parametros.localizador->>'fecha_creacion')::varchar,'ddmmyy');
-            v_fecha_update = to_date(v_parametros.update->>'fecha_upd', 'ddMONyy');
-
-            if v_fecha_emision::date is null then
-              if v_fecha_creacion = v_fecha_update then
-                  v_fecha_creacion = ((to_char(v_fecha_creacion,'dd/mm/YYYY')||' '||(v_parametros.localizador->>'hora_creacion')::varchar)::timestamp - '4hr'::INTERVAL)::date;
-              elsif v_fecha_creacion < v_fecha_update then
-                  if v_fecha_update is null then
-                      v_fecha_creacion = v_fecha_emision::date;
-                  else
-                      v_fecha_creacion = ((to_char(v_fecha_update,'dd/mm/YYYY')||' '||(v_parametros.update->>'hora_upd')::varchar)::timestamp - '4hr'::INTERVAL)::date;
-                  end if;
-              end if;
-            else
-            	v_fecha_creacion = v_fecha_emision::date;
-            end if;
---raise 'v_tkt_reference: %',v_tkt_reference;
-            /*if v_tkt_reference is null or v_tkt_reference = '' then
-            	raise 'Estimado Usuario: El numero de ticket % no es parte del Localizador %.', v_numero_billete, v_parametros.localizador->>'localizador_resiber';
-            end if;*/
-
-            v_consulta = '
+                v_consulta = '
                           select
                           tv.id_vuelo,
                           tv.clase,
@@ -3729,31 +3779,31 @@ BEGIN
 
                 --Devuelve la respuesta
                 return v_consulta;
-          else
+            else
 
-          end if;
-		end;
+            end if;
+        end;
     else
 
-      raise exception 'Transaccion inexistente';
+        raise exception 'Transaccion inexistente';
 
-	end if;
+    end if;
 
 EXCEPTION
 
-	WHEN OTHERS THEN
-      v_resp='';
-      v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
-      v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
-      v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
-      raise exception '%',v_resp;
+    WHEN OTHERS THEN
+        v_resp='';
+        v_resp = pxp.f_agrega_clave(v_resp,'mensaje',SQLERRM);
+        v_resp = pxp.f_agrega_clave(v_resp,'codigo_error',SQLSTATE);
+        v_resp = pxp.f_agrega_clave(v_resp,'procedimientos',v_nombre_funcion);
+        raise exception '%',v_resp;
 END;
 $body$
-LANGUAGE 'plpgsql'
-VOLATILE
-CALLED ON NULL INPUT
-SECURITY INVOKER
-COST 100;
+    LANGUAGE 'plpgsql'
+    VOLATILE
+    CALLED ON NULL INPUT
+    SECURITY INVOKER
+    COST 100;
 
 ALTER FUNCTION obingresos.ft_boleto_sel (p_administrador integer, p_id_usuario integer, p_tabla varchar, p_transaccion varchar)
-  OWNER TO postgres;
+    OWNER TO postgres;

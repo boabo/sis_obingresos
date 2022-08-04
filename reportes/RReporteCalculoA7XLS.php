@@ -176,6 +176,7 @@ class RReporteCalculoA7XLS{
         $this->docexcel->getActiveSheet()->getColumnDimension('M')->setWidth(25);
         $this->docexcel->getActiveSheet()->getColumnDimension('N')->setWidth(20);
         $this->docexcel->getActiveSheet()->getColumnDimension('O')->setWidth(20);
+        $this->docexcel->getActiveSheet()->getColumnDimension('P')->setWidth(20);
 
 
 
@@ -192,23 +193,23 @@ class RReporteCalculoA7XLS{
         $objDrawing->setWorksheet($this->docexcel->getActiveSheet());
         /*logo*/
 
-        $this->docexcel->getActiveSheet()->getStyle('A1:O4')->applyFromArray($styleTitulos);
+        $this->docexcel->getActiveSheet()->getStyle('A1:P4')->applyFromArray($styleTitulos);
 
-        $this->docexcel->getActiveSheet()->getStyle('A1:O2')->getAlignment()->setWrapText(true);
-        $this->docexcel->getActiveSheet()->mergeCells('A1:N2');
+        $this->docexcel->getActiveSheet()->getStyle('A1:P2')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->mergeCells('A1:O2');
         $this->docexcel->getActiveSheet()->setCellValue('A1','REPORTE RESUMEN CALCULO A7');
 
-        $this->docexcel->getActiveSheet()->getStyle('A3:N4')->getAlignment()->setWrapText(true);
-        $this->docexcel->getActiveSheet()->mergeCells('A3:N3');
+        $this->docexcel->getActiveSheet()->getStyle('A3:O4')->getAlignment()->setWrapText(true);
+        $this->docexcel->getActiveSheet()->mergeCells('A3:O3');
         $this->docexcel->getActiveSheet()->setCellValue('A3','Del: '.$fecha_desde.' Al: '.$fecha_hasta);
-        $this->docexcel->getActiveSheet()->mergeCells('A4:N4');
+        $this->docexcel->getActiveSheet()->mergeCells('A4:O4');
         $this->docexcel->getActiveSheet()->setCellValue('A4','Resumen x Nro. de Vuelo');
 
-        $this->docexcel->getActiveSheet()->setCellValue('O1', 'Fecha');
-        $this->docexcel->getActiveSheet()->setCellValue('O2', date('d/m/Y'));
+        $this->docexcel->getActiveSheet()->setCellValue('P1', 'Fecha');
+        $this->docexcel->getActiveSheet()->setCellValue('P2', date('d/m/Y'));
 
-        $this->docexcel->getActiveSheet()->getStyle('A5:O6')->applyFromArray($styleTitulos1);
-        $this->docexcel->getActiveSheet()->mergeCells('A5:N5');
+        $this->docexcel->getActiveSheet()->getStyle('A5:P6')->applyFromArray($styleTitulos1);
+        $this->docexcel->getActiveSheet()->mergeCells('A5:O5');
         $this->docexcel->getActiveSheet()->setCellValue('A5','CALCULO A7');
 
 
@@ -216,17 +217,18 @@ class RReporteCalculoA7XLS{
         $this->docexcel->getActiveSheet()->setCellValue('B6','FECHA VUELO');
         $this->docexcel->getActiveSheet()->setCellValue('C6','NRO. VUELO');
         $this->docexcel->getActiveSheet()->setCellValue('D6','STATUS VUELO');
-        $this->docexcel->getActiveSheet()->setCellValue('E6','RUTA BOA');
-        $this->docexcel->getActiveSheet()->setCellValue('F6','MATRICULA BOA');
-        $this->docexcel->getActiveSheet()->setCellValue('G6','MATRICULA SABSA');
-        $this->docexcel->getActiveSheet()->setCellValue('H6','A7 NACIONAL');
-        $this->docexcel->getActiveSheet()->setCellValue('I6','A7 INTERNACIONAL');
-        $this->docexcel->getActiveSheet()->setCellValue('J6','SIN A7');
-        $this->docexcel->getActiveSheet()->setCellValue('K6','TOTAL PAX BOA');
-        $this->docexcel->getActiveSheet()->setCellValue('L6','IMPORTE BOA (Bs.)');
-        $this->docexcel->getActiveSheet()->setCellValue('M6','TOTAL PAX SABSA');
-        $this->docexcel->getActiveSheet()->setCellValue('N6','IMPORTE SABSA (Bs.)');
-        $this->docexcel->getActiveSheet()->setCellValue('O6','IMP. BOA -  IMP. SABSA (Bs.)');
+        $this->docexcel->getActiveSheet()->setCellValue('E6','FACTOR DEMORA');
+        $this->docexcel->getActiveSheet()->setCellValue('F6','RUTA BOA');
+        $this->docexcel->getActiveSheet()->setCellValue('G6','MATRICULA BOA');
+        $this->docexcel->getActiveSheet()->setCellValue('H6','MATRICULA NAABOL');
+        $this->docexcel->getActiveSheet()->setCellValue('I6','A7 NACIONAL');
+        $this->docexcel->getActiveSheet()->setCellValue('J6','A7 INTERNACIONAL');
+        $this->docexcel->getActiveSheet()->setCellValue('K6','SIN A7');
+        $this->docexcel->getActiveSheet()->setCellValue('L6','TOTAL PAX BOA');
+        $this->docexcel->getActiveSheet()->setCellValue('M6','IMPORTE BOA (Bs.)');
+        $this->docexcel->getActiveSheet()->setCellValue('N6','TOTAL PAX NAABOL');
+        $this->docexcel->getActiveSheet()->setCellValue('O6','IMPORTE NAABOL (Bs.)');
+        $this->docexcel->getActiveSheet()->setCellValue('P6','IMP. BOA -  IMP. NAABOL (Bs.)');
 
         $fila = 7;
         $color_cell = array('b4c6e7','d9e1f2','ffc7ce','9bbb59');
@@ -253,6 +255,7 @@ class RReporteCalculoA7XLS{
         $fecha_vuelo = '';
         $nro_vuelo = '';
         $status_vuelo = '';
+        $factor_demora = '';
         $ruta_boa = '';
         $matricula_boa = '';
         $matricula_sabsa = '';
@@ -281,23 +284,24 @@ class RReporteCalculoA7XLS{
                 $total_importe_sabsa += $parcial_importe_sabsa;
                 $total_boa_menos_saba += $parcial_boa_menos_saba;
 
-                $this->docexcel->getActiveSheet()->getStyle('A'.$filas_grupo.':O'.($fila+1))->applyFromArray($styleGroup);
+                $this->docexcel->getActiveSheet()->getStyle('A'.$filas_grupo.':P'.($fila+1))->applyFromArray($styleGroup);
 
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $vuelo_id);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, DateTime::createFromFormat('Y-m-d', $fecha_vuelo)->format('d/m/Y'));
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $nro_vuelo);
                 $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $status_vuelo);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $ruta_boa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $matricula_boa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $matricula_sabsa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $parcial_a7_nacional);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $parcial_a7_internacional);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $parcial_sin_a7);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $parcial_pax_boa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $parcial_importe_boa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $parcial_pax_sabsa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $parcial_importe_sabsa);
-                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $parcial_boa_menos_saba);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $factor_demora);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $ruta_boa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $matricula_boa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $matricula_sabsa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $parcial_a7_nacional);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $parcial_a7_internacional);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $parcial_sin_a7);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $parcial_pax_boa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $parcial_importe_boa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $parcial_pax_sabsa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $parcial_importe_sabsa);
+                $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila, $parcial_boa_menos_saba);
 
                 $parcial_a7_nacional = 0;
                 $parcial_a7_internacional = 0;
@@ -398,6 +402,7 @@ class RReporteCalculoA7XLS{
             $fecha_vuelo = $rec['fecha_vuelo'];
             $nro_vuelo = $rec['nro_vuelo'];
             $status_vuelo = $rec['status'];
+            $factor_demora = $rec['factor_demora'];
             $ruta_boa = $rec['ruta_vl'];
             $matricula_boa = $rec['matricula_boa'];
             $matricula_sabsa = $rec['matricula_sabsa'];
@@ -406,28 +411,29 @@ class RReporteCalculoA7XLS{
         }
 
 
-        $this->docexcel->getActiveSheet()->getStyle('A'.$filas_grupo.':O'.($fila))->applyFromArray($styleGroup);
+        $this->docexcel->getActiveSheet()->getStyle('A'.$filas_grupo.':P'.($fila))->applyFromArray($styleGroup);
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(0, $fila, $vuelo_id);
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(1, $fila, DateTime::createFromFormat('Y-m-d', $fecha_vuelo)->format('d/m/Y'));
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(2, $fila, $nro_vuelo);
         $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(3, $fila, $status_vuelo);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $ruta_boa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $matricula_boa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $matricula_sabsa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $parcial_a7_nacional);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $parcial_a7_internacional);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $parcial_sin_a7);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $parcial_pax_boa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $parcial_importe_boa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $parcial_pax_sabsa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $parcial_importe_sabsa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $parcial_boa_menos_saba);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(4, $fila, $factor_demora);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(5, $fila, $ruta_boa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(6, $fila, $matricula_boa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $matricula_sabsa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $parcial_a7_nacional);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $parcial_a7_internacional);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $parcial_sin_a7);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $parcial_pax_boa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $parcial_importe_boa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $parcial_pax_sabsa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $parcial_importe_sabsa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila, $parcial_boa_menos_saba);
 
         $fila++;
 
-        $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':G'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':O'.$fila)->getFont()->setBold(true);
-        $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':G'.$fila);
+        $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':H'.$fila)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':P'.$fila)->getFont()->setBold(true);
+        $this->docexcel->getActiveSheet()->mergeCells('A'.$fila.':H'.$fila);
         $this->docexcel->getActiveSheet()->setCellValue('A'.$fila,'TOTALES');
 
         $styleGroup = array(
@@ -448,16 +454,16 @@ class RReporteCalculoA7XLS{
         $total_importe_sabsa += $parcial_importe_sabsa;
         $total_boa_menos_saba += $parcial_boa_menos_saba;
 
-        $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':O'.($fila))->applyFromArray($styleGroup);
+        $this->docexcel->getActiveSheet()->getStyle('A'.$fila.':P'.($fila))->applyFromArray($styleGroup);
 
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(7, $fila, $total_a7_nacional);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $total_a7_internacional);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $total_sin_a7);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $total_pax_boa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $total_importe_boa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $total_pax_sabsa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $total_importe_sabsa);
-        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $total_boa_menos_saba);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(8, $fila, $total_a7_nacional);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(9, $fila, $total_a7_internacional);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(10, $fila, $total_sin_a7);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(11, $fila, $total_pax_boa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(12, $fila, $total_importe_boa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(13, $fila, $total_pax_sabsa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(14, $fila, $total_importe_sabsa);
+        $this->docexcel->getActiveSheet()->setCellValueByColumnAndRow(15, $fila, $total_boa_menos_saba);
     }
 
     function obtenerFechaEnLetra($fecha){

@@ -334,7 +334,7 @@ class MODReportes extends MODbase{
             while ($row = mssql_fetch_array($query, MSSQL_ASSOC)) {
                 $record = json_decode(json_encode($row));
                 $data[] = $record;
-            }
+            }//var_dump('$data',$data);exit;
             mssql_free_result($query);
             $conexion->closeSQL();
         } //var_dump('$data',$data);exit;
@@ -367,6 +367,7 @@ class MODReportes extends MODbase{
         $this->captura('matricula_sabsa','varchar');
         $this->captura('ruta_sabsa','varchar');
         $this->captura('status','varchar');
+        $this->captura('factor_demora','varchar');
 
 
         //Ejecuta la instruccion
