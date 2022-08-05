@@ -2816,7 +2816,7 @@ BEGIN
                   v_nro_boleto = v_record_json_boletos.json_array_elements::JSON ->> 'documentNumber';
                   v_nro_boleto = v_nro_boleto::JSON ->> 'documentDetails';
                   v_nro_boleto = v_nro_boleto::JSON ->> 'number';
-                  raise notice 'v_nro_boleto %',v_nro_boleto;
+                  --raise notice 'v_nro_boleto %',v_nro_boleto;
                   --recuperamos agente de venta
                   v_agente_venta = v_record_json_boletos.json_array_elements::json->> 'bookingAgent';
                   v_agente_venta = v_agente_venta::json->> 'originIdentification';
@@ -2895,11 +2895,16 @@ BEGIN
 				  --raise notice 'v_monto_pago_amadeus %', v_monto_pago_amadeus;
                   v_pnr = v_record_json_boletos.json_array_elements::json->>'reservationInformation';
 
+                  -- {dev:bvasquez, date: 05/08/2022, desc: adicion, validar si objeto vpnr->reservationInformation es null
+                  if v_pnr is not null then
                   FOR v_record_json_pnr IN (SELECT json_array_elements(v_pnr :: JSON)
             	  )LOOP
                   		v_localizador =v_record_json_pnr.json_array_elements::json->>'controlNumber';
                   END LOOP;
-
+                  else 
+	                  v_localizador  = null;
+                  end if;
+                  
                   --insercion de boleto
                   IF NOT EXISTS(SELECT 1
                             FROM obingresos.tboleto_amadeus
