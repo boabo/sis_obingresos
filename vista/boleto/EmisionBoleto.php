@@ -196,7 +196,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 } else {                
                     var pnr = this.formPnr.getForm().findField('pnr_regularizar_erp').getValue();
                     if ((pnr=='') || (pnr.length<3)) {
-                        alert('Registre el previamente')
+                        alert('Registre el pnr previamente')
                     }else {
                         this.windowPNREG.hide();
                         
