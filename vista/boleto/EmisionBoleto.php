@@ -406,6 +406,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         tooltip: 'Factura Boleto'
                     }
                 );
+
                 this.addButton('btnInvoiceRegularizePNR',
                     {
                         grupo: [0, 1],
@@ -414,6 +415,17 @@ header("content-type: text/javascript; charset=UTF-8");
                         disabled: false,
                         handler: this.onButtonRegularizePNR,
                         tooltip: 'Regularizar pnr emision en ERP'
+                    }
+                );
+
+                this.addButton('btnConsultaReserva',
+                    {
+                        grupo: [0, 1],
+                        text: 'Consulta Reserva',
+                        iconCls: 'bzoom',
+                        disabled: false,
+                        handler: this.onButtonConsultaReserva,
+                        tooltip: 'Consulta Reserva PNR'
                     }
                 );
 
@@ -4019,6 +4031,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.mostrarComponente(this.Cmp.nro_cuota);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.reset();
                           /***********************************************/
@@ -4047,6 +4060,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.mostrarComponente(this.Cmp.id_auxiliar);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
 
@@ -4084,6 +4098,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.id_auxiliar.modificado = true;
                         this.Cmp.id_venta.reset();
                         this.Cmp.id_venta.modificado = true;
+                        this.Cmp.id_venta.allowBlank = false;
                         this.mostrarComponente(this.Cmp.id_auxiliar);
                         this.mostrarComponente(this.Cmp.id_venta);
                         this.Cmp.numero_tarjeta.reset();
@@ -4103,6 +4118,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.mco.allowBlank = false;
@@ -4124,6 +4140,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
                           this.Cmp.id_auxiliar.reset();
@@ -4154,6 +4171,7 @@ header("content-type: text/javascript; charset=UTF-8");
 
                       this.Cmp.numero_tarjeta.allowBlank = true;
                       this.Cmp.numero_tarjeta.allowBlank = true;
+                      this.Cmp.id_venta.allowBlank = true;
                       this.Cmp.mco.allowBlank = true;
                       this.Cmp.id_auxiliar.allowBlank = true;
                   } else {
@@ -4236,6 +4254,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.nro_cuota);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.nro_cupon.allowBlank = true;
@@ -4259,6 +4278,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.nro_cupon);
                           this.ocultarComponente(this.Cmp.nro_cuota);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.nro_cupon.allowBlank = true;
                           this.Cmp.nro_cuota.allowBlank = true;
                           /******************************************/
@@ -4293,6 +4313,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.Cmp.id_auxiliar.modificado = true;
                         this.Cmp.id_venta.reset();
                         this.Cmp.id_venta.modificado = true;
+                        this.Cmp.id_venta.allowBlank = false;
                         this.mostrarComponente(this.Cmp.id_auxiliar);
                         this.mostrarComponente(this.Cmp.id_venta);
                         this.Cmp.numero_tarjeta.reset();
@@ -4313,6 +4334,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.codigo_tarjeta);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.saldo_recibo.reset();
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.mco.allowBlank = false;
@@ -4332,6 +4354,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.ocultarComponente(this.Cmp.id_auxiliar);
                           this.ocultarComponente(this.Cmp.id_venta);
                           this.Cmp.id_venta.reset();
+                          this.Cmp.id_venta.allowBlank = true;
                           this.Cmp.numero_tarjeta.reset();
                           this.Cmp.codigo_tarjeta.reset();
                           this.Cmp.id_auxiliar.reset();
@@ -4385,6 +4408,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.ocultarComponente(this.Cmp.nro_cuota_2);
                         this.Cmp.nro_cupon_2.allowBlank = true;
                         this.Cmp.nro_cuota_2.allowBlank = true;
+                        this.Cmp.id_venta_2.allowBlank = true;
                         /**********************************************/
 
                         this.Cmp.numero_tarjeta2.allowBlank = true;
@@ -4475,6 +4499,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             this.Cmp.saldo_recibo_2.reset();
                             this.Cmp.numero_tarjeta2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
@@ -4506,6 +4531,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             /**********************************************/
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             this.Cmp.id_auxiliar2.reset();
                             this.Cmp.id_auxiliar2.label.dom.innerHTML='Cuenta Corriente';
                             this.Cmp.id_auxiliar2.store.baseParams.ro_activo='no';
@@ -4529,6 +4555,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.Cmp.id_auxiliar2.modificado = true;
                           this.Cmp.id_venta_2.reset();
                           this.Cmp.id_venta_2.modificado = true;
+                          this.Cmp.id_venta_2.allowBlank = false;
                           this.mostrarComponente(this.Cmp.id_auxiliar2);
                           this.mostrarComponente(this.Cmp.id_venta_2);
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
@@ -4561,7 +4588,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.Cmp.nro_cuota_2.allowBlank = true;
                             /**********************************************/
 
-
+                            this.Cmp.id_venta_2.allowBlank = true;
                             this.Cmp.mco2.allowBlank = false;
                             this.Cmp.codigo_tarjeta2.allowBlank = true;
                             this.Cmp.id_auxiliar2.allowBlank = true;
@@ -4573,6 +4600,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             this.Cmp.saldo_recibo_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
@@ -4599,6 +4627,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
                     this.ocultarComponente(this.Cmp.id_venta_2);
                     this.Cmp.id_venta_2.reset();
+                    this.Cmp.id_venta_2.allowBlank = true;
                     this.Cmp.saldo_recibo_2.reset();
                     /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                     this.ocultarComponente(this.Cmp.nro_cupon_2);
@@ -4626,6 +4655,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         this.ocultarComponente(this.Cmp.id_auxiliar2);
                         this.ocultarComponente(this.Cmp.id_venta_2);
                         this.Cmp.id_venta_2.reset();
+                        this.Cmp.id_venta_2.allowBlank = true;
                         this.Cmp.saldo_recibo_2.reset();
                         /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                         this.ocultarComponente(this.Cmp.nro_cupon_2);
@@ -4721,6 +4751,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.mco2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -4744,6 +4775,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             this.Cmp.id_auxiliar2.reset();
                             this.Cmp.id_auxiliar2.label.dom.innerHTML='Cuenta Corriente';
                             this.Cmp.id_auxiliar2.store.baseParams.ro_activo='no';
@@ -4777,6 +4809,7 @@ header("content-type: text/javascript; charset=UTF-8");
                           this.Cmp.id_auxiliar2.modificado = true;
                           this.Cmp.id_venta_2.reset();
                           this.Cmp.id_venta_2.modificado = true;
+                          this.Cmp.id_venta_2.allowBlank = false;
                           this.mostrarComponente(this.Cmp.id_auxiliar2);
                           this.mostrarComponente(this.Cmp.id_venta_2);
                           /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
@@ -4802,6 +4835,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.codigo_tarjeta2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             this.Cmp.saldo_recibo_2.reset();
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
@@ -4823,6 +4857,7 @@ header("content-type: text/javascript; charset=UTF-8");
                             this.ocultarComponente(this.Cmp.id_auxiliar2);
                             this.ocultarComponente(this.Cmp.id_venta_2);
                             this.Cmp.id_venta_2.reset();
+                            this.Cmp.id_venta_2.allowBlank = true;
                             /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                             this.ocultarComponente(this.Cmp.nro_cupon_2);
                             this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -4849,6 +4884,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     this.ocultarComponente(this.Cmp.id_auxiliar2);
                     this.ocultarComponente(this.Cmp.id_venta_2);
                     this.Cmp.id_venta_2.reset();
+                    this.Cmp.id_venta_2.allowBlank = true;
                     /*Aumentando estos dos campos para buenos aires*/ //Ismael Valdivia
                     this.ocultarComponente(this.Cmp.nro_cupon_2);
                     this.ocultarComponente(this.Cmp.nro_cuota_2);
@@ -5268,6 +5304,103 @@ header("content-type: text/javascript; charset=UTF-8");
                 VentanaInicio.show();
             },
 
+            creaFormPnrCons: function (estado) {
+
+            this.formPnrCons = new Ext.form.FormPanel({
+                id: this.idContenedor + '_REGPNRCONS',
+                bodyStyle: 'padding: 10px;',
+                items: [
+                    new Ext.form.TextField({
+                        fieldLabel: 'Pnr',
+                        name: 'pnr_consulta_erp',                            
+                        allowBlank: false,
+                        width: '95%',
+                        style: 'text-transform: upperCase'
+                    })
+                ],
+                autoScroll: false,
+                autoDestroy: true,
+                autoScroll: true
+            });
+
+
+            // Definicion de la ventana que contiene al formulario
+            this.windowPNREGC = new Ext.Window({
+                // id:this.idContenedor+'_W',
+                title: '<h6 style="font-size:11pt;">Consulta Reserva</h6>',
+                modal: true,
+                width: 400,
+                height: 150,
+                bodyStyle: 'padding: 5px;',
+                layout: 'fit',
+                hidden: true,
+                autoScroll: false,
+                maximizable: true,
+                buttons: [{
+                    text: 'Consultar',
+                    arrowAlign: 'bottom',
+                    handler: this.onSubmitPnrConsult,
+                    argument: {
+                        'news': false
+                    },
+                    scope: this,
+                    tipoEvent: estado
+
+                },
+                    {
+                        text: 'Declinar',
+                        handler: this.onDeclinarPnrConsult,
+                        scope: this
+                    }],
+                items: this.formPnrCons,
+                autoDestroy: true,
+                closeAction: 'hide'
+            });
+            },
+
+            onDeclinarPnrConsult: function () {
+                this.windowPNREGC.hide();
+            },                       
+            onButtonConsultaReserva: function () {
+                this.creaFormPnrCons();
+                this.windowPNREGC.show();
+            }, 
+
+            onSubmitPnrConsult: function()
+            {              
+                var pnr = this.formPnrCons.getForm().findField('pnr_consulta_erp').getValue();
+                if ((pnr=='') || (pnr.length<3)) {
+                    alert('Registre el pnr previamente')
+                }else {                                        
+                    Phx.CP.loadingShow();
+                    Ext.Ajax.request({
+                        url : '../../sis_obingresos/control/Boleto/consultaDetalleReserva',
+                        params : { pnr : pnr },
+                        success : function(resp){
+                            this.windowPNREGC.hide();
+                            Phx.CP.loadingHide();                            
+                            reg = JSON.parse(resp.responseText)
+                            if(reg.datos[0].detalle != null)
+                            {
+                                Phx.CP.loadWindows('../../../sis_obingresos/vista/boleto/ConsultaDetalleReserva.php',
+                                `<label style="cursor:pointer;font-size:14pt;letter-spacing: 12px;height: 35px;padding-left: 35%;">Detalle Reserva</label>`, {
+                                    width:'90%',
+                                    height:'70%',
+                                    modal:false
+                                }, {  
+                                    pnr: pnr
+                                },
+                                this.idContenedor,
+                                'ConsultaDetalleReserva'
+                                );
+                            }
+                        },
+                        failure: this.conexionFailure,
+                        timeout: this.timeout,
+                        scope:this
+                    });                
+                    }                            
+      	    },
         }
     )
 </script>

@@ -3689,6 +3689,77 @@ class ACTBoleto extends ACTbase{
         echo 'procesado';exit;
         
     }
+
+    function consultaDetalleReserva()
+    {
+        if (preg_match('/\s/', strtoupper($this->objParam->getParametro('pnr')))>0) 
+        {
+            throw new Exception("El PNR que registro no debe tener espacios en blanco, favor verifique.");
+        }
+
+        // conversion mayucula codigo reserva
+        $pnr = strtoupper($this->objParam->getParametro('pnr'));
+
+        // request body
+        $data = array("credentials"=> $_SESSION['_credentialPnrEmisionCBB'],
+            "language"=> "ES",
+            "locator"=> array("pnr" => $pnr, "identifierPnr" => "PRUEBAS"),
+            "ipAddress"=>"127.0.0.1",
+            "xmlOrJson"=>false);
+
+        $json_data = json_encode($data);
+
+        $s = curl_init();
+
+        curl_setopt($s, CURLOPT_URL, $this->apiEmision.'GetBooking');
+        curl_setopt($s, CURLOPT_POST, true);
+        curl_setopt($s, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($s, CURLOPT_CONNECTTIMEOUT, 20);
+        curl_setopt($s, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($json_data))
+        );
+
+        $_out = curl_exec($s);
+
+        $status = curl_getinfo($s, CURLINFO_HTTP_CODE);
+
+        if (!$status) 
+        {
+            throw new Exception("No se pudo conectar con el servicio consulta reserva. Vuelva a intentar. Si el error persiste consulte con informática. ");
+        }
+
+        curl_close($s);
+
+        $resJson = json_decode($_out);
+        
+        // verificar response
+        if (is_null(json_decode($resJson->GetBookingResult))) 
+        {
+            throw new Exception("PNR  ".$pnr." -> ".$resJson->GetBookingResult.". ");                   
+        } 
+
+        $resJson = json_decode($resJson->GetBookingResult);
+
+        $this->res = new Mensaje();
+        $this->res->setMensaje(
+            'EXITO',
+            'driver.php',
+            'Consulta detalle reserva',
+            'Consulta detalle reserva',
+            'control',
+            'conta.ft_boleto_sel',
+            'OBIN_CONDEPNR_SEL',
+            'SEL'
+        );
+
+        $resp = array(array("detalle" => $resJson->reserva));
+
+        $this->res->setTotal(1);
+        $this->res->datos = $resp;
+        $this->res->imprimirRespuesta($this->res->generarJson());         
+    }
     /**  **/
 
 }
