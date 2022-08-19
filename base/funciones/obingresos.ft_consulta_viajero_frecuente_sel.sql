@@ -62,10 +62,13 @@ BEGIN
 						vif.fecha_mod,
 						vif.id_usuario_mod,
 						usu1.cuenta as usr_reg,
-						usu2.cuenta as usr_mod
+						usu2.cuenta as usr_mod,
+                        vusu.desc_persona
+
 						from obingresos.tconsulta_viajero_frecuente vif
 						inner join segu.tusuario usu1 on usu1.id_usuario = vif.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = vif.id_usuario_mod
+                        inner join segu.vusuario vusu on vusu.id_usuario = usu1.id_usuario
 				        where  ';
 
 			--Definicion de la respuesta
@@ -92,6 +95,7 @@ BEGIN
 					    from obingresos.tconsulta_viajero_frecuente vif
 					    inner join segu.tusuario usu1 on usu1.id_usuario = vif.id_usuario_reg
 						left join segu.tusuario usu2 on usu2.id_usuario = vif.id_usuario_mod
+                        inner join segu.vusuario vusu on vusu.id_usuario = usu1.id_usuario
 					    where ';
 
 			--Definicion de la respuesta

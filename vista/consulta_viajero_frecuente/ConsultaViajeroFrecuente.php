@@ -143,6 +143,21 @@ header("content-type: text/javascript; charset=UTF-8");
             },
             {
                 config: {
+                    name: 'desc_persona',
+                    fieldLabel: 'Funcionario',
+                    allowBlank: true,
+                    anchor: '80%',
+                    gwidth: 250,
+                    maxLength: 50
+                },
+                type: 'TextField',
+                filters: {pfiltro: 'vusu.desc_persona', type: 'string'},
+                id_grupo: 1,
+                grid: true,
+                form: false
+            },
+            {
+                config: {
                     name: 'ffid',
                     fieldLabel: 'FFID',
                     allowBlank: true,
@@ -501,7 +516,8 @@ header("content-type: text/javascript; charset=UTF-8");
             {name: 'fecha_mod', type: 'date', dateFormat: 'Y-m-d H:i:s.u'},
             {name: 'id_usuario_mod', type: 'numeric'},
             {name: 'usr_reg', type: 'string'},
-            {name: 'usr_mod', type: 'string'}
+            {name: 'usr_mod', type: 'string'},
+            'desc_persona'
 
         ],
         sortInfo: {
