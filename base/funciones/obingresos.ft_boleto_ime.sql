@@ -3276,11 +3276,14 @@ BEGIN
                   delete from obingresos.tboleto_amadeus_forma_pago m
                   where m.id_boleto_amadeus = v_id_boleto_a;
 
-
-                  update obingresos.tboleto_amadeus
-                  set
-                  estado = 'borrador'
-                  where id_boleto_amadeus = v_id_boleto_a;
+                  -- para las emisiones de reserva, no cambiamos el estado
+                  
+                  if (v_boleto.id_pv_reserva is null) then
+                    update obingresos.tboleto_amadeus
+                    set
+                    estado = 'borrador'
+                    where id_boleto_amadeus = v_id_boleto_a;
+                  end if;
 
                   /************************************************************************************/
 
