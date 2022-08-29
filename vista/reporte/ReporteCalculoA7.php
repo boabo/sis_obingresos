@@ -168,6 +168,19 @@ header("content-type: text/javascript; charset=UTF-8");
                     tooltip: 'Reporte Resumen A7'
                 }
             );
+
+            this.addButton('btn_vuelo_pendiente',
+                {
+                    text: 'Vuelos Pendientes',
+                    iconCls: 'binfo',
+                    style: 'color : #00B167; ',
+                    grupo: [0,1,2,3,4,5,6],
+                    disabled: false,
+                    handler: this.onBtnVuelosPendientes,
+                    tooltip: 'Vuelos Pendientes SICNO Trafico.'
+                }
+            );
+
             this.iniciarEventos();
             this.bandera_alta = 0;
             this.bandera_baja = 0;
@@ -176,6 +189,22 @@ header("content-type: text/javascript; charset=UTF-8");
 
             this.init();
 
+        },
+
+        onBtnVuelosPendientes : function(){
+            Phx.CP.loadWindows('../../../sis_obingresos/vista/vuelo_pendiente/VueloPendiente.php',
+                'Vuelos Pendientes SICNO TRAFICO',
+                {
+                    width: 800,
+                    height: 500
+                },
+                {
+                    fecha_ini: this.fecha_ini.getValue(),
+                    fecha_fin: this.fecha_fin.getValue()
+                },
+                this.idContenedor,
+                'VueloPendiente'
+            );
         },
 
         onBtnRepResumenCalculoA7 : function (){
